@@ -4,11 +4,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Carousel, Card } from "@/components/ui/apple-cards-carousel";
 
 const GRADIENTS = {
-  fragmentation: "bg-gradient-to-br from-blue-500/20 to-purple-500/20",
-  overwhelm: "bg-gradient-to-br from-red-500/20 to-orange-500/20",
-  accessibility: "bg-gradient-to-br from-green-500/20 to-teal-500/20",
-  deadEnds: "bg-gradient-to-br from-yellow-500/20 to-amber-500/20",
-  exclusion: "bg-gradient-to-br from-pink-500/20 to-rose-500/20",
+  fragmentation: "bg-gradient-to-br from-blue-500/10 to-purple-500/10",
+  overwhelm: "bg-gradient-to-br from-red-500/10 to-orange-500/10",
+  accessibility: "bg-gradient-to-br from-green-500/10 to-teal-500/10",
+  deadEnds: "bg-gradient-to-br from-yellow-500/10 to-amber-500/10",
+  exclusion: "bg-gradient-to-br from-pink-500/10 to-rose-500/10",
 };
 
 const PROBLEM_CARDS = {
@@ -143,18 +143,18 @@ export function ProblemSection() {
   const cards = PROBLEM_CARDS[language === 'es' ? 'es' : 'en'];
 
   return (
-    <section className="w-full relative">
+    <section className="w-full relative bg-black">
       {/* Background gradient for light beam consistency */}
-      <div className="absolute inset-0 bg-gradient-to-b from-neutral-50/50 to-neutral-100/50 dark:from-neutral-900/50 dark:to-neutral-800/50 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-900/50 to-black pointer-events-none" />
       
       {/* Main content */}
       <div className="relative w-full py-20">
         {/* Header content - constrained width */}
         <div className="max-w-2xl mx-auto px-4 text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">
+          <h2 className="text-3xl font-bold mb-4 text-white">
             {t('problems.title')}
           </h2>
-          <p className="text-neutral-600 dark:text-neutral-400">
+          <p className="text-neutral-400">
             {t('problems.description')}
           </p>
         </div>
