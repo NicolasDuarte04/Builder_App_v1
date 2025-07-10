@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import {
   motion,
   useScroll,
   useTransform,
   useSpring,
   MotionValue,
-  useMotionValueEvent,
 } from "framer-motion";
 import Image from "next/image";
-import { useLanguage } from "@/components/LanguageProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface Product {
@@ -38,7 +36,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, translate }) 
         y: -20,
       }}
       key={product.title}
-      className="group/product h-96 w-[30rem] relative shrink-0"
+      className="group/product h-80 w-[28rem] relative shrink-0"
     >
       <a
         href={product.link}
@@ -48,11 +46,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, translate }) 
           src={product.thumbnail}
           alt={product.title}
           fill
-          className="object-cover object-left-top"
+          className="object-cover object-left-top rounded-xl"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       </a>
-      <div className="absolute inset-0 h-full w-full opacity-0 group-hover/product:opacity-80 bg-black pointer-events-none"></div>
+      <div className="absolute inset-0 h-full w-full opacity-0 group-hover/product:opacity-80 bg-black pointer-events-none rounded-xl"></div>
       <h2 className="absolute bottom-4 left-4 opacity-0 group-hover/product:opacity-100 text-white">
         {product.title}
       </h2>
@@ -64,12 +62,12 @@ export const Header: React.FC = () => {
   const { t } = useTranslation();
   
   return (
-    <div className="relative z-10 max-w-7xl mx-auto py-20 md:py-40 px-4 w-full">
+    <div className="relative z-10 max-w-7xl mx-auto py-20 md:py-28 px-4 w-full">
       <div className="text-center">
         <h1 className="text-4xl md:text-7xl font-bold text-black dark:text-white drop-shadow-sm">
           {t("hero.title")}
         </h1>
-        <p className="max-w-2xl mx-auto mt-8 text-lg md:text-xl text-gray-800 dark:text-gray-200 font-medium">
+        <p className="max-w-2xl mx-auto mt-6 text-lg md:text-xl text-gray-800 dark:text-gray-200 font-medium">
           {t("hero.subtitle")}
         </p>
       </div>
@@ -90,11 +88,11 @@ export const HeroParallax: React.FC<HeroParallaxProps> = ({ products }) => {
   const springConfig = { stiffness: 70, damping: 35, bounce: 0 };
 
   const translateX = useSpring(
-    useTransform(scrollY, [0, 2000], [0, -300]),
+    useTransform(scrollY, [0, 1000], [0, -200]),
     springConfig
   );
   const translateXReverse = useSpring(
-    useTransform(scrollY, [0, 2000], [0, 300]),
+    useTransform(scrollY, [0, 1000], [0, 200]),
     springConfig
   );
   const rotateX = useSpring(
@@ -110,54 +108,56 @@ export const HeroParallax: React.FC<HeroParallaxProps> = ({ products }) => {
     springConfig
   );
   const translateY = useSpring(
-    useTransform(scrollY, [0, 1000], [-150, 150]),
+    useTransform(scrollY, [0, 1000], [-100, 100]),
     springConfig
   );
 
   return (
     <div
       ref={ref}
-      className="relative h-[400vh] pt-24 pb-40 overflow-hidden antialiased bg-white dark:bg-black [perspective:1000px] [transform-style:preserve-3d] scroll-smooth snap-y snap-mandatory"
+      className="relative h-[200vh] py-16 overflow-hidden antialiased bg-white dark:bg-black [perspective:1000px] [transform-style:preserve-3d] scroll-smooth"
     >
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white via-white/90 to-white dark:from-black dark:via-black/90 dark:to-black" />
-      <Header />
-      <motion.div
-        style={{
-          rotateX,
-          rotateZ,
-          translateY,
-          opacity,
-        }}
-        className="relative z-0 snap-center"
-      >
-        <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 mb-20 snap-x snap-mandatory">
-          {firstRow.map((product) => (
-            <ProductCard
-              product={product}
-              translate={translateX}
-              key={product.title}
-            />
-          ))}
+      <div className="sticky top-0 pt-12 pb-40">
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white via-white/90 to-white dark:from-black dark:via-black/90 dark:to-black" />
+        <Header />
+        <motion.div
+          style={{
+            rotateX,
+            rotateZ,
+            translateY,
+            opacity,
+          }}
+          className="relative z-0"
+        >
+          <motion.div className="flex flex-row-reverse space-x-reverse space-x-12 mb-16">
+            {firstRow.map((product) => (
+              <ProductCard
+                product={product}
+                translate={translateX}
+                key={product.title}
+              />
+            ))}
+          </motion.div>
+          <motion.div className="flex flex-row mb-16 space-x-12">
+            {secondRow.map((product) => (
+              <ProductCard
+                product={product}
+                translate={translateXReverse}
+                key={product.title}
+              />
+            ))}
+          </motion.div>
+          <motion.div className="flex flex-row-reverse space-x-reverse space-x-12">
+            {thirdRow.map((product) => (
+              <ProductCard
+                product={product}
+                translate={translateX}
+                key={product.title}
+              />
+            ))}
+          </motion.div>
         </motion.div>
-        <motion.div className="flex flex-row mb-20 space-x-20 snap-x snap-mandatory">
-          {secondRow.map((product) => (
-            <ProductCard
-              product={product}
-              translate={translateXReverse}
-              key={product.title}
-            />
-          ))}
-        </motion.div>
-        <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 snap-x snap-mandatory">
-          {thirdRow.map((product) => (
-            <ProductCard
-              product={product}
-              translate={translateX}
-              key={product.title}
-            />
-          ))}
-        </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }; 

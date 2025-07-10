@@ -14,5 +14,39 @@
   "buttons": {
     "switchToEnglish": "English",
     "switchToSpanish": "Español"
+  },
+  "createRoadmapTitle": "Create Your Project Roadmap",
+  "createRoadmapDescription": "Describe your project idea and let Briki AI create a detailed roadmap for you. We'll break down your project into manageable steps and suggest the best tools for each phase.",
+  "lastUpdated": "Last updated",
+  "startFromTemplate": "Start from template",
+  "uploadIdea": "Upload idea",
+  "importFromFigma": "Import from Figma",
+  "loading": "Generating roadmap...",
+  "project": {
+    "creation": {
+      "title": "Create Your Project",
+      "description": "Describe your project idea and we'll help you create a detailed roadmap.",
+      "roadmap": {
+        "title": "Project Roadmap"
+      },
+      "placeholders": {
+        "habit_app": "Create a mobile app for tracking daily habits",
+        "ecommerce": "Build an e-commerce website with Next.js and Stripe",
+        "dashboard": "Develop a social media dashboard with analytics"
+      }
+    }
+  },
+  "input": {
+    "errors": {
+      "required": "Please enter your project idea",
+      "tooShort": "Please enter a longer description",
+      "tooLong": "Description is too long"
+    }
+  },
+  "placeholders": {
+    "whatToBuild": "What do you want to build with Briki AI?",
+    "describeIdea": "Describe your idea and I'll help create a roadmap...",
+    "example1": "For example: An AI-powered task management app...",
+    "example2": "Or: An e-commerce with personalized recommendations..."
   }
 } 

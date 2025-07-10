@@ -24,6 +24,26 @@ const config: Config = {
           },
         },
       },
+      animation: {
+        shimmer: "shimmer 2s linear infinite",
+      },
+      keyframes: {
+        shimmer: {
+          from: {
+            backgroundPosition: "0 0",
+          },
+          to: {
+            backgroundPosition: "-200% 0",
+          },
+        },
+      },
+      backgroundImage: {
+        'dot-black': 'radial-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1px)',
+        'dot-white': 'radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px)',
+      },
+      backgroundSize: {
+        'dot': '16px 16px',
+      },
     },
   },
   plugins: [],
