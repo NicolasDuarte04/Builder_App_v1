@@ -19,18 +19,40 @@ export async function generateRoadmap(prompt: string) {
       messages: [
         {
           role: "system",
-          content: `You are a project roadmap generator. Your task is to create structured roadmap steps for software development projects.
+          content: `You are a project roadmap generator. Your task is to create structured roadmap phases for software development projects.
           
 Your response should be a JSON object with the following structure:
 {
-  "steps": [
+  "phases": [
     {
+      "id": "phase-1",
       "title": "Project Setup",
       "description": "Initialize repository and install core dependencies",
-      "dependencies": [],
-      "estimatedTime": 2,
       "priority": "high",
-      "category": "setup"
+      "category": "setup",
+      "estimatedTime": 2,
+      "dependencies": [],
+      "tasks": [
+        {
+          "id": "task-1-1",
+          "title": "Initialize Git Repository",
+          "description": "Create and configure Git repository with proper .gitignore",
+          "status": "pending",
+          "priority": "high",
+          "estimatedTime": 0.5,
+          "tools": ["github", "git"],
+          "metadata": {
+            "complexity": "low",
+            "requiredSkills": ["git", "command-line"]
+          }
+        }
+      ],
+      "tools": ["vscode", "github"],
+      "status": "pending",
+      "metadata": {
+        "complexity": "low",
+        "order": 0
+      }
     }
   ],
   "title": "Project Name",
@@ -38,12 +60,17 @@ Your response should be a JSON object with the following structure:
 }
 
 Requirements:
-- title: A concise name for the step (string)
-- description: Detailed explanation of what needs to be done (string)
-- dependencies: Array of step numbers this step depends on (number[])
-- estimatedTime: Estimated time in hours (number)
+- id: String in format "phase-{number}" for phases, "task-{phaseNumber}-{taskNumber}" for tasks
+- title: Concise name for the phase/task (string)
+- description: Detailed explanation (string)
 - priority: Must be exactly "high", "medium", or "low" (string)
 - category: Must be exactly "setup", "development", "testing", "deployment", or "maintenance" (string)
+- estimatedTime: Estimated time in hours (number)
+- dependencies: Array of phase IDs this phase depends on (string[])
+- tasks: Array of task objects with all required fields
+- tools: Array of tool IDs that are needed (string[])
+- status: Must be "pending" for new phases/tasks
+- metadata: Object with at least complexity and order/skills fields
 
 Always return a valid JSON object with all required fields.`
         },
@@ -74,30 +101,79 @@ Always return a valid JSON object with all required fields.`
     // Validate response format (only if enabled)
     try {
       const parsed = JSON.parse(content);
-      if (!parsed.steps || !Array.isArray(parsed.steps)) {
-        throw new Error('Response missing steps array');
+      if (!parsed.phases || !Array.isArray(parsed.phases)) {
+        throw new Error('Response missing phases array');
       }
       
-      // Validate each step
-      parsed.steps.forEach((step: any, index: number) => {
-        if (!step.title || typeof step.title !== 'string') {
-          throw new Error(`Step ${index + 1} missing or invalid title`);
+      // Validate each phase
+      parsed.phases.forEach((phase: any, index: number) => {
+        // Validate phase ID format
+        if (!phase.id || !/^phase-\d+$/.test(phase.id)) {
+          throw new Error(`Phase ${index + 1} has invalid id format (should be phase-{number})`);
         }
-        if (!step.description || typeof step.description !== 'string') {
-          throw new Error(`Step ${index + 1} missing or invalid description`);
+        
+        // Validate required phase fields
+        if (!phase.title || typeof phase.title !== 'string') {
+          throw new Error(`Phase ${index + 1} missing or invalid title`);
         }
-        if (!Array.isArray(step.dependencies)) {
-          throw new Error(`Step ${index + 1} missing or invalid dependencies array`);
+        if (!phase.description || typeof phase.description !== 'string') {
+          throw new Error(`Phase ${index + 1} missing or invalid description`);
         }
-        if (typeof step.estimatedTime !== 'number') {
-          throw new Error(`Step ${index + 1} missing or invalid estimatedTime`);
+        if (!Array.isArray(phase.dependencies)) {
+          throw new Error(`Phase ${index + 1} missing or invalid dependencies array`);
         }
-        if (!['high', 'medium', 'low'].includes(step.priority)) {
-          throw new Error(`Step ${index + 1} invalid priority value`);
+        if (typeof phase.estimatedTime !== 'number') {
+          throw new Error(`Phase ${index + 1} missing or invalid estimatedTime`);
         }
-        if (!['setup', 'development', 'testing', 'deployment', 'maintenance'].includes(step.category)) {
-          throw new Error(`Step ${index + 1} invalid category value`);
+        if (!['high', 'medium', 'low'].includes(phase.priority)) {
+          throw new Error(`Phase ${index + 1} invalid priority value`);
         }
+        if (!['setup', 'development', 'testing', 'deployment', 'maintenance'].includes(phase.category)) {
+          throw new Error(`Phase ${index + 1} invalid category value`);
+        }
+        if (!Array.isArray(phase.tasks)) {
+          throw new Error(`Phase ${index + 1} missing tasks array`);
+        }
+        if (!Array.isArray(phase.tools)) {
+          throw new Error(`Phase ${index + 1} missing tools array`);
+        }
+        if (phase.status !== 'pending') {
+          throw new Error(`Phase ${index + 1} status must be "pending"`);
+        }
+        if (!phase.metadata || typeof phase.metadata !== 'object') {
+          throw new Error(`Phase ${index + 1} missing metadata object`);
+        }
+
+        // Validate each task in the phase
+        phase.tasks.forEach((task: any, taskIndex: number) => {
+          // Validate task ID format
+          if (!task.id || !new RegExp(`^task-${index + 1}-\\d+$`).test(task.id)) {
+            throw new Error(`Task ${taskIndex + 1} in phase ${index + 1} has invalid id format`);
+          }
+
+          // Validate required task fields
+          if (!task.title || typeof task.title !== 'string') {
+            throw new Error(`Task ${taskIndex + 1} in phase ${index + 1} missing or invalid title`);
+          }
+          if (!task.description || typeof task.description !== 'string') {
+            throw new Error(`Task ${taskIndex + 1} in phase ${index + 1} missing or invalid description`);
+          }
+          if (typeof task.estimatedTime !== 'number') {
+            throw new Error(`Task ${taskIndex + 1} in phase ${index + 1} missing or invalid estimatedTime`);
+          }
+          if (!['high', 'medium', 'low'].includes(task.priority)) {
+            throw new Error(`Task ${taskIndex + 1} in phase ${index + 1} invalid priority value`);
+          }
+          if (!Array.isArray(task.tools)) {
+            throw new Error(`Task ${taskIndex + 1} in phase ${index + 1} missing tools array`);
+          }
+          if (task.status !== 'pending') {
+            throw new Error(`Task ${taskIndex + 1} in phase ${index + 1} status must be "pending"`);
+          }
+          if (!task.metadata || typeof task.metadata !== 'object') {
+            throw new Error(`Task ${taskIndex + 1} in phase ${index + 1} missing metadata object`);
+          }
+        });
       });
 
       console.log('OpenAI response validated successfully');

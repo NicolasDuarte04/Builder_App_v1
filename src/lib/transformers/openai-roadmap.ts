@@ -1,23 +1,40 @@
-import { v4 as uuidv4 } from 'uuid';
 import { Roadmap, RoadmapPhase, Task, TaskStatus, ToolReference } from '@/types/roadmap';
 
-interface OpenAIStep {
+interface OpenAITask {
+  id: string;
   title: string;
   description: string;
-  dependencies: number[];
+  status: TaskStatus;
+  priority: 'high' | 'medium' | 'low';
   estimatedTime: number;
+  tools: string[];
+  metadata: {
+    complexity: 'low' | 'medium' | 'high';
+    requiredSkills: string[];
+    [key: string]: any;
+  };
+}
+
+interface OpenAIPhase {
+  id: string;
+  title: string;
+  description: string;
   priority: 'high' | 'medium' | 'low';
   category: 'setup' | 'development' | 'testing' | 'deployment' | 'maintenance';
-  tasks?: {
-    title: string;
-    description: string;
-    estimatedTime?: number;
-    tools?: string[];
-  }[];
+  estimatedTime: number;
+  dependencies: string[];
+  tasks: OpenAITask[];
+  tools: string[];
+  status: TaskStatus;
+  metadata: {
+    complexity: 'low' | 'medium' | 'high';
+    order: number;
+    [key: string]: any;
+  };
 }
 
 interface OpenAIResponse {
-  steps: OpenAIStep[];
+  phases: OpenAIPhase[];
   title?: string;
   description?: string;
 }
@@ -31,37 +48,47 @@ function mapToolReferences(toolIds: string[]): ToolReference[] {
   }));
 }
 
-// Convert a single step to a phase
-function stepToPhase(step: OpenAIStep, index: number): RoadmapPhase {
-  // Convert tasks if they exist
-  const tasks: Task[] = (step.tasks || []).map((task, taskIndex) => ({
-    id: uuidv4(),
+// Convert a task with defaults
+function transformTask(task: OpenAITask): Task {
+  return {
+    id: task.id,
     title: task.title,
     description: task.description,
-    status: 'pending' as TaskStatus,
-    priority: step.priority,
+    status: task.status || 'pending',
+    priority: task.priority,
     estimatedTime: task.estimatedTime || 1,
-    tools: task.tools ? mapToolReferences(task.tools) : [],
+    tools: mapToolReferences(task.tools || []),
     subtasks: [], // Will be populated by subtask generator
     isExpanded: false,
-    actions: [] // Will be populated by action mapping system
-  }));
-
-  return {
-    id: uuidv4(),
-    title: step.title,
-    description: step.description,
-    priority: step.priority,
-    category: step.category,
-    estimatedTime: step.estimatedTime,
-    dependencies: step.dependencies.map(d => d.toString()),
-    tasks,
-    tools: [], // Phase-level tools will be determined by tool mapping system
-    isExpanded: index === 0, // First phase expanded by default
-    status: 'pending' as TaskStatus,
+    completionCriteria: {
+      percentageRequired: 100 // All subtasks must be complete by default
+    },
     metadata: {
-      order: index,
-      originalDependencies: step.dependencies
+      ...task.metadata,
+      complexity: task.metadata?.complexity || 'low',
+      requiredSkills: task.metadata?.requiredSkills || []
+    }
+  };
+}
+
+// Convert a phase with defaults
+function transformPhase(phase: OpenAIPhase, index: number): RoadmapPhase {
+  return {
+    id: phase.id,
+    title: phase.title,
+    description: phase.description,
+    priority: phase.priority,
+    category: phase.category,
+    estimatedTime: phase.estimatedTime,
+    dependencies: phase.dependencies || [],
+    tasks: phase.tasks.map(task => transformTask(task)),
+    tools: mapToolReferences(phase.tools || []),
+    isExpanded: index === 0, // First phase expanded by default
+    status: phase.status || 'pending',
+    metadata: {
+      ...phase.metadata,
+      complexity: phase.metadata?.complexity || 'low',
+      order: phase.metadata?.order ?? index
     }
   };
 }
@@ -75,14 +102,14 @@ export function transformOpenAIResponse(
     // Parse the OpenAI response
     const parsedResponse = JSON.parse(response) as OpenAIResponse;
     
-    // Transform steps into phases
-    const phases = parsedResponse.steps.map((step, index) => 
-      stepToPhase(step, index)
+    // Transform phases
+    const phases = parsedResponse.phases.map((phase, index) => 
+      transformPhase(phase, index)
     );
 
     // Create the roadmap
     const roadmap: Roadmap = {
-      id: uuidv4(),
+      id: `roadmap-${Date.now()}`,
       title: parsedResponse.title || projectTitle,
       description: parsedResponse.description || `Generated roadmap for ${projectTitle}`,
       phases,
@@ -91,7 +118,9 @@ export function transformOpenAIResponse(
       metadata: {
         source: 'openai',
         version: '1.0',
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
+        totalPhases: phases.length,
+        totalTasks: phases.reduce((acc, phase) => acc + phase.tasks.length, 0)
       }
     };
 
@@ -117,6 +146,11 @@ export function validateRoadmap(roadmap: Roadmap): boolean {
         return false;
       }
 
+      // Validate phase ID format
+      if (!/^phase-\d+$/.test(phase.id)) {
+        return false;
+      }
+
       // Validate tasks
       return phase.tasks.every(task => {
         // Check required task fields
@@ -124,8 +158,13 @@ export function validateRoadmap(roadmap: Roadmap): boolean {
           return false;
         }
 
+        // Validate task ID format
+        if (!new RegExp(`^task-\\d+-\\d+$`).test(task.id)) {
+          return false;
+        }
+
         // Validate subtasks if they exist
-        if (task.subtasks.length > 0) {
+        if (task.subtasks && task.subtasks.length > 0) {
           return task.subtasks.every(subtask => 
             subtask.id && subtask.title && subtask.parentId === task.id
           );
