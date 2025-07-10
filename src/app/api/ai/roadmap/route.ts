@@ -25,6 +25,13 @@ export async function POST(request: Request) {
     let roadmapContent: string;
     try {
       roadmapContent = await generateRoadmap(prompt);
+      // Quick sanity-check: ensure the returned string is valid JSON before we send it to the client
+      try {
+        JSON.parse(roadmapContent);
+      } catch (jsonErr) {
+        console.error('Sanity-check failed – raw OpenAI content is not valid JSON:', roadmapContent);
+        throw new Error('OpenAI returned malformed JSON');
+      }
     } catch (gError: any) {
       console.error('generateRoadmap threw error:', gError?.message || gError);
       // If OpenAI APIError, surface status and body
