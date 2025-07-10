@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "home": "Home",
+    "projects": "Projects",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Log in",
+    "signup": "Sign up"
+  },
+  "hero": {
+    "title": "With Briki, AI turns your ideas into reality",
+    "subtitle": "Describe your project, and let AI create a custom roadmap with the best tools to help you succeed. From websites to newsletters, we'll guide you through every step."
+  },
+  "buttons": {
+    "switchToEnglish": "English",
+    "switchToSpanish": "Español"
+  }
+} 

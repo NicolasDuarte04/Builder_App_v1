@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "projects": "Proyectos",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse"
+  },
+  "hero": {
+    "title": "Con Briki, la IA convierte tus ideas en realidad",
+    "subtitle": "Describe tu proyecto y deja que la IA cree una hoja de ruta personalizada con las mejores herramientas para ayudarte a tener éxito. Desde sitios web hasta boletines, te guiaremos en cada paso."
+  },
+  "buttons": {
+    "switchToEnglish": "English",
+    "switchToSpanish": "Español"
+  }
+} 
