@@ -24,16 +24,35 @@
   "loading": "Generando roadmap...",
   "project": {
     "creation": {
-      "title": "Crea Tu Proyecto",
+      "title": "Crea tu proyecto",
       "description": "Describe tu idea de proyecto y te ayudaremos a crear una hoja de ruta detallada.",
       "roadmap": {
         "title": "Hoja de Ruta del Proyecto"
       },
       "placeholders": {
-        "habit_app": "Crear una aplicación móvil para seguimiento de hábitos",
-        "ecommerce": "Construir un sitio web de comercio electrónico con Next.js y Stripe",
-        "dashboard": "Desarrollar un panel de control de redes sociales con análisis"
-      }
+        "habit_app": "Crear una app móvil para rastrear hábitos diarios",
+        "ecommerce": "Construir un sitio de comercio electrónico con Next.js y Stripe",
+        "dashboard": "Desarrollar un dashboard de redes sociales con analíticas"
+      },
+      "error_title": "¡Ups! Algo salió mal",
+      "retry": "Intentar de Nuevo",
+      "start_over": "Empezar de Nuevo",
+      "create_new": "Crear Nueva Hoja de Ruta"
+    },
+    "roadmap": {
+      "total_time": "Tiempo total estimado",
+      "phases": "Fases",
+      "phase": "Fase",
+      "tasks": "Tareas",
+      "complete": "completado",
+      "depends_on": "Depende de",
+      "chat_history": "Chat con Briki AI",
+      "you": "Tú",
+      "export_pdf": "Exportar PDF",
+      "export_csv": "Exportar CSV",
+      "tooltip_edit_title": "Haz clic para editar el título de la hoja de ruta",
+      "tooltip_edit_phase": "Haz clic para editar el título de la fase",
+      "tooltip_check_task": "Haz clic para marcar esta tarea como completada"
     }
   },
   "input": {

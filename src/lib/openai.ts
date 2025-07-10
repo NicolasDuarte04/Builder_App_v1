@@ -14,10 +14,16 @@ export async function generateRoadmap(prompt: string) {
   const MAX_ATTEMPTS = 3;
   let lastError: any;
 
+  // Simple language detection based on common Spanish words
+  const spanishIndicators = /\b(el|la|los|las|de|del|en|con|para|por|que|es|son|un|una|y|o|pero|como|más|muy|todo|todos|esta|este|esto|esa|ese|eso)\b/i;
+  const isSpanish = spanishIndicators.test(prompt);
+  const language = isSpanish ? 'Spanish' : 'English';
+
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       console.log(`\n▶️  OpenAI roadmap generation – attempt ${attempt}/${MAX_ATTEMPTS}`);
       console.log('Creating OpenAI chat completion with prompt:', prompt);
+      console.log('Detected language:', language);
       
       const completion = await openai.chat.completions.create({
         model: "gpt-4-turbo-preview",
@@ -25,14 +31,19 @@ export async function generateRoadmap(prompt: string) {
           {
             role: "system",
             content: `You are a project roadmap generator. Your task is to create structured roadmap phases for software development projects.
+
+IMPORTANT: Generate ALL content in ${language}. This includes:
+- Phase titles and descriptions
+- Task titles and descriptions
+- All text fields must be in ${language}
           
 Your response should be a JSON object with the following structure:
 {
   "phases": [
     {
       "id": "phase-1",
-      "title": "Project Setup",
-      "description": "Initialize repository and install core dependencies",
+      "title": "${language === 'Spanish' ? 'Configuración del Proyecto' : 'Project Setup'}",
+      "description": "${language === 'Spanish' ? 'Inicializar el repositorio e instalar las dependencias principales' : 'Initialize repository and install core dependencies'}",
       "priority": "high",
       "category": "setup",
       "estimatedTime": 2,
@@ -40,8 +51,8 @@ Your response should be a JSON object with the following structure:
       "tasks": [
         {
           "id": "task-1-1",
-          "title": "Initialize Git Repository",
-          "description": "Create and configure Git repository with proper .gitignore",
+          "title": "${language === 'Spanish' ? 'Inicializar Repositorio Git' : 'Initialize Git Repository'}",
+          "description": "${language === 'Spanish' ? 'Crear y configurar el repositorio Git con el archivo .gitignore adecuado' : 'Create and configure Git repository with proper .gitignore'}",
           "status": "pending",
           "priority": "high",
           "estimatedTime": 0.5,
@@ -60,14 +71,14 @@ Your response should be a JSON object with the following structure:
       }
     }
   ],
-  "title": "Project Name",
-  "description": "Brief project description"
+  "title": "${language === 'Spanish' ? 'Nombre del Proyecto' : 'Project Name'}",
+  "description": "${language === 'Spanish' ? 'Breve descripción del proyecto' : 'Brief project description'}"
 }
 
 Requirements:
 - id: String in format "phase-{number}" for phases, "task-{phaseNumber}-{taskNumber}" for tasks
-- title: Concise name for the phase/task (string)
-- description: Detailed explanation (string)
+- title: Concise name for the phase/task (string) in ${language}
+- description: Detailed explanation (string) in ${language}
 - priority: Must be exactly "high", "medium", or "low" (string)
 - category: Must be exactly "setup", "development", "testing", "deployment", or "maintenance" (string)
 - estimatedTime: Estimated time in hours (number)
@@ -77,7 +88,7 @@ Requirements:
 - status: Must be "pending" for new phases/tasks
 - metadata: Object with at least complexity and order/skills fields
 
-Always return a valid JSON object with all required fields.`
+Always return a valid JSON object with all required fields. ALL text content must be in ${language}.`
           },
           {
             role: "user",

@@ -33,7 +33,26 @@
         "habit_app": "Create a mobile app for tracking daily habits",
         "ecommerce": "Build an e-commerce website with Next.js and Stripe",
         "dashboard": "Develop a social media dashboard with analytics"
-      }
+      },
+      "error_title": "Oops! Something went wrong",
+      "retry": "Try Again",
+      "start_over": "Start Over",
+      "create_new": "Create New Roadmap"
+    },
+    "roadmap": {
+      "total_time": "Total estimated time",
+      "phases": "Phases",
+      "phase": "Phase",
+      "tasks": "Tasks",
+      "complete": "complete",
+      "depends_on": "Depends on",
+      "chat_history": "Chat with Briki AI",
+      "you": "You",
+      "export_pdf": "Export PDF",
+      "export_csv": "Export CSV",
+      "tooltip_edit_title": "Click to edit the roadmap title",
+      "tooltip_edit_phase": "Click to edit the phase title",
+      "tooltip_check_task": "Click to mark this task as complete"
     }
   },
   "input": {
