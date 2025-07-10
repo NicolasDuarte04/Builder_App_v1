@@ -143,9 +143,14 @@ export function ProblemSection() {
   const cards = PROBLEM_CARDS[language === 'es' ? 'es' : 'en'];
 
   return (
-    <section className="py-20 bg-neutral-50 dark:bg-neutral-900">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto text-center mb-12">
+    <section className="w-full relative">
+      {/* Background gradient for light beam consistency */}
+      <div className="absolute inset-0 bg-gradient-to-b from-neutral-50/50 to-neutral-100/50 dark:from-neutral-900/50 dark:to-neutral-800/50 pointer-events-none" />
+      
+      {/* Main content */}
+      <div className="relative w-full py-20">
+        {/* Header content - constrained width */}
+        <div className="max-w-2xl mx-auto px-4 text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">
             {t('problems.title')}
           </h2>
@@ -154,11 +159,14 @@ export function ProblemSection() {
           </p>
         </div>
 
-        <Carousel 
-          items={cards.map((card, index) => (
-            <Card key={index} card={card} index={index} layout />
-          ))}
-        />
+        {/* Carousel - full width */}
+        <div className="w-full">
+          <Carousel 
+            items={cards.map((card, index) => (
+              <Card key={index} card={card} index={index} layout />
+            ))}
+          />
+        </div>
       </div>
     </section>
   );

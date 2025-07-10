@@ -3,6 +3,7 @@ import { RoadmapView } from '@/components/features/RoadmapView';
 import { HeroParallax } from '@/components/ui/HeroParallax';
 import { TracingBeam } from '@/components/ui/tracing-beam';
 import { products } from '@/data/products';
+import { ProblemSection } from '@/components/sections/ProblemSection';
 
 export default function Home() {
   return (
@@ -26,6 +27,9 @@ export default function Home() {
           </section>
         </div>
       </TracingBeam>
+
+      {/* Common Problems Section - Full Width */}
+      <ProblemSection />
     </main>
   );
 }
