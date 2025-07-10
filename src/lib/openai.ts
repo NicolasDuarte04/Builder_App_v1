@@ -84,8 +84,8 @@ Always return a valid JSON object with all required fields.`
             content: prompt
           }
         ],
-        temperature: 0.4,
-        max_tokens: 1500,
+        temperature: 0.2,
+        max_tokens: 4096,
         response_format: { type: "json_object" }
       });
 
