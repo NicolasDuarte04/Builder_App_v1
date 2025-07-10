@@ -67,5 +67,9 @@
     "describeIdea": "Describe your idea and I'll help create a roadmap...",
     "example1": "For example: An AI-powered task management app...",
     "example2": "Or: An e-commerce with personalized recommendations..."
+  },
+  "problems": {
+    "title": "Common Challenges with AI Tools",
+    "description": "Many people want to use AI but face these common obstacles. Briki helps you overcome them with guided roadmaps and clear next steps."
   }
 } 
