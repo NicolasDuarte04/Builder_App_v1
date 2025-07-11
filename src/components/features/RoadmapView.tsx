@@ -1,91 +1,117 @@
 "use client";
 
 import dynamic from 'next/dynamic';
+import { useState } from 'react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { ProjectCreationInput } from './project/ProjectCreationInput';
 import { useTranslation } from '@/hooks/useTranslation';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { AuroraBackground } from '../ui/aurora-background';
+import { generateTestProject } from '@/lib/test-utils';
+import { Loader2, Settings, ChevronDown } from 'lucide-react';
 
 // Dynamically import RoadmapFlow to avoid SSR issues with ReactFlow
 const RoadmapFlow = dynamic(
-  () => import('./roadmap/RoadmapFlow'),
-  { ssr: false }
+  () => import('./roadmap/RoadmapFlow').catch(err => {
+    console.error('Failed to load RoadmapFlow:', err);
+    return () => (
+      <div className="h-[600px] flex items-center justify-center text-red-500">
+        Error loading roadmap visualization. Please refresh the page.
+      </div>
+    );
+  }),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[600px] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-neutral-500" />
+      </div>
+    ),
+  }
 );
 
 export function RoadmapView() {
-  // Fix: Separate state selectors
   const currentProject = useProjectStore((state) => state.currentProject);
   const isGenerating = useProjectStore((state) => state.isGenerating);
+  const setCurrentProject = useProjectStore((state) => state.setCurrentProject);
   const { t } = useTranslation();
+  const [showDevTools, setShowDevTools] = useState(false);
+
+  // Only show in development
+  const isDev = process.env.NODE_ENV === 'development';
+
+  const handleGenerateTestRoadmap = (complexity: 'simple' | 'medium' | 'complex') => {
+    const testProject = generateTestProject(complexity);
+    setCurrentProject(testProject);
+    setShowDevTools(false);
+  };
 
   return (
-    <section className="pt-4 pb-12">
-      <div className="container mx-auto px-4">
-        {currentProject ? (
-          <>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                {currentProject.title}
-              </h2>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-neutral-500">
-                  {t('lastUpdated')}: {new Date(currentProject.updatedAt).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-            <RoadmapFlow />
-          </>
-        ) : (
-          <div className="space-y-6">
-            <div className="text-center max-w-3xl mx-auto">
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-4xl font-bold mb-4 text-gradient"
-              >
-                {t('createRoadmapTitle')}
-              </motion.h2>
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="text-lg text-neutral-600 dark:text-neutral-400"
-              >
-                {t('createRoadmapDescription')}
-              </motion.p>
-            </div>
-
-            <div className="relative">
-              {/* Decorative gradient blur behind input */}
-              <div 
-                className="absolute inset-0 -z-10 transform-gpu overflow-hidden blur-3xl"
-                aria-hidden="true"
-              >
-                <div
-                  className="relative aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-20"
-                  style={{
-                    clipPath:
-                      'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-                  }}
-                />
-              </div>
-
-              <ProjectCreationInput />
-            </div>
-
-            {isGenerating && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center justify-center mt-8"
-              >
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900 dark:border-neutral-100" />
-              </motion.div>
-            )}
+    <section className="w-full relative">
+      {/* Dev Tools Dropdown - Only in Development */}
+      {isDev && (
+        <div className="fixed top-20 right-4 z-50">
+          <div className="relative">
+            <button
+              onClick={() => setShowDevTools(!showDevTools)}
+              className="flex items-center gap-2 px-3 py-2 bg-neutral-800 text-neutral-300 rounded-lg text-sm hover:bg-neutral-700 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              Dev Tools
+              <ChevronDown className={`w-4 h-4 transition-transform ${showDevTools ? 'rotate-180' : ''}`} />
+            </button>
+            
+            <AnimatePresence>
+              {showDevTools && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-full right-0 mt-2 p-2 bg-neutral-800 rounded-lg shadow-xl border border-neutral-700"
+                >
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => handleGenerateTestRoadmap('simple')}
+                      className="block w-full text-left px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 rounded transition-colors"
+                    >
+                      Test Simple (5 nodes)
+                    </button>
+                    <button
+                      onClick={() => handleGenerateTestRoadmap('medium')}
+                      className="block w-full text-left px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 rounded transition-colors"
+                    >
+                      Test Medium (15 nodes)
+                    </button>
+                    <button
+                      onClick={() => handleGenerateTestRoadmap('complex')}
+                      className="block w-full text-left px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 rounded transition-colors"
+                    >
+                      Test Complex (30 nodes)
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      <AuroraBackground className="min-h-[calc(100vh-4rem)] !bg-transparent">
+        <div className="w-full">
+          <ProjectCreationInput />
+          
+          {currentProject && !isGenerating && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="mt-12"
+            >
+              <RoadmapFlow />
+            </motion.div>
+          )}
+        </div>
+      </AuroraBackground>
     </section>
   );
 } 

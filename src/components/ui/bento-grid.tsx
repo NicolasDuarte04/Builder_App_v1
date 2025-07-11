@@ -1,8 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
-import { useState } from "react";
 
 export const BentoGrid = ({
   className,
@@ -36,26 +34,13 @@ export const BentoGridItem = ({
   header?: React.ReactNode;
   icon?: React.ReactNode;
 }) => {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <div
       className={cn(
-        "group/bento relative row-span-1 flex flex-col justify-between space-y-4 rounded-xl border border-neutral-200 bg-white p-4 transition duration-200 hover:shadow-xl dark:border-white/[0.2] dark:bg-black dark:shadow-none",
+        "group/bento shadow-input row-span-1 flex flex-col justify-between space-y-4 rounded-xl border border-neutral-200 bg-white p-4 transition duration-200 hover:shadow-xl dark:border-white/[0.2] dark:bg-black dark:shadow-none",
         className,
       )}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
-      <GlowingEffect
-        disabled={!hovered}
-        glow={hovered}
-        blur={12}
-        spread={30}
-        proximity={100}
-        variant="default"
-        className="z-[-1] !opacity-70"
-      />
       {header}
       <div className="transition duration-200 group-hover/bento:translate-x-2">
         {icon}

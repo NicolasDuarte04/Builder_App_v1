@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ProjectStore } from '@/types/store';
+import { ProjectStore, GenerationState, GenerationFlowData } from '@/types/store';
 import { Project, RoadmapNode } from '@/types/project';
 
 export const useProjectStore = create<ProjectStore>()(
@@ -12,6 +12,10 @@ export const useProjectStore = create<ProjectStore>()(
       isLoading: false,
       error: null,
       isGenerating: false,
+      
+      // Generation Flow State
+      generationState: GenerationState.AWAITING_USER_INPUT,
+      generationFlowData: {},
 
       // Project Actions
       setProjects: (projects) => set({ projects }),
@@ -167,6 +171,18 @@ export const useProjectStore = create<ProjectStore>()(
           };
         });
       },
+
+      // Generation Flow Actions
+      setGenerationState: (state: GenerationState) => set({ generationState: state }),
+      
+      setGenerationFlowData: (data: Partial<GenerationFlowData>) => set((state) => ({
+        generationFlowData: { ...state.generationFlowData, ...data }
+      })),
+      
+      resetGenerationFlow: () => set({
+        generationState: GenerationState.AWAITING_USER_INPUT,
+        generationFlowData: {}
+      }),
 
       // UI Actions
       setIsGenerating: (isGenerating) => set({ isGenerating }),

@@ -15,61 +15,56 @@
     "switchToEnglish": "English",
     "switchToSpanish": "Español"
   },
-  "createRoadmapTitle": "Crea tu Roadmap de Proyecto",
-  "createRoadmapDescription": "Describe tu idea y deja que Briki AI cree un roadmap detallado para ti. Dividiremos tu proyecto en pasos manejables y sugeriremos las mejores herramientas para cada fase.",
-  "lastUpdated": "Última actualización",
-  "startFromTemplate": "Empezar desde plantilla",
-  "uploadIdea": "Subir idea",
-  "importFromFigma": "Importar desde Figma",
-  "loading": "Generando roadmap...",
   "project": {
     "creation": {
-      "title": "Crea tu proyecto",
-      "description": "Describe tu idea de proyecto y te ayudaremos a crear una hoja de ruta detallada.",
-      "roadmap": {
-        "title": "Hoja de Ruta del Proyecto"
-      },
+      "title": "Crea tu Hoja de Ruta del Proyecto",
+      "description": "Cuéntame sobre tu idea de proyecto y te ayudaré a crear una hoja de ruta detallada con las mejores herramientas y estrategias.",
+      "input_placeholder": "Describe tu idea de proyecto...",
       "placeholders": {
-        "habit_app": "Crear una app móvil para rastrear hábitos diarios",
-        "ecommerce": "Construir un sitio de comercio electrónico con Next.js y Stripe",
-        "dashboard": "Desarrollar un dashboard de redes sociales con analíticas"
+        "habit_app": "Quiero crear una app de seguimiento de hábitos",
+        "ecommerce": "Necesito un sitio de comercio electrónico para productos artesanales",
+        "dashboard": "Quiero construir un panel de análisis"
       },
       "error_title": "¡Ups! Algo salió mal",
       "retry": "Intentar de Nuevo",
       "start_over": "Empezar de Nuevo",
-      "create_new": "Crear Nueva Hoja de Ruta"
+      "create_new": "Crear Nueva Hoja de Ruta",
+      "generate_roadmap": "Generar Hoja de Ruta",
+      "messages": {
+        "ask_details": "¡Excelente idea! ¿Cómo te gustaría llamar a tu proyecto y puedes darme una breve descripción de lo que hará?",
+        "ask_name_only": "¡Entendido! ¿Cómo te gustaría llamar a este proyecto?",
+        "ask_description_only": "¡Suena genial! ¿Puedes contarme un poco más sobre lo que hará este proyecto?",
+        "ask_both_again": "¡Me encantaría ayudarte a crear una hoja de ruta! ¿Puedes decirme el nombre de tu proyecto y una breve descripción de lo que hará?",
+        "confirm_details": "¡Perfecto! Entonces estás creando \"{name}\" - {description}. \n\n¿Generamos una hoja de ruta detallada para este proyecto?",
+        "generating": "Creando tu hoja de ruta personalizada...",
+        "success": "¡Excelente! He creado una hoja de ruta completa para {title}. Puedes verla en el lado derecho de tu pantalla. La hoja de ruta incluye {phases} fases para guiarte en la construcción de tu proyecto.",
+        "change_details": "¡No hay problema! Por favor, dime el nombre y la descripción correctos del proyecto.",
+        "casual_input": "¡Estoy aquí para ayudarte a crear una hoja de ruta de proyecto! Por favor, cuéntame sobre tu idea de proyecto: ¿qué quieres construir?",
+        "unclear_input": "Quiero asegurarme de entender correctamente. ¿Podrías decirme el nombre de tu proyecto y qué hará?"
+      }
+    }
+  },
+  "projects": {
+    "title": "Tus Proyectos"
+  },
+  "features": {
+    "title": "¿Por qué elegir Briki?",
+    "subtitle": "Descubre cómo nuestra plataforma impulsada por IA te ayuda a convertir ideas en proyectos exitosos con guía experta y las herramientas adecuadas.",
+    "ai_powered": {
+      "title": "Guía Impulsada por IA",
+      "description": "Nuestra IA avanzada comprende las necesidades de tu proyecto y crea hojas de ruta personalizadas con pasos accionables."
     },
-    "roadmap": {
-      "total_time": "Tiempo total estimado",
-      "phases": "Fases",
-      "phase": "Fase",
-      "tasks": "Tareas",
-      "complete": "completado",
-      "depends_on": "Depende de",
-      "chat_history": "Chat con Briki AI",
-      "you": "Tú",
-      "export_pdf": "Exportar PDF",
-      "export_csv": "Exportar CSV",
-      "tooltip_edit_title": "Haz clic para editar el título de la hoja de ruta",
-      "tooltip_edit_phase": "Haz clic para editar el título de la fase",
-      "tooltip_check_task": "Haz clic para marcar esta tarea como completada"
+    "tool_recommendations": {
+      "title": "Recomendaciones Inteligentes",
+      "description": "Encuentra las herramientas y tecnologías perfectas para tu proyecto, basadas en tus requisitos y objetivos específicos."
+    },
+    "community_driven": {
+      "title": "Conocimiento Colectivo",
+      "description": "Benefíciate del conocimiento colectivo con herramientas y mejores prácticas validadas por la comunidad."
+    },
+    "fast_implementation": {
+      "title": "Implementación Rápida",
+      "description": "Comienza a construir inmediatamente con instrucciones paso a paso y todos los recursos que necesitas en un solo lugar."
     }
-  },
-  "input": {
-    "errors": {
-      "required": "Por favor, ingresa tu idea de proyecto",
-      "tooShort": "Por favor, ingresa una descripción más larga",
-      "tooLong": "La descripción es demasiado larga"
-    }
-  },
-  "placeholders": {
-    "whatToBuild": "¿Qué quieres construir con Briki AI?",
-    "describeIdea": "Describe tu idea y te ayudaré a crear un roadmap...",
-    "example1": "Por ejemplo: Una app de gestión de tareas con IA...",
-    "example2": "O: Un e-commerce con recomendaciones personalizadas..."
-  },
-  "problems": {
-    "title": "Desafíos Comunes con Herramientas de IA",
-    "description": "Muchas personas quieren usar IA pero enfrentan estos obstáculos comunes. Briki te ayuda a superarlos con hojas de ruta guiadas y pasos claros a seguir."
   }
 } 

@@ -15,45 +15,52 @@
     "switchToEnglish": "English",
     "switchToSpanish": "Español"
   },
-  "createRoadmapTitle": "Create Your Project Roadmap",
-  "createRoadmapDescription": "Describe your project idea and let Briki AI create a detailed roadmap for you. We'll break down your project into manageable steps and suggest the best tools for each phase.",
-  "lastUpdated": "Last updated",
-  "startFromTemplate": "Start from template",
-  "uploadIdea": "Upload idea",
-  "importFromFigma": "Import from Figma",
-  "loading": "Generating roadmap...",
   "project": {
     "creation": {
-      "title": "Create Your Project",
-      "description": "Describe your project idea and we'll help you create a detailed roadmap.",
-      "roadmap": {
-        "title": "Project Roadmap"
-      },
+      "title": "Create Your Project Roadmap",
+      "description": "Tell me about your project idea and I'll help you create a detailed roadmap with the best tools and strategies.",
+      "input_placeholder": "Describe your project idea...",
       "placeholders": {
-        "habit_app": "Create a mobile app for tracking daily habits",
-        "ecommerce": "Build an e-commerce website with Next.js and Stripe",
-        "dashboard": "Develop a social media dashboard with analytics"
+        "habit_app": "I want to create a habit tracking app",
+        "ecommerce": "I need an e-commerce website for handmade products",
+        "dashboard": "I want to build an analytics dashboard"
       },
       "error_title": "Oops! Something went wrong",
       "retry": "Try Again",
       "start_over": "Start Over",
-      "create_new": "Create New Roadmap"
+      "create_new": "Create New Roadmap",
+      "generate_roadmap": "Generate Roadmap",
+      "messages": {
+        "ask_details": "Great idea! What would you like to name your project, and can you give me a short description of what it will do?",
+        "ask_name_only": "Got it! What would you like to call this project?",
+        "ask_description_only": "Sounds great! Can you tell me a bit more about what this project will do?",
+        "ask_both_again": "I'd love to help you create a roadmap! Can you tell me your project name and a brief description of what it will do?",
+        "confirm_details": "Perfect! So you're creating \"{name}\" - {description}. \n\nShall I generate a detailed roadmap for this project?",
+        "generating": "Creating your personalized roadmap...",
+        "success": "Excellent! I've created a comprehensive roadmap for {title}. You can see it on the right side of your screen. The roadmap includes {phases} phases to guide you through building your project.",
+        "change_details": "No problem! Please tell me the correct project name and description.",
+        "casual_input": "I'm here to help you create a project roadmap! Please tell me about your project idea - what do you want to build?",
+        "unclear_input": "I want to make sure I understand correctly. Could you please tell me the name of your project and what it will do?"
+      }
     },
     "roadmap": {
-      "total_time": "Total estimated time",
-      "phases": "Phases",
+      "phases": "Project Phases",
       "phase": "Phase",
       "tasks": "Tasks",
-      "complete": "complete",
+      "complete": "Complete",
       "depends_on": "Depends on",
-      "chat_history": "Chat with Briki AI",
+      "total_time": "Total Time",
+      "export_pdf": "Export to PDF",
+      "export_csv": "Export to CSV",
+      "chat_history": "Chat History",
       "you": "You",
-      "export_pdf": "Export PDF",
-      "export_csv": "Export CSV",
-      "tooltip_edit_title": "Click to edit the roadmap title",
-      "tooltip_edit_phase": "Click to edit the phase title",
-      "tooltip_check_task": "Click to mark this task as complete"
+      "tooltip_edit_title": "Click to edit project title",
+      "tooltip_edit_phase": "Click to edit phase title",
+      "tooltip_check_task": "Click to mark task as complete"
     }
+  },
+  "projects": {
+    "title": "Your Projects"
   },
   "input": {
     "errors": {
@@ -71,5 +78,25 @@
   "problems": {
     "title": "Common Challenges with AI Tools",
     "description": "Many people want to use AI but face these common obstacles. Briki helps you overcome them with guided roadmaps and clear next steps."
+  },
+  "features": {
+    "title": "Why Choose Briki?",
+    "subtitle": "Discover how our AI-powered platform helps you turn ideas into successful projects with expert guidance and the right tools.",
+    "ai_powered": {
+      "title": "AI-Powered Guidance",
+      "description": "Our advanced AI understands your project needs and creates personalized roadmaps with actionable steps."
+    },
+    "tool_recommendations": {
+      "title": "Smart Tool Recommendations",
+      "description": "Get matched with the perfect tools and technologies for your project, based on your specific requirements and goals."
+    },
+    "community_driven": {
+      "title": "Community Insights",
+      "description": "Benefit from collective knowledge with community-validated tools and best practices."
+    },
+    "fast_implementation": {
+      "title": "Fast Implementation",
+      "description": "Start building immediately with clear, step-by-step instructions and all the resources you need in one place."
+    }
   }
 } 

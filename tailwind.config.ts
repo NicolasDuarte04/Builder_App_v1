@@ -8,50 +8,58 @@ const config: Config = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {
-      container: {
-        center: true,
-        padding: '2rem',
-        screens: {
-          '2xl': '1400px',
-        },
+    container: {
+      center: true,
+      padding: '2rem',
+      screens: {
+        '2xl': '1400px',
       },
-      typography: {
-        DEFAULT: {
-          css: {
-            maxWidth: '65ch',
-            color: 'inherit',
-          },
+    },
+    extend: {
+      colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
         },
       },
       animation: {
-        shimmer: "shimmer 2s linear infinite",
+        'gradient-foreground-1': 'gradient-foreground-1 8s infinite',
+        'gradient-foreground-2': 'gradient-foreground-2 8s infinite',
+        'gradient-foreground-3': 'gradient-foreground-3 8s infinite',
+        'gradient-background-1': 'gradient-background-1 8s infinite',
+        'gradient-background-2': 'gradient-background-2 8s infinite',
+        'gradient-background-3': 'gradient-background-3 8s infinite',
+        'spin': 'spin 2s linear infinite',
       },
       keyframes: {
-        shimmer: {
+        spin: {
           from: {
-            backgroundPosition: "0 0",
+            transform: 'rotate(0deg)',
           },
           to: {
-            backgroundPosition: "-200% 0",
+            transform: 'rotate(360deg)',
           },
         },
       },
-      backgroundImage: {
-        'dot-black': 'radial-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1px)',
-        'dot-white': 'radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px)',
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-      },
-      backgroundSize: {
-        'dot': '16px 16px',
+      letterSpacing: {
+        tightest: '-.09em',
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/typography'),
-  ],
+  plugins: [],
 };
 
 export default config; 

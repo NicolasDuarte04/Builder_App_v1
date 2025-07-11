@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/hooks/useTranslation";
-import { Carousel, Card } from "@/components/ui/apple-cards-carousel";
+import { ProblemCard } from "@/components/ui/problem-card";
 
 const GRADIENTS = {
   fragmentation: "bg-gradient-to-br from-blue-500/10 to-purple-500/10",
@@ -159,13 +159,13 @@ export function ProblemSection() {
           </p>
         </div>
 
-        {/* Carousel - full width */}
+        {/* Cards - full width */}
         <div className="w-full">
-          <Carousel 
-            items={cards.map((card, index) => (
-              <Card key={index} card={card} index={index} layout />
+          <div className="flex w-full cursor-grab gap-4 overflow-x-auto px-8 pb-12 pt-8 active:cursor-grabbing [&::-webkit-scrollbar]:hidden">
+            {cards.map((card, index) => (
+              <ProblemCard key={index} card={card} index={index} layout />
             ))}
-          />
+          </div>
         </div>
       </div>
     </section>
