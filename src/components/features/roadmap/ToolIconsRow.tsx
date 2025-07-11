@@ -1,24 +1,29 @@
 "use client";
 
-import { Tool } from '@/types/roadmap';
+import { ToolReference } from '@/types/roadmap';
 import { CardItem } from '@/components/ui/3d-card';
 import { cn } from '@/lib/utils';
+import { tools as toolDatabase } from '@/data/tools';
 
 interface ToolIconsRowProps {
-  tools: Tool[];
+  tools: ToolReference[];
   className?: string;
 }
 
 export function ToolIconsRow({ tools, className }: ToolIconsRowProps) {
+  const resolvedTools = tools.map(ref => 
+    toolDatabase.find(dbTool => dbTool.id === ref.toolId)
+  ).filter(Boolean); // Filter out any undefined results
+
   return (
     <CardItem
       translateZ={20}
       className={cn("mt-4 flex flex-wrap gap-2", className)}
     >
-      {tools.map((tool) => (
+      {resolvedTools.map((tool) => (
         <a
-          key={tool.name}
-          href={tool.url}
+          key={tool!.id}
+          href={tool!.url}
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
@@ -29,14 +34,14 @@ export function ToolIconsRow({ tools, className }: ToolIconsRowProps) {
             "flex items-center gap-1.5"
           )}
         >
-          {tool.icon && (
+          {tool!.icon && (
             <img 
-              src={tool.icon} 
-              alt={tool.name}
+              src={tool!.icon} 
+              alt={tool!.name}
               className="w-4 h-4 rounded-sm"
             />
           )}
-          {tool.name}
+          {tool!.name}
         </a>
       ))}
     </CardItem>

@@ -1,23 +1,7 @@
 import { Project, RoadmapNode } from './project';
+import { Message } from 'ai';
 
-// Generation Flow Types
-export enum GenerationState {
-  AWAITING_USER_INPUT = 'AWAITING_USER_INPUT',
-  ASKING_FOR_DETAILS = 'ASKING_FOR_DETAILS',
-  CONFIRMING_DETAILS = 'CONFIRMING_DETAILS',
-  READY_TO_GENERATE = 'READY_TO_GENERATE',
-  GENERATING = 'GENERATING',
-  DISPLAYING = 'DISPLAYING'
-}
-
-export interface GenerationFlowData {
-  initialPrompt?: string;
-  projectName?: string | null;
-  projectDescription?: string | null;
-  // Track what we're still waiting for
-  needsName?: boolean;
-  needsDescription?: boolean;
-}
+export type ChatMode = 'smart' | 'builder';
 
 export interface ProjectStore {
   // Project State
@@ -43,12 +27,13 @@ export interface ProjectStore {
   setIsGenerating: (isGenerating: boolean) => void;
   setError: (error: string | null) => void;
   
-  // Generation Flow State
-  generationState: GenerationState;
-  generationFlowData: GenerationFlowData;
+  // New Chat State
+  chatMode: ChatMode;
+  chatHistory: Message[];
   
-  // Generation Flow Actions
-  setGenerationState: (state: GenerationState) => void;
-  setGenerationFlowData: (data: Partial<GenerationFlowData>) => void;
-  resetGenerationFlow: () => void;
+  // New Chat Actions
+  setChatMode: (mode: ChatMode) => void;
+  setChatHistory: (history: Message[]) => void;
+  addMessage: (message: Message) => void;
+  clearChatHistory: () => void;
 } 

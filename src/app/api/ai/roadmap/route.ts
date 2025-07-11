@@ -28,22 +28,22 @@ export async function POST(request: Request) {
       // Quick sanity-check: ensure the returned string is valid JSON before we send it to the client
       try {
         JSON.parse(roadmapContent);
-      } catch (jsonErr) {
+      } catch {
         console.error('Sanity-check failed – raw OpenAI content is not valid JSON:', roadmapContent);
         throw new Error('OpenAI returned malformed JSON');
       }
-    } catch (gError: any) {
-      console.error('generateRoadmap threw error:', gError?.message || gError);
+    } catch (gError: unknown) {
+      console.error('generateRoadmap threw error:', (gError as Error)?.message || gError);
       // If OpenAI APIError, surface status and body
-      if (gError?.status) {
-        console.error('OpenAI status:', gError.status);
+      if ((gError as any)?.status) {
+        console.error('OpenAI status:', (gError as any).status);
       }
-      if (gError?.response) {
+      if ((gError as any)?.response) {
         try {
-          const errorJson = await gError.response.json();
+          const errorJson = await (gError as any).response.json();
           console.error('OpenAI error response JSON:', errorJson);
-        } catch (_) {
-          console.error('OpenAI error response text:', await gError.response.text());
+        } catch {
+          console.error('OpenAI error response text:', await (gError as any).response.text());
         }
       }
       throw gError;
@@ -52,15 +52,15 @@ export async function POST(request: Request) {
     console.log('Roadmap generated successfully, length:', roadmapContent.length);
 
     return NextResponse.json({ roadmap: roadmapContent });
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Detailed error logging
     console.error('Error in roadmap generation:', {
-      message: error?.message || 'Unknown error',
-      stack: error?.stack,
+      message: (error as Error)?.message || 'Unknown error',
+      stack: (error as Error)?.stack,
     });
 
     return NextResponse.json(
-      { error: 'Failed to generate roadmap', details: error?.message || 'Unknown error' },
+      { error: 'Failed to generate roadmap', details: (error as Error)?.message || 'Unknown error' },
       { status: 500 }
     );
   }

@@ -19,7 +19,7 @@ import { useOutsideClick } from "@/hooks/use-outside-click";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 interface CarouselProps {
-  items: JSX.Element[];
+  items: React.ReactNode[];
   initialScroll?: number;
 }
 

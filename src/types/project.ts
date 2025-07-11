@@ -25,4 +25,5 @@ export interface Tool {
   description: string;
   url: string;
   category: string;
+  icon?: string;
 } 

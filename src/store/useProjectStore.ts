@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ProjectStore, GenerationState, GenerationFlowData } from '@/types/store';
-import { Project, RoadmapNode } from '@/types/project';
+import { ProjectStore } from '@/types/store';
+import { RoadmapNode } from '@/types/project';
 
 export const useProjectStore = create<ProjectStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Initial State
       projects: [],
       currentProject: null,
@@ -13,9 +13,9 @@ export const useProjectStore = create<ProjectStore>()(
       error: null,
       isGenerating: false,
       
-      // Generation Flow State
-      generationState: GenerationState.AWAITING_USER_INPUT,
-      generationFlowData: {},
+      // New Chat State
+      chatMode: 'smart',
+      chatHistory: [],
 
       // Project Actions
       setProjects: (projects) => set({ projects }),
@@ -172,17 +172,11 @@ export const useProjectStore = create<ProjectStore>()(
         });
       },
 
-      // Generation Flow Actions
-      setGenerationState: (state: GenerationState) => set({ generationState: state }),
-      
-      setGenerationFlowData: (data: Partial<GenerationFlowData>) => set((state) => ({
-        generationFlowData: { ...state.generationFlowData, ...data }
-      })),
-      
-      resetGenerationFlow: () => set({
-        generationState: GenerationState.AWAITING_USER_INPUT,
-        generationFlowData: {}
-      }),
+      // New Chat Actions
+      setChatMode: (mode) => set({ chatMode: mode }),
+      setChatHistory: (history) => set({ chatHistory: history }),
+      addMessage: (message) => set((state) => ({ chatHistory: [...state.chatHistory, message] })),
+      clearChatHistory: () => set({ chatHistory: [], currentProject: null, chatMode: 'smart' }),
 
       // UI Actions
       setIsGenerating: (isGenerating) => set({ isGenerating }),

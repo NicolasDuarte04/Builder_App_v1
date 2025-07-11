@@ -23,7 +23,7 @@ export function TaskChecklist({ tasks, onTaskComplete, className }: TaskChecklis
         >
           <input
             type="checkbox"
-            checked={task.isCompleted}
+            checked={task.status === 'completed'}
             onChange={() => onTaskComplete?.(task.id)}
             className="mt-1 rounded border-neutral-300 dark:border-neutral-700 
               text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400

@@ -1,60 +1,119 @@
-import { Edge, Node, MarkerType } from 'reactflow';
-import { RoadmapPhase } from '@/types/roadmap';
+import { Edge, Node, MarkerType, Position } from 'reactflow';
+import dagre from 'dagre';
 
-// Default edge style for phase connections
+// Default edge style for connections
 export const defaultEdgeOptions = {
   type: 'smoothstep',
   animated: true,
   markerEnd: {
     type: MarkerType.ArrowClosed,
-    width: 20,
-    height: 20,
-    color: '#94a3b8',
+    width: 15,
+    height: 15,
+    color: '#a1a1aa', // zinc-400
   },
   style: {
-    strokeWidth: 2,
-    stroke: '#94a3b8',
+    strokeWidth: 1.5,
+    stroke: '#a1a1aa', // zinc-400
+    strokeDasharray: '4 4',
   },
 };
 
-// Convert phases to React Flow nodes
-export function phasesToNodes(phases: RoadmapPhase[]): Node[] {
-  return phases.map((phase, index) => ({
-    id: phase.id,
-    type: 'phaseNode', // Custom node type for PhaseCard
-    position: calculateNodePosition(index, phases.length),
-    data: phase,
-  }));
-}
+// Node dimensions for layout calculation
+const nodeWidth = 180;
+const nodeHeight = 100;
 
-// Create edges based on phase dependencies
-export function createPhaseEdges(phases: RoadmapPhase[]): Edge[] {
-  const edges: Edge[] = [];
-  
-  phases.forEach(phase => {
-    phase.dependencies.forEach(dependencyId => {
-      edges.push({
-        id: `${dependencyId}-${phase.id}`,
-        source: dependencyId,
-        target: phase.id,
-        ...defaultEdgeOptions,
+/**
+ * Apply Dagre layout to nodes and edges
+ */
+export function getLayoutedElements(
+  nodes: Node[],
+  edges: Edge[],
+  direction = 'TB'
+): { nodes: Node[]; edges: Edge[] } {
+  // Guard clause for empty or invalid input
+  if (!nodes || !Array.isArray(nodes) || nodes.length === 0) {
+    console.warn('[getLayoutedElements] No nodes provided');
+    return { nodes: [], edges: [] };
+  }
+
+  try {
+    const dagreGraph = new dagre.graphlib.Graph();
+    dagreGraph.setDefaultEdgeLabel(() => ({}));
+    
+    // Configure the layout for a more compact, clear flow
+    dagreGraph.setGraph({ 
+      rankdir: direction,
+      nodesep: 50,      // Horizontal space between nodes
+      ranksep: 70,      // Vertical space between ranks
+      marginx: 20,
+      marginy: 20,
+    });
+
+    // Add nodes to Dagre
+    nodes.forEach((node) => {
+      if (!node || !node.id) {
+        console.warn('[getLayoutedElements] Invalid node:', node);
+        return;
+      }
+      dagreGraph.setNode(node.id, { 
+        width: nodeWidth,
+        height: nodeHeight 
       });
     });
-  });
 
-  return edges;
-}
+    // Add edges to Dagre (only if we have valid nodes)
+    if (edges && Array.isArray(edges)) {
+      edges.forEach((edge) => {
+        if (!edge || !edge.source || !edge.target) {
+          console.warn('[getLayoutedElements] Invalid edge:', edge);
+          return;
+        }
+        // Only add edge if both source and target nodes exist
+        if (dagreGraph.hasNode(edge.source) && dagreGraph.hasNode(edge.target)) {
+          dagreGraph.setEdge(edge.source, edge.target);
+        }
+      });
+    }
 
-// Calculate initial node positions in a grid layout
-function calculateNodePosition(index: number, totalNodes: number) {
-  const GRID_SPACING = 300;
-  const NODES_PER_ROW = Math.ceil(Math.sqrt(totalNodes));
-  
-  const row = Math.floor(index / NODES_PER_ROW);
-  const col = index % NODES_PER_ROW;
-  
-  return {
-    x: col * GRID_SPACING,
-    y: row * GRID_SPACING,
-  };
+    // Calculate the layout
+    dagre.layout(dagreGraph);
+
+    // Apply the calculated positions to nodes
+    const layoutedNodes = nodes.map((node) => {
+      if (!node || !node.id || !dagreGraph.hasNode(node.id)) {
+        return node; // Return unchanged if invalid
+      }
+
+      const nodeWithPosition = dagreGraph.node(node.id);
+      if (!nodeWithPosition) {
+        console.warn(`[getLayoutedElements] No position calculated for node: ${node.id}`);
+        return node; // Return unchanged if no position
+      }
+      
+      // Dagre gives us the center position, we need to calculate top-left
+      const position = {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      };
+
+      return {
+        ...node,
+        position,
+        targetPosition: Position.Top,
+        sourcePosition: Position.Bottom,
+      };
+    });
+
+    // Return layouted elements
+    return {
+      nodes: layoutedNodes,
+      edges: edges?.map(edge => ({
+        ...edge,
+        ...defaultEdgeOptions,
+      })) || [],
+    };
+  } catch (error) {
+    console.error('[getLayoutedElements] Error calculating layout:', error);
+    return { nodes, edges: edges || [] }; // Return original nodes if layout fails
+  }
 } 

@@ -39,19 +39,20 @@ interface Phase {
   };
 }
 
-interface RoadmapData {
+export interface RoadmapData {
   phases: Phase[];
   title: string;
   description: string;
 }
 
-interface RoadmapDisplayProps {
+export interface RoadmapDisplayProps {
   roadmap: RoadmapData;
   onTaskToggle?: (phaseId: string, taskId: string) => void;
   onTitleEdit?: (newTitle: string) => void;
   onPhaseTitleEdit?: (phaseId: string, newTitle: string) => void;
   showChatHistory?: boolean;
   chatHistory?: Array<{ role: string; content: string }>;
+  phaseRefs?: Record<string, React.RefObject<HTMLDivElement | null>>;
 }
 
 export function RoadmapDisplay({ 
@@ -60,7 +61,8 @@ export function RoadmapDisplay({
   onTitleEdit,
   onPhaseTitleEdit,
   showChatHistory = false,
-  chatHistory = []
+  chatHistory = [],
+  phaseRefs = {}
 }: RoadmapDisplayProps) {
   const { t } = useTranslation();
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
@@ -249,6 +251,7 @@ export function RoadmapDisplay({
                 <motion.div
                   key={phase.id}
                   id={phase.id}
+                  ref={phaseRefs[phase.id]}
                   layout
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}

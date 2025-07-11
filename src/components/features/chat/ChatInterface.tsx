@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,37 +9,29 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Plus, Send } from "lucide-react";
+import { Message } from "ai";
 
 interface ChatInterfaceProps {
-  onSubmit: (value: string) => void;
   isLoading?: boolean;
-  placeholders?: string[];
-  chatHistory?: Array<{ role: string; content: string }>;
+  chatHistory: Message[];
+  inputValue: string;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function ChatInterface({ 
-  onSubmit, 
   isLoading = false, 
-  placeholders = [], 
-  chatHistory = []
+  chatHistory = [],
+  inputValue,
+  handleInputChange,
 }: ChatInterfaceProps) {
-  const [inputValue, setInputValue] = React.useState("");
   const { t } = useTranslation();
   
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim() || isLoading) return;
-    
-    onSubmit(inputValue.trim());
-    setInputValue("");
-  };
-
   return (
     <div className="w-full">
       <div className="relative mx-auto w-full overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
         <div className="relative flex w-full items-center justify-center p-4">
           <div className="z-20 w-full">
-            <ScrollArea className="h-[360px] w-full overflow-auto p-1">
+            <ScrollArea className="max-h-[60vh] w-full overflow-auto p-1">
               {chatHistory.length === 0 ? (
                 <div className="px-6">
                   <div className="relative flex h-full w-full flex-col items-center justify-center text-center">
@@ -60,7 +52,7 @@ export function ChatInterface({
               ) : (
                 <div id="chat" className="w-full space-y-4 px-4">
                   {chatHistory.map((message, index) => (
-                    <React.Fragment key={index}>
+                    <React.Fragment key={`${message.id}-${message.content}`}>
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -90,11 +82,10 @@ export function ChatInterface({
             <Separator className="my-4" />
 
             <div className="relative mt-2 w-full">
-              <form onSubmit={handleSubmit}>
                 <Input
                   className="pl-12 pr-12 text-neutral-900 placeholder:text-neutral-500 dark:bg-neutral-800 dark:text-white dark:placeholder:text-neutral-400"
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={handleInputChange}
                   placeholder={t('project.creation.input_placeholder')}
                   disabled={isLoading}
                 />
@@ -104,7 +95,7 @@ export function ChatInterface({
                   size="icon"
                   type="button"
                   className="absolute left-1.5 top-1.5 h-7 rounded-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-                  onClick={() => setInputValue("")}
+                  onClick={() => handleInputChange({ target: { value: '' } } as React.ChangeEvent<HTMLInputElement>)}
                 >
                   <Plus className="h-5 w-5" />
                   <span className="sr-only">New Chat</span>
@@ -123,7 +114,6 @@ export function ChatInterface({
                     <Send className="h-4 w-4" />
                   )}
                 </Button>
-              </form>
             </div>
           </div>
         </div>

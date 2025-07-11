@@ -8,7 +8,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuroraBackground } from '../ui/aurora-background';
 import { generateTestProject } from '@/lib/test-utils';
-import { Loader2, Settings, ChevronDown } from 'lucide-react';
+import { Loader2, Settings, ChevronDown, AlertTriangle } from 'lucide-react';
 
 // Dynamically import RoadmapFlow to avoid SSR issues with ReactFlow
 const RoadmapFlow = dynamic(
@@ -54,7 +54,7 @@ export function RoadmapView() {
           <div className="relative">
             <button
               onClick={() => setShowDevTools(!showDevTools)}
-              className="flex items-center gap-2 px-3 py-2 bg-neutral-800 text-neutral-300 rounded-lg text-sm hover:bg-neutral-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors shadow-lg"
             >
               <Settings className="w-4 h-4" />
               Dev Tools
@@ -67,27 +67,42 @@ export function RoadmapView() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full right-0 mt-2 p-2 bg-neutral-800 rounded-lg shadow-xl border border-neutral-700"
+                  className="absolute top-full right-0 mt-2 p-4 bg-orange-50 dark:bg-orange-950 rounded-lg shadow-xl border border-orange-200 dark:border-orange-800"
                 >
-                  <div className="space-y-1">
+                  {/* Warning Label */}
+                  <div className="flex items-center gap-2 mb-3 text-orange-700 dark:text-orange-300">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span className="text-xs font-semibold">Development Mode - Hardcoded Test Data</span>
+                  </div>
+                  
+                  <div className="space-y-2">
                     <button
                       onClick={() => handleGenerateTestRoadmap('simple')}
-                      className="block w-full text-left px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 rounded transition-colors"
+                      className="block w-full text-left px-3 py-2 text-sm text-orange-900 dark:text-orange-100 hover:bg-orange-100 dark:hover:bg-orange-900 rounded transition-colors"
                     >
-                      Test Simple (5 nodes)
+                      <div className="font-medium">Test Simple (5 nodes)</div>
+                      <div className="text-xs opacity-70">Quick performance test</div>
                     </button>
                     <button
                       onClick={() => handleGenerateTestRoadmap('medium')}
-                      className="block w-full text-left px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 rounded transition-colors"
+                      className="block w-full text-left px-3 py-2 text-sm text-orange-900 dark:text-orange-100 hover:bg-orange-100 dark:hover:bg-orange-900 rounded transition-colors"
                     >
-                      Test Medium (15 nodes)
+                      <div className="font-medium">Test Medium (15 nodes)</div>
+                      <div className="text-xs opacity-70">Standard complexity test</div>
                     </button>
                     <button
                       onClick={() => handleGenerateTestRoadmap('complex')}
-                      className="block w-full text-left px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 rounded transition-colors"
+                      className="block w-full text-left px-3 py-2 text-sm text-orange-900 dark:text-orange-100 hover:bg-orange-100 dark:hover:bg-orange-900 rounded transition-colors"
                     >
-                      Test Complex (30 nodes)
+                      <div className="font-medium">Test Complex (30 nodes)</div>
+                      <div className="text-xs opacity-70">Stress test with many nodes</div>
                     </button>
+                  </div>
+                  
+                  <div className="mt-3 pt-3 border-t border-orange-200 dark:border-orange-800">
+                    <p className="text-xs text-orange-600 dark:text-orange-400">
+                      These buttons bypass AI generation and inject pre-generated test roadmaps for development purposes.
+                    </p>
                   </div>
                 </motion.div>
               )}
@@ -99,17 +114,6 @@ export function RoadmapView() {
       <AuroraBackground className="min-h-[calc(100vh-4rem)] !bg-transparent">
         <div className="w-full">
           <ProjectCreationInput />
-          
-          {currentProject && !isGenerating && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="mt-12"
-            >
-              <RoadmapFlow />
-            </motion.div>
-          )}
         </div>
       </AuroraBackground>
     </section>
