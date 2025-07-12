@@ -40,7 +40,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, translate }) 
     >
       <a
         href={product.link}
-        className="block group-hover/product:shadow-2xl"
+        className="block group-hover/product:shadow-2xl relative h-full w-full"
       >
         <Image
           src={product.thumbnail}
