@@ -39,6 +39,7 @@ export function ProjectCreationInput() {
   const chatHistory = useProjectStore(state => state.chatHistory);
   
   const {
+    messages,
     input,
     handleInputChange,
     handleSubmit,
@@ -113,7 +114,7 @@ export function ProjectCreationInput() {
               handleInputChange={handleInputChange}
               inputValue={input}
               isLoading={isLoading}
-              chatHistory={chatHistory}
+              chatHistory={messages} // Use messages directly from useChat instead of store
             />
           </form>
           <AnimatePresence>
@@ -152,7 +153,12 @@ export function ProjectCreationInput() {
                         <ErrorBoundary fallback={<p>Error loading visual map.</p>}><RoadmapFlow onNodeClick={handleNodeClick} /></ErrorBoundary>
                       </TabsContent>
                       <TabsContent value="checklist">
-                        <RoadmapDisplay roadmap={roadmapDisplayData} phaseRefs={phaseRefs.current} onTaskToggle={handleTaskToggle} />
+                        <RoadmapDisplay 
+                          roadmap={roadmapDisplayData} 
+                          phaseRefs={phaseRefs.current} 
+                          onTaskToggle={handleTaskToggle}
+                          chatHistory={messages} // Pass messages directly from useChat
+                        />
                       </TabsContent>
                     </motion.div>
                   </AnimatePresence>

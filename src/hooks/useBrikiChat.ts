@@ -37,18 +37,19 @@ export function useBrikiChat() {
     },
   });
 
-  // Sync messages from useChat hook to Zustand store only when they truly change
-  const prevMetaRef = useRef<{ length: number; lastId: string | null }>({ length: 0, lastId: null });
-
+  // Sync messages from useChat hook to Zustand store in real-time
   useEffect(() => {
-    const lastMsgId = messages.length > 0 ? messages[messages.length - 1].id : null;
-    const prev = prevMetaRef.current;
-
-    if (messages.length !== prev.length || lastMsgId !== prev.lastId) {
-      setChatHistory(messages);
-      prevMetaRef.current = { length: messages.length, lastId: lastMsgId };
-    }
-  }, [messages, setChatHistory]);
+    // Force update the store with the current messages array
+    // This ensures real-time updates during streaming
+    setChatHistory([...messages]);
+    
+    // Debug logging to track updates
+    console.log('useBrikiChat: Syncing messages to store', {
+      messagesLength: messages.length,
+      lastMessage: messages[messages.length - 1]?.content?.substring(0, 50) + '...',
+      isLoading
+    });
+  }, [messages, setChatHistory, isLoading]);
 
   // Handle chat errors
   useEffect(() => {
