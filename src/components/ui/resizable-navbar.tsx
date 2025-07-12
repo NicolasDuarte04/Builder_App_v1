@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import {
@@ -123,7 +124,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
       )}
     >
       {items.map((item, idx) => (
-        <a
+        <Link
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
           className="relative px-4 py-2 text-neutral-600 dark:text-neutral-300 whitespace-nowrap"
@@ -137,7 +138,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
             />
           )}
           <span className="relative z-20">{item.name}</span>
-        </a>
+        </Link>
       ))}
     </motion.div>
   );
@@ -230,19 +231,19 @@ export const MobileNavToggle = ({
  
 export const NavbarLogo = () => {
   return (
-    <a
+    <Link
       href="/"
       className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
     >
       <span className="font-bold text-xl text-black dark:text-white">Briki</span>
       <span className="text-sm font-medium text-gray-600 dark:text-gray-400">AI</span>
-    </a>
+    </Link>
   );
 };
  
 export const NavbarButton = ({
   href,
-  as: Tag = "a",
+  as,
   children,
   className,
   variant = "primary",
@@ -272,6 +273,7 @@ export const NavbarButton = ({
     gradient:
       "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]",
   };
+  const Tag = as || (href ? Link : "button");
 
   return (
     <Tag

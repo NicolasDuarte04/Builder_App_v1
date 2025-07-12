@@ -51,9 +51,6 @@ export function MainNavbar() {
             <NavbarButton href="/login" variant="secondary" visible={visible}>
               {t("nav.login")}
             </NavbarButton>
-            <NavbarButton href="/signup" variant="gradient" visible={visible}>
-              {t("nav.signup")}
-            </NavbarButton>
           </div>
         </NavBody>
       </Navbar>
@@ -81,9 +78,6 @@ export function MainNavbar() {
           <div className="flex w-full flex-col gap-2">
             <NavbarButton href="/login" variant="secondary" className="w-full" visible={visible}>
               {t("nav.login")}
-            </NavbarButton>
-            <NavbarButton href="/signup" variant="gradient" className="w-full" visible={visible}>
-              {t("nav.signup")}
             </NavbarButton>
           </div>
         </MobileNavMenu>
