@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowDown, Search, Brain, MessageSquare, PenTool } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
+import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 
 export const FeatureHighlightsSection = () => {
     const { t } = useTranslation();
@@ -71,71 +72,75 @@ export const FeatureHighlightsSection = () => {
     return (
         <div className="bg-white dark:bg-black">
             {/* Header Section */}
-            <div className='min-h-screen w-screen flex flex-col items-center justify-center'>
+            <BackgroundBeamsWithCollision className="min-h-screen w-screen">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
                     viewport={{ once: true }}
-                    className="text-center"
+                    className="text-center relative z-10"
                 >
                     <h1 className='text-4xl md:text-6xl max-w-4xl text-center font-bold text-gray-900 dark:text-white mb-6'>
                         {t("features.section_title")}
                     </h1>
-                    <p className='text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto'>
+                    <p className='text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-12'>
                         {t("features.section_subtitle")}
                     </p>
-                    <div className='mt-20 flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400'>
+                    <div className='mt-12 flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400'>
                         {t("features.scroll_hint")} <ArrowDown size={15} />
                     </div>
                 </motion.div>
-            </div>
+            </BackgroundBeamsWithCollision>
 
             {/* Feature Sections */}
             <div className="flex flex-col md:px-0 px-10">
                 {features.map((feature, index) => (
-                    <div 
+                    <BackgroundBeamsWithCollision 
                         key={feature.id}
-                        ref={sectionRefs[index]} 
-                        className={`h-screen flex items-center justify-center md:gap-40 gap-20 ${feature.reverse ? 'flex-row-reverse' : ''}`}
+                        className={`h-screen ${feature.reverse ? 'flex-row-reverse' : ''}`}
                     >
-                        <motion.div style={{ y: translateContents[index] }}>
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-teal-500 rounded-2xl flex items-center justify-center text-white">
-                                    {feature.icon}
-                                </div>
-                                <div className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white max-w-sm">
-                                    {feature.title}
-                                </div>
-                            </div>
-                            <motion.p 
-                                style={{ y: translateContents[index] }} 
-                                className="text-gray-600 dark:text-gray-300 max-w-sm mt-6 text-lg leading-relaxed"
-                            >
-                                {feature.description}
-                            </motion.p>
-                        </motion.div>
-                        <motion.div 
-                            style={{ 
-                                opacity: opacityContents[index],
-                                clipPath: clipProgresses[index],
-                            }}
-                            className="relative"
+                        <div 
+                            ref={sectionRefs[index]} 
+                            className={`h-screen flex items-center justify-center md:gap-40 gap-20 ${feature.reverse ? 'flex-row-reverse' : ''} relative z-10`}
                         >
-                            <div className="w-80 h-80 bg-gradient-to-br from-blue-100 to-teal-100 dark:from-blue-900/20 dark:to-teal-900/20 rounded-3xl flex items-center justify-center p-8">
-                                <img 
-                                    src={`/images/features/${feature.imageName}`}
-                                    alt={feature.title}
-                                    className="w-full h-full object-contain"
-                                />
-                            </div>
-                        </motion.div>
-                    </div>
+                            <motion.div style={{ y: translateContents[index] }}>
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-teal-500 rounded-2xl flex items-center justify-center text-white">
+                                        {feature.icon}
+                                    </div>
+                                    <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white max-w-sm">
+                                        {feature.title}
+                                    </div>
+                                </div>
+                                <motion.p 
+                                    style={{ y: translateContents[index] }} 
+                                    className="text-gray-600 dark:text-gray-300 max-w-sm mt-4 text-lg leading-relaxed"
+                                >
+                                    {feature.description}
+                                </motion.p>
+                            </motion.div>
+                            <motion.div 
+                                style={{ 
+                                    opacity: opacityContents[index],
+                                    clipPath: clipProgresses[index],
+                                }}
+                                className="relative"
+                            >
+                                <div className="w-80 h-80 bg-gradient-to-br from-blue-100 to-teal-100 dark:from-blue-900/20 dark:to-teal-900/20 rounded-3xl flex items-center justify-center p-8">
+                                    <img 
+                                        src={`/images/features/${feature.imageName}`}
+                                        alt={feature.title}
+                                        className="w-full h-full object-contain"
+                                    />
+                                </div>
+                            </motion.div>
+                        </div>
+                    </BackgroundBeamsWithCollision>
                 ))}
             </div>
 
             {/* End Section */}
-            <div className='min-h-screen w-screen flex flex-col items-center justify-center'>
+            <div className='py-24 md:py-32 w-screen flex flex-col items-center justify-center'>
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -143,9 +148,9 @@ export const FeatureHighlightsSection = () => {
                     viewport={{ once: true }}
                     className="text-center"
                 >
-                    <h1 className='text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6'>
+                    <h2 className='text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 dark:text-white mb-6'>
                         {t("features.ready_to_start")}
-                    </h1>
+                    </h2>
                     <p className='text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto'>
                         {t("features.ready_description")}
                     </p>

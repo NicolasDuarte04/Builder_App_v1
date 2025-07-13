@@ -4,6 +4,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/ThemeProvider"
 import { LanguageProvider } from "@/components/LanguageProvider"
 import { MainNavbar } from "@/components/layout/Navbar"
+import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar"
 import AuthProvider from "@/components/AuthProvider"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -30,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning className="scroll-smooth">
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
@@ -41,6 +42,7 @@ export default function RootLayout({
         >
           <LanguageProvider>
             <AuthProvider>
+              <ScrollProgressBar />
               <MainNavbar />
               {children}
             </AuthProvider>

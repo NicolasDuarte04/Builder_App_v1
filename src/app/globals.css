@@ -53,6 +53,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 @keyframes aurora {
@@ -167,6 +171,19 @@
 
 .animate-gradient-foreground-3 {
   animation: gradient-foreground-3 8s infinite;
+}
+
+@keyframes grid {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(60px);
+  }
+}
+
+.animate-grid {
+  animation: grid 20s linear infinite;
 }
 
 @keyframes gradient-background-1 {

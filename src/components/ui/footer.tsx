@@ -59,7 +59,7 @@ export function Footer() {
 	];
 
 	return (
-		<footer className="md:rounded-t-6xl relative w-full max-w-6xl mx-auto flex flex-col items-center justify-center rounded-t-4xl border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-black bg-[radial-gradient(35%_128px_at_50%_0%,theme(colors.white/8%),transparent)] dark:bg-[radial-gradient(35%_128px_at_50%_0%,theme(colors.black/8%),transparent)] px-6 py-12 lg:py-16">
+		<footer className="md:rounded-t-6xl relative w-full max-w-6xl mx-auto flex flex-col items-center justify-center rounded-t-4xl border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-black bg-[radial-gradient(35%_128px_at_50%_0%,theme(colors.white/8%),transparent)] dark:bg-[radial-gradient(35%_128px_at_50%_0%,theme(colors.black/8%),transparent)] px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
 			<div className="bg-gray-300 dark:bg-gray-700 absolute top-0 right-1/2 left-1/2 h-px w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full blur" />
 
 			<div className="grid w-full gap-8 xl:grid-cols-3 xl:gap-8">
@@ -74,7 +74,7 @@ export function Footer() {
 					</p>
 				</AnimatedContainer>
 
-				<div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 xl:col-span-2 xl:mt-0">
+				<div className="mt-8 sm:mt-10 grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-4 xl:col-span-2 xl:mt-0">
 					{footerLinks.map((section, index) => (
 						<AnimatedContainer key={section.label} delay={0.1 + index * 0.1}>
 							<div className="mb-10 md:mb-0">
