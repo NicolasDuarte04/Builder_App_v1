@@ -3,14 +3,8 @@
 import { motion } from "framer-motion";
 import { useLanguage } from "@/components/LanguageProvider";
 
-interface LanguageToggleProps {
-  visible?: boolean;
-}
-
-export function LanguageToggle({ visible }: LanguageToggleProps) {
+export function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
-
-  if (visible) return null;
 
   return (
     <motion.button

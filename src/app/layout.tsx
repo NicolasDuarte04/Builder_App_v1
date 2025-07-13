@@ -9,8 +9,8 @@ import AuthProvider from "@/components/AuthProvider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Briki AI – Project Builder",
-  description: "Turn your project ideas into actionable roadmaps with AI-powered guidance.",
+  title: "Briki Prompt Coach",
+  description: "Talk to AI like a pro — even if you've never tried before. Learn to write better prompts and evaluate AI responses.",
   manifest: "/site.webmanifest",
 }
 
@@ -37,6 +37,7 @@ export default function RootLayout({
           defaultTheme="dark"
           enableSystem={false}
           disableTransitionOnChange
+          storageKey="briki-theme"
         >
           <LanguageProvider>
             <AuthProvider>

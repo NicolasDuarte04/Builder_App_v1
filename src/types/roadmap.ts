@@ -54,6 +54,7 @@ export interface Subtask extends BaseTask {
 export interface Task extends BaseTask {
   subtasks: Subtask[];
   isExpanded?: boolean;
+  isCompleted?: boolean;
   completionCriteria?: {
     requiredSubtasks?: string[];
     percentageRequired?: number;

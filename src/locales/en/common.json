@@ -8,8 +8,15 @@
     "signup": "Sign up"
   },
   "hero": {
-    "title": "With Briki, AI turns your ideas into reality",
-    "subtitle": "Describe your project, and let AI create a custom roadmap with the best tools to help you succeed. From websites to newsletters, we'll guide you through every step."
+    "badge": "New: Briki Prompt Coach",
+    "title": "Talk to AI like a <span class=\"bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">pro</span><br><span class=\"text-gray-700 dark:text-gray-300\">— even if you've never tried before</span>",
+    "subtitle": "Learn to write better prompts, evaluate AI responses, and trust the results. Designed for students, creators, and small business owners in Latin America.",
+    "cta_primary": "Make Your Prompt Work",
+    "trust": {
+      "no_tech_setup": "No technical setup",
+      "spanish_interface": "Spanish interface",
+      "start_in_2min": "Start in 2 minutes"
+    }
   },
   "buttons": {
     "switchToEnglish": "English",
@@ -80,23 +87,69 @@
     "description": "Many people want to use AI but face these common obstacles. Briki helps you overcome them with guided roadmaps and clear next steps."
   },
   "features": {
-    "title": "Why Choose Briki?",
-    "subtitle": "Discover how our AI-powered platform helps you turn ideas into successful projects with expert guidance and the right tools.",
-    "ai_powered": {
-      "title": "AI-Powered Guidance",
-      "description": "Our advanced AI understands your project needs and creates personalized roadmaps with actionable steps."
+    "section_title": "Smarter prompts. Better results. Real confidence.",
+    "section_subtitle": "Here's what Briki Prompt Coach does for you — and why it matters.",
+    "scroll_hint": "SCROLL",
+    "prompt_builder": {
+      "title": "Prompt Builder Wizard",
+      "description": "No more guessing — just follow easy steps to craft your perfect prompt."
     },
-    "tool_recommendations": {
-      "title": "Smart Tool Recommendations",
-      "description": "Get matched with the perfect tools and technologies for your project, based on your specific requirements and goals."
+    "confidence_advisor": {
+      "title": "Confidence Advisor",
+      "description": "Briki rates and improves your prompt so you get better answers from ChatGPT, Midjourney, and more."
     },
-    "community_driven": {
-      "title": "Community Insights",
-      "description": "Benefit from collective knowledge with community-validated tools and best practices."
+    "result_analyzer": {
+      "title": "Result Analyzer",
+      "description": "Paste your AI output and Briki tells you if it's trustworthy — and how to make it better."
     },
-    "fast_implementation": {
-      "title": "Fast Implementation",
-      "description": "Start building immediately with clear, step-by-step instructions and all the resources you need in one place."
+    "smart_rephraser": {
+      "title": "Smart Rephraser",
+      "description": "Turn boring prompts into powerful ones with one click. Make them clearer, more persuasive, or more local."
+    },
+    "ready_to_start": "Ready to start?",
+    "ready_description": "Join thousands of users who are already creating more effective prompts with Briki Prompt Coach."
+  },
+  "use_cases": {
+    "title": "See how people like you use Briki to get better results with AI",
+    "description": "Discover real-life use cases that make the abstract concept of 'prompt coaching' tangible and help you visualize yourself using the product."
+  },
+  "who_its_for": {
+    "badge": "Designed for you",
+    "title": "Who is Briki Prompt Coach for?",
+    "subtitle": "If you want to learn to use AI effectively but feel overwhelmed by technology, Briki is designed specifically for you.",
+    "students": {
+      "title": "Students",
+      "description": "Learn to use AI to improve your assignments, research, and academic projects ethically and effectively."
+    },
+    "creators": {
+      "title": "Content Creators",
+      "description": "Generate ideas, improve your writing, and optimize your content with prompts that actually work."
+    },
+    "business": {
+      "title": "Small Business Owners",
+      "description": "Automate tasks, improve customer service, and optimize your processes without technical knowledge."
+    },
+    "professionals": {
+      "title": "Professionals",
+      "description": "Improve your productivity, automate repetitive tasks, and maintain your competitive advantage with AI."
     }
+  },
+  "footer": {
+    "product": "Product",
+    "company": "Company",
+    "resources": "Resources",
+    "social": "Social Links",
+    "features": "Features",
+    "pricing": "Pricing",
+    "testimonials": "Testimonials",
+    "integration": "Integration",
+    "about_us": "About Us",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
+    "blog": "Blog",
+    "changelog": "Changelog",
+    "brand": "Brand",
+    "help": "Help",
+    "all_rights_reserved": "All rights reserved."
   }
 } 

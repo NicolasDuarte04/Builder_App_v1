@@ -8,8 +8,15 @@
     "signup": "Registrarse"
   },
   "hero": {
-    "title": "Con Briki, la IA convierte tus ideas en realidad",
-    "subtitle": "Describe tu proyecto y deja que la IA cree una hoja de ruta personalizada con las mejores herramientas para ayudarte a tener éxito. Desde sitios web hasta boletines, te guiaremos en cada paso."
+    "badge": "Nuevo: Briki Prompt Coach",
+    "title": "Habla con IA como un <span class=\"bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">profesional</span><br><span class=\"text-gray-700 dark:text-gray-300\">— aunque nunca lo hayas intentado</span>",
+    "subtitle": "Aprende a escribir mejores prompts, evaluar respuestas de IA y confiar en los resultados. Diseñado para estudiantes, creadores y dueños de pequeños negocios en Latinoamérica.",
+    "cta_primary": "Haz que tu Prompt Funcione",
+    "trust": {
+      "no_tech_setup": "Sin configuración técnica",
+      "spanish_interface": "Interfaz en español",
+      "start_in_2min": "Comienza en 2 minutos"
+    }
   },
   "buttons": {
     "switchToEnglish": "English",
@@ -48,27 +55,73 @@
     "title": "Tus Proyectos"
   },
   "features": {
-    "title": "¿Por qué elegir Briki?",
-    "subtitle": "Descubre cómo nuestra plataforma impulsada por IA te ayuda a convertir ideas en proyectos exitosos con guía experta y las herramientas adecuadas.",
-    "ai_powered": {
-      "title": "Guía Impulsada por IA",
-      "description": "Nuestra IA avanzada comprende las necesidades de tu proyecto y crea hojas de ruta personalizadas con pasos accionables."
+    "section_title": "Prompts más inteligentes. Mejores resultados. Confianza real.",
+    "section_subtitle": "Aquí está lo que Briki Prompt Coach hace por ti — y por qué importa.",
+    "scroll_hint": "DESPLÁZATE",
+    "prompt_builder": {
+      "title": "Asistente para Crear Prompts",
+      "description": "No más adivinar — sigue pasos simples para crear el prompt ideal."
     },
-    "tool_recommendations": {
-      "title": "Recomendaciones Inteligentes",
-      "description": "Encuentra las herramientas y tecnologías perfectas para tu proyecto, basadas en tus requisitos y objetivos específicos."
+    "confidence_advisor": {
+      "title": "Asesor de Confianza",
+      "description": "Briki califica y mejora tu prompt para que obtengas mejores respuestas de ChatGPT, Midjourney y más."
     },
-    "community_driven": {
-      "title": "Conocimiento Colectivo",
-      "description": "Benefíciate del conocimiento colectivo con herramientas y mejores prácticas validadas por la comunidad."
+    "result_analyzer": {
+      "title": "Analizador de Resultados",
+      "description": "Pega la respuesta de la IA y Briki te dice si es confiable — y cómo mejorarla."
     },
-    "fast_implementation": {
-      "title": "Implementación Rápida",
-      "description": "Comienza a construir inmediatamente con instrucciones paso a paso y todos los recursos que necesitas en un solo lugar."
-    }
+    "smart_rephraser": {
+      "title": "Reformulador Inteligente",
+      "description": "Convierte prompts genéricos en mensajes claros, persuasivos o más latinos."
+    },
+    "ready_to_start": "¿Listo para empezar?",
+    "ready_description": "Únete a miles de usuarios que ya están creando prompts más efectivos con Briki Prompt Coach."
+  },
+  "use_cases": {
+    "title": "Mira cómo personas como tú usan Briki para obtener mejores resultados con IA",
+    "description": "Descubre casos de uso reales que hacen tangible el concepto de 'prompt coaching' y te ayudan a visualizar cómo usar el producto."
   },
   "problems": {
     "title": "Retos comunes con las herramientas de IA",
     "description": "Muchas personas quieren usar IA pero se enfrentan a estos obstáculos comunes. Briki te ayuda a superarlos con hojas de ruta guiadas y pasos claros."
+  },
+  "who_its_for": {
+    "badge": "Diseñado para ti",
+    "title": "¿Para quién es Briki Prompt Coach?",
+    "subtitle": "Si quieres aprender a usar IA de manera efectiva pero te sientes abrumado por la tecnología, Briki está diseñado específicamente para ti.",
+    "students": {
+      "title": "Estudiantes",
+      "description": "Aprende a usar IA para mejorar tus tareas, investigaciones y proyectos académicos de manera ética y efectiva."
+    },
+    "creators": {
+      "title": "Creadores de Contenido",
+      "description": "Genera ideas, mejora tu escritura y optimiza tu contenido con prompts que realmente funcionan."
+    },
+    "business": {
+      "title": "Pequeños Negocios",
+      "description": "Automatiza tareas, mejora la atención al cliente y optimiza tus procesos sin conocimientos técnicos."
+    },
+    "professionals": {
+      "title": "Profesionales",
+      "description": "Mejora tu productividad, automatiza tareas repetitivas y mantén tu ventaja competitiva con IA."
+    }
+  },
+  "footer": {
+    "product": "Producto",
+    "company": "Empresa",
+    "resources": "Recursos",
+    "social": "Redes Sociales",
+    "features": "Características",
+    "pricing": "Precios",
+    "testimonials": "Testimonios",
+    "integration": "Integración",
+    "about_us": "Sobre Nosotros",
+    "privacy_policy": "Política de Privacidad",
+    "terms_of_service": "Términos de Servicio",
+    "blog": "Blog",
+    "changelog": "Cambios",
+    "brand": "Marca",
+    "help": "Ayuda",
+    "all_rights_reserved": "Todos los derechos reservados."
   }
 } 

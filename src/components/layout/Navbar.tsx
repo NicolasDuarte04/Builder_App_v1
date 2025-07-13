@@ -46,9 +46,9 @@ export function MainNavbar() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="relative z-20 flex items-center space-x-2">
-            <LanguageToggle visible={visible} />
-            <ThemeToggle visible={visible} />
-            <NavbarButton href="/login" variant="secondary" visible={visible}>
+            <LanguageToggle />
+            <ThemeToggle />
+            <NavbarButton href="/login" variant="secondary">
               {t("nav.login")}
             </NavbarButton>
           </div>
@@ -59,8 +59,8 @@ export function MainNavbar() {
         <MobileNavHeader>
           <NavbarLogo />
           <div className="flex items-center space-x-2">
-            <LanguageToggle visible={visible} />
-            <ThemeToggle visible={visible} />
+            <LanguageToggle />
+            <ThemeToggle />
             <MobileNavToggle isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
           </div>
         </MobileNavHeader>
