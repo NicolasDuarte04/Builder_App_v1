@@ -1,0 +1,16 @@
+{
+  "name": "Briki AI - Project Builder App",
+  "short_name": "Briki",
+  "description": "Talk to AI like a pro — even if you've never tried before. Learn to write better prompts and evaluate AI responses.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+} 
