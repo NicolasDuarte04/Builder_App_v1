@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Unable to Display Roadmap
             </h3>
             
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6">
+            <p className="text-sm text-neutral-600 dark:text-neutral-200 mb-6 text-opacity-100">
               The roadmap visualization encountered an error. You can try refreshing or switch to the checklist view.
             </p>
             

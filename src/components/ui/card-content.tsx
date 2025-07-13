@@ -63,7 +63,7 @@ export function CardContent({
             transition: { duration: 0.2 }
           }
         }}
-        className="text-neutral-600 dark:text-neutral-300 leading-relaxed"
+        className="text-neutral-600 dark:text-neutral-200 leading-relaxed text-opacity-100"
       >
         {content}
       </motion.p>

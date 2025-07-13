@@ -3,6 +3,9 @@
 import { Project } from '@/types/project';
 import { motion } from 'framer-motion';
 import { Clock, ArrowRight, Tag } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
+import { textStyles } from '@/lib/styles';
+import { cn } from '@/lib/utils';
 
 interface ProjectLibraryProps {
   projects?: Project[];
@@ -13,7 +16,7 @@ export function ProjectLibrary({ projects = [] }: ProjectLibraryProps) {
   if (projects.length === 0) {
     return (
       <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-8 text-center">
-        <p className="text-neutral-600 dark:text-neutral-400">
+        <p className="text-neutral-600 dark:text-neutral-200">
           No projects yet. Create your first project above!
         </p>
       </div>
@@ -32,8 +35,8 @@ export function ProjectLibrary({ projects = [] }: ProjectLibraryProps) {
             >
           {/* Project Complexity Badge */}
           {project.complexity && (
-            <div className="absolute top-4 right-4 px-2 py-1 text-xs font-medium rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
-              {project.complexity}
+            <div className="absolute top-4 right-4">
+              <Badge label={project.complexity} variant="default" />
             </div>
           )}
 
@@ -41,12 +44,12 @@ export function ProjectLibrary({ projects = [] }: ProjectLibraryProps) {
             <h3 className="font-semibold text-lg mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
               {project.title}
             </h3>
-            <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-4 line-clamp-2">
+            <p className="text-sm mb-4 line-clamp-2 text-neutral-600 dark:text-neutral-200">
               {project.description}
             </p>
             
             <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+              <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-200">
                 <Clock className="w-4 h-4" />
                 <span>
                   {new Date(project.updatedAt).toLocaleDateString()}

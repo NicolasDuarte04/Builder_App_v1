@@ -3,6 +3,7 @@
 import { Task } from '@/types/roadmap';
 import { CardItem } from '@/components/ui/3d-card';
 import { cn } from '@/lib/utils';
+import { textStyles } from '@/lib/styles';
 
 interface TaskChecklistProps {
   tasks: Task[];
@@ -32,7 +33,7 @@ export function TaskChecklist({ tasks, onTaskComplete, className }: TaskChecklis
           <div className="flex-1">
             <p className="text-sm font-medium">{task.title}</p>
             {task.description && task.description !== task.title && (
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              <p className="text-xs mt-1 text-neutral-500 dark:text-neutral-200">
                 {task.description}
               </p>
             )}

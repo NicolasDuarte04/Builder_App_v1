@@ -24,11 +24,28 @@ export default function LoginPage() {
     event.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
     
-    setIsLoading(false);
-    alert("Login functionality coming soon!");
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+      
+      if (result?.error) {
+        alert('Authentication failed. Please check your credentials.');
+      } else if (result?.ok) {
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+      alert('An error occurred during sign in.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,14 +62,14 @@ export default function LoginPage() {
             <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white">
               Welcome back
             </h1>
-            <p className="text-neutral-600 dark:text-neutral-400">
+            <p className="text-neutral-600 dark:text-neutral-200 text-opacity-100">
               Sign in to your account to continue building with Briki AI
             </p>
 
-            <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
-              <fieldset disabled>
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <fieldset disabled={isLoading}>
                 <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200 text-opacity-100">
                     Email Address
                   </label>
                   <GlassInputWrapper>
@@ -66,7 +83,7 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200 text-opacity-100">
                     Password
                   </label>
                   <GlassInputWrapper>
@@ -83,9 +100,9 @@ export default function LoginPage() {
                         className="absolute inset-y-0 right-3 flex items-center"
                       >
                         {showPassword ? (
-                          <EyeOff className="w-5 h-5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors" />
+                          <EyeOff className="w-5 h-5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-200 dark:hover:text-neutral-100 transition-colors text-opacity-100" />
                         ) : (
-                          <Eye className="w-5 h-5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors" />
+                          <Eye className="w-5 h-5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-200 dark:hover:text-neutral-100 transition-colors text-opacity-100" />
                         )}
                       </button>
                     </div>
@@ -95,7 +112,7 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between text-sm">
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input type="checkbox" name="rememberMe" className="rounded border-neutral-300 dark:border-neutral-700 text-[#009BFF]" />
-                    <span className="text-neutral-700 dark:text-neutral-300">Keep me signed in</span>
+                    <span className="text-neutral-700 dark:text-neutral-200 text-opacity-100">Keep me signed in</span>
                   </label>
                   <Link 
                     href="/reset-password" 
@@ -108,16 +125,16 @@ export default function LoginPage() {
 
               <button 
                 type="submit" 
-                disabled
-                className="w-full rounded-2xl bg-gradient-to-r from-neutral-500 to-neutral-600 py-4 font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading}
+                className="w-full rounded-2xl bg-gradient-to-r from-[#009BFF] to-cyan-500 py-4 font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed hover:from-[#0087FF] hover:to-cyan-400 transition-all"
               >
-                Sign In (Coming Soon)
+                {isLoading ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
 
             <div className="relative flex items-center justify-center">
               <span className="w-full border-t border-neutral-200 dark:border-neutral-800"></span>
-              <span className="px-4 text-sm text-neutral-500 dark:text-neutral-400 bg-white dark:bg-black absolute">
+              <span className="px-4 text-sm text-neutral-500 dark:text-neutral-200 bg-white dark:bg-black absolute text-opacity-100">
                 Or continue with
               </span>
             </div>
@@ -131,7 +148,7 @@ export default function LoginPage() {
               Continue with Google
             </button>
 
-            <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-center text-sm text-neutral-600 dark:text-neutral-200 text-opacity-100">
               New to Briki AI?{" "}
               <Link 
                 href="/register" 
@@ -150,9 +167,20 @@ export default function LoginPage() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="absolute inset-4 rounded-3xl bg-gradient-to-br from-[#009BFF]/20 to-cyan-500/20 backdrop-blur"
+          className="absolute inset-4 rounded-3xl bg-gradient-to-br from-[#009BFF]/20 to-cyan-500/20 backdrop-blur overflow-hidden"
         >
           <div className="absolute inset-0 bg-grid-white/10" />
+          <div className="absolute inset-0 flex items-center justify-center p-8">
+            <img 
+              src="/images/login-hero.png" 
+              alt="Briki AI - AI-powered project building"
+              className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
+              onError={(e) => {
+                // Fallback if image doesn't exist
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
         </motion.div>
       </section>
     </div>

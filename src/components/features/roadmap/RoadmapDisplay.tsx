@@ -7,6 +7,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 import { exportToCSV, exportToPDF } from '@/lib/export-utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { textStyles } from '@/lib/styles';
 
 interface Task {
   id: string;
@@ -172,10 +173,10 @@ export function RoadmapDisplay({
               </TooltipContent>
             </Tooltip>
           )}
-          <p className="text-neutral-600 dark:text-neutral-400 mt-2">{roadmap.description}</p>
+          <p className="mt-2 text-neutral-600 dark:text-neutral-200 text-opacity-100">{roadmap.description}</p>
           
           {/* Total time summary */}
-          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-neutral-500">
+          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-neutral-500 dark:text-neutral-200">
             <Clock className="w-4 h-4" />
             <span>{t('project.roadmap.total_time')}: {calculateTotalTime()}h</span>
           </div>
@@ -305,12 +306,12 @@ export function RoadmapDisplay({
                           <span className={cn("px-2 py-1 text-xs font-medium rounded", getPriorityColor(phase.priority))}>
                             {phase.priority}
                           </span>
-                          <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                          <span className="text-sm text-neutral-500 dark:text-neutral-200 text-opacity-100">
                             {phase.estimatedTime}h
                           </span>
                         </div>
                         {!isExpanded && (
-                          <div className="mt-2 flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
+                          <div className="mt-2 flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-200 text-opacity-100">
                             <span>{phase.tasks.length} {t('project.roadmap.tasks')}</span>
                             <span>{phaseProgress}% {t('project.roadmap.complete')}</span>
                           </div>
@@ -343,7 +344,7 @@ export function RoadmapDisplay({
                         className="border-t border-neutral-200 dark:border-neutral-800"
                       >
                         <div className="p-4 space-y-4">
-                          <p className="text-neutral-600 dark:text-neutral-400">{phase.description}</p>
+                          <p className="text-neutral-600 dark:text-neutral-200 text-opacity-100">{phase.description}</p>
                           
                           {/* Phase Metadata */}
                           <div className="flex flex-wrap gap-2">
@@ -365,7 +366,7 @@ export function RoadmapDisplay({
                           {/* Tasks */}
                           {phase.tasks.length > 0 && (
                             <div className="space-y-2">
-                              <h4 className="font-medium text-sm text-neutral-700 dark:text-neutral-300">
+                              <h4 className="font-medium text-sm text-neutral-700 dark:text-neutral-200 text-opacity-100">
                                 {t('project.roadmap.tasks')}
                               </h4>
                               {phase.tasks.map((task, taskIndex) => {
@@ -409,13 +410,13 @@ export function RoadmapDisplay({
                                                 )}>
                                                   {task.priority}
                                                 </span>
-                                                <span className="text-xs text-neutral-500">
+                                                <span className="text-xs text-neutral-500 dark:text-neutral-200 text-opacity-100">
                                                   {task.estimatedTime}h
                                                 </span>
                                               </div>
                                             </div>
                                             <p className={cn(
-                                              "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+                                              "text-xs mt-1 text-neutral-600 dark:text-neutral-200 text-opacity-100",
                                               isCompleted && "line-through"
                                             )}>
                                               {task.description}

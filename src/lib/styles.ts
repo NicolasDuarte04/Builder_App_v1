@@ -43,4 +43,14 @@ export function getPriorityGradientClass(priority: Priority, className?: string)
     priorityStyles[priority].gradient,
     className
   );
-} 
+}
+
+/**
+ * Centralized text styles for consistent contrast in dark mode
+ * These classes ensure proper readability across light and dark themes
+ */
+export const textStyles = {
+  description: 'text-neutral-600 dark:text-neutral-200',
+  metadata: 'text-neutral-500 dark:text-neutral-200',
+  muted: 'text-neutral-400 dark:text-neutral-100',
+}; 

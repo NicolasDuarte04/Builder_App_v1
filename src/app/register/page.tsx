@@ -45,14 +45,14 @@ export default function RegisterPage() {
             <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white">
               Create Account
             </h1>
-            <p className="text-neutral-600 dark:text-neutral-400">
+            <p className="text-neutral-600 dark:text-neutral-200 text-opacity-100">
               Join Briki AI and start building your project roadmaps
             </p>
 
             <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
               <fieldset disabled>
                 <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200 text-opacity-100">
                     Full Name
                   </label>
                   <GlassInputWrapper>
@@ -66,7 +66,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200 text-opacity-100">
                     Email Address
                   </label>
                   <GlassInputWrapper>
@@ -80,7 +80,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200 text-opacity-100">
                     Password
                   </label>
                   <GlassInputWrapper>
@@ -97,14 +97,14 @@ export default function RegisterPage() {
                         className="absolute inset-y-0 right-3 flex items-center"
                       >
                         {showPassword ? (
-                          <EyeOff className="w-5 h-5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors" />
+                          <EyeOff className="w-5 h-5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-200 dark:hover:text-neutral-100 transition-colors text-opacity-100" />
                         ) : (
-                          <Eye className="w-5 h-5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors" />
+                          <Eye className="w-5 h-5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-200 dark:hover:text-neutral-100 transition-colors text-opacity-100" />
                         )}
                       </button>
                     </div>
                   </GlassInputWrapper>
-                  <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+                  <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-200 text-opacity-100">
                     Must be at least 8 characters long
                   </p>
                 </div>
@@ -116,7 +116,7 @@ export default function RegisterPage() {
                     id="terms" 
                     className="rounded border-neutral-300 dark:border-neutral-700 text-[#009BFF]" 
                   />
-                  <label htmlFor="terms" className="text-sm text-neutral-700 dark:text-neutral-300">
+                  <label htmlFor="terms" className="text-sm text-neutral-700 dark:text-neutral-200 text-opacity-100">
                     I agree to the{" "}
                     <Link href="/terms" className="text-[#009BFF] hover:text-[#0087FF] transition-colors">
                       Terms of Service
@@ -140,7 +140,7 @@ export default function RegisterPage() {
 
             <div className="relative flex items-center justify-center">
               <span className="w-full border-t border-neutral-200 dark:border-neutral-800"></span>
-              <span className="px-4 text-sm text-neutral-500 dark:text-neutral-400 bg-white dark:bg-black absolute">
+              <span className="px-4 text-sm text-neutral-500 dark:text-neutral-200 bg-white dark:bg-black absolute text-opacity-100">
                 Or continue with
               </span>
             </div>
@@ -154,7 +154,7 @@ export default function RegisterPage() {
               Continue with Google
             </button>
 
-            <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-center text-sm text-neutral-600 dark:text-neutral-200 text-opacity-100">
               Already have an account?{" "}
               <Link 
                 href="/login" 

@@ -66,5 +66,9 @@
       "title": "Implementación Rápida",
       "description": "Comienza a construir inmediatamente con instrucciones paso a paso y todos los recursos que necesitas en un solo lugar."
     }
+  },
+  "problems": {
+    "title": "Retos comunes con las herramientas de IA",
+    "description": "Muchas personas quieren usar IA pero se enfrentan a estos obstáculos comunes. Briki te ayuda a superarlos con hojas de ruta guiadas y pasos claros."
   }
 } 

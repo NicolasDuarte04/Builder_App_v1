@@ -4,6 +4,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/ThemeProvider"
 import { LanguageProvider } from "@/components/LanguageProvider"
 import { MainNavbar } from "@/components/layout/Navbar"
+import AuthProvider from "@/components/AuthProvider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -38,8 +39,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
-            <MainNavbar />
-            {children}
+            <AuthProvider>
+              <MainNavbar />
+              {children}
+            </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

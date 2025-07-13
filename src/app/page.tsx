@@ -62,7 +62,7 @@ export default function Home() {
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
               {t('features.title')}
             </h2>
-            <p className="max-w-[900px] text-neutral-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-neutral-400">
+            <p className="max-w-[900px] text-neutral-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-neutral-200 text-opacity-100">
               {t('features.subtitle')}
             </p>
           </div>

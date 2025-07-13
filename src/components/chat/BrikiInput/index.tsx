@@ -145,7 +145,7 @@ const BrikiInput = React.forwardRef<HTMLInputElement, BrikiInputProps>(
               animate={{ opacity: 0.5, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400"
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-200"
             >
               {placeholders[currentPlaceholder]}
             </motion.span>

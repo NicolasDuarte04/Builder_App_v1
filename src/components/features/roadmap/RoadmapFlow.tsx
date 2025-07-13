@@ -24,7 +24,7 @@ const nodeTypes = {
 
 // Loading message component
 const LoadingMessage = ({ message }: { message: string }) => (
-  <div className="h-[400px] flex flex-col items-center justify-center text-neutral-500 dark:text-neutral-400 gap-3">
+  <div className="h-[400px] flex flex-col items-center justify-center text-neutral-500 dark:text-neutral-200 gap-3 text-opacity-100">
     <Loader2 className="w-6 h-6 animate-spin" />
     <p>{message}</p>
   </div>
@@ -115,7 +115,7 @@ function RoadmapFlowInner({ onNodeClick }: RoadmapFlowInnerProps) {
   // Error state
   if (error) {
     return (
-      <div className="h-[400px] flex items-center justify-center text-red-500 dark:text-red-400">
+      <div className="h-[400px] flex items-center justify-center text-red-500 dark:text-red-400 text-opacity-100">
         <p>{error}</p>
       </div>
     );
@@ -129,7 +129,7 @@ function RoadmapFlowInner({ onNodeClick }: RoadmapFlowInnerProps) {
   // No data state
   if (!currentProject || !nodes || nodes.length === 0) {
     return (
-      <div className="h-[400px] flex items-center justify-center text-neutral-500 dark:text-neutral-400">
+      <div className="h-[400px] flex items-center justify-center text-neutral-500 dark:text-neutral-200 text-opacity-100">
         No roadmap to display.
       </div>
     );

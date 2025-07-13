@@ -25,10 +25,23 @@ export function ProblemCard({ card, index, layout }: ProblemCardProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={cn(
-        "relative h-[400px] w-[300px] shrink-0 rounded-2xl p-4 cursor-pointer",
-        card.src
+        "relative h-[400px] w-[300px] shrink-0 rounded-2xl p-4 cursor-pointer overflow-hidden group"
       )}
     >
+      {/* Background image with glassmorphism */}
+      <div
+        className="absolute inset-0 z-0 rounded-2xl overflow-hidden"
+        aria-hidden="true"
+      >
+        <img
+          src={card.src}
+          alt=""
+          className="w-full h-full object-cover object-center scale-105 brightness-95 dark:brightness-80 contrast-110 blur-[2px] group-hover:blur-[4px] transition-all duration-300"
+          draggable="false"
+        />
+        {/* Overlay for extra glass effect */}
+        <div className="absolute inset-0 bg-white/30 dark:bg-black/30 backdrop-blur-[2px]" />
+      </div>
       <GlowingEffect
         disabled={!hovered}
         glow={hovered}

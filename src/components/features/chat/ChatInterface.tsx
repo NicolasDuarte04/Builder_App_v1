@@ -45,7 +45,7 @@ export function ChatInterface({
                     </h1>
                   </div>
                   <Separator className="my-4" />
-                  <p className="mx-auto mt-1 text-center text-sm text-neutral-600 dark:text-neutral-400 md:max-w-2xl">
+                  <p className="mx-auto mt-1 text-center text-sm text-neutral-600 dark:text-neutral-200 md:max-w-2xl text-opacity-100">
                     {t('project.creation.description')}
                   </p>
                 </div>
@@ -94,7 +94,7 @@ export function ChatInterface({
                   variant="ghost"
                   size="icon"
                   type="button"
-                  className="absolute left-1.5 top-1.5 h-7 rounded-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                  className="absolute left-1.5 top-1.5 h-7 rounded-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-200 dark:hover:text-neutral-100 text-opacity-100"
                   onClick={() => handleInputChange({ target: { value: '' } } as React.ChangeEvent<HTMLInputElement>)}
                 >
                   <Plus className="h-5 w-5" />
@@ -105,7 +105,7 @@ export function ChatInterface({
                   type="submit"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-1.5 top-1.5 h-7 rounded-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                  className="absolute right-1.5 top-1.5 h-7 rounded-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-200 dark:hover:text-neutral-100 text-opacity-100"
                   disabled={isLoading || !inputValue.trim()}
                 >
                   {isLoading ? (

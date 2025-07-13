@@ -4,6 +4,8 @@ import { Subtask, TaskAction, TaskStatus } from '@/types/roadmap';
 import { CardItem } from '@/components/ui/3d-card';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { Badge } from '@/components/ui/Badge';
+import { textStyles } from '@/lib/styles';
 import { 
   IconCircleDot, 
   IconCircleCheck, 
@@ -88,14 +90,14 @@ export function SubtaskCard({ subtask, onStatusChange, onActionTrigger, classNam
         <div className="flex items-start justify-between gap-2">
           <h4 className="font-medium text-sm">{subtask.title}</h4>
           {subtask.estimatedTime && (
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+            <span className="text-xs text-neutral-500 dark:text-neutral-200">
               ~{subtask.estimatedTime}h
             </span>
           )}
         </div>
 
         {subtask.description && subtask.description !== subtask.title && (
-          <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-200">
             {subtask.description}
           </p>
         )}
@@ -104,17 +106,11 @@ export function SubtaskCard({ subtask, onStatusChange, onActionTrigger, classNam
         {subtask.tools && subtask.tools.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-2">
             {subtask.tools.map(tool => (
-              <span
+              <Badge
                 key={tool.toolId}
-                className="inline-flex items-center px-2 py-1 rounded-full text-xs
-                  bg-white dark:bg-zinc-800
-                  border border-neutral-200 dark:border-neutral-700"
-              >
-                {tool.toolId}
-                {tool.context && (
-                  <span className="ml-1 text-neutral-400">({tool.context})</span>
-                )}
-              </span>
+                label={`${tool.toolId}${tool.context ? ` (${tool.context})` : ''}`}
+                autoDetect={true}
+              />
             ))}
           </div>
         )}

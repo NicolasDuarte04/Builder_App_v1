@@ -5,7 +5,7 @@ import { useRoadmapStore } from '@/store/useRoadmapStore';
 import { Handle, Position } from 'reactflow';
 import { CardContainer, CardBody, CardItem } from '@/components/ui/3d-card';
 import { cn } from '@/lib/utils';
-import { getPriorityBadgeClass, getPriorityGradientClass } from '@/lib/styles';
+import { getPriorityBadgeClass, getPriorityGradientClass, textStyles } from '@/lib/styles';
 import { TaskChecklist } from './TaskChecklist';
 import { ToolIconsRow } from './ToolIconsRow';
 
@@ -85,7 +85,7 @@ export function PhaseCard({ data, isConnectable = true, selected = false }: Phas
           <CardItem
             as="p"
             translateZ={20}
-            className="text-neutral-600 dark:text-neutral-400 text-sm mb-4"
+            className="text-sm mb-4 text-neutral-600 dark:text-neutral-200"
           >
             {data.description}
           </CardItem>
@@ -93,7 +93,7 @@ export function PhaseCard({ data, isConnectable = true, selected = false }: Phas
           {/* Metadata */}
           <CardItem
             translateZ={20}
-            className="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400"
+            className="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-200"
           >
             <span>{data.estimatedTime}h</span>
             <span>{data.category}</span>
