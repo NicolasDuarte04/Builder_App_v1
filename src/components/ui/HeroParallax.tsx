@@ -12,7 +12,6 @@ import Image from "next/image";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { IconSparkles, IconArrowRight, IconPlayerPlay } from "@tabler/icons-react";
-import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
 
 interface Product {
   title: string;
@@ -62,113 +61,80 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, translate }) 
 };
 
 export const Header: React.FC = () => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   
   return (
-    <HeroHighlight 
-      containerClassName="max-w-7xl mx-auto py-24 md:py-32 px-4 w-full"
-      className="text-center"
-    >
-      {/* Badge */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mb-8"
-      >
-        <IconSparkles className="w-4 h-4" />
-        <span>{t("hero.badge")}</span>
-      </motion.div>
-
-      {/* Main Headline */}
-      <motion.h1
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="text-4xl md:text-7xl font-bold text-black dark:text-white drop-shadow-sm leading-tight"
-      >
-        {language === 'es' ? (
-          <>
-            Habla con IA como un <Highlight>profesional</Highlight>
-            <br />
-            <span className="text-gray-700 dark:text-gray-300">
-              — aunque nunca lo hayas intentado
-            </span>
-          </>
-        ) : (
-          <>
-            Talk to AI like a <Highlight>pro</Highlight>
-            <br />
-            <span className="text-gray-700 dark:text-gray-300">
-              — even if you've never tried before
-            </span>
-          </>
-        )}
-      </motion.h1>
-
-      {/* Subheadline */}
-      <motion.p
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.4 }}
-        className="max-w-3xl mx-auto mt-8 text-lg md:text-xl text-gray-600 dark:text-gray-300 font-medium leading-relaxed"
-      >
-        {language === 'es' ? (
-          <>
-            Aprende a escribir mejores <Highlight>prompts</Highlight>, evaluar respuestas de IA y confiar en los resultados. Diseñado para <Highlight>estudiantes</Highlight>, <Highlight>creadores</Highlight> y <Highlight>pequeños negocios</Highlight> en Latinoamérica.
-          </>
-        ) : (
-          <>
-            Learn to write better <Highlight>prompts</Highlight>, evaluate AI responses, and trust the results. Designed for <Highlight>students</Highlight>, <Highlight>creators</Highlight>, and <Highlight>small business owners</Highlight> in Latin America.
-          </>
-        )}
-      </motion.p>
-
-      {/* CTA Button */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.6 }}
-        className="flex justify-center items-center mt-10"
-      >
-        <Button 
-          size="lg" 
-          className="bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white px-10 py-5 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all duration-300 transform hover:scale-105"
+    <div className="relative z-10 max-w-7xl mx-auto py-24 md:py-32 px-4 w-full">
+      <div className="text-center">
+        {/* Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mb-8"
         >
-          {language === 'es' ? (
-            <>
-              Haz que tu <Highlight className="text-white">Prompt</Highlight> Funcione
-            </>
-          ) : (
-            <>
-              Make Your <Highlight className="text-white">Prompt</Highlight> Work
-            </>
-          )}
-          <IconArrowRight className="ml-3 w-6 h-6" />
-        </Button>
-      </motion.div>
+          <IconSparkles className="w-4 h-4" />
+          <span>{t("hero.badge")}</span>
+        </motion.div>
 
-      {/* Trust indicators */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.8 }}
-        className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-500 dark:text-gray-400"
-      >
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span>{t("hero.trust.no_tech_setup")}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span>{t("hero.trust.spanish_interface")}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span>{t("hero.trust.start_in_2min")}</span>
-        </div>
-      </motion.div>
-    </HeroHighlight>
+        {/* Main Headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-4xl md:text-7xl font-bold text-black dark:text-white drop-shadow-sm leading-tight"
+          dangerouslySetInnerHTML={{ __html: t("hero.title") }}
+        />
+
+        {/* Subheadline */}
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="max-w-3xl mx-auto mt-8 text-lg md:text-xl text-gray-600 dark:text-gray-300 font-medium leading-relaxed"
+        >
+          {t("hero.subtitle")}
+        </motion.p>
+
+        {/* CTA Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="flex justify-center items-center mt-10"
+        >
+          <Button 
+            size="lg" 
+            className="bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white px-10 py-5 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all duration-300 transform hover:scale-105"
+            onClick={() => window.location.href = '/onboarding'}
+          >
+            {t("hero.cta_primary")}
+            <IconArrowRight className="ml-3 w-6 h-6" />
+          </Button>
+        </motion.div>
+
+        {/* Trust indicators */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-500 dark:text-gray-400"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>{t("hero.trust.no_tech_setup")}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>{t("hero.trust.spanish_interface")}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>{t("hero.trust.start_in_2min")}</span>
+          </div>
+        </motion.div>
+      </div>
+    </div>
   );
 };
 
