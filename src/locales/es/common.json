@@ -8,14 +8,14 @@
     "signup": "Registrarse"
   },
   "hero": {
-    "badge": "Nuevo: Briki Prompt Coach",
-    "title": "Habla con IA como un <span class=\"bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">profesional</span><br><span class=\"text-gray-700 dark:text-gray-300\">— aunque nunca lo hayas intentado</span>",
-    "subtitle": "Aprende a escribir mejores prompts, evaluar respuestas de IA y confiar en los resultados. Diseñado para estudiantes, creadores y dueños de pequeños negocios en Latinoamérica.",
-    "cta_primary": "Haz que tu Prompt Funcione",
+    "badge": "Nuevo: Asistente de Seguros Briki",
+    "title": "Tu primer asistente de <span class=\"bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">seguros con IA</span> — chatea y recibe planes reales en segundos",
+    "subtitle": "Explícale a Briki lo que necesitas. Encuentra el mejor seguro, analiza pólizas y compara opciones personalizadas sin complicaciones.",
+    "cta_primary": "Encuentra Mi Seguro",
     "trust": {
-      "no_tech_setup": "Sin configuración técnica",
+      "no_tech_setup": "Sin formularios complejos",
       "spanish_interface": "Interfaz en español",
-      "start_in_2min": "Comienza en 2 minutos"
+      "start_in_2min": "Obtén cotizaciones en 2 minutos"
     }
   },
   "buttons": {
@@ -55,55 +55,55 @@
     "title": "Tus Proyectos"
   },
   "features": {
-    "section_title": "Prompts más inteligentes. Mejores resultados. Confianza real.",
-    "section_subtitle": "Aquí está lo que Briki Prompt Coach hace por ti — y por qué importa.",
+    "section_title": "Búsqueda inteligente de seguros. Planes reales. Respuestas instantáneas.",
+    "section_subtitle": "Aquí está lo que el Asistente de Seguros Briki hace por ti — y por qué importa.",
     "scroll_hint": "DESPLÁZATE",
     "prompt_builder": {
-      "title": "Asistente para Crear Prompts",
-      "description": "No más adivinar — sigue pasos simples para crear el prompt ideal."
+      "title": "Búsqueda en Lenguaje Natural",
+      "description": "Pide seguros en lenguaje simple. Sin formularios, sin jerga — solo dile a Briki lo que necesitas."
     },
     "confidence_advisor": {
-      "title": "Asesor de Confianza",
-      "description": "Briki califica y mejora tu prompt para que obtengas mejores respuestas de ChatGPT, Midjourney y más."
+      "title": "Comparación de Planes",
+      "description": "Briki compara planes de seguros reales lado a lado para que veas cobertura, costos y beneficios claramente."
     },
     "result_analyzer": {
-      "title": "Analizador de Resultados",
-      "description": "Pega la respuesta de la IA y Briki te dice si es confiable — y cómo mejorarla."
+      "title": "Análisis de PDF",
+      "description": "Sube documentos de seguros y Briki explica qué está cubierto, qué no, y lo que debes saber."
     },
     "smart_rephraser": {
-      "title": "Reformulador Inteligente",
-      "description": "Convierte prompts genéricos en mensajes claros, persuasivos o más latinos."
+      "title": "Recomendaciones Personalizadas",
+      "description": "Obtén sugerencias de seguros adaptadas a tu edad, salud, familia y presupuesto — no opciones genéricas."
     },
-    "ready_to_start": "¿Listo para empezar?",
-    "ready_description": "Únete a miles de usuarios que ya están creando prompts más efectivos con Briki Prompt Coach."
+    "ready_to_start": "¿Listo para encontrar tu seguro?",
+    "ready_description": "Únete a miles de usuarios que ya están encontrando mejores planes de seguros con el Asistente de Seguros Briki."
   },
   "use_cases": {
-    "title": "Mira cómo personas como tú usan Briki para obtener mejores resultados con IA",
-    "description": "Descubre casos de uso reales que hacen tangible el concepto de 'prompt coaching' y te ayudan a visualizar cómo usar el producto."
+    "title": "Ve cómo personas como tú usan Briki para encontrar mejores seguros",
+    "description": "Descubre casos de uso reales que hacen que comprar seguros sea simple y te ayuden a visualizar cómo usar el producto."
   },
   "problems": {
-    "title": "Retos comunes con las herramientas de IA",
-    "description": "Muchas personas quieren usar IA pero se enfrentan a estos obstáculos comunes. Briki te ayuda a superarlos con hojas de ruta guiadas y pasos claros."
+    "title": "Desafíos Comunes con los Seguros",
+    "description": "Muchas personas necesitan seguros pero enfrentan estos obstáculos comunes. Briki te ayuda a superarlos con explicaciones claras y recomendaciones personalizadas."
   },
   "who_its_for": {
     "badge": "Diseñado para ti",
-    "title": "¿Para quién es Briki Prompt Coach?",
-    "subtitle": "Si quieres aprender a usar IA de manera efectiva pero te sientes abrumado por la tecnología, Briki está diseñado específicamente para ti.",
+    "title": "¿Para quién es el Asistente de Seguros Briki?",
+    "subtitle": "Si necesitas seguros pero te sientes abrumado por las opciones, formularios complejos o términos confusos, Briki está diseñado específicamente para ti.",
     "students": {
-      "title": "Estudiantes",
-      "description": "Aprende a usar IA para mejorar tus tareas, investigaciones y proyectos académicos de manera ética y efectiva."
+      "title": "Jóvenes Profesionales",
+      "description": "Encuentra seguros de salud asequibles, cobertura de vida y protección de viaje sin pasar horas comparando planes."
     },
     "creators": {
-      "title": "Creadores de Contenido",
-      "description": "Genera ideas, mejora tu escritura y optimiza tu contenido con prompts que realmente funcionan."
+      "title": "Familias",
+      "description": "Obtén cobertura familiar integral, entiende qué está incluido y encuentra planes que protejan a todos los que amas."
     },
     "business": {
-      "title": "Pequeños Negocios",
-      "description": "Automatiza tareas, mejora la atención al cliente y optimiza tus procesos sin conocimientos técnicos."
+      "title": "Dueños de Pequeños Negocios",
+      "description": "Encuentra seguros comerciales, beneficios para empleados y cobertura de responsabilidad que se ajuste a tu presupuesto y proteja tu empresa."
     },
     "professionals": {
-      "title": "Profesionales",
-      "description": "Mejora tu productividad, automatiza tareas repetitivas y mantén tu ventaja competitiva con IA."
+      "title": "Adultos Mayores y Jubilados",
+      "description": "Navega opciones de Medicare, cobertura complementaria y seguros de cuidado a largo plazo con explicaciones claras y recomendaciones."
     }
   },
   "footer": {

@@ -26,56 +26,56 @@ export function ProblemSection() {
   const cards = [
     {
       src: "/images/problems/problem-fragmentation.png",
-      title: language === 'es' ? "Miles de herramientas AI, sin un camino claro." : "Thousands of AI tools, no clear path.",
-      category: language === 'es' ? "Fragmentación" : "Fragmentation",
+      title: language === 'es' ? "Miles de opciones de seguros, sin claridad." : "Thousands of insurance options, no clarity.",
+      category: language === 'es' ? "Confusión" : "Confusion",
       icon: IconPuzzle,
       content: (
         <div className="prose prose-neutral dark:prose-invert">
           <p>{language === 'es'
-            ? "Se necesita mucha prueba y error para descubrir qué herramientas de IA realmente funcionan, y aún más tiempo para hacerlas trabajar juntas. La mayoría se rinde antes de obtener resultados."
-            : "It takes endless trial and error to figure out which AI tools actually work — and even more time to make them work together. Most people give up before they get results."}
+            ? "Hay cientos de planes de seguros disponibles, pero es difícil saber cuál es el mejor para ti. La mayoría de personas se rinden antes de encontrar la opción correcta."
+            : "There are hundreds of insurance plans available, but it's hard to know which one is best for you. Most people give up before finding the right option."}
           </p>
         </div>
       ),
     },
     {
       src: "/images/problems/problem-overwhelm.png",
-      title: language === 'es' ? "No sé ni por dónde empezar." : "I don't even know where to start.",
-      category: language === 'es' ? "Abrumación" : "Overwhelm",
+      title: language === 'es' ? "No entiendo los términos del seguro." : "I don't understand insurance terms.",
+      category: language === 'es' ? "Complejidad" : "Complexity",
       icon: IconAlertTriangle,
       content: (
         <div className="prose prose-neutral dark:prose-invert">
           <p>{language === 'es'
-            ? "Todos dicen 'usa la IA', pero nadie te muestra cómo. Si no eres desarrollador o experto en prompts, parece imposible comenzar sin perder horas."
-            : "Everyone says 'just use AI,' but no one shows you how. If you're not a developer or a prompt engineer, it feels impossible to get started without wasting hours."}
+            ? "Deductibles, copagos, cobertura máxima... los términos de seguros son confusos. Si no eres experto, parece imposible tomar una decisión informada."
+            : "Deductibles, copays, maximum coverage... insurance terms are confusing. If you're not an expert, it feels impossible to make an informed decision."}
           </p>
         </div>
       ),
     },
     {
       src: "/images/problems/problem-accessibility.png",
-      title: language === 'es' ? "No hablo tecnicismos ni promptese." : "I don't speak tech or promptese.",
+      title: language === 'es' ? "Los formularios son largos y complicados." : "Forms are long and complicated.",
       category: language === 'es' ? "Accesibilidad" : "Accessibility",
       icon: IconLanguage,
       content: (
         <div className="prose prose-neutral dark:prose-invert">
           <p>{language === 'es'
-            ? "Interfaces complejas, instrucciones solo en inglés y formatos crípticos hacen que las herramientas de IA parezcan inalcanzables para usuarios comunes, especialmente en Latinoamérica."
-            : "Complex interfaces, English-only instructions, and cryptic prompt formats make AI tools feel out of reach for everyday users — especially in Latin America."}
+            ? "Formularios de 20 páginas, preguntas técnicas y procesos complejos hacen que comprar seguros parezca inalcanzable para usuarios comunes."
+            : "20-page forms, technical questions, and complex processes make buying insurance feel out of reach for everyday users."}
           </p>
         </div>
       ),
     },
     {
       src: "/images/problems/problem-dead-ends.png",
-      title: language === 'es' ? "Probé ChatGPT. ¿Y ahora qué?" : "I tried ChatGPT. Now what?",
-      category: language === 'es' ? "Callejones sin salida" : "Dead ends",
+      title: language === 'es' ? "No sé si estoy pagando de más." : "I don't know if I'm overpaying.",
+      category: language === 'es' ? "Desconfianza" : "Distrust",
       icon: IconMapPin,
       content: (
         <div className="prose prose-neutral dark:prose-invert">
           <p>{language === 'es'
-            ? "La gente prueba una o dos herramientas... y se estanca. No hay siguiente paso, ni hoja de ruta, ni guía. La mayoría nunca va más allá de chats básicos o generación de imágenes."
-            : "People try a tool or two… and get stuck. There's no next step, no roadmap, no hand-holding. Most users never go beyond basic chats or image generation."}
+            ? "La gente compra seguros sin comparar opciones... y se queda con la duda. No hay forma fácil de saber si obtuvieron el mejor precio o cobertura."
+            : "People buy insurance without comparing options... and are left wondering. There's no easy way to know if they got the best price or coverage."}
           </p>
         </div>
       ),
@@ -138,7 +138,7 @@ export function ProblemSection() {
             href="#roadmap"
             className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-8 py-3 rounded-full shadow-lg hover:from-blue-600 hover:to-cyan-600 transition-all text-lg font-semibold"
           >
-            {language === 'es' ? 'Descubre tu ruta →' : 'Discover your roadmap →'}
+            {language === 'es' ? 'Encuentra tu seguro →' : 'Find your insurance →'}
           </a>
         </div>
       </div>

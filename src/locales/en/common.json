@@ -8,14 +8,14 @@
     "signup": "Sign up"
   },
   "hero": {
-    "badge": "New: Briki Prompt Coach",
-    "title": "Talk to AI like a <span class=\"bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">pro</span><br><span class=\"text-gray-700 dark:text-gray-300\">— even if you've never tried before</span>",
-    "subtitle": "Learn to write better prompts, evaluate AI responses, and trust the results. Designed for students, creators, and small business owners in Latin America.",
-    "cta_primary": "Make Your Prompt Work",
+    "badge": "New: Briki Insurance Assistant",
+    "title": "Your first <span class=\"bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">AI insurance</span> assistant — chat and get real plans in seconds",
+    "subtitle": "Tell Briki what you need. Find the best insurance, analyze policies and compare personalized options without complications.",
+    "cta_primary": "Find My Insurance",
     "trust": {
-      "no_tech_setup": "No technical setup",
+      "no_tech_setup": "No complex forms",
       "spanish_interface": "Spanish interface",
-      "start_in_2min": "Start in 2 minutes"
+      "start_in_2min": "Get quotes in 2 minutes"
     }
   },
   "buttons": {
@@ -83,55 +83,55 @@
     "example2": "Or: An e-commerce with personalized recommendations..."
   },
   "problems": {
-    "title": "Common Challenges with AI Tools",
-    "description": "Many people want to use AI but face these common obstacles. Briki helps you overcome them with guided roadmaps and clear next steps."
+    "title": "Common Challenges with Insurance",
+    "description": "Many people need insurance but face these common obstacles. Briki helps you overcome them with clear explanations and personalized recommendations."
   },
   "features": {
-    "section_title": "Smarter prompts. Better results. Real confidence.",
-    "section_subtitle": "Here's what Briki Prompt Coach does for you — and why it matters.",
+    "section_title": "Smart insurance search. Real plans. Instant answers.",
+    "section_subtitle": "Here's what Briki Insurance Assistant does for you — and why it matters.",
     "scroll_hint": "SCROLL",
     "prompt_builder": {
-      "title": "Prompt Builder Wizard",
-      "description": "No more guessing — just follow easy steps to craft your perfect prompt."
+      "title": "Natural Language Search",
+      "description": "Ask for insurance in plain language. No forms, no jargon — just tell Briki what you need."
     },
     "confidence_advisor": {
-      "title": "Confidence Advisor",
-      "description": "Briki rates and improves your prompt so you get better answers from ChatGPT, Midjourney, and more."
+      "title": "Plan Comparison",
+      "description": "Briki compares real insurance plans side-by-side so you can see coverage, costs, and benefits clearly."
     },
     "result_analyzer": {
-      "title": "Result Analyzer",
-      "description": "Paste your AI output and Briki tells you if it's trustworthy — and how to make it better."
+      "title": "PDF Analysis",
+      "description": "Upload insurance documents and Briki explains what's covered, what's not, and what you should know."
     },
     "smart_rephraser": {
-      "title": "Smart Rephraser",
-      "description": "Turn boring prompts into powerful ones with one click. Make them clearer, more persuasive, or more local."
+      "title": "Personalized Recommendations",
+      "description": "Get insurance suggestions tailored to your age, health, family, and budget — not generic options."
     },
-    "ready_to_start": "Ready to start?",
-    "ready_description": "Join thousands of users who are already creating more effective prompts with Briki Prompt Coach."
+    "ready_to_start": "Ready to find your insurance?",
+    "ready_description": "Join thousands of users who are already finding better insurance plans with Briki Insurance Assistant."
   },
   "use_cases": {
-    "title": "See how people like you use Briki to get better results with AI",
-    "description": "Discover real-life use cases that make the abstract concept of 'prompt coaching' tangible and help you visualize yourself using the product."
+    "title": "See how people like you use Briki to find better insurance",
+    "description": "Discover real-life use cases that make insurance shopping simple and help you visualize yourself using the product."
   },
   "who_its_for": {
     "badge": "Designed for you",
-    "title": "Who is Briki Prompt Coach for?",
-    "subtitle": "If you want to learn to use AI effectively but feel overwhelmed by technology, Briki is designed specifically for you.",
+    "title": "Who is Briki Insurance Assistant for?",
+    "subtitle": "If you need insurance but feel overwhelmed by options, complex forms, or confusing terms, Briki is designed specifically for you.",
     "students": {
-      "title": "Students",
-      "description": "Learn to use AI to improve your assignments, research, and academic projects ethically and effectively."
+      "title": "Young Professionals",
+      "description": "Find affordable health insurance, life coverage, and travel protection without spending hours comparing plans."
     },
     "creators": {
-      "title": "Content Creators",
-      "description": "Generate ideas, improve your writing, and optimize your content with prompts that actually work."
+      "title": "Families",
+      "description": "Get comprehensive family coverage, understand what's included, and find plans that protect everyone you love."
     },
     "business": {
       "title": "Small Business Owners",
-      "description": "Automate tasks, improve customer service, and optimize your processes without technical knowledge."
+      "description": "Find business insurance, employee benefits, and liability coverage that fits your budget and protects your company."
     },
     "professionals": {
-      "title": "Professionals",
-      "description": "Improve your productivity, automate repetitive tasks, and maintain your competitive advantage with AI."
+      "title": "Seniors & Retirees",
+      "description": "Navigate Medicare options, supplemental coverage, and long-term care insurance with clear explanations and recommendations."
     }
   },
   "footer": {
