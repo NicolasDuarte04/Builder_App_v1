@@ -59,30 +59,51 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const sessionId = searchParams.get('sessionId');
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
-      );
+    // If sessionId is provided, fetch specific session
+    if (sessionId) {
+      const { data, error } = await supabase
+        .from('onboarding_sessions')
+        .select('*')
+        .eq('id', sessionId)
+        .single();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch onboarding session' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({ session: data });
     }
 
-    // Get user's onboarding sessions
-    const { data, error } = await supabase
-      .from('onboarding_sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    // If userId is provided, fetch user's sessions
+    if (userId) {
+      const { data, error } = await supabase
+        .from('onboarding_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch onboarding sessions' },
-        { status: 500 }
-      );
+      if (error) {
+        console.error('Supabase error:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch onboarding sessions' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({ sessions: data });
     }
 
-    return NextResponse.json({ sessions: data });
+    // If no parameters, return error
+    return NextResponse.json(
+      { error: 'Either userId or sessionId is required' },
+      { status: 400 }
+    );
 
   } catch (error) {
     console.error('API error:', error);

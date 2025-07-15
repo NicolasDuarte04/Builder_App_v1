@@ -76,6 +76,8 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   };
 
   const completeOnboarding = async () => {
+    let sessionId: string | null = null;
+    
     try {
       // Save onboarding data to Supabase
       const response = await fetch('/api/onboarding', {
@@ -97,14 +99,20 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         console.error('Failed to save onboarding session');
       } else {
         const result = await response.json();
-        console.log('Onboarding session saved:', result.sessionId);
+        sessionId = result.sessionId;
+        console.log('Onboarding session saved:', sessionId);
       }
     } catch (error) {
       console.error('Error saving onboarding session:', error);
     }
 
     setIsComplete(true);
-    window.location.href = '/?onboarding=complete';
+    // Redirect to assistant page with session ID
+    if (sessionId) {
+      window.location.href = `/assistant?session=${sessionId}`;
+    } else {
+      window.location.href = '/assistant';
+    }
   };
 
   const value: OnboardingContextType = {
