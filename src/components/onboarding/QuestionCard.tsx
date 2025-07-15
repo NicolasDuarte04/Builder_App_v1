@@ -46,11 +46,9 @@ export function QuestionCard({ question, onAnswer }: QuestionCardProps) {
     <div className="w-full max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <div className="mb-4">
-          <TextGenerateEffect 
-            words={question.question}
-            className="text-3xl md:text-4xl text-gray-800"
-            duration={0.8}
-          />
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 animate-fade-in">
+            {question.question}
+          </h1>
         </div>
         <p className="text-gray-600 text-lg">
           {isTextQuestion ? 'Escribe tu ciudad' : 'Selecciona la opción que mejor te describa'}

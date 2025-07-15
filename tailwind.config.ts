@@ -43,6 +43,7 @@ const config: Config = {
         'gradient-background-2': 'gradient-background-2 8s infinite',
         'gradient-background-3': 'gradient-background-3 8s infinite',
         'spin': 'spin 2s linear infinite',
+        'fade-in': 'fade-in 0.5s ease-in-out',
       },
       keyframes: {
         spin: {
@@ -51,6 +52,16 @@ const config: Config = {
           },
           to: {
             transform: 'rotate(360deg)',
+          },
+        },
+        'fade-in': {
+          from: {
+            opacity: '0',
+            transform: 'translateY(10px)',
+          },
+          to: {
+            opacity: '1',
+            transform: 'translateY(0)',
           },
         },
       },
