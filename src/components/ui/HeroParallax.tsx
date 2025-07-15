@@ -71,7 +71,7 @@ export const Header: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mb-8"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100/80 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium mb-8 backdrop-blur-sm border border-blue-200/50 dark:border-blue-700/30"
         >
           <IconSparkles className="w-4 h-4" />
           <span>{t("hero.badge")}</span>
@@ -96,12 +96,12 @@ export const Header: React.FC = () => {
           {t("hero.subtitle")}
         </motion.p>
 
-        {/* CTA Button */}
+        {/* CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex justify-center items-center mt-10"
+          className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-10"
         >
           <Button 
             size="lg" 
@@ -110,6 +110,15 @@ export const Header: React.FC = () => {
           >
             {t("hero.cta_primary")}
             <IconArrowRight className="ml-3 w-6 h-6" />
+          </Button>
+          <Button 
+            size="lg" 
+            variant="outline"
+            className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20 px-10 py-5 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            onClick={() => window.location.href = '/assistant'}
+          >
+            {t("hero.cta_secondary")}
+            <IconSparkles className="ml-3 w-6 h-6" />
           </Button>
         </motion.div>
 

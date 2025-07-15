@@ -12,6 +12,7 @@
     "title": "Your first <span class=\"bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">AI insurance</span> assistant — chat and get real plans in seconds",
     "subtitle": "Tell Briki what you need. Find the best insurance, analyze policies and compare personalized options without complications.",
     "cta_primary": "Find My Insurance",
+    "cta_secondary": "Talk to Briki AI",
     "trust": {
       "no_tech_setup": "No complex forms",
       "spanish_interface": "Spanish interface",
@@ -151,5 +152,33 @@
     "brand": "Brand",
     "help": "Help",
     "all_rights_reserved": "All rights reserved."
+  },
+  "assistant": {
+    "title": "Insurance Assistant",
+    "subtitle": "Ask about coverage, compare policies, or analyze your documents",
+    "input_placeholder": "Ask about coverage, compare policies, or analyze documents...",
+    "loading_title": "Loading your assistant",
+    "loading_subtitle": "We're preparing everything to help you with your insurance...",
+    "analyze_policy": "Analyze Policy PDF",
+    "compare_policies": "Compare Policies",
+    "analyze_coverage": "Analyze Coverage",
+    "compare_suggestions": "Policy comparison suggestions",
+    "analyze_suggestions": "Coverage analysis suggestions",
+    "suggestions": {
+      "compare": [
+        "Compare health insurance policies",
+        "Which auto insurance offers better coverage?",
+        "Compare life insurance rates",
+        "Which policy has better deductibles?",
+        "Compare coverage limits between policies"
+      ],
+      "analyze": [
+        "Analyze my policy coverage",
+        "What does my policy cover?",
+        "Review my insurance benefits",
+        "Check if my policy covers this",
+        "Analyze policy exclusions"
+      ]
+    }
   }
 } 

@@ -9,7 +9,7 @@ import { useQuiz } from '@/hooks/useQuiz';
 import { BackgroundPaths } from '@/components/ui/background-paths';
 
 export function OnboardingFlow() {
-  const { currentStep, goToNext, goToPrevious, skipOnboarding, setAnswer } = useOnboarding();
+  const { currentStep, goToNext, goToPrevious, skipOnboarding, setAnswer, completeOnboarding } = useOnboarding();
   const { startQuiz, hasCompletedQuiz, getUserPersona } = useQuiz();
 
   const questions = [
@@ -100,7 +100,14 @@ export function OnboardingFlow() {
             if (currentKey) {
               setAnswer(currentKey as any, value);
             }
-            goToNext();
+            
+            // If this is the last question, complete onboarding
+            if (currentStep === 4) {
+              console.log('🎉 Last question answered, completing onboarding...');
+              completeOnboarding();
+            } else {
+              goToNext();
+            }
           }}
         />
       </div>

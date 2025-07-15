@@ -44,6 +44,7 @@ const config: Config = {
         'gradient-background-3': 'gradient-background-3 8s infinite',
         'spin': 'spin 2s linear infinite',
         'fade-in': 'fade-in 0.5s ease-in-out',
+        'gradient': 'gradient 3s ease infinite',
       },
       keyframes: {
         spin: {
@@ -62,6 +63,16 @@ const config: Config = {
           to: {
             opacity: '1',
             transform: 'translateY(0)',
+          },
+        },
+        'gradient': {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center',
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center',
           },
         },
       },

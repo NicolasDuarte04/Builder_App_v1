@@ -12,6 +12,7 @@
     "title": "Tu primer asistente de <span class=\"bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">seguros con IA</span> — chatea y recibe planes reales en segundos",
     "subtitle": "Explícale a Briki lo que necesitas. Encuentra el mejor seguro, analiza pólizas y compara opciones personalizadas sin complicaciones.",
     "cta_primary": "Encuentra Mi Seguro",
+    "cta_secondary": "Hablar con Briki AI",
     "trust": {
       "no_tech_setup": "Sin formularios complejos",
       "spanish_interface": "Interfaz en español",
@@ -53,6 +54,13 @@
   },
   "projects": {
     "title": "Tus Proyectos"
+  },
+  "input": {
+    "errors": {
+      "required": "Por favor ingresa tu idea de proyecto",
+      "tooShort": "Por favor ingresa una descripción más larga",
+      "tooLong": "La descripción es demasiado larga"
+    }
   },
   "features": {
     "section_title": "Búsqueda inteligente de seguros. Planes reales. Respuestas instantáneas.",
@@ -123,5 +131,33 @@
     "brand": "Marca",
     "help": "Ayuda",
     "all_rights_reserved": "Todos los derechos reservados."
+  },
+  "assistant": {
+    "title": "Asistente de Seguros",
+    "subtitle": "Pregunta sobre cobertura, compara pólizas o analiza tus documentos",
+    "input_placeholder": "Pregunta sobre cobertura, compara pólizas o analiza documentos...",
+    "loading_title": "Cargando tu asistente",
+    "loading_subtitle": "Estamos preparando todo para ayudarte con tus seguros...",
+    "analyze_policy": "Analizar Póliza PDF",
+    "compare_policies": "Comparar Pólizas",
+    "analyze_coverage": "Analizar Cobertura",
+    "compare_suggestions": "Sugerencias de comparación de pólizas",
+    "analyze_suggestions": "Sugerencias de análisis de cobertura",
+    "suggestions": {
+      "compare": [
+        "Comparar pólizas de seguro de salud",
+        "¿Qué seguro de auto ofrece mejor cobertura?",
+        "Comparar tarifas de seguro de vida",
+        "¿Qué póliza tiene mejores deducibles?",
+        "Comparar límites de cobertura entre pólizas"
+      ],
+      "analyze": [
+        "Analizar mi cobertura de póliza",
+        "¿Qué cubre mi póliza?",
+        "Revisar mis beneficios de seguro",
+        "Verificar si mi póliza cubre esto",
+        "Analizar exclusiones de póliza"
+      ]
+    }
   }
 } 
