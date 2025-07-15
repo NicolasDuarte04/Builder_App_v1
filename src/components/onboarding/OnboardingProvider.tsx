@@ -78,6 +78,12 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   const completeOnboarding = async () => {
     console.log("🚀 completeOnboarding called");
     console.log("📋 Current answers:", answers);
+    console.log("📊 All answers present:", {
+      insuranceType: !!answers.insuranceType,
+      coverageFor: !!answers.coverageFor,
+      budget: !!answers.budget,
+      city: !!answers.city,
+    });
     
     try {
       console.log("🌐 Making API request to /api/onboarding");

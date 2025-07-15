@@ -66,7 +66,9 @@ Ahora puedo ayudarte a encontrar los mejores planes de seguro que se ajusten a t
 • Comparar planes disponibles
 • Analizar documentos de seguros
 • Recibir recomendaciones personalizadas
-• Hacer preguntas sobre coberturas`;
+• Hacer preguntas sobre coberturas
+
+¡Estoy listo para ayudarte! 🤖`;
   };
 
   // Initialize with welcome message
@@ -119,21 +121,7 @@ Ahora puedo ayudarte a encontrar los mejores planes de seguro que se ajusten a t
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold">B</span>
-            </div>
-            <h1 className="text-xl font-semibold text-gray-900">Briki AI Assistant</h1>
-          </div>
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <span>•</span>
-            <span>Online</span>
-          </div>
-        </div>
-      </div>
+      {/* No custom header - only navbar should be visible */}
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">

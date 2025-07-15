@@ -8,16 +8,25 @@ import { useRouter } from 'next/navigation';
 export default function AssistantPage() {
   const { answers } = useOnboarding();
   const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  // Redirect if no onboarding data
+  // Check for onboarding data with a delay to allow context to load
   React.useEffect(() => {
-    if (!answers.insuranceType || !answers.coverageFor || !answers.budget || !answers.city) {
-      router.push('/onboarding');
-    }
+    const timer = setTimeout(() => {
+      if (!answers.insuranceType || !answers.coverageFor || !answers.budget || !answers.city) {
+        console.log('❌ Missing onboarding data, redirecting to onboarding');
+        router.push('/onboarding');
+      } else {
+        console.log('✅ Onboarding data found:', answers);
+        setIsLoading(false);
+      }
+    }, 1000); // Give context time to load
+
+    return () => clearTimeout(timer);
   }, [answers, router]);
 
   // Show loading while checking data
-  if (!answers.insuranceType || !answers.coverageFor || !answers.budget || !answers.city) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -26,6 +35,11 @@ export default function AssistantPage() {
         </div>
       </div>
     );
+  }
+
+  // Only render if we have all the data
+  if (!answers.insuranceType || !answers.coverageFor || !answers.budget || !answers.city) {
+    return null; // This should not happen due to the useEffect above
   }
 
   const onboardingData = {
