@@ -58,12 +58,12 @@ Ahora puedo ayudarte a encontrar los mejores planes de seguro que se ajusten a t
       {/* Content overlay */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
         <div className="max-w-2xl w-full bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </div>
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          </div>
             <div className="mb-2">
               <TextGenerateEffect 
                 words="¡Perfecto! 🎉"
@@ -71,21 +71,21 @@ Ahora puedo ayudarte a encontrar los mejores planes de seguro que se ajusten a t
                 duration={1.0}
               />
             </div>
-            <p className="text-gray-600 text-lg">
-              Hemos personalizado tu experiencia con Briki
+          <p className="text-gray-600 text-lg">
+            Hemos personalizado tu experiencia con Briki
+          </p>
+        </div>
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Tu información recopilada:
+          </h2>
+          <div className="bg-gray-50 rounded-xl p-6 border-l-4 border-blue-500">
+            <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+                {insuranceSummary}
             </p>
           </div>
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Tu información recopilada:
-            </h2>
-            <div className="bg-gray-50 rounded-xl p-6 border-l-4 border-blue-500">
-              <p className="text-gray-700 whitespace-pre-line leading-relaxed">
-                {insuranceSummary}
-              </p>
-            </div>
-          </div>
-                  <div className="mb-8">
+        </div>
+        <div className="mb-8">
           <h3 className="text-lg font-semibold text-gray-800 mb-3">
             💡 Lo que puedes hacer ahora:
           </h3>
@@ -104,9 +104,13 @@ Ahora puedo ayudarte a encontrar los mejores planes de seguro que se ajusten a t
             </li>
           </ul>
         </div>
-          <div className="text-center">
-            <button
-              onClick={completeOnboarding}
+        <div className="text-center">
+                      <button
+              onClick={() => {
+                console.log("🎯 Button clicked - starting completeOnboarding");
+                console.log("📊 Current answers:", answers);
+                completeOnboarding();
+              }}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               ¡Encontrar mi seguro! 🚀

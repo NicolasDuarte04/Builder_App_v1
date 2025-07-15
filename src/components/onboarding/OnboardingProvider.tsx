@@ -59,7 +59,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   };
 
   const goToNext = () => {
-    if (currentStep < 4) {
+    if (currentStep <= 4) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -76,9 +76,11 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   };
 
   const completeOnboarding = async () => {
-    let sessionId: string | null = null;
+    console.log("🚀 completeOnboarding called");
+    console.log("📋 Current answers:", answers);
     
     try {
+      console.log("🌐 Making API request to /api/onboarding");
       // Save onboarding data to Supabase
       const response = await fetch('/api/onboarding', {
         method: 'POST',
@@ -96,23 +98,20 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       });
 
       if (!response.ok) {
-        console.error('Failed to save onboarding session');
+        console.error('❌ Failed to save onboarding session');
+        console.error('Response status:', response.status);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
       } else {
         const result = await response.json();
-        sessionId = result.sessionId;
-        console.log('Onboarding session saved:', sessionId);
+        console.log('✅ Onboarding session saved:', result.sessionId);
       }
     } catch (error) {
-      console.error('Error saving onboarding session:', error);
+      console.error('💥 Error saving onboarding session:', error);
     }
 
     setIsComplete(true);
-    // Redirect to assistant page with session ID
-    if (sessionId) {
-      window.location.href = `/assistant?session=${sessionId}`;
-    } else {
-      window.location.href = '/assistant';
-    }
+    window.location.href = '/assistant';
   };
 
   const value: OnboardingContextType = {

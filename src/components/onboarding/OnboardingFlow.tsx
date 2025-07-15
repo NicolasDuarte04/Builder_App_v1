@@ -56,9 +56,21 @@ export function OnboardingFlow() {
 
   const currentQuestion = questions.find(q => q.id === currentStep);
 
-  // Show completion screen after all questions
+  console.log("🔍 OnboardingFlow - currentStep:", currentStep);
+  console.log("🔍 OnboardingFlow - currentQuestion:", currentQuestion);
+
+  // Show completion screen after all questions (this should not be reached with new flow)
   if (currentStep > 4) {
-    return <CompletionScreen />;
+    console.log("🎉 Redirecting to Assistant");
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">¡Perfecto!</h1>
+          <p className="text-gray-600">Redirigiendo al asistente...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!currentQuestion) {
@@ -72,7 +84,7 @@ export function OnboardingFlow() {
     );
   }
 
-    return (
+  return (
     <div className="min-h-screen relative">
       {/* Background Paths */}
       <BackgroundPaths />

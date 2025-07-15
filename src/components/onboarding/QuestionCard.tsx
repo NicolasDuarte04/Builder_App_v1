@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useOnboarding } from './OnboardingProvider';
 
 interface QuestionOption {
   value: string;
@@ -53,11 +54,18 @@ function TypewriterEffect({ text, className }: { text: string; className?: strin
 export function QuestionCard({ question, onAnswer }: QuestionCardProps) {
   const [selectedOption, setSelectedOption] = React.useState<string | null>(null);
   const [textInput, setTextInput] = React.useState('');
+  const { completeOnboarding } = useOnboarding();
 
   const handleOptionClick = (value: string) => {
     setSelectedOption(value);
     setTimeout(() => {
       onAnswer(value);
+      // If this is the final step (step 4), trigger completeOnboarding
+      if (question.id === 4) {
+        setTimeout(() => {
+          completeOnboarding();
+        }, 500);
+      }
     }, 300);
   };
 
@@ -65,6 +73,12 @@ export function QuestionCard({ question, onAnswer }: QuestionCardProps) {
     e.preventDefault();
     if (textInput.trim()) {
       onAnswer(textInput.trim());
+      // If this is the final step (step 4), trigger completeOnboarding
+      if (question.id === 4) {
+        setTimeout(() => {
+          completeOnboarding();
+        }, 500);
+      }
     }
   };
 
