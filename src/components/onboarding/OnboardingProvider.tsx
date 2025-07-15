@@ -75,7 +75,34 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     window.location.href = '/';
   };
 
-  const completeOnboarding = () => {
+  const completeOnboarding = async () => {
+    try {
+      // Save onboarding data to Supabase
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          insuranceType: answers.insuranceType,
+          coverageTarget: answers.coverageFor,
+          budget: answers.budget,
+          city: answers.city,
+          // userId will be null for anonymous users
+          userId: null, // TODO: Add user authentication later
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to save onboarding session');
+      } else {
+        const result = await response.json();
+        console.log('Onboarding session saved:', result.sessionId);
+      }
+    } catch (error) {
+      console.error('Error saving onboarding session:', error);
+    }
+
     setIsComplete(true);
     window.location.href = '/?onboarding=complete';
   };

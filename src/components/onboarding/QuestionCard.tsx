@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { TextGenerateEffect } from '@/components/ui/text-generate-effect';
 
 interface QuestionOption {
   value: string;
@@ -20,6 +19,35 @@ interface Question {
 interface QuestionCardProps {
   question: Question;
   onAnswer: (value: string) => void;
+}
+
+// Custom Typewriter Effect Component
+function TypewriterEffect({ text, className }: { text: string; className?: string }) {
+  const [displayText, setDisplayText] = React.useState('');
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    setDisplayText('');
+    setCurrentIndex(0);
+  }, [text]);
+
+  React.useEffect(() => {
+    if (currentIndex < text.length) {
+      const timer = setTimeout(() => {
+        setDisplayText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, 50); // Adjust speed here (50ms per character)
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, text]);
+
+  return (
+    <h1 className={className}>
+      {displayText}
+      <span className="animate-pulse">|</span>
+    </h1>
+  );
 }
 
 export function QuestionCard({ question, onAnswer }: QuestionCardProps) {
@@ -46,11 +74,12 @@ export function QuestionCard({ question, onAnswer }: QuestionCardProps) {
     <div className="w-full max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <div className="mb-4">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 animate-fade-in">
-            {question.question}
-          </h1>
+          <TypewriterEffect 
+            text={question.question}
+            className="text-3xl md:text-4xl font-bold text-gray-800"
+          />
         </div>
-        <p className="text-gray-600 text-lg">
+        <p className="text-gray-600 text-lg animate-fade-in" style={{ animationDelay: '800ms', animationFillMode: 'both' }}>
           {isTextQuestion ? 'Escribe tu ciudad' : 'Selecciona la opción que mejor te describa'}
         </p>
       </div>
@@ -79,17 +108,21 @@ export function QuestionCard({ question, onAnswer }: QuestionCardProps) {
         </form>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {question.options?.map((option) => (
+          {question.options?.map((option, index) => (
             <button
               key={option.value}
               onClick={() => handleOptionClick(option.value)}
               className={`
-                relative p-6 rounded-xl border-2 transition-all duration-200 transform hover:scale-105
+                relative p-6 rounded-xl border-2 transition-all duration-200 transform hover:scale-105 animate-fade-in
                 ${selectedOption === option.value
                   ? 'border-blue-500 bg-blue-50/90 backdrop-blur-sm shadow-lg scale-105'
                   : 'border-gray-200 bg-white/90 backdrop-blur-sm hover:border-gray-300 hover:shadow-md'
                 }
               `}
+              style={{
+                animationDelay: `${index * 100}ms`,
+                animationFillMode: 'both'
+              }}
             >
               {selectedOption === option.value && (
                 <div className="absolute top-3 right-3 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
@@ -112,7 +145,7 @@ export function QuestionCard({ question, onAnswer }: QuestionCardProps) {
       )}
       
       <div className="mt-8 text-center">
-        <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm">
+        <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm animate-fade-in" style={{ animationDelay: '1200ms', animationFillMode: 'both' }}>
           <span className="text-sm text-gray-600">Paso</span>
           <span className="text-sm font-semibold text-blue-600">{question.id}</span>
           <span className="text-sm text-gray-600">de 4</span>
