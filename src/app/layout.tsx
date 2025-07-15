@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/components/LanguageProvider"
 import { MainNavbar } from "@/components/layout/Navbar"
 import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar"
 import AuthProvider from "@/components/AuthProvider"
+import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -42,9 +43,11 @@ export default function RootLayout({
         >
           <LanguageProvider>
             <AuthProvider>
-              <ScrollProgressBar />
-              <MainNavbar />
-              {children}
+              <OnboardingProvider>
+                <ScrollProgressBar />
+                <MainNavbar />
+                {children}
+              </OnboardingProvider>
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
