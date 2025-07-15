@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { BackgroundLines } from "@/components/ui/background-lines";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useBrikiChat } from "@/hooks/useBrikiChat";
 
 interface AIAssistantInterfaceProps {
   isLoading?: boolean;
@@ -19,7 +20,15 @@ interface AIAssistantInterfaceProps {
 
 export function AIAssistantInterface({ isLoading = false }: AIAssistantInterfaceProps) {
   const { t } = useTranslation();
-  const [inputValue, setInputValue] = useState("");
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading: chatLoading,
+    error: chatError,
+    clearChat,
+  } = useBrikiChat();
 
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const [showUploadAnimation, setShowUploadAnimation] = useState(false);
@@ -100,7 +109,7 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
                   ></feGaussianBlur>
                 </filter>
                 <clipPath id="cs_clip_1_ellipse-12">
-                  <path fill="#fff" d="M0 0H200V200H0z"></path>
+                  <path fill="#fff" d="0 0H200V200H0z"></path>
                 </clipPath>
               </defs>
               <g
@@ -189,7 +198,7 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
   };
 
   const handleCommandSelect = (command: string) => {
-    setInputValue(command);
+    handleInputChange({ target: { value: command } } as React.ChangeEvent<HTMLInputElement>);
     setActiveCommandCategory(null);
 
     if (inputRef.current) {
@@ -197,10 +206,10 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
     }
   };
 
-  const handleSendMessage = () => {
-    if (inputValue.trim()) {
-      console.log("Sending message:", inputValue);
-      setInputValue("");
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      handleSubmit(e);
     }
   };
 
@@ -274,7 +283,7 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
                 ></feGaussianBlur>
               </filter>
               <clipPath id="cs_clip_1_ellipse-12">
-                <path fill="#fff" d="M0 0H200V200H0z"></path>
+                <path fill="#fff" d="0 0H200V200H0z"></path>
               </clipPath>
             </defs>
             <g
@@ -337,17 +346,43 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
           </motion.div>
         </div>
 
+        {/* Chat messages display */}
+        {messages.length > 0 && (
+          <div className="w-full mb-4 max-h-64 overflow-y-auto">
+            <div className="space-y-3">
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${
+                    message.role === 'user' ? 'justify-end' : 'justify-start'
+                  }`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      message.role === 'user'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Input area with integrated functions and file upload */}
-        <div className="w-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-sm overflow-hidden mb-4">
+        <form onSubmit={handleSendMessage} className="w-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-sm overflow-hidden mb-4">
           <div className="p-4">
-                          <input
-                ref={inputRef}
-                type="text"
-                placeholder={t("assistant.input_placeholder")}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="w-full text-gray-700 dark:text-gray-200 text-base outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent"
-              />
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder={t("assistant.input_placeholder")}
+              value={input}
+              onChange={handleInputChange}
+              className="w-full text-gray-700 dark:text-gray-200 text-base outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent"
+            />
           </div>
 
           {/* Uploaded files */}
@@ -397,15 +432,19 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
                 <Mic className="w-5 h-5" />
               </button>
               <button
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim()}
+                type="submit"
+                disabled={!input.trim() || chatLoading}
                 className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-                  inputValue.trim()
+                  input.trim() && !chatLoading
                     ? "bg-blue-600 text-white hover:bg-blue-700"
                     : "bg-gray-100 dark:bg-neutral-800 text-gray-400 dark:text-gray-500 cursor-not-allowed"
                 }`}
               >
-                <ArrowUp className="w-4 h-4" />
+                {chatLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  <ArrowUp className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
@@ -413,6 +452,7 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
           {/* Upload files */}
           <div className="px-4 py-2 border-t border-gray-100 dark:border-neutral-700">
             <button
+              type="button"
               onClick={handleUploadFile}
               className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
             >
@@ -456,7 +496,7 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
               <span>{t("assistant.analyze_policy")}</span>
             </button>
           </div>
-        </div>
+        </form>
 
         {/* Insurance action buttons */}
         <div className="w-full grid grid-cols-2 gap-4 mb-4">
@@ -528,6 +568,13 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Error display */}
+        {chatError && (
+          <div className="w-full mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-sm text-red-700 dark:text-red-400">{chatError.message}</p>
+          </div>
+        )}
       </div>
     </BackgroundLines>
   );
