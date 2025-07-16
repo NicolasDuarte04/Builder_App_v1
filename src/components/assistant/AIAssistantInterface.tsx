@@ -13,6 +13,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BackgroundLines } from "@/components/ui/background-lines";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBrikiChat } from "@/hooks/useBrikiChat";
+import { MessageRenderer } from "./MessageRenderer";
+import { PDFUpload } from "./PDFUpload";
+import { PolicyAnalysisDisplay } from "./PolicyAnalysisDisplay";
+import { PolicyHistory } from "./PolicyHistory";
+import { X } from "lucide-react";
 
 interface AIAssistantInterfaceProps {
   isLoading?: boolean;
@@ -35,6 +40,10 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
   const [activeCommandCategory, setActiveCommandCategory] = useState<
     string | null
   >(null);
+  const [showPDFUpload, setShowPDFUpload] = useState(false);
+  const [policyAnalysis, setPolicyAnalysis] = useState<any>(null);
+  const [showPolicyHistory, setShowPolicyHistory] = useState(false);
+  const [userId, setUserId] = useState<string>('test-user'); // TODO: Get from auth
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Show loading state if data is still loading
@@ -109,7 +118,7 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
                   ></feGaussianBlur>
                 </filter>
                 <clipPath id="cs_clip_1_ellipse-12">
-                  <path fill="#fff" d="0 0H200V200H0z"></path>
+                  <path fill="#fff" d="M0 0H200V200H0z"></path>
                 </clipPath>
               </defs>
               <g
@@ -187,14 +196,17 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
   };
 
   const handleUploadFile = () => {
-    setShowUploadAnimation(true);
+    setShowPDFUpload(true);
+  };
 
-    // Simulate file upload with timeout
-    setTimeout(() => {
-      const newFile = `Document.pdf`;
-      setUploadedFiles((prev) => [...prev, newFile]);
-      setShowUploadAnimation(false);
-    }, 1500);
+  const handleAnalysisComplete = (analysis: any) => {
+    setPolicyAnalysis(analysis);
+    setShowPDFUpload(false);
+  };
+
+  const handleAnalysisError = (error: string) => {
+    console.error('PDF analysis error:', error);
+    setShowPDFUpload(false);
   };
 
   const handleCommandSelect = (command: string) => {
@@ -283,7 +295,7 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
                 ></feGaussianBlur>
               </filter>
               <clipPath id="cs_clip_1_ellipse-12">
-                <path fill="#fff" d="0 0H200V200H0z"></path>
+                <path fill="#fff" d="M0 0H200V200H0z"></path>
               </clipPath>
             </defs>
             <g
@@ -358,13 +370,22 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
                   }`}
                 >
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    className={`${
                       message.role === 'user'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300'
+                        ? 'max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-blue-600 text-white'
+                        : 'max-w-2xl'
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
+                    {message.role === 'user' ? (
+                      <p className="text-sm">{message.content}</p>
+                    ) : (
+                      <div className="bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg">
+                        <MessageRenderer 
+                          content={message.content} 
+                          toolInvocations={(message as any).toolInvocations}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -575,6 +596,93 @@ export function AIAssistantInterface({ isLoading = false }: AIAssistantInterface
             <p className="text-sm text-red-700 dark:text-red-400">{chatError.message}</p>
           </div>
         )}
+
+        {/* PDF Upload Modal */}
+        <AnimatePresence>
+          {showPDFUpload && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setShowPDFUpload(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                      Analizar Póliza de Seguro
+                    </h2>
+                    <button
+                      onClick={() => setShowPDFUpload(false)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <PDFUpload
+                      onAnalysisComplete={handleAnalysisComplete}
+                      onError={handleAnalysisError}
+                      userId={userId}
+                    />
+                    
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                      <PolicyHistory 
+                        userId={userId} 
+                        onViewAnalysis={setPolicyAnalysis}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Policy Analysis Display */}
+        <AnimatePresence>
+          {policyAnalysis && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setPolicyAnalysis(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                      Análisis de Póliza
+                    </h2>
+                    <button
+                      onClick={() => setPolicyAnalysis(null)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  <PolicyAnalysisDisplay analysis={policyAnalysis} />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </BackgroundLines>
   );
