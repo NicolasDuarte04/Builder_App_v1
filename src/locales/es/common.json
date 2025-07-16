@@ -159,5 +159,28 @@
         "Analizar exclusiones de póliza"
       ]
     }
+  },
+  "plans": {
+    "notFound": "No se encontraron planes recomendados para tu solicitud.",
+    "detailsToastTitle": "Detalles del Plan",
+    "detailsToastDescription": "Viendo detalles de {planName}",
+    "redirectingToastTitle": "Redirigiendo",
+    "redirectingToastDescription": "Abriendo sitio de {provider}",
+    "quotingToastTitle": "Iniciando Cotización",
+    "quotingToastDescription": "Cotizando {planName} de {provider}",
+    "planNotFoundError": "No se pudo encontrar el plan seleccionado.",
+    "viewAllToastTitle": "Mostrando Todos los Planes",
+    "viewAllToastDescription": "Viendo todos los planes de {category}",
+    "recommendedTitle": "Planes de {category} recomendados para ti",
+    "defaultCategory": "seguro",
+    "viewAllButton": "Ver Todos los Planes",
+    "quoteButton": "Cotizar",
+    "cheapestTag": "Más Económico",
+    "recommendedTag": "Recomendado",
+    "bestValueTag": "Mejor Precio",
+    "tags": {
+      "recommended": "Recomendado",
+      "bestValue": "Mejor Precio"
+    }
   }
 } 

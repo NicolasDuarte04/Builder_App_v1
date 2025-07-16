@@ -1,191 +1,217 @@
 import { Pool } from 'pg';
+import { InsurancePlan, InsurancePlanFromDB } from '@/types/project';
 
-// Determine whether we have Postgres credentials (production) or should fallback to mock data (development/demo)
-const hasDatabaseUrl = !!process.env.RENDER_POSTGRES_URL;
+// Check for database URL and initialize connection pool
+export const hasDatabaseUrl = !!process.env.RENDER_POSTGRES_URL;
 
-let pool: Pool | null = null;
+export const pool = hasDatabaseUrl
+  ? new Pool({
+      connectionString: process.env.RENDER_POSTGRES_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    })
+  : null;
 
-if (hasDatabaseUrl) {
-  pool = new Pool({
-    connectionString: process.env.RENDER_POSTGRES_URL,
-    ssl: { rejectUnauthorized: false }
+if (pool) {
+  pool.on('error', (err, client) => {
+    console.error('Unexpected error on idle client', err);
+    process.exit(-1);
   });
-
-  pool.on('connect', () => {
-    console.log('✅ Connected to Render PostgreSQL database');
-  });
-
-  pool.on('error', (err: Error) => {
-    console.error('❌ Render PostgreSQL connection error:', err);
-  });
-} else {
-  console.warn('⚠️  RENDER_POSTGRES_URL not set – using in-memory mock insurance plans');
 }
 
-// ---------------------------------------------------------------------------
-// Mock data for local development (avoids runtime crashes when DB not present)
-// ---------------------------------------------------------------------------
+console.log('Database connection status:', {
+  hasDatabaseUrl,
+  poolExists: !!pool,
+});
 
-const mockPlans: InsurancePlan[] = [
-  {
-    id: '1',
-    plan_name: 'Plan Salud Premium',
-    provider: 'Seguros Bolívar',
-    insurance_type: 'salud',
-    monthly_premium: 150000,
-    coverage_summary: 'Cobertura médica completa',
-    quote_link: 'https://segurosbolivar.com',
-    provider_logo: '',
-    coverage_details: {},
-    deductibles: {},
-    exclusions: [],
-    policy_duration: 12,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    plan_name: 'Plan Salud Básico',
-    provider: 'Sura',
-    insurance_type: 'salud',
-    monthly_premium: 80000,
-    coverage_summary: 'Cobertura esencial',
-    quote_link: 'https://sura.com',
-    provider_logo: '',
-    coverage_details: {},
-    deductibles: {},
-    exclusions: [],
-    policy_duration: 12,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
-];
+function transformPlan(plan: InsurancePlanFromDB): InsurancePlan {
+  // Format currency values - always display in COP for Colombian market
+  const formatCurrencyValue = (value: number, originalCurrency: string) => {
+    // Convert to COP if needed (rough conversion rates)
+    let copValue = value;
+    if (originalCurrency === 'USD') {
+      copValue = value * 4000; // Approximate USD to COP
+    } else if (originalCurrency === 'EUR') {
+      copValue = value * 4400; // Approximate EUR to COP
+    }
+    
+    const formatter = new Intl.NumberFormat('es-CO', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+    return `${formatter.format(copValue)} COP`;
+  };
 
-// Insurance plan interface matching the database schema
-export interface InsurancePlan {
-  id: string;
-  plan_name: string;
-  provider: string;
-  provider_logo?: string;
-  insurance_type: string;
-  monthly_premium: number;
-  coverage_summary: string;
-  coverage_details?: Record<string, any>;
-  deductibles?: Record<string, number>;
-  exclusions?: string[];
-  policy_duration?: number;
-  quote_link: string;
-  created_at: string;
-  updated_at: string;
+  return {
+    id: plan.id.toString(),
+    name: plan.name,
+    provider: plan.provider,
+    base_price: parseFloat(plan.base_price as any),
+    base_price_formatted: formatCurrencyValue(parseFloat(plan.base_price as any), plan.currency),
+    benefits: Array.isArray(plan.benefits) ? plan.benefits : [],
+    category: plan.category,
+    country: plan.country,
+    coverage_amount: parseFloat(plan.coverage_amount as any),
+    coverage_amount_formatted: formatCurrencyValue(parseFloat(plan.coverage_amount as any), plan.currency),
+    currency: 'COP', // Always return COP for frontend consistency
+    rating: plan.rating,
+    reviews: plan.reviews,
+    is_external: plan.is_external,
+    external_link: plan.external_link,
+    brochure_link: plan.brochure_link,
+    created_at: new Date(plan.created_at).toISOString(),
+    updated_at: new Date(plan.updated_at).toISOString(),
+  };
 }
 
 // Query insurance plans with filters
 export async function queryInsurancePlans(filters: {
-  type?: string;
-  maxPremium?: number;
-  preferences?: string[];
+  category?: string;
+  max_price?: number;
+  country?: string;
   limit?: number;
 }): Promise<InsurancePlan[]> {
+  console.log('🔍 queryInsurancePlans called with filters:', filters);
+
+  if (!pool) {
+    console.error('❌ Database connection not available.');
+    return [];
+  }
+
   try {
     let query = 'SELECT * FROM insurance_plans WHERE 1=1';
     const params: any[] = [];
     let paramIndex = 1;
 
-    // Add insurance type filter
-    if (filters.type) {
-      query += ` AND insurance_type = $${paramIndex}`;
-      params.push(filters.type);
-      paramIndex++;
+    if (filters.category) {
+      query += ` AND category ILIKE $${paramIndex++}`;
+      params.push(`%${filters.category}%`);
+    }
+    if (filters.country) {
+      query += ` AND country = $${paramIndex++}`;
+      params.push(filters.country);
+    }
+    if (filters.max_price) {
+      query += ` AND base_price <= $${paramIndex++}`;
+      params.push(filters.max_price);
     }
 
-    // Add budget filter
-    if (filters.maxPremium) {
-      query += ` AND monthly_premium <= $${paramIndex}`;
-      params.push(filters.maxPremium);
-      paramIndex++;
-    }
-
-    // Add preferences filter (search in coverage_summary)
-    if (filters.preferences && filters.preferences.length > 0) {
-      const preferenceConditions = filters.preferences.map((pref, index) => {
-        query += ` AND coverage_summary ILIKE $${paramIndex + index}`;
-        params.push(`%${pref}%`);
-        return true;
-      });
-      paramIndex += filters.preferences.length;
-    }
-
-    // Order by premium (lowest first) and limit results
-    query += ' ORDER BY monthly_premium ASC';
-    query += ` LIMIT $${paramIndex}`;
+    query += ' ORDER BY base_price ASC';
+    query += ` LIMIT $${paramIndex++}`;
     params.push(filters.limit || 4);
 
-    console.log('🔍 Querying insurance plans:', {
-      query: query.substring(0, 100) + '...',
-      params: params.slice(0, 3),
-      filters
-    });
-
-    if (!hasDatabaseUrl || !pool) {
-      // Return filtered mock data
-      const filtered = mockPlans.filter(plan => {
-        return (!filters.type || plan.insurance_type === filters.type) &&
-               (!filters.maxPremium || plan.monthly_premium <= filters.maxPremium);
-      }).slice(0, filters.limit || 4);
-      console.log(`📝 Returning ${filtered.length} mock plans`);
-      return filtered;
-    }
+    console.log('🔍 Executing final query:', { query, params });
 
     const result = await pool.query(query, params);
-    
-    console.log(`✅ Found ${result.rows.length} insurance plans`);
-    return result.rows;
+
+    console.log(`✅ Database query successful: Found ${result.rows.length} plans.`);
+    return result.rows.map(transformPlan);
   } catch (error) {
     console.error('❌ Error querying insurance plans:', error);
-    throw new Error(`Failed to query insurance plans: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return [];
   }
 }
 
 // Get all available insurance types
 export async function getInsuranceTypes(): Promise<string[]> {
+  if (!pool) {
+    console.error('❌ Database connection not available.');
+    return [];
+  }
   try {
-    if (!hasDatabaseUrl || !pool) {
-      return Array.from(new Set(mockPlans.map(p => p.insurance_type)));
-    }
-
-    const result = await pool.query('SELECT DISTINCT insurance_type FROM insurance_plans ORDER BY insurance_type');
-    return result.rows.map((row: { insurance_type: string }) => row.insurance_type);
+    const result = await pool.query('SELECT DISTINCT category FROM insurance_plans ORDER BY category');
+    return result.rows.map((row: { category: string }) => row.category);
   } catch (error) {
     console.error('❌ Error getting insurance types:', error);
-    throw new Error(`Failed to get insurance types: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return [];
   }
 }
 
 // Get plan by ID
 export async function getPlanById(planId: string): Promise<InsurancePlan | null> {
+  if (!pool) {
+    console.error('❌ Database connection not available.');
+    return null;
+  }
   try {
-    if (!hasDatabaseUrl || !pool) {
-      return mockPlans.find(p => p.id === planId) || null;
-    }
-
     const result = await pool.query('SELECT * FROM insurance_plans WHERE id = $1', [planId]);
-    return result.rows[0] || null;
+    if (result.rows.length === 0) {
+      return null;
+    }
+    return transformPlan(result.rows[0]);
   } catch (error) {
     console.error('❌ Error getting plan by ID:', error);
-    throw new Error(`Failed to get plan: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return null;
   }
 }
 
 // Test database connection
 export async function testConnection(): Promise<boolean> {
+  if (!pool) return false;
   try {
-    if (!hasDatabaseUrl || !pool) return true;
-    const result = await pool.query('SELECT 1');
-    return result.rows.length > 0;
+    await pool.query('SELECT 1');
+    return true;
   } catch (error) {
     console.error('❌ Database connection test failed:', error);
     return false;
   }
 }
 
-export { pool }; 
+// Manual test function to verify database data
+export async function testDatabaseData(): Promise<void> {
+  console.log('🧪 Testing database data availability...');
+  
+  if (!pool) {
+    console.log('📝 No database connection - using mock data');
+    return;
+  }
+
+  try {
+    // Test basic connection
+    console.log('🔍 Testing basic connection...');
+    const connectionTest = await pool.query('SELECT 1 as test');
+    console.log('✅ Basic connection successful:', connectionTest.rows[0]);
+
+    // Test table existence
+    console.log('🔍 Testing table existence...');
+    const tableTest = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'insurance_plans'
+      );
+    `);
+    console.log('✅ Table existence check:', tableTest.rows[0]);
+
+    // Test data count
+    console.log('🔍 Testing data count...');
+    const countTest = await pool.query('SELECT COUNT(*) as total FROM insurance_plans');
+    console.log('✅ Total plans in database:', countTest.rows[0].total);
+
+    // Test sample data
+    console.log('🔍 Testing sample data...');
+    const sampleTest = await pool.query('SELECT * FROM insurance_plans LIMIT 3');
+    console.log('✅ Sample plans:', sampleTest.rows);
+
+    // Test filtered query (like the tool would use)
+    console.log('🔍 Testing filtered query (salud type)...');
+    const filteredTest = await pool.query(`
+      SELECT * FROM insurance_plans 
+      WHERE category = 'salud' 
+      ORDER BY monthly_premium ASC 
+      LIMIT 4
+    `);
+    console.log('✅ Filtered plans (salud):', {
+      count: filteredTest.rows.length,
+      plans: filteredTest.rows
+    });
+
+  } catch (error) {
+    console.error('❌ Database test failed:', error);
+    console.error('❌ Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+  }
+} 

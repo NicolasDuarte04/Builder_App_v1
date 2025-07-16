@@ -71,7 +71,7 @@ export function InsurancePlanCard({ plan, onQuote, onDetails }: InsurancePlanCar
                 <p className="text-sm text-gray-600">{plan.provider}</p>
               </div>
             </div>
-            <Badge label={plan.insurance_type} variant="neutral" className="bg-blue-50 text-blue-700" />
+            <Badge label={plan.category} variant="neutral" className="bg-blue-50 text-blue-700" />
           </div>
         </CardHeader>
 
@@ -81,7 +81,7 @@ export function InsurancePlanCard({ plan, onQuote, onDetails }: InsurancePlanCar
             <div>
               <p className="text-sm text-gray-600">Prima mensual</p>
               <p className="text-2xl font-bold text-blue-600">
-                {formatPrice(plan.monthly_premium)}
+                {formatPrice(plan.base_price)}
               </p>
             </div>
             <Shield className="w-8 h-8 text-blue-500" />

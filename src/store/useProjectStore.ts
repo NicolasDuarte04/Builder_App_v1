@@ -1,9 +1,47 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ProjectStore } from '@/types/store';
+import * as RoadmapTypes from '@/types/roadmap';
+import { type Message } from '@ai-sdk/react';
+import { ProjectStore as ProjectStoreType } from '@/types/store';
 import { RoadmapNode } from '@/types/project';
 
-export const useProjectStore = create<ProjectStore>()(
+export interface ProjectStore {
+  // Initial State
+  projects: any[];
+  currentProject: any | null;
+  isLoading: boolean;
+  error: any | null;
+  isGenerating: boolean;
+  
+  // New Chat State
+  chatMode: 'smart' | 'manual';
+  chatHistory: Message[];
+
+  // Project Actions
+  setProjects: (projects: any[]) => void;
+  addProject: (project: any) => void;
+  updateProject: (projectId: string, updates: any) => void;
+  deleteProject: (projectId: string) => void;
+  setCurrentProject: (project: any) => void;
+
+  // Roadmap Actions
+  updateRoadmapNode: (projectId: string, nodeId: string, updates: any) => void;
+  addRoadmapNode: (projectId: string, parentNodeId: string | null, newNode: any) => void;
+  deleteRoadmapNode: (projectId: string, nodeId: string) => void;
+
+  // New Chat Actions
+  setChatMode: (mode: 'smart' | 'manual') => void;
+  setChatHistory: (history: Message[]) => void;
+  appendChatHistory: (newMessages: Message[]) => void;
+  addMessage: (message: Message) => void;
+  clearChatHistory: () => void;
+
+  // UI Actions
+  setIsGenerating: (isGenerating: boolean) => void;
+  setError: (error: any) => void;
+}
+
+export const useProjectStore = create<ProjectStoreType>()(
   persist(
     (set) => ({
       // Initial State
@@ -174,8 +212,13 @@ export const useProjectStore = create<ProjectStore>()(
 
       // New Chat Actions
       setChatMode: (mode) => set({ chatMode: mode }),
-      setChatHistory: (history) => set({ chatHistory: history }),
-      addMessage: (message) => set((state) => ({ chatHistory: [...state.chatHistory, message] })),
+      setChatHistory: (history: Message[]) => set({ chatHistory: history }),
+      appendChatHistory: (newMessages: Message[]) =>
+        set((state) => ({
+          chatHistory: [...state.chatHistory, ...newMessages],
+        })),
+      addMessage: (message: Message) =>
+        set((state) => ({ chatHistory: [...state.chatHistory, message] })),
       clearChatHistory: () => set({ chatHistory: [], currentProject: null, chatMode: 'smart' }),
 
       // UI Actions

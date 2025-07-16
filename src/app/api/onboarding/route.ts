@@ -21,6 +21,10 @@ const supabase = createClient(
 export async function POST(request: NextRequest) {
   console.log("📥 API: POST /api/onboarding called");
   
+  // Log Supabase configuration
+  console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log("Using service role key:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  
   // Check if Supabase is configured
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !supabaseKey) {
     console.error('❌ Supabase environment variables not configured');
@@ -65,7 +69,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('❌ Supabase error:', error);
+      console.error('❌ Supabase error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
       return NextResponse.json(
         { error: 'Failed to save onboarding session' },
         { status: 500 }
@@ -79,8 +88,11 @@ export async function POST(request: NextRequest) {
       message: 'Onboarding session saved successfully' 
     });
 
-  } catch (error) {
-    console.error('API error:', error);
+  } catch (error: any) {
+    console.error('API error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -108,7 +120,12 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Supabase error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
       return NextResponse.json(
         { error: 'Failed to fetch onboarding sessions' },
         { status: 500 }
@@ -117,8 +134,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ sessions: data });
 
-  } catch (error) {
-    console.error('API error:', error);
+  } catch (error: any) {
+    console.error('API error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -180,5 +180,26 @@
         "Analyze policy exclusions"
       ]
     }
+  },
+  "plans": {
+    "notFound": "No recommended plans found for your request.",
+    "detailsToastTitle": "Plan Details",
+    "detailsToastDescription": "Viewing details for {planName}",
+    "redirectingToastTitle": "Redirecting",
+    "redirectingToastDescription": "Opening site for {provider}",
+    "quotingToastTitle": "Starting Quote",
+    "quotingToastDescription": "Quoting {planName} from {provider}",
+    "planNotFoundError": "Could not find the selected plan.",
+    "viewAllToastTitle": "Showing All Plans",
+    "viewAllToastDescription": "Viewing all plans for {category}",
+    "recommendedTitle": "Recommended Plans:",
+    "viewAllButton": "View All Plans",
+    "quoteButton": "Get Quote",
+    "cheapestTag": "Most Affordable",
+    "recommendedTag": "Recommended",
+    "bestValueTag": "Best Value"
+  },
+  "common": {
+    "error": "Error"
   }
 } 

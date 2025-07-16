@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { Badge } from "../ui/Badge";
 import { Button } from "../ui/button";
 import { CheckCircle, ArrowRight, ExternalLink, Star, TrendingUp, Check } from "lucide-react";
 import { Separator } from '../ui/separator';
@@ -17,9 +16,11 @@ export interface InsurancePlan {
  basePrice: number;
  currency: string;
  benefits: string[];
- isExternal?: boolean;
- externalLink?: string | null;
+ is_external?: boolean;
+ external_link?: string | null;
  features?: string[];
+ rating?: number;
+ tags?: string[];
 }
 
 
@@ -27,8 +28,6 @@ interface NewPlanCardProps {
  plan: InsurancePlan;
  onViewDetails: (planId: number) => void;
  onQuote: (planId: number) => void;
- isSelected?: boolean;
- onSelectionToggle?: (planId: number) => void;
 }
 
 
@@ -49,35 +48,37 @@ const getPriceDisplay = (price: number | null | undefined, currency: string) => 
 };
 
 
-const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote, isSelected = false, onSelectionToggle }) => {
+const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote }) => {
  const cardVariants = {
    hidden: { opacity: 0, y: 20 },
    visible: { opacity: 1, y: 0 },
  };
 
 
- const handleQuoteClick = () => {
-   if (plan.isExternal && plan.externalLink) {
-     // Open external link in new tab
-     window.open(plan.externalLink, '_blank', 'noopener,noreferrer');
-   } else {
-     // Call the internal quote handler
-     onQuote(plan.id);
-   }
+ const handleQuoteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (plan.is_external && plan.external_link) {
+      window.open(plan.external_link, '_blank', 'noopener,noreferrer');
+    } else {
+      onQuote(plan.id);
+    }
  };
 
-
- const handleSelectionClick = (e: React.MouseEvent) => {
-   e.stopPropagation();
-   if (onSelectionToggle) {
-     onSelectionToggle(plan.id);
-   }
+ // Ensure we have valid data
+ const safePlan = {
+   id: plan.id || 0,
+   name: plan.name || 'Plan de Seguro',
+   provider: plan.provider || 'Proveedor',
+   category: plan.category || 'seguro',
+   basePrice: plan.basePrice || 0,
+   currency: plan.currency || 'COP',
+   benefits: Array.isArray(plan.benefits) ? plan.benefits : [],
+   rating: plan.rating || 4.0,
+   tags: Array.isArray(plan.tags) ? plan.tags : [],
+   is_external: plan.is_external !== undefined ? plan.is_external : true,
+   external_link: plan.external_link || null,
  };
-
-
- // Determine if this is a recommended plan (mock logic - could be based on price, features, etc.)
- const isRecommended = plan.basePrice < 200000 && plan.benefits.length > 3;
-
 
  return (
    <motion.div
@@ -87,49 +88,43 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote,
      transition={{ duration: 0.5, ease: "easeOut" }}
    >
      <Card className={cn(
-       "relative flex flex-col h-full overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-2xl hover:scale-[1.02] transform-gpu transition-all duration-300 border",
-       isSelected ? "border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/20" : "border-gray-100 dark:border-gray-700"
+       "relative flex flex-col h-full overflow-visible rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-2xl hover:scale-[1.02] transform-gpu transition-all duration-300 border border-gray-100 dark:border-gray-700"
      )}>
-       {/* Selection checkbox */}
-       {onSelectionToggle && (
-         <button
-           onClick={handleSelectionClick}
-           className={cn(
-             "absolute top-3 right-3 z-20 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all",
-             isSelected
-               ? "bg-blue-500 border-blue-500 text-white"
-               : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-blue-400"
-           )}
-           aria-label={isSelected ? "Deseleccionar plan" : "Seleccionar plan para comparar"}
-         >
-           {isSelected && <Check className="h-4 w-4" />}
-         </button>
+       {/* Tags */}
+       {safePlan.tags && safePlan.tags.length > 0 && (
+         <div className="absolute top-3 right-3 z-10 flex gap-2">
+           {safePlan.tags.map(tag => (
+             <div key={tag} className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-md">
+               <Star className="h-3 w-3" />
+               {tag}
+             </div>
+           ))}
+         </div>
        )}
 
 
-               {/* Recommended badge - adjust position if selection is enabled */}
-        {isRecommended && (
-          <div className={cn("absolute top-3 z-10", onSelectionToggle ? "right-12" : "right-3")}>
-            <div className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-md">
-              <Star className="h-3 w-3" />
-              Recomendado
-            </div>
-          </div>
-        )}
-
-
-       <CardHeader className="pb-3">
+       <CardHeader className="pb-3 pt-4">
          {/* Provider badge */}
-         <div className="flex items-center gap-2 mb-2">
-           <Badge label={plan.provider} variant="neutral" className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700" />
-           <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full capitalize border border-gray-300 dark:border-gray-600">
-             {plan.category}
-           </span>
+         <div className="flex items-center justify-between mb-2">
+            <div className='flex items-center gap-2 flex-1'>
+              <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-md bg-white/90 dark:bg-gray-900/90 text-gray-800 dark:text-gray-200 shadow-sm border border-gray-200 dark:border-gray-700">
+                {safePlan.provider}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full capitalize bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                {safePlan.category}
+              </span>
+            </div>
+            {safePlan.rating && (
+              <div className="flex items-center gap-1 text-sm text-amber-500">
+                <Star className="h-4 w-4" />
+                <span className="font-bold">{safePlan.rating.toFixed(1)}</span>
+              </div>
+            )}
          </div>
         
          {/* Plan name */}
-         <CardTitle className="text-xl font-bold text-gray-900 dark:text-white leading-tight line-clamp-2">
-           {plan.name}
+         <CardTitle className="text-xl font-bold text-gray-900 dark:text-white leading-tight line-clamp-2 pr-4">
+           {safePlan.name}
          </CardTitle>
        </CardHeader>
       
@@ -139,7 +134,7 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote,
            <div className="flex items-baseline justify-between">
              <div>
                {(() => {
-                 const priceInfo = getPriceDisplay(plan.basePrice, plan.currency);
+                 const priceInfo = getPriceDisplay(safePlan.basePrice, safePlan.currency);
                  return (
                    <>
                      <span className="text-3xl font-extrabold text-gray-900 dark:text-white">
@@ -152,7 +147,7 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote,
                  );
                })()}
              </div>
-             {plan.basePrice && plan.basePrice > 0 && plan.basePrice < 150000 && (
+             {safePlan.basePrice && safePlan.basePrice > 0 && safePlan.basePrice < 150000 && (
                <div className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
                  <TrendingUp className="h-3 w-3" />
                  Mejor precio
@@ -167,9 +162,9 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote,
            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
              Beneficios principales
            </h4>
-           {Array.isArray(plan.benefits) && plan.benefits.length > 0 ? (
+           {safePlan.benefits.length > 0 ? (
              <ul className="space-y-2.5">
-               {plan.benefits.slice(0, 3).map((benefit, index) => (
+               {safePlan.benefits.slice(0, 3).map((benefit, index) => (
                  <li key={index} className="flex items-start group">
                    <div className="bg-emerald-100 dark:bg-emerald-900/30 rounded-full p-1 mr-3 flex-shrink-0 mt-0.5 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/40 transition-colors">
                      <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -187,9 +182,9 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote,
            )}
           
            {/* Show more benefits indicator */}
-           {plan.benefits.length > 3 && (
+           {safePlan.benefits.length > 3 && (
              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 pl-7">
-               +{plan.benefits.length - 3} beneficios más
+               +{safePlan.benefits.length - 3} beneficios más
              </p>
            )}
          </div>
@@ -201,25 +196,27 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote,
            <Button
              variant="ghost"
              className="flex-1 hover:bg-gray-100 dark:hover:bg-gray-700"
-             onClick={() => onViewDetails(plan.id)}
+             onClick={() => onViewDetails(safePlan.id)}
            >
              Ver detalles
            </Button>
-           {plan.externalLink ? (
-             <Button
-               className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-sm hover:shadow-md transition-all"
-               onClick={handleQuoteClick}
+           {safePlan.external_link ? (
+             <a
+               href={safePlan.external_link}
+               target="_blank"
+               rel="noopener noreferrer"
+               className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-sm hover:shadow-md transition-all rounded-md px-4 py-2 text-center inline-flex items-center justify-center font-medium"
              >
                Cotizar ahora
                <ExternalLink className="h-4 w-4 ml-2" />
-             </Button>
+             </a>
            ) : (
              <Button
-               className="flex-1"
-               variant="outline"
-               disabled
+               className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-sm hover:shadow-md transition-all"
+               onClick={() => onQuote(safePlan.id)}
+               disabled={true}
              >
-               No disponible
+               Cotizar ahora
              </Button>
            )}
          </div>

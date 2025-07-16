@@ -105,7 +105,7 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
               {/* Quote Form or External Link */}
               {mode === 'quote' && (
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                  {plan.isExternal && plan.externalLink ? (
+                  {plan.is_external && plan.external_link ? (
                     <div className="text-center space-y-4">
                       <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
                         <ExternalLink className="w-5 h-5" />
@@ -115,7 +115,7 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
                         Serás redirigido al sitio oficial de {plan.provider} para completar tu cotización.
                       </p>
                       <Button
-                        onClick={() => window.open(plan.externalLink!, '_blank', 'noopener,noreferrer')}
+                        onClick={() => window.open(plan.external_link!, '_blank', 'noopener,noreferrer')}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         Ir a {plan.provider}

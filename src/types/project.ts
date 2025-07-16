@@ -26,4 +26,44 @@ export interface Tool {
   url: string;
   category: string;
   icon?: string;
+}
+
+export interface InsurancePlan {
+  id: string;
+  name: string;
+  provider: string;
+  base_price: number;
+  base_price_formatted: string;
+  benefits: string[];
+  category: string;
+  country: string;
+  coverage_amount: number;
+  coverage_amount_formatted: string;
+  currency: string;
+  rating: string;
+  reviews: number;
+  is_external: boolean;
+  external_link: string | null;
+  brochure_link: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InsurancePlanFromDB {
+  id: number | string;
+  name: string;
+  provider: string;
+  base_price: string | number;
+  benefits: string[];
+  category: string;
+  country: string;
+  coverage_amount: string | number;
+  currency: string;
+  rating: string;
+  reviews: number;
+  is_external: boolean;
+  external_link: string | null;
+  brochure_link: string | null;
+  created_at: string;
+  updated_at: string;
 } 

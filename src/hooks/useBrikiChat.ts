@@ -10,6 +10,8 @@ export function useBrikiChat() {
   const setError = useProjectStore((state) => state.setError);
   const clearStoreHistory = useProjectStore((state) => state.clearChatHistory);
 
+  const [currentToolInvocations, setCurrentToolInvocations] = useState<any[]>([]);
+
   const { messages, input, handleInputChange, handleSubmit, isLoading, error: chatError, setMessages } = useChat({
     api: '/api/ai/chat',
     onFinish: (message) => {
@@ -18,13 +20,36 @@ export function useBrikiChat() {
     onError: (error) => {
         console.error('❌ Chat error:', error);
     },
+    onToolCall: ({ toolCall }) => {
+        console.log('🛠️ Tool call detected:', {
+            toolName: toolCall.toolName,
+            args: toolCall.args
+        });
+        
+        // Store tool invocation for the current message
+        setCurrentToolInvocations(prev => [...prev, {
+            toolName: toolCall.toolName,
+            args: toolCall.args
+        }]);
+    },
   });
 
   // Sync messages from useChat hook to Zustand store in real-time
   useEffect(() => {
-    // Force update the store with the current messages array
-    // This ensures real-time updates during streaming
-    setChatHistory([...messages]);
+    // Only update if the new messages are different from the store's history
+    const storeHistory = useProjectStore.getState().chatHistory;
+    if (messages.length > storeHistory.length) {
+      const newMessages = messages.slice(storeHistory.length);
+      useProjectStore.getState().appendChatHistory(newMessages);
+      
+      // Clear tool invocations when a new assistant message is added
+      if (newMessages.some(m => m.role === 'assistant')) {
+        setCurrentToolInvocations([]);
+      }
+    } else if (messages.length < storeHistory.length) {
+      // Handle message deletion/clearing
+      setChatHistory(messages);
+    }
     
     // Debug logging to track updates
     console.log('useBrikiChat: Syncing messages to store', {
@@ -45,7 +70,13 @@ export function useBrikiChat() {
   const clearChat = () => {
     clearStoreHistory();
     setMessages([]);
-  }
+  };
+
+  const appendChatHistory = (newMessages: any[]) => {
+    setChatHistory([...useProjectStore.getState().chatHistory, ...newMessages]);
+  };
+
+  useProjectStore.setState({ appendChatHistory });
 
   return {
     messages,
@@ -55,5 +86,6 @@ export function useBrikiChat() {
     isLoading: isLoading,
     error: chatError,
     clearChat,
+    toolInvocations: currentToolInvocations,
   };
 } 
