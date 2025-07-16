@@ -1,15 +1,29 @@
 import { streamText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { queryInsurancePlans, getInsuranceTypes } from '@/lib/render-db';
+// import { queryInsurancePlans, getInsuranceTypes } from '@/lib/render-db';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
 const hasValidKey = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-');
 
-const oai = createOpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// Mock model for fallback responses
+function createMockStream(reply: string) {
+  const encoder = new TextEncoder();
+  
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(
+        encoder.encode(`data: ${JSON.stringify({ role: 'assistant', content: reply, index: 0 })}\n\n`)
+      );
+      controller.enqueue(
+        encoder.encode(`data: ${JSON.stringify({ stop_reason: 'stop', index: 0 })}\n\n`)
+      );
+      controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+      controller.close();
+    },
+  });
+}
 
 
 
@@ -53,17 +67,7 @@ IMPORTANT: When showing insurance plans, format your response clearly with an in
   if (!hasValidKey) {
     console.warn('⚠️  OPENAI_API_KEY missing or invalid – using mock reply');
 
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ role: 'assistant', content: '¡Hola! (respuesta simulada)' })}\n\n`
-          ),
-        );
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
-      },
-    });
+    const stream = createMockStream('¡Hola! Soy Briki, tu asistente de seguros. ¿En qué puedo ayudarte hoy? (respuesta simulada)');
 
     return new NextResponse(stream, {
       status: 200,
@@ -80,91 +84,19 @@ IMPORTANT: When showing insurance plans, format your response clearly with an in
     const oai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const result = await streamText({
-      model: oai('gpt-4-turbo-preview'),
+      model: oai('gpt-3.5-turbo'),
       system: systemPrompt,
-      messages,
-      tools: {
-        get_insurance_plans: {
-          description: 'Get insurance plan recommendations based on user preferences',
-          parameters: {
-            type: 'object',
-            properties: {
-              insuranceType: {
-                type: 'string',
-                description: 'Type of insurance (salud, vida, auto, hogar, viaje, empresarial)',
-                enum: ['salud', 'vida', 'auto', 'hogar', 'viaje', 'empresarial']
-              },
-              budget: {
-                type: 'number',
-                description: 'Maximum monthly premium budget'
-              },
-              preferences: {
-                type: 'array',
-                items: { type: 'string' },
-                description: 'Additional preferences or requirements'
-              }
-            },
-            required: ['insuranceType']
-          },
-          execute: async ({ insuranceType, budget, preferences }: any) => {
-            try {
-              console.log('🔍 Tool call: get_insurance_plans', { insuranceType, budget, preferences });
-              
-              const plans = await queryInsurancePlans({
-                type: insuranceType,
-                maxPremium: budget,
-                preferences: preferences || [],
-                limit: 4
-              });
-
-              console.log(`✅ Found ${plans.length} plans for ${insuranceType}`);
-              
-              // Return a structured response that can be rendered in the chat
-              return {
-                type: 'insurance_plans',
-                plans: plans.map(plan => ({
-                  id: parseInt(plan.id),
-                  name: plan.plan_name,
-                  category: plan.insurance_type || insuranceType,
-                  provider: plan.provider,
-                  basePrice: plan.monthly_premium || 0,
-                  currency: 'COP',
-                  benefits: plan.coverage_summary ? [plan.coverage_summary] : [],
-                  isExternal: !!plan.quote_link,
-                  externalLink: plan.quote_link || null,
-                  features: plan.coverage_details ? Object.keys(plan.coverage_details) : []
-                })),
-                count: plans.length,
-                insuranceType,
-                budget
-              };
-            } catch (error) {
-              console.error('❌ Error in get_insurance_plans tool:', error);
-              return {
-                error: 'Failed to get insurance plans',
-                details: error instanceof Error ? error.message : 'Unknown error'
-              };
-            }
-          }
-        }
-      }
+      messages
     });
 
+    console.dir({ resultDebug: result }, { depth: 4 });
+    console.log('🟢 streamText result obtained, converting to DataStreamResponse');
     return result.toDataStreamResponse();
-  } catch (err) {
-    console.error('🔴 streamText failed –', err);
 
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ role: 'assistant', content: 'Lo siento, hubo un problema al contactar con el modelo. (respuesta simulada)' })}\n\n`
-          ),
-        );
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
-      },
-    });
+  } catch (err) {
+    console.error(' streamText failed –', err);
+
+    const stream = createMockStream('Lo siento, hubo un problema al contactar con el modelo. (respuesta simulada)');
 
     return new NextResponse(stream, {
       status: 200,
