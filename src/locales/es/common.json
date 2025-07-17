@@ -9,7 +9,7 @@
   },
   "hero": {
     "badge": "Nuevo: Asistente de Seguros Briki",
-    "title": "Tu primer asistente de <span class=\"bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">seguros con IA</span> — chatea y recibe planes reales en segundos",
+    "title": "Tu primer asistente de <span class=\"bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">seguros con IA</span> — chatea y recibe planes reales en segundos",
     "subtitle": "Explícale a Briki lo que necesitas. Encuentra el mejor seguro, analiza pólizas y compara opciones personalizadas sin complicaciones.",
     "cta_primary": "Encuentra Mi Seguro",
     "cta_secondary": "Hablar con Briki AI",

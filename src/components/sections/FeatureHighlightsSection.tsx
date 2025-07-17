@@ -105,7 +105,7 @@ export const FeatureHighlightsSection = () => {
                         >
                             <motion.div style={{ y: translateContents[index] }}>
                                 <div className="flex items-center gap-4 mb-4">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-teal-500 rounded-2xl flex items-center justify-center text-white">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl flex items-center justify-center text-white">
                                         {feature.icon}
                                     </div>
                                     <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white max-w-sm">

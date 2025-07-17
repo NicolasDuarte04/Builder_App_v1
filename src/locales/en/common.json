@@ -9,7 +9,7 @@
   },
   "hero": {
     "badge": "New: Briki Insurance Assistant",
-    "title": "Your first <span class=\"bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">AI insurance</span> assistant — chat and get real plans in seconds",
+    "title": "Your first <span class=\"bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent dark:drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]\">AI insurance</span> assistant — chat and get real plans in seconds",
     "subtitle": "Tell Briki what you need. Find the best insurance, analyze policies and compare personalized options without complications.",
     "cta_primary": "Find My Insurance",
     "cta_secondary": "Talk to Briki AI",

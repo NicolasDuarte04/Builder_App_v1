@@ -111,7 +111,7 @@ Ahora puedo ayudarte a encontrar los mejores planes de seguro que se ajusten a t
                 console.log("📊 Current answers:", answers);
                 completeOnboarding();
               }}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               ¡Encontrar mi seguro! 🚀
             </button>

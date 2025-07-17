@@ -136,7 +136,7 @@ export function ProblemSection() {
           </p>
           <a
             href="#roadmap"
-            className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-8 py-3 rounded-full shadow-lg hover:from-blue-600 hover:to-cyan-600 transition-all text-lg font-semibold"
+            className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-8 py-3 rounded-full shadow-lg hover:from-blue-600 hover:to-cyan-500 transition-all text-lg font-semibold"
           >
             {language === 'es' ? 'Encuentra tu seguro →' : 'Find your insurance →'}
           </a>

@@ -66,7 +66,7 @@ export const DocumentAnalysisSection = () => {
                   viewport={{ once: true }}
                   className="flex items-start gap-4"
                 >
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                     {step.number}
                   </div>
                   <div>
@@ -88,7 +88,7 @@ export const DocumentAnalysisSection = () => {
               viewport={{ once: true }}
               className="pt-4"
             >
-              <button className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-teal-500 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-teal-600 transition-all duration-200">
+              <button className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-cyan-500 transition-all duration-200">
                 Try Document Analysis
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -106,7 +106,7 @@ export const DocumentAnalysisSection = () => {
             <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
               {/* Header */}
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
                   <Upload className="w-5 h-5 text-gray-400" />
                 </div>
                 <div>
@@ -132,7 +132,7 @@ export const DocumentAnalysisSection = () => {
               {/* Processing Status */}
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center">
+                  <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-full flex items-center justify-center">
                     <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   </div>
                   <div>

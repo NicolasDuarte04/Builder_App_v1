@@ -59,7 +59,7 @@ export const AIAssistantDemoSection = () => {
                 viewport={{ once: true }}
                 className="flex items-start gap-4"
               >
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center text-white flex-shrink-0">
                   {feature.icon}
                 </div>
                 <div>
@@ -80,7 +80,7 @@ export const AIAssistantDemoSection = () => {
               viewport={{ once: true }}
               className="pt-4"
             >
-              <button className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-teal-500 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-teal-600 transition-all duration-200">               Try the Assistant
+              <button className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-cyan-500 transition-all duration-200">               Try the Assistant
                 <ArrowRight className="w-4 h-4" />
               </button>
             </motion.div>
@@ -97,7 +97,7 @@ export const AIAssistantDemoSection = () => {
             <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
               {/* Chat Header */}
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">B</span>
                 </div>
                 <div>
@@ -107,9 +107,9 @@ export const AIAssistantDemoSection = () => {
               </div>
 
               {/* Chat Messages */}
-              <div className="space-y-4 mb-6">               {/* User Message */}
+              <div className="space-y-4 mb-6">                               {/* User Message */}
                 <div className="flex justify-end">
-                  <div className="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded-2xl rounded-br-md max-w-xs">
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-4 py-2 rounded-2xl rounded-br-md max-w-xs">
                     <p className="text-sm">I need health insurance for my family of 4</p>
                   </div>
                 </div>
@@ -123,7 +123,7 @@ export const AIAssistantDemoSection = () => {
 
                 {/* User Message */}
                 <div className="flex justify-end">
-                  <div className="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded-2xl rounded-br-md max-w-xs">
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-4 py-2 rounded-2xl rounded-br-md max-w-xs">
                     <p className="text-sm">Around $400-500</p>
                   </div>
                 </div>
@@ -165,7 +165,7 @@ export const AIAssistantDemoSection = () => {
                     className="w-full bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 disabled"
                   />
                 </div>
-                <button className="w-10 h-10 bg-gradient-to-r from-blue-600 to-teal-500 rounded-full flex items-center justify-center">
+                <button className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0V5" />
                   </svg>

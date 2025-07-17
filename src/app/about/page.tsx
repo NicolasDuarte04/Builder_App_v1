@@ -22,7 +22,7 @@ export default function AboutPage() {
               {t("about.hero.subtitle")}
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
-              <button className="group inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:from-blue-700 hover:to-cyan-600 h-11 px-8 shadow-lg">
+              <button className="group inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-r from-blue-500 to-cyan-400 text-white hover:from-blue-600 hover:to-cyan-500 h-11 px-8 shadow-lg">
                 {t("about.hero.cta")}
               </button>
             </div>
@@ -32,7 +32,7 @@ export default function AboutPage() {
         {/* Background decoration */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute left-[calc(50%-4rem)] top-10 -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:left-48 lg:top-[calc(50%-30rem)] xl:left-[calc(50%-24rem)]">
-            <div className="aspect-[1108/632] w-[69.25rem] bg-gradient-to-r from-blue-600 to-cyan-500 opacity-30" />
+            <div className="aspect-[1108/632] w-[69.25rem] bg-gradient-to-r from-blue-500 to-cyan-400 opacity-30" />
           </div>
         </div>
       </section>
@@ -64,7 +64,7 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature Card 1 */}
             <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-700 rounded-xl shadow-md p-8 hover:shadow-lg transition-shadow border border-blue-200/50">
-              <div className="h-12 w-12 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center mb-6">
+              <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center mb-6">
                 <div className="h-6 w-6 text-white">✨</div>
               </div>
               <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Briki Compares, So You Don't Have To</h3>
@@ -75,7 +75,7 @@ export default function AboutPage() {
 
             {/* Feature Card 2 */}
             <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-700 rounded-xl shadow-md p-8 hover:shadow-lg transition-shadow border border-blue-200/50">
-              <div className="h-12 w-12 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center mb-6">
+              <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center mb-6">
                 <div className="h-6 w-6 text-white">📊</div>
               </div>
               <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">See What You're Actually Buying</h3>
@@ -86,7 +86,7 @@ export default function AboutPage() {
 
             {/* Feature Card 3 */}
             <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-700 rounded-xl shadow-md p-8 hover:shadow-lg transition-shadow border border-blue-200/50">
-              <div className="h-12 w-12 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center mb-6">
+              <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center mb-6">
                 <div className="h-6 w-6 text-white">⏱️</div>
               </div>
               <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Covered in Clicks, Not Days</h3>
@@ -118,7 +118,7 @@ export default function AboutPage() {
               {/* Step 1 */}
               <div className="relative md:px-8">
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-700 p-6 rounded-xl shadow-md relative z-10 border border-blue-200/50">
-                  <div className="h-12 w-12 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full flex items-center justify-center mb-4 mx-auto">
                     <span className="text-white font-bold">1</span>
                   </div>
                   <h3 className="text-xl font-semibold mb-3 text-center text-gray-900 dark:text-white">Quick Chat, Not a Questionnaire</h3>
@@ -131,7 +131,7 @@ export default function AboutPage() {
               {/* Step 2 */}
               <div className="relative md:px-8">
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-700 p-6 rounded-xl shadow-md relative z-10 border border-blue-200/50">
-                  <div className="h-12 w-12 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full flex items-center justify-center mb-4 mx-auto">
                     <span className="text-white font-bold">2</span>
                   </div>
                   <h3 className="text-xl font-semibold mb-3 text-center text-gray-900 dark:text-white">See the Full Picture</h3>
@@ -144,7 +144,7 @@ export default function AboutPage() {
               {/* Step 3 */}
               <div className="relative md:px-8">
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-700 p-6 rounded-xl shadow-md relative z-10 border border-blue-200/50">
-                  <div className="h-12 w-12 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full flex items-center justify-center mb-4 mx-auto">
                     <span className="text-white font-bold">3</span>
                   </div>
                   <h3 className="text-xl font-semibold mb-3 text-center text-gray-900 dark:text-white">Protected in Minutes</h3>
@@ -226,7 +226,7 @@ export default function AboutPage() {
           
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
             <div className="border-0 shadow-lg bg-white dark:bg-slate-800 rounded-lg p-6 border border-blue-200/50">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 mb-4">
                 <div className="h-6 w-6 text-white">✅</div>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -238,7 +238,7 @@ export default function AboutPage() {
             </div>
             
             <div className="border-0 shadow-lg bg-white dark:bg-slate-800 rounded-lg p-6 border border-blue-200/50">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 mb-4">
                 <div className="h-6 w-6 text-white">💬</div>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -250,7 +250,7 @@ export default function AboutPage() {
             </div>
             
             <div className="border-0 shadow-lg bg-white dark:bg-slate-800 rounded-lg p-6 border border-blue-200/50">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 mb-4">
                 <div className="h-6 w-6 text-white">📄</div>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -262,7 +262,7 @@ export default function AboutPage() {
             </div>
             
             <div className="border-0 shadow-lg bg-white dark:bg-slate-800 rounded-lg p-6 border border-blue-200/50">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 mb-4">
                 <div className="h-6 w-6 text-white">⚡</div>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -290,7 +290,7 @@ export default function AboutPage() {
           
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             <div className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-700 rounded-lg p-8 text-center border border-blue-200/50">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 mb-6">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 mb-6">
                 <div className="h-8 w-8 text-white">🛡️</div>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
@@ -302,7 +302,7 @@ export default function AboutPage() {
             </div>
             
             <div className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-700 rounded-lg p-8 text-center border border-blue-200/50">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 mb-6">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 mb-6">
                 <div className="h-8 w-8 text-white">⚡</div>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
@@ -314,7 +314,7 @@ export default function AboutPage() {
             </div>
             
             <div className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-700 rounded-lg p-8 text-center border border-blue-200/50">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 mb-6">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 mb-6">
                 <div className="h-8 w-8 text-white">👥</div>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
@@ -330,7 +330,7 @@ export default function AboutPage() {
 
       {/* CTA Section */}
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-500 opacity-95"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-400 opacity-95"></div>
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-white/10 rounded-full blur-3xl transform translate-x-1/4 -translate-y-1/4" />
           <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-white/10 rounded-full blur-3xl transform -translate-x-1/4 translate-y-1/4" />

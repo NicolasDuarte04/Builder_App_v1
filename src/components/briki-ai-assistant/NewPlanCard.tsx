@@ -205,14 +205,14 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
                href={safePlan.external_link}
                target="_blank"
                rel="noopener noreferrer"
-               className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-sm hover:shadow-md transition-all rounded-md px-4 py-2 text-center inline-flex items-center justify-center font-medium"
+               className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white shadow-sm hover:shadow-md transition-all rounded-md px-4 py-2 text-center inline-flex items-center justify-center font-medium"
              >
                Cotizar ahora
                <ExternalLink className="h-4 w-4 ml-2" />
              </a>
            ) : (
              <Button
-               className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-sm hover:shadow-md transition-all"
+               className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white shadow-sm hover:shadow-md transition-all"
                onClick={() => onQuote(safePlan.id)}
                disabled={true}
              >

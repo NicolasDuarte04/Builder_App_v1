@@ -216,7 +216,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
               transition={{ duration: 0.3 }}
               className="flex flex-col items-center"
             >
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400 mb-2">
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-400 mb-2">
                 {t("assistant.loading_title")}
               </h1>
               <p className="text-gray-500 dark:text-gray-400 max-w-md">
@@ -396,7 +396,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                 transition={{ duration: 0.5 }}
                 className="text-center mb-8"
               >
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400 mb-4">
+                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-400 mb-4">
                   ¡Hola! Soy Briki
                 </h1>
                 <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md">
