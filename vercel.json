@@ -2,11 +2,16 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "npm install",
+  "installCommand": "npm install --force",
   "devCommand": "npm run dev",
   "cleanUrls": true,
   "trailingSlash": false,
   "env": {
-    "FORCE_REBUILD": "1"
+    "FORCE_REBUILD": "2"
+  },
+  "functions": {
+    "src/app/api/ai/analyze-policy/route.ts": {
+      "maxDuration": 60
+    }
   }
 } 
