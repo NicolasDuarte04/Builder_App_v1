@@ -1,1 +1,14 @@
-test/data 
+test/
+__tests__/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+test-data/
+test/data/
+.env.local
+.env.test
+coverage/
+.nyc_output/
+cypress/
+e2e/ 
