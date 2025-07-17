@@ -11,9 +11,12 @@ import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Briki Prompt Coach",
-  description: "Talk to AI like a pro — even if you've never tried before. Learn to write better prompts and evaluate AI responses.",
+  title: "Briki - Asistente de Seguros con IA",
+  description: "Tu primer asistente de seguros con IA — chatea y recibe planes reales en segundos.",
   manifest: "/site.webmanifest",
+  icons: {
+    icon: "/favicon.ico",
+  },
 }
 
 export const viewport: Viewport = {
