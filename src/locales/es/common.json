@@ -182,5 +182,74 @@
       "recommended": "Recomendado",
       "bestValue": "Mejor Precio"
     }
+  },
+  "about": {
+    "hero": {
+      "badge": "Acerca de Briki AI",
+      "title": "Revolucionando los seguros con inteligencia artificial",
+      "subtitle": "Briki es tu asistente virtual de seguros. Compara planes reales, analiza pólizas, y elige con confianza.",
+      "cta": "Comenzar con Briki"
+    },
+    "mission": {
+      "title": "Nuestra Misión",
+      "description": "Nuestra misión es democratizar el acceso a seguros en LATAM usando inteligencia artificial. Creamos una experiencia simple, rápida y transparente para que cualquier persona pueda encontrar el plan adecuado sin confusión."
+    },
+    "howItWorks": {
+      "title": "Cómo Funciona",
+      "subtitle": "Tres pasos simples para encontrar tu plan de seguro perfecto",
+      "step1": {
+        "title": "Habla con Briki AI",
+        "description": "Inicia una conversación en lenguaje natural. Dile a Briki lo que necesitas y obtén recomendaciones personalizadas."
+      },
+      "step2": {
+        "title": "Compara Planes Reales",
+        "description": "Ve comparaciones lado a lado de planes de seguros reales con detalles claros de cobertura y precios."
+      },
+      "step3": {
+        "title": "Analiza tu Póliza",
+        "description": "Sube tus documentos de seguro y obtén un desglose detallado de cobertura, exclusiones y recomendaciones."
+      }
+    },
+    "whyBriki": {
+      "title": "Por Qué Elegir Briki",
+      "subtitle": "Construido con tecnología de vanguardia y profunda experiencia en seguros",
+      "benefit1": {
+        "title": "Análisis Automatizado de Pólizas",
+        "description": "Análisis de documentos impulsado por IA que explica términos complejos de seguros en lenguaje simple."
+      },
+      "benefit2": {
+        "title": "Asistencia en Tiempo Real",
+        "description": "Obtén respuestas instantáneas a tus preguntas de seguros con soporte de chat 24/7."
+      },
+      "benefit3": {
+        "title": "Comparación Clara de Proveedores",
+        "description": "Comparaciones lado a lado de compañías de seguros reales con precios transparentes."
+      },
+      "benefit4": {
+        "title": "Tecnología Ética y Transparente",
+        "description": "Construido con principios de privacidad primero y IA transparente en la que puedes confiar."
+      }
+    },
+    "team": {
+      "title": "Construido por Expertos",
+      "description": "Nuestro equipo combina profunda experiencia en seguros con tecnología de vanguardia para ofrecer la mejor experiencia.",
+      "expertise": {
+        "title": "Experiencia en Seguros",
+        "description": "Construido por profesionales con décadas de experiencia en mercados de seguros latinoamericanos."
+      },
+      "technology": {
+        "title": "Tecnología Avanzada",
+        "description": "Impulsado por las últimas tecnologías de IA y aprendizaje automático para recomendaciones precisas."
+      },
+      "experience": {
+        "title": "Experiencia de Usuario",
+        "description": "Diseñado con principios centrados en el usuario para hacer que comprar seguros sea simple y accesible."
+      }
+    },
+    "cta": {
+      "title": "¿Listo para Transformar tu Experiencia de Seguros?",
+      "description": "Únete a miles de usuarios que ya están encontrando mejores planes de seguros con Briki AI.",
+      "button": "Comenzar Hoy"
+    }
   }
 } 

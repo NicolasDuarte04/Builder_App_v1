@@ -18,7 +18,6 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 const getNavItems = (t: (key: string) => string) => [
   { name: t("nav.home"), link: "/" },
-  { name: t("nav.projects"), link: "/projects" },
   { name: t("nav.about"), link: "/about" },
   { name: t("nav.contact"), link: "/contact" },
 ];

@@ -233,10 +233,9 @@ export const NavbarLogo = () => {
   return (
     <Link
       href="/"
-      className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
+      className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal"
     >
-      <span className="font-bold text-xl text-black dark:text-white">Briki</span>
-      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">AI</span>
+      <h1 className="briki-logo text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500">briki</h1>
     </Link>
   );
 };

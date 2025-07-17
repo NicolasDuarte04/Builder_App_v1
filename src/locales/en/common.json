@@ -201,5 +201,74 @@
   },
   "common": {
     "error": "Error"
+  },
+  "about": {
+    "hero": {
+      "badge": "About Briki AI",
+      "title": "Revolutionizing insurance with artificial intelligence",
+      "subtitle": "Briki is your virtual insurance assistant. Compare real plans, analyze policies, and choose with confidence.",
+      "cta": "Start with Briki"
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "Our mission is to democratize access to insurance in LATAM using artificial intelligence. We create a simple, fast, and transparent experience so anyone can find the right plan without confusion."
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Three simple steps to find your perfect insurance plan",
+      "step1": {
+        "title": "Talk to Briki AI",
+        "description": "Start a conversation in natural language. Tell Briki what you need and get personalized recommendations."
+      },
+      "step2": {
+        "title": "Compare Real Plans",
+        "description": "View side-by-side comparisons of actual insurance plans with clear coverage and pricing details."
+      },
+      "step3": {
+        "title": "Analyze Your Policy",
+        "description": "Upload your insurance documents and get a detailed breakdown of coverage, exclusions, and recommendations."
+      }
+    },
+    "whyBriki": {
+      "title": "Why Choose Briki",
+      "subtitle": "Built with cutting-edge technology and deep insurance expertise",
+      "benefit1": {
+        "title": "Automated Policy Analysis",
+        "description": "AI-powered document analysis that explains complex insurance terms in simple language."
+      },
+      "benefit2": {
+        "title": "Real-time Assistance",
+        "description": "Get instant answers to your insurance questions with 24/7 chat support."
+      },
+      "benefit3": {
+        "title": "Clear Provider Comparison",
+        "description": "Side-by-side comparisons of real insurance companies with transparent pricing."
+      },
+      "benefit4": {
+        "title": "Ethical & Transparent Tech",
+        "description": "Built with privacy-first principles and transparent AI that you can trust."
+      }
+    },
+    "team": {
+      "title": "Built by Experts",
+      "description": "Our team combines deep insurance expertise with cutting-edge technology to deliver the best experience.",
+      "expertise": {
+        "title": "Insurance Expertise",
+        "description": "Built by professionals with decades of experience in Latin American insurance markets."
+      },
+      "technology": {
+        "title": "Advanced Technology",
+        "description": "Powered by the latest AI and machine learning technologies for accurate recommendations."
+      },
+      "experience": {
+        "title": "User Experience",
+        "description": "Designed with user-centered principles to make insurance shopping simple and accessible."
+      }
+    },
+    "cta": {
+      "title": "Ready to Transform Your Insurance Experience?",
+      "description": "Join thousands of users who are already finding better insurance plans with Briki AI.",
+      "button": "Get Started Today"
+    }
   }
 } 
