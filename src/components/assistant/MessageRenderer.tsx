@@ -117,11 +117,10 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
     }
   }
 
-  // Default text rendering with debug info
+  // Default text rendering
   return (
     <div>
       <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
-      <DebugInfo content={content} role={role} name={name} toolInvocations={toolInvocations} />
     </div>
   );
 
