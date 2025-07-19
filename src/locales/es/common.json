@@ -4,7 +4,8 @@
     "projects": "Proyectos",
     "about": "Acerca de",
     "contact": "Contacto",
-    "login": "Iniciar Sesión",
+    "assistant": "Asistente IA",
+    "login": "Iniciar sesión",
     "signup": "Registrarse"
   },
   "hero": {
@@ -83,10 +84,18 @@
       "description": "Obtén sugerencias de seguros adaptadas a tu edad, salud, familia y presupuesto — no opciones genéricas."
     },
     "ready_to_start": "¿Listo para encontrar tu seguro?",
-    "ready_description": "Únete a miles de usuarios que ya están encontrando mejores planes de seguros con el Asistente de Seguros Briki."
+    "ready_description": "Únete a miles de usuarios que ya están encontrando mejores planes de seguros con el Asistente de Seguros Briki.",
+    "core": {
+      "compare_plans_title": "Compara Planes Rápido",
+      "compare_plans_description": "Compara planes de seguros reales lado a lado con precios y detalles de cobertura claros.",
+      "ai_explains_title": "IA que Explica, no Confunde",
+      "ai_explains_description": "Obtén términos complejos de seguros explicados en lenguaje simple que puedas entender.",
+      "analyze_pdfs_title": "Analiza PDFs de Seguros",
+      "analyze_pdfs_description": "Sube cualquier documento de seguro y obtén información instantánea sobre cobertura y brechas."
+    }
   },
   "use_cases": {
-    "title": "Ve cómo personas como tú usan Briki para encontrar mejores seguros",
+    "title": "Personas como tú confían en Briki para encontrar mejores seguros",
     "description": "Descubre casos de uso reales que hacen que comprar seguros sea simple y te ayuden a visualizar cómo usar el producto."
   },
   "problems": {
@@ -113,24 +122,6 @@
       "title": "Adultos Mayores y Jubilados",
       "description": "Navega opciones de Medicare, cobertura complementaria y seguros de cuidado a largo plazo con explicaciones claras y recomendaciones."
     }
-  },
-  "footer": {
-    "product": "Producto",
-    "company": "Empresa",
-    "resources": "Recursos",
-    "social": "Redes Sociales",
-    "features": "Características",
-    "pricing": "Precios",
-    "testimonials": "Testimonios",
-    "integration": "Integración",
-    "about_us": "Sobre Nosotros",
-    "privacy_policy": "Política de Privacidad",
-    "terms_of_service": "Términos de Servicio",
-    "blog": "Blog",
-    "changelog": "Cambios",
-    "brand": "Marca",
-    "help": "Ayuda",
-    "all_rights_reserved": "Todos los derechos reservados."
   },
   "assistant": {
     "title": "Asistente de Seguros",
@@ -250,6 +241,63 @@
       "title": "¿Listo para Transformar tu Experiencia de Seguros?",
       "description": "Únete a miles de usuarios que ya están encontrando mejores planes de seguros con Briki AI.",
       "button": "Comenzar Hoy"
+    }
+  },
+  "landing": {
+    "ai_assistant": {
+      "title": "Conoce a tu Asistente de Seguros con IA",
+      "description": "Obtén respuestas instantáneas, recomendaciones personalizadas y orientación experta para todas tus necesidades de seguros.",
+      "features": {
+        "instant_answers": {
+          "title": "Respuestas Instantáneas",
+          "description": "Obtén respuestas claras e inmediatas a cualquier pregunta sobre seguros, explicadas en términos simples."
+        },
+        "personalized_recommendations": {
+          "title": "Recomendaciones Personalizadas",
+          "description": "Recibe planes de seguros adaptados a tus necesidades específicas y presupuesto."
+        },
+        "easy_navigation": {
+          "title": "Navegación Sencilla",
+          "description": "Comprende términos complejos y opciones de cobertura con comparaciones visuales y lenguaje claro."
+        }
+      },
+      "cta": "Probar el Asistente",
+      "preview_label": "Vista previa del asistente"
+    },
+    "document_analysis": {
+      "title": "Sube tus Documentos, Obtén Respuestas al Instante",
+      "description": "Nuestro asistente con IA puede analizar tus documentos de seguros existentes, registros médicos e información financiera para proporcionar recomendaciones personalizadas e identificar brechas de cobertura.",
+      "badge": "Análisis Impulsado por IA",
+      "preview_label": "Vista previa del análisis",
+      "steps": {
+        "upload": {
+          "title": "Subir Documentos",
+          "description": "Arrastra y suelta tus PDFs de seguros, registros médicos o documentos financieros"
+        },
+        "analysis": {
+          "title": "Análisis con IA",
+          "description": "Nuestra IA extrae información clave e identifica tus necesidades de cobertura"
+        },
+        "recommendations": {
+          "title": "Recomendaciones Personalizadas",
+          "description": "Obtén sugerencias de seguros adaptadas a tu situación única"
+        }
+      },
+      "cta": "Probar Análisis de Documentos",
+      "upload_label": "Analizar Póliza de Seguro",
+      "upload_description": "Sube tus documentos de seguros",
+      "drop_files": "Suelta tus documentos aquí",
+      "browse_files": "O haz clic para buscar archivos",
+      "file_requirements": "Máximo 10MB • Solo archivos PDF",
+      "processing": {
+        "title": "Procesando con IA...",
+        "subtitle": "Analizando tus documentos",
+        "steps": {
+          "scan": "Documento escaneado exitosamente",
+          "extract": "Información extraída",
+          "identify": "Brechas de cobertura identificadas"
+        }
+      }
     }
   }
 } 

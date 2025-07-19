@@ -56,21 +56,21 @@ export function OnboardingFlow() {
 
   const currentQuestion = questions.find(q => q.id === currentStep);
 
-  console.log("🔍 OnboardingFlow - currentStep:", currentStep);
-  console.log("🔍 OnboardingFlow - currentQuestion:", currentQuestion);
+  React.useEffect(() => {
+    // Clear localStorage whenever this component mounts
+    // This prevents any lingering onboarding state from interfering
+    const savedState = localStorage.getItem('briki-onboarding');
+    if (savedState) {
+      const { currentStep: savedStep } = JSON.parse(savedState);
+      // If we're back at the flow but saved state shows completion, clear it
+      if (savedStep === 5) {
+        localStorage.removeItem('briki-onboarding');
+      }
+    }
+  }, []);
 
-  // Show completion screen after all questions (this should not be reached with new flow)
-  if (currentStep > 4) {
-    console.log("🎉 Redirecting to Assistant");
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">¡Perfecto!</h1>
-          <p className="text-gray-600">Redirigiendo al asistente...</p>
-        </div>
-      </div>
-    );
+  if (currentStep === 5) {
+    return <CompletionScreen />;
   }
 
   if (!currentQuestion) {
@@ -103,7 +103,6 @@ export function OnboardingFlow() {
             
             // If this is the last question, complete onboarding
             if (currentStep === 4) {
-              console.log('🎉 Last question answered, completing onboarding...');
               completeOnboarding();
             } else {
               goToNext();

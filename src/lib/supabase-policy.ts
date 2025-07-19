@@ -1,12 +1,5 @@
 import { supabase } from './supabase';
 
-// Log Supabase configuration for debugging (sanitized)
-console.log("Supabase client initialized:", !!supabase);
-console.log("Environment variables check:", {
-  hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-  hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-});
-
 export interface PolicyUpload {
   id: string;
   user_id: string;
@@ -31,7 +24,6 @@ export interface CreatePolicyUploadData {
 
 export async function createPolicyUpload(data: CreatePolicyUploadData): Promise<PolicyUpload | null> {
   try {
-    console.log('Creating policy upload for user:', data.user_id);
     
     const { data: upload, error } = await supabase
       .from('policy_uploads')
@@ -53,7 +45,6 @@ export async function createPolicyUpload(data: CreatePolicyUploadData): Promise<
       return null;
     }
 
-    console.log('Policy upload created successfully:', upload.id);
     return upload;
   } catch (error) {
     console.error('Error creating policy upload:', error);
@@ -66,7 +57,6 @@ export async function updatePolicyUpload(
   updates: Partial<Omit<PolicyUpload, 'id' | 'user_id' | 'file_name' | 'file_path' | 'upload_time'>>
 ): Promise<PolicyUpload | null> {
   try {
-    console.log('Updating policy upload:', id, 'with status:', updates.status);
     
     const { data: upload, error } = await supabase
       .from('policy_uploads')

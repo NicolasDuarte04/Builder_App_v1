@@ -64,24 +64,13 @@ export const Header: React.FC = () => {
   const { t } = useTranslation();
   
   return (
-    <div className="relative z-10 max-w-7xl mx-auto py-24 md:py-32 px-4 w-full">
+    <div className="relative z-10 max-w-7xl mx-auto py-16 md:py-20 px-4 w-full">
       <div className="text-center">
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100/80 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium mb-8 backdrop-blur-sm border border-blue-200/50 dark:border-blue-700/30"
-        >
-          <IconSparkles className="w-4 h-4" />
-          <span>{t("hero.badge")}</span>
-        </motion.div>
-
         {/* Main Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          transition={{ duration: 0.8 }}
           className="text-4xl md:text-7xl font-bold text-black dark:text-white drop-shadow-sm leading-tight"
           dangerouslySetInnerHTML={{ __html: t("hero.title") }}
         />
@@ -90,8 +79,8 @@ export const Header: React.FC = () => {
         <motion.p
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="max-w-3xl mx-auto mt-8 text-lg md:text-xl text-gray-600 dark:text-gray-300 font-medium leading-relaxed"
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="max-w-3xl mx-auto mt-6 md:mt-8 text-lg md:text-xl text-gray-600 dark:text-gray-300 font-medium leading-relaxed"
         >
           {t("hero.subtitle")}
         </motion.p>
@@ -100,8 +89,8 @@ export const Header: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-10"
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8 md:mt-10"
         >
           <Button 
             size="lg" 
@@ -126,8 +115,8 @@ export const Header: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-500 dark:text-gray-400"
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="mt-12 md:mt-16 flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-500 dark:text-gray-400"
         >
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -192,9 +181,9 @@ export const HeroParallax: React.FC<HeroParallaxProps> = ({ products }) => {
   return (
     <div
       ref={ref}
-      className="relative h-[250vh] py-24 overflow-hidden antialiased bg-white dark:bg-black [perspective:1000px] [transform-style:preserve-3d] scroll-smooth"
+      className="relative h-[250vh] py-8 md:py-12 overflow-hidden antialiased bg-white dark:bg-black [perspective:1000px] [transform-style:preserve-3d] scroll-smooth"
     >
-      <div className="sticky top-0 pt-16 pb-64">
+      <div className="sticky top-0 pt-8 md:pt-12 pb-64">
         <div className="absolute inset-0 pointer-events-none bg-white/90 dark:bg-black/90" />
         <Header />
         <motion.div

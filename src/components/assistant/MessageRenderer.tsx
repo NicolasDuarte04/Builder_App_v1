@@ -29,16 +29,6 @@ const DebugInfo = ({ content, role, name, toolInvocations }: MessageRendererProp
 export function MessageRenderer({ content, role, name, toolInvocations }: MessageRendererProps) {
   const { t } = useTranslation();
 
-  // Debug logging
-  console.log('🎯 MessageRenderer input:', {
-    role,
-    name,
-    contentLength: content?.length,
-    contentPreview: content?.substring(0, 150) + '...',
-    contentType: typeof content,
-    toolInvocations,
-  });
-
   // Helper function to check if content contains valid plans data
   const hasValidPlansData = (data: any): boolean => {
     return data && 
@@ -63,7 +53,6 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
     );
     
     if (insurancePlanTool && insurancePlanTool.result) {
-      console.log('🎯 Found insurance plan tool invocation:', insurancePlanTool.result);
       if (hasValidPlansData(insurancePlanTool.result)) {
         return renderPlans(insurancePlanTool.result);
       }
@@ -74,25 +63,6 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
   if (role === 'tool' && name === 'get_insurance_plans') {
     try {
       const parsed = JSON.parse(content);
-      console.log('📦 Parsed tool result JSON:', parsed);
-      if (hasValidPlansData(parsed)) {
-        return renderPlans(parsed);
-      } else {
-        console.warn('⚠️ Tool result contains no valid plans data');
-        return renderNoPlansMessage(parsed);
-      }
-    } catch (error) {
-      console.warn('⚠️ Failed to parse tool JSON:', error);
-    }
-  }
-
-  // Check if this is an assistant message with tool results
-  if (role === 'assistant') {
-    // Look for tool results in the message content
-    try {
-      // First, try to parse the entire content as JSON
-      const parsed = JSON.parse(content);
-      console.log('📦 Parsed assistant content as JSON:', parsed);
       if (hasValidPlansData(parsed)) {
         return renderPlans(parsed);
       } else {
@@ -104,7 +74,6 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
-          console.log('📦 Parsed JSON from assistant content:', parsed);
           if (hasValidPlansData(parsed)) {
             return renderPlans(parsed);
           } else {
@@ -112,7 +81,36 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
           }
         }
       } catch (err) {
-        console.warn('⚠️ Assistant content JSON parse failed:', err);
+        // console.warn('⚠️ Assistant content JSON parse failed:', err);
+      }
+    }
+  }
+
+  // Check if this is an assistant message with tool results
+  if (role === 'assistant') {
+    // Look for tool results in the message content
+    try {
+      // First, try to parse the entire content as JSON
+      const parsed = JSON.parse(content);
+      if (hasValidPlansData(parsed)) {
+        return renderPlans(parsed);
+      } else {
+        return renderNoPlansMessage(parsed);
+      }
+    } catch (error) {
+      // If that fails, look for JSON within the content
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (hasValidPlansData(parsed)) {
+            return renderPlans(parsed);
+          } else {
+            return renderNoPlansMessage(parsed);
+          }
+        }
+      } catch (err) {
+        // console.warn('⚠️ Assistant content JSON parse failed:', err);
       }
     }
   }
@@ -127,7 +125,6 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
   // --- helper functions ---
   function renderPlans(parsed: { plans: any[] }) {
     const plans = parsed.plans;
-    console.log('🎯 Rendering plans:', plans);
     
     // Filter out invalid plans (like "No hay planes disponibles públicamente")
     const validPlans = plans.filter((plan: any) => 
@@ -142,7 +139,6 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
     );
     
     if (validPlans.length === 0) {
-      console.warn('⚠️ No valid plans found after filtering');
       return renderNoPlansMessage(parsed);
     }
     
@@ -169,8 +165,6 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
       };
     });
     
-    console.log('✅ Mapped plans for UI:', mappedPlans);
-    
     const category = mappedPlans[0]?.category ?? t('plans.defaultCategory');
     const titleTemplate = t('plans.recommendedTitle');
     const title = titleTemplate.replace('{category}', category);
@@ -188,7 +182,6 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
   }
 
   function renderNoPlansMessage(parsed: any) {
-    console.log('📝 Rendering no plans message for:', parsed);
     
     return (
       <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">

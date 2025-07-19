@@ -32,42 +32,35 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
   // Load state from localStorage on mount
   React.useEffect(() => {
-    console.log('🔄 Loading state from localStorage...');
     const savedState = localStorage.getItem('briki-onboarding');
-    console.log('📦 Saved state from localStorage:', savedState);
     
     if (savedState) {
       try {
         const { currentStep: savedStep, answers: savedAnswers } = JSON.parse(savedState);
-        console.log('📊 Parsed saved state:', { savedStep, savedAnswers });
         
         // Only load if it's a valid step (1-5, where 5 means completed)
         if (savedStep >= 1 && savedStep <= 5) {
-          console.log('✅ Loading valid saved state');
           setCurrentStep(savedStep);
           setAnswers(savedAnswers || {});
         } else {
-          console.log('❌ Invalid saved step, resetting');
-          // Reset if invalid state
           localStorage.removeItem('briki-onboarding');
           setCurrentStep(1);
           setAnswers({});
         }
       } catch (error) {
-        console.error('💥 Error parsing saved state:', error);
         localStorage.removeItem('briki-onboarding');
         setCurrentStep(1);
         setAnswers({});
       }
     } else {
-      console.log('📭 No saved state found in localStorage');
+      // No saved state, clear any stale data
+      localStorage.removeItem('briki-onboarding');
     }
     setIsLoading(false); // Mark as loaded
   }, []);
 
   // Save state to localStorage whenever it changes
   React.useEffect(() => {
-    console.log('💾 Saving to localStorage:', { currentStep, answers });
     localStorage.setItem('briki-onboarding', JSON.stringify({
       currentStep,
       answers,
@@ -75,29 +68,13 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   }, [currentStep, answers]);
 
   const setAnswer = (key: keyof OnboardingAnswers, value: string) => {
-    console.log(`💾 Saving answer: ${key} = ${value}`);
     setAnswers(prev => ({ ...prev, [key]: value }));
   };
 
   const completeOnboarding = React.useCallback(async () => {
-    console.log("🚀 completeOnboarding called");
-    console.log("📋 Current answers:", answers);
-    console.log("📊 All answers present:", {
-      insuranceType: !!answers.insuranceType,
-      coverageFor: !!answers.coverageFor,
-      budget: !!answers.budget,
-      city: !!answers.city,
-    });
     
     // Ensure all answers are present before proceeding
     if (!answers.insuranceType || !answers.coverageFor || !answers.budget || !answers.city) {
-      console.warn('⚠️ Missing answers, cannot complete onboarding yet');
-      console.warn('Missing:', {
-        insuranceType: !answers.insuranceType,
-        coverageFor: !answers.coverageFor,
-        budget: !answers.budget,
-        city: !answers.city,
-      });
       // Don't return, just log the warning and continue
       // This allows the function to be called multiple times safely
     }
@@ -113,15 +90,12 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       currentStep: 5, // Mark as completed
       answers: answers,
     };
-    console.log('💾 Force saving final state to localStorage:', finalState);
     
     try {
       localStorage.setItem('briki-onboarding', JSON.stringify(finalState));
-      console.log('✅ localStorage saved successfully');
       
       // Verify the save worked
       const saved = localStorage.getItem('briki-onboarding');
-      console.log('🔍 Verification - saved data:', saved);
     } catch (error) {
       console.error('💥 Error saving to localStorage:', error);
     }
@@ -173,7 +147,6 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     const isFinalStep = currentStep === 4;
     
     if (allAnswersPresent && isFinalStep) {
-      console.log('✅ All answers present on final step, auto-completing onboarding');
       // Use a small delay to ensure state is fully updated
       setTimeout(() => {
         completeOnboarding();
@@ -183,20 +156,17 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
   const goToNext = () => {
     if (currentStep <= 4) {
-      console.log(`➡️ Moving from step ${currentStep} to ${currentStep + 1}`);
       setCurrentStep(currentStep + 1);
     }
   };
 
   const goToPrevious = () => {
     if (currentStep > 1) {
-      console.log(`⬅️ Moving from step ${currentStep} to ${currentStep - 1}`);
       setCurrentStep(currentStep - 1);
     }
   };
 
   const skipOnboarding = () => {
-    console.log('⏭️ Skipping onboarding');
     localStorage.removeItem('briki-onboarding');
     window.location.href = '/';
   };

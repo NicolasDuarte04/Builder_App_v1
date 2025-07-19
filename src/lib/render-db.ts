@@ -20,11 +20,6 @@ if (pool) {
   });
 }
 
-console.log('Database connection status:', {
-  hasDatabaseUrl,
-  poolExists: !!pool,
-});
-
 function transformPlan(plan: InsurancePlanFromDB): InsurancePlan {
   // Format currency values - always display in COP for Colombian market
   const formatCurrencyValue = (value: number, originalCurrency: string) => {
@@ -73,14 +68,12 @@ export async function queryInsurancePlans(filters: {
   country?: string;
   limit?: number;
 }): Promise<InsurancePlan[]> {
-  console.log('🔍 queryInsurancePlans called with filters:', filters);
-
-  if (!pool) {
-    console.error('❌ Database connection not available.');
-    return [];
-  }
-
   try {
+    if (!pool) {
+      console.error('❌ Database connection not available.');
+      return [];
+    }
+
     let query = 'SELECT * FROM insurance_plans WHERE 1=1';
     const params: any[] = [];
     let paramIndex = 1;
@@ -102,11 +95,8 @@ export async function queryInsurancePlans(filters: {
     query += ` LIMIT $${paramIndex++}`;
     params.push(filters.limit || 4);
 
-    console.log('🔍 Executing final query:', { query, params });
-
     const result = await pool.query(query, params);
 
-    console.log(`✅ Database query successful: Found ${result.rows.length} plans.`);
     return result.rows.map(transformPlan);
   } catch (error) {
     console.error('❌ Error querying insurance plans:', error);
@@ -161,51 +151,36 @@ export async function testConnection(): Promise<boolean> {
 
 // Manual test function to verify database data
 export async function testDatabaseData(): Promise<void> {
-  console.log('🧪 Testing database data availability...');
-  
-  if (!pool) {
-    console.log('📝 No database connection - using mock data');
-    return;
-  }
-
   try {
+    if (!pool) {
+      console.log('📝 No database connection - using mock data');
+      return;
+    }
+
     // Test basic connection
-    console.log('🔍 Testing basic connection...');
     const connectionTest = await pool.query('SELECT 1 as test');
-    console.log('✅ Basic connection successful:', connectionTest.rows[0]);
 
     // Test table existence
-    console.log('🔍 Testing table existence...');
     const tableTest = await pool.query(`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_name = 'insurance_plans'
       );
     `);
-    console.log('✅ Table existence check:', tableTest.rows[0]);
 
     // Test data count
-    console.log('🔍 Testing data count...');
     const countTest = await pool.query('SELECT COUNT(*) as total FROM insurance_plans');
-    console.log('✅ Total plans in database:', countTest.rows[0].total);
 
     // Test sample data
-    console.log('🔍 Testing sample data...');
     const sampleTest = await pool.query('SELECT * FROM insurance_plans LIMIT 3');
-    console.log('✅ Sample plans:', sampleTest.rows);
 
     // Test filtered query (like the tool would use)
-    console.log('🔍 Testing filtered query (salud type)...');
     const filteredTest = await pool.query(`
       SELECT * FROM insurance_plans 
       WHERE category = 'salud' 
       ORDER BY monthly_premium ASC 
       LIMIT 4
     `);
-    console.log('✅ Filtered plans (salud):', {
-      count: filteredTest.rows.length,
-      plans: filteredTest.rows
-    });
 
   } catch (error) {
     console.error('❌ Database test failed:', error);

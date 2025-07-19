@@ -18,6 +18,7 @@ import { PDFUpload } from "./PDFUpload";
 import { PolicyAnalysisDisplay } from "./PolicyAnalysisDisplay";
 import { PolicyHistory } from "./PolicyHistory";
 import { X } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 interface AIAssistantInterfaceProps {
   isLoading?: boolean;
@@ -31,6 +32,7 @@ interface AIAssistantInterfaceProps {
 
 export function AIAssistantInterface({ isLoading = false, onboardingData = {} }: AIAssistantInterfaceProps) {
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
   const {
     messages,
     input,
@@ -65,6 +67,16 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
       console.log('📝 Context message created:', contextMessage);
     }
   }, [onboardingData, messages.length]);
+
+  // Check for openUpload parameter and open modal
+  useEffect(() => {
+    if (searchParams) {
+      const shouldOpenUpload = searchParams.get('openUpload') === 'true';
+      if (shouldOpenUpload) {
+        setShowPDFUpload(true);
+      }
+    }
+  }, [searchParams]);
 
   // Helper function to create context message from onboarding data
   const createContextMessage = (data: any) => {

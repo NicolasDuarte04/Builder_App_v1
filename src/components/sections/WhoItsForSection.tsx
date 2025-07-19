@@ -71,25 +71,40 @@ export const WhoItsForSection: React.FC = () => {
 
   return (
     <GlowingBackground>
-      <section className="my-20 relative">
+      <section className="py-20 lg:py-24 relative">
         <div className="container z-10 mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             viewport={{ once: true }}
-            className="flex flex-col items-center justify-center max-w-[540px] mx-auto"
+            className="text-center mb-12 lg:mb-16"
           >
-            <div className="flex justify-center">
-              <div className="border border-gray-300/50 dark:border-white/20 py-1 px-4 rounded-lg bg-white/80 dark:bg-white/10 backdrop-blur-sm text-gray-900 dark:text-white">
-                {t("who_its_for.badge")}
-              </div>
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 text-gray-800 dark:text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-4 lg:mb-6 shadow-sm border border-blue-200 dark:border-blue-800">
+              {t("who_its_for.badge")}
             </div>
 
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tighter mt-5 text-gray-900 dark:text-white">
-              {t("who_its_for.title")}
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 dark:text-white mb-4 lg:mb-6 max-w-4xl mx-auto">
+              {(() => {
+                const title = t("who_its_for.title");
+                // Split the title to apply gradient to "Briki Insurance Assistant"
+                const parts = title.split(' ');
+                const firstPart = parts.slice(0, 2).join(' '); // "Who is" or "¿Para quién"
+                const highlightPart = parts.slice(2, 5).join(' '); // "Briki Insurance Assistant" or equivalent
+                const lastPart = parts.slice(5).join(' '); // "for?" or equivalent
+                
+                return (
+                  <>
+                    <span>{firstPart}</span>{' '}
+                    <span className="bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">
+                      {highlightPart}
+                    </span>{' '}
+                    <span>{lastPart}</span>
+                  </>
+                );
+              })()}
             </h2>
-            <p className="text-center mt-5 opacity-75 text-gray-700 dark:text-white/90">
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               {t("who_its_for.subtitle")}
             </p>
           </motion.div>

@@ -8,7 +8,8 @@ import { FeatureHighlightsSection } from '@/components/sections/FeatureHighlight
 import { UseCasesSection } from '@/components/sections/UseCasesSection';
 import { AIAssistantDemoSection } from '@/components/sections/AIAssistantDemoSection';
 import { DocumentAnalysisSection } from '@/components/sections/DocumentAnalysisSection';
-import { Footer } from '@/components/ui/footer';
+import { Footer } from '@/components/blocks/footer-section';
+
 export default function Home() {
   const { t } = useTranslation();
 

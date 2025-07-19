@@ -41,7 +41,6 @@ export default function LoginPage() {
         window.location.href = '/';
       }
     } catch (error) {
-      console.error('Sign in error:', error);
       alert('An error occurred during sign in.');
     } finally {
       setIsLoading(false);
@@ -114,12 +113,6 @@ export default function LoginPage() {
                     <input type="checkbox" name="rememberMe" className="rounded border-neutral-300 dark:border-neutral-700 text-[#009BFF]" />
                     <span className="text-neutral-700 dark:text-neutral-200 text-opacity-100">Keep me signed in</span>
                   </label>
-                  <Link 
-                    href="/reset-password" 
-                    className="text-[#009BFF] hover:text-[#0087FF] transition-colors"
-                  >
-                    Reset password
-                  </Link>
                 </div>
               </fieldset>
 

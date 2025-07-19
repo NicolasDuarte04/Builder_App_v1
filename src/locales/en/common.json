@@ -4,6 +4,7 @@
     "projects": "Projects",
     "about": "About",
     "contact": "Contact",
+    "assistant": "AI Assistant",
     "login": "Log in",
     "signup": "Sign up"
   },
@@ -108,10 +109,18 @@
       "description": "Get insurance suggestions tailored to your age, health, family, and budget — not generic options."
     },
     "ready_to_start": "Ready to find your insurance?",
-    "ready_description": "Join thousands of users who are already finding better insurance plans with Briki Insurance Assistant."
+    "ready_description": "Join thousands of users who are already finding better insurance plans with Briki Insurance Assistant.",
+    "core": {
+      "compare_plans_title": "Compare Plans Fast",
+      "compare_plans_description": "Compare real insurance plans side-by-side with clear pricing and coverage details.",
+      "ai_explains_title": "AI that Explains, not Confuses",
+      "ai_explains_description": "Get complex insurance terms explained in simple language you can understand.",
+      "analyze_pdfs_title": "Analyze Insurance PDFs",
+      "analyze_pdfs_description": "Upload any insurance document and get instant insights about coverage and gaps."
+    }
   },
   "use_cases": {
-    "title": "See how people like you use Briki to find better insurance",
+    "title": "People like you trust Briki to find better insurance",
     "description": "Discover real-life use cases that make insurance shopping simple and help you visualize yourself using the product."
   },
   "who_its_for": {
@@ -134,24 +143,6 @@
       "title": "Seniors & Retirees",
       "description": "Navigate Medicare options, supplemental coverage, and long-term care insurance with clear explanations and recommendations."
     }
-  },
-  "footer": {
-    "product": "Product",
-    "company": "Company",
-    "resources": "Resources",
-    "social": "Social Links",
-    "features": "Features",
-    "pricing": "Pricing",
-    "testimonials": "Testimonials",
-    "integration": "Integration",
-    "about_us": "About Us",
-    "privacy_policy": "Privacy Policy",
-    "terms_of_service": "Terms of Service",
-    "blog": "Blog",
-    "changelog": "Changelog",
-    "brand": "Brand",
-    "help": "Help",
-    "all_rights_reserved": "All rights reserved."
   },
   "assistant": {
     "title": "Insurance Assistant",
@@ -269,6 +260,63 @@
       "title": "Ready to Transform Your Insurance Experience?",
       "description": "Join thousands of users who are already finding better insurance plans with Briki AI.",
       "button": "Get Started Today"
+    }
+  },
+  "landing": {
+    "ai_assistant": {
+      "title": "Meet Your AI Insurance Assistant",
+      "description": "Get instant answers, personalized recommendations, and expert guidance for all your insurance needs.",
+      "features": {
+        "instant_answers": {
+          "title": "Instant Expert Answers",
+          "description": "Get clear, immediate responses to any insurance question, explained in simple terms."
+        },
+        "personalized_recommendations": {
+          "title": "Personalized Recommendations",
+          "description": "Receive tailored insurance plans that match your specific needs and budget."
+        },
+        "easy_navigation": {
+          "title": "Easy Policy Navigation",
+          "description": "Understand complex terms and coverage options with visual comparisons and plain language."
+        }
+      },
+      "cta": "Try the Assistant",
+      "preview_label": "Assistant Preview"
+    },
+    "document_analysis": {
+      "title": "Upload Your Documents, Get Instant Insights",
+      "description": "Our AI assistant can analyze your existing insurance documents, medical records, and financial information to provide personalized recommendations and identify coverage gaps.",
+      "badge": "AI-Powered Analysis",
+      "preview_label": "Analysis Preview",
+      "steps": {
+        "upload": {
+          "title": "Upload Documents",
+          "description": "Drag & drop your insurance PDFs, medical records, or financial documents"
+        },
+        "analysis": {
+          "title": "AI Analysis",
+          "description": "Our AI extracts key information and identifies your coverage needs"
+        },
+        "recommendations": {
+          "title": "Personalized Recommendations",
+          "description": "Get tailored insurance suggestions based on your unique situation"
+        }
+      },
+      "cta": "Try Document Analysis",
+      "upload_label": "Document Analysis",
+      "upload_description": "Upload your insurance documents",
+      "drop_files": "Drop your documents here",
+      "browse_files": "Or click to browse files",
+      "file_requirements": "Maximum 10MB • PDF files only",
+      "processing": {
+        "title": "AI Processing...",
+        "subtitle": "Analyzing your documents",
+        "steps": {
+          "scan": "Document scanned successfully",
+          "extract": "Information extracted",
+          "identify": "Coverage gaps identified"
+        }
+      }
     }
   }
 } 
