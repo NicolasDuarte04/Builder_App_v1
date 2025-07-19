@@ -6,6 +6,7 @@ import { createPolicyUpload, updatePolicyUpload } from '@/lib/supabase-policy';
 import { z } from 'zod';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 
 // Define the schema for the policy analysis
 const PolicyAnalysisSchema = z.object({
@@ -33,9 +34,21 @@ const PolicyAnalysisSchema = z.object({
 
 export async function POST(request: NextRequest) {
   let uploadId: string | null = null;
+  let serverSupabase: any = null;
   
   try {
     console.log('📋 Starting PDF analysis request...');
+    
+    // Initialize server Supabase client
+    try {
+      serverSupabase = createServerSupabaseClient();
+    } catch (error) {
+      console.error('❌ Failed to create server Supabase client:', error);
+      return NextResponse.json(
+        { error: 'Database configuration error. Please check server logs.' },
+        { status: 500 }
+      );
+    }
     
     // Get the authenticated session
     const session = await getServerSession(authOptions);
@@ -114,7 +127,7 @@ export async function POST(request: NextRequest) {
       file_path: `uploads/${userId}/${Date.now()}_${file.name}`,
       extracted_text: '',
       status: 'uploading'
-    });
+    }, serverSupabase);
 
     if (!uploadRecord) {
       console.error('❌ Failed to create upload record in database');
@@ -138,7 +151,7 @@ export async function POST(request: NextRequest) {
       await updatePolicyUpload(uploadRecord.id, {
         extracted_text: pdfText,
         status: 'processing'
-      });
+      }, serverSupabase);
 
       // Analyze with AI using generateObject for structured output
       console.log('🤖 Starting AI analysis...');
@@ -149,7 +162,7 @@ export async function POST(request: NextRequest) {
       await updatePolicyUpload(uploadRecord.id, {
         ai_summary: JSON.stringify(analysis),
         status: 'completed'
-      });
+      }, serverSupabase);
 
       return NextResponse.json({
         success: true,
@@ -166,7 +179,7 @@ export async function POST(request: NextRequest) {
       await updatePolicyUpload(uploadRecord.id, {
         status: 'error',
         error_message: errorMessage
-      });
+      }, serverSupabase);
 
       throw error;
     }

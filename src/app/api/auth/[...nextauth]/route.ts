@@ -24,6 +24,9 @@ if (!process.env.GOOGLE_CLIENT_ID) {
 if (!process.env.GOOGLE_CLIENT_SECRET) {
   console.warn('GOOGLE_CLIENT_SECRET is not set');
 }
+if (!process.env.NEXTAUTH_URL) {
+  console.warn('NEXTAUTH_URL is not set - this is critical for production OAuth!');
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -157,6 +160,8 @@ export const authOptions: NextAuthOptions = {
       if (url.startsWith("/")) return `${baseUrl}${url}`
       // Allows callback URLs on the same origin
       else if (new URL(url).origin === baseUrl) return url
+      // Allow Vercel preview URLs
+      if (url.includes('vercel.app')) return url
       // Default redirect to home page after sign in
       return baseUrl
     },

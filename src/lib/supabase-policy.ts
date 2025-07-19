@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export interface PolicyUpload {
   id: string;
@@ -22,10 +23,22 @@ export interface CreatePolicyUploadData {
   error_message?: string;
 }
 
-export async function createPolicyUpload(data: CreatePolicyUploadData): Promise<PolicyUpload | null> {
+export async function createPolicyUpload(
+  data: CreatePolicyUploadData, 
+  client?: SupabaseClient
+): Promise<PolicyUpload | null> {
+  const supabaseClient = client || supabase;
+  
   try {
+    console.log('📝 Attempting to create policy upload with data:', {
+      user_id: data.user_id,
+      file_name: data.file_name,
+      status: data.status,
+      hasExtractedText: !!data.extracted_text,
+      textLength: data.extracted_text?.length || 0
+    });
     
-    const { data: upload, error } = await supabase
+    const { data: upload, error } = await supabaseClient
       .from('policy_uploads')
       .insert({
         user_id: data.user_id,
@@ -41,24 +54,34 @@ export async function createPolicyUpload(data: CreatePolicyUploadData): Promise<
       .single();
 
     if (error) {
-      console.error('Error creating policy upload:', error);
+      console.error('❌ Supabase error creating policy upload:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        user_id: data.user_id
+      });
       return null;
     }
 
+    console.log('✅ Successfully created policy upload:', upload.id);
     return upload;
   } catch (error) {
-    console.error('Error creating policy upload:', error);
+    console.error('❌ Exception creating policy upload:', error);
     return null;
   }
 }
 
 export async function updatePolicyUpload(
   id: string, 
-  updates: Partial<Omit<PolicyUpload, 'id' | 'user_id' | 'file_name' | 'file_path' | 'upload_time'>>
+  updates: Partial<Omit<PolicyUpload, 'id' | 'user_id' | 'file_name' | 'file_path' | 'upload_time'>>,
+  client?: SupabaseClient
 ): Promise<PolicyUpload | null> {
+  const supabaseClient = client || supabase;
+  
   try {
     
-    const { data: upload, error } = await supabase
+    const { data: upload, error } = await supabaseClient
       .from('policy_uploads')
       .update(updates)
       .eq('id', id)
