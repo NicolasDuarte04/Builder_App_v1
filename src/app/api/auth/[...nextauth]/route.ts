@@ -3,6 +3,14 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { SupabaseAdapter } from "@next-auth/supabase-adapter";
 import { type NextAuthOptions } from "next-auth";
+import bcrypt from "bcryptjs";
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+);
 
 // Debug environment variables
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -34,15 +42,39 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // For now, return null to indicate authentication failed
-        // This should be replaced with actual user validation logic
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
         
-        // TODO: Implement actual user validation against Supabase
-        // For now, we'll return null to show the authentication is not fully implemented
-        return null;
+        try {
+          // Get user from database
+          const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', credentials.email)
+            .single();
+          
+          if (error || !user) {
+            return null;
+          }
+          
+          // Check password
+          const passwordMatch = await bcrypt.compare(credentials.password, user.password);
+          
+          if (!passwordMatch) {
+            return null;
+          }
+          
+          // Return user object (without password)
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
       }
     }),
   ],

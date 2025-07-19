@@ -260,6 +260,29 @@
       "title": "Ready to Transform Your Insurance Experience?",
       "description": "Join thousands of users who are already finding better insurance plans with Briki AI.",
       "button": "Get Started Today"
+    },
+    "coverage": {
+      "title": "Built for LATAM. Designed to Scale.",
+      "description": "Briki starts in Colombia — but our mission is regional. Our AI insurance assistant is built to expand across Latin America, connecting users with the best providers, one country at a time.",
+      "regional": "Regional Reach",
+      "regionalDesc": "Designed to serve users across Latin America",
+      "aiFirst": "AI-First Experience",
+      "aiFirstDesc": "AI guides users through real policy choices",
+      "complexity": "Built to Navigate Complexity",
+      "complexityDesc": "Simplifies confusing documents and fine print",
+      "spanish": "Available in Spanish",
+      "spanishDesc": "Briki speaks your language — literally",
+      "origin": "Built in Colombia • Expanding across LATAM"
+    },
+    "story": {
+      "title": "Our Story",
+      "paragraph1": "Briki was born from a simple observation: buying insurance in Latin America is unnecessarily complex. Forms filled with jargon, endless phone calls, and policies that seem designed to confuse rather than protect.",
+      "paragraph2": "We believed there had to be a better way. So we built one. Using artificial intelligence and a deep understanding of the insurance market, we created a platform that speaks your language and puts your needs first.",
+      "paragraph3": "Today, Briki helps thousands of people across Latin America find the right insurance coverage in minutes, not days. We're just getting started."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "A world where finding the right insurance is as simple as having a conversation. Where technology bridges the gap between people and protection, making security accessible to all."
     }
   },
   "landing": {

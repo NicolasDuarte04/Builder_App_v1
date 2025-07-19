@@ -6,7 +6,7 @@ export const products = [
   },
   {
     title: "AXA Colpatria",
-    link: "https://axacolpatria.com",
+    link: "https://www.axacolpatria.co/portalpublico-lf/inicio",
     thumbnail: "/images/products/axa-colpatria.png",
   },
   {

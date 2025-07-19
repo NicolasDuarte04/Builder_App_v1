@@ -2,27 +2,21 @@
 
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { GlassInputWrapper } from "@/components/ui/auth/GlassInput";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-
-const GoogleIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 48 48">
-    <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s12-5.373 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-2.641-.21-5.236-.611-7.743z" />
-    <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" />
-    <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z" />
-    <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.022 35.026 44 30.038 44 24c0-2.641-.21-5.236-.611-7.743z" />
-  </svg>
-);
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
+    setError("");
     
     const formData = new FormData(event.currentTarget);
     const email = formData.get('email') as string;
@@ -36,146 +30,140 @@ export default function LoginPage() {
       });
       
       if (result?.error) {
-        alert('Authentication failed. Please check your credentials.');
+        setError('Invalid email or password. Please try again.');
       } else if (result?.ok) {
-        window.location.href = '/';
+        router.push('/');
       }
     } catch (error) {
-      alert('An error occurred during sign in.');
+      setError('An error occurred during sign in. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      await signIn("google", { callbackUrl: "/" });
+    } catch (error) {
+      setError('Failed to sign in with Google. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Left column: sign-in form */}
-      <section className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <motion.div 
-            className="flex flex-col gap-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white">
-              Welcome back
-            </h1>
-            <p className="text-neutral-600 dark:text-neutral-200 text-opacity-100">
-              Sign in to your account to continue building with Briki AI
-            </p>
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <motion.div 
+        className="w-full max-w-md"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="bg-white p-8 rounded-2xl shadow-lg">
+          <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">
+            Welcome back
+          </h1>
+          <p className="text-gray-600 text-center mb-8">
+            Sign in to your Briki AI account
+          </p>
 
-            <form className="space-y-5" onSubmit={handleSubmit}>
-              <fieldset disabled={isLoading}>
-                <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200 text-opacity-100">
-                    Email Address
-                  </label>
-                  <GlassInputWrapper>
-                    <input 
-                      name="email" 
-                      type="email" 
-                      placeholder="you@example.com" 
-                      className="w-full bg-transparent text-sm p-4 rounded-2xl focus:outline-none text-neutral-900 dark:text-white placeholder:text-neutral-500 dark:placeholder:text-neutral-400" 
-                    />
-                  </GlassInputWrapper>
-                </div>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+              {error}
+            </div>
+          )}
 
-                <div>
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200 text-opacity-100">
-                    Password
-                  </label>
-                  <GlassInputWrapper>
-                    <div className="relative">
-                      <input 
-                        name="password" 
-                        type={showPassword ? 'text' : 'password'} 
-                        placeholder="••••••••" 
-                        className="w-full bg-transparent text-sm p-4 pr-12 rounded-2xl focus:outline-none text-neutral-900 dark:text-white placeholder:text-neutral-500 dark:placeholder:text-neutral-400" 
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => setShowPassword(!showPassword)} 
-                        className="absolute inset-y-0 right-3 flex items-center"
-                      >
-                        {showPassword ? (
-                          <EyeOff className="w-5 h-5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-200 dark:hover:text-neutral-100 transition-colors text-opacity-100" />
-                        ) : (
-                          <Eye className="w-5 h-5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-200 dark:hover:text-neutral-100 transition-colors text-opacity-100" />
-                        )}
-                      </button>
-                    </div>
-                  </GlassInputWrapper>
-                </div>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address
+              </label>
+              <input 
+                name="email" 
+                type="email" 
+                required
+                placeholder="you@example.com" 
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" 
+              />
+            </div>
 
-                <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" name="rememberMe" className="rounded border-neutral-300 dark:border-neutral-700 text-[#009BFF]" />
-                    <span className="text-neutral-700 dark:text-neutral-200 text-opacity-100">Keep me signed in</span>
-                  </label>
-                </div>
-              </fieldset>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input 
+                  name="password" 
+                  type={showPassword ? 'text' : 'password'} 
+                  required
+                  placeholder="Enter your password" 
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)} 
+                  className="absolute inset-y-0 right-3 flex items-center"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors" />
+                  ) : (
+                    <Eye className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors" />
+                  )}
+                </button>
+              </div>
+            </div>
 
-              <button 
-                type="submit" 
-                disabled={isLoading}
-                className="w-full rounded-2xl bg-gradient-to-r from-[#009BFF] to-cyan-500 py-4 font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed hover:from-[#0087FF] hover:to-cyan-400 transition-all"
-              >
-                {isLoading ? 'Signing In...' : 'Sign In'}
-              </button>
-            </form>
-
-            <div className="relative flex items-center justify-center">
-              <span className="w-full border-t border-neutral-200 dark:border-neutral-800"></span>
-              <span className="px-4 text-sm text-neutral-500 dark:text-neutral-200 bg-white dark:bg-black absolute text-opacity-100">
-                Or continue with
-              </span>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center">
+                <input type="checkbox" name="rememberMe" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+              </label>
+              <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
+                Forgot password?
+              </Link>
             </div>
 
             <button 
-              type="button"
-              onClick={() => signIn("google", { callbackUrl: "/" })}
-              className="w-full flex items-center justify-center gap-3 border border-neutral-200 dark:border-neutral-800 rounded-2xl py-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors text-neutral-700 dark:text-neutral-300"
+              type="submit" 
+              disabled={isLoading}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <GoogleIcon />
-              Continue with Google
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
+          </form>
 
-            <p className="text-center text-sm text-neutral-600 dark:text-neutral-200 text-opacity-100">
-              New to Briki AI?{" "}
-              <Link 
-                href="/register" 
-                className="text-[#009BFF] hover:text-[#0087FF] transition-colors"
-              >
-                Create Account
-              </Link>
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Right column: hero image */}
-      <section className="hidden md:block flex-1 relative p-4">
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="absolute inset-4 rounded-3xl bg-gradient-to-br from-[#009BFF]/20 to-cyan-500/20 backdrop-blur overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-grid-white/10" />
-          <div className="absolute inset-0 flex items-center justify-center p-8">
-            <img 
-              src="/images/login-hero.png" 
-              alt="Briki AI - AI-powered project building"
-              className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
-              onError={(e) => {
-                // Fallback if image doesn't exist
-                e.currentTarget.style.display = 'none';
-              }}
-            />
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+            </div>
           </div>
-        </motion.div>
-      </section>
+
+          <button 
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Sign in with Google
+          </button>
+
+          <p className="text-center text-sm text-gray-600 mt-6">
+            Don't have an account?{" "}
+            <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+              Sign up
+            </Link>
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 } 

@@ -241,6 +241,29 @@
       "title": "¿Listo para Transformar tu Experiencia de Seguros?",
       "description": "Únete a miles de usuarios que ya están encontrando mejores planes de seguros con Briki AI.",
       "button": "Comenzar Hoy"
+    },
+    "coverage": {
+      "title": "Construido para LATAM. Diseñado para Escalar.",
+      "description": "Briki comienza en Colombia — pero nuestra misión es regional. Nuestro asistente de seguros con IA está construido para expandirse por América Latina, conectando usuarios con los mejores proveedores, un país a la vez.",
+      "regional": "Alcance Regional",
+      "regionalDesc": "Diseñado para servir usuarios en toda América Latina",
+      "aiFirst": "Experiencia IA Primero",
+      "aiFirstDesc": "La IA guía a usuarios a través de opciones reales de pólizas",
+      "complexity": "Construido para Navegar la Complejidad",
+      "complexityDesc": "Simplifica documentos confusos y letra pequeña",
+      "spanish": "Disponible en Español",
+      "spanishDesc": "Briki habla tu idioma — literalmente",
+      "origin": "Construido en Colombia • Expandiéndose por LATAM"
+    },
+    "story": {
+      "title": "Nuestra Historia",
+      "paragraph1": "Briki nació de una simple observación: comprar seguros en América Latina es innecesariamente complejo. Formularios llenos de jerga, llamadas telefónicas interminables y pólizas que parecen diseñadas para confundir en lugar de proteger.",
+      "paragraph2": "Creíamos que tenía que haber una mejor manera. Así que la construimos. Usando inteligencia artificial y un profundo conocimiento del mercado de seguros, creamos una plataforma que habla tu idioma y pone tus necesidades primero.",
+      "paragraph3": "Hoy, Briki ayuda a miles de personas en toda América Latina a encontrar la cobertura de seguro adecuada en minutos, no días. Apenas estamos comenzando."
+    },
+    "vision": {
+      "title": "Nuestra Visión",
+      "description": "Un mundo donde encontrar el seguro adecuado sea tan simple como tener una conversación. Donde la tecnología cierre la brecha entre las personas y la protección, haciendo la seguridad accesible para todos."
     }
   },
   "landing": {

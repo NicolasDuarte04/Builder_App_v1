@@ -130,6 +130,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
           className="relative px-4 py-2 text-neutral-600 dark:text-neutral-200 whitespace-nowrap text-opacity-100"
           key={`link-${idx}`}
           href={item.link}
+          prefetch={true}
         >
           {hovered === idx && (
             <motion.div
