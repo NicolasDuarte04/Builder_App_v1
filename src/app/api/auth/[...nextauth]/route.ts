@@ -1,23 +1,22 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { SupabaseAdapter } from "@next-auth/supabase-adapter";
 import { type NextAuthOptions } from "next-auth";
 import bcrypt from "bcryptjs";
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
+// Initialize Supabase client with service role for auth operations
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
 // Debug environment variables
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
   console.warn('NEXT_PUBLIC_SUPABASE_URL is not set');
 }
-if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY is not set');
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('SUPABASE_SERVICE_ROLE_KEY is not set');
 }
 if (!process.env.GOOGLE_CLIENT_ID) {
   console.warn('GOOGLE_CLIENT_ID is not set');
@@ -78,27 +77,88 @@ export const authOptions: NextAuthOptions = {
       }
     }),
   ],
-  adapter: process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY 
-    ? SupabaseAdapter({
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        secret: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      })
-    : undefined,
+  // Remove adapter to use JWT strategy for OAuth
+  // When using custom user table with OAuth, JWT is simpler
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google") {
+        try {
+          // Check if user exists
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', user.email!)
+            .single();
+
+          if (!existingUser) {
+            // Create new user for Google sign-in
+            const { error } = await supabase
+              .from('users')
+              .insert({
+                email: user.email!,
+                name: user.name || profile?.name || 'Google User',
+                // No password for OAuth users
+              });
+
+            if (error) {
+              console.error('Error creating user:', error);
+              return false;
+            }
+          }
+          return true;
+        } catch (error) {
+          console.error('SignIn callback error:', error);
+          return false;
+        }
+      }
+      return true;
+    },
     async session({ session, token }) {
       if (session?.user && token?.sub) {
-        (session.user as any).id = token.sub;
+        // Get user from database to ensure we have the correct ID
+        const { data: dbUser } = await supabase
+          .from('users')
+          .select('id, email, name')
+          .eq('email', session.user.email!)
+          .single();
+
+        if (dbUser) {
+          (session.user as any).id = dbUser.id;
+        }
       }
       return session;
     },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
+    async jwt({ token, user, account }) {
+      // Initial sign in
+      if (account && user) {
+        // For Google sign-ins, get the user ID from database
+        if (account.provider === "google") {
+          const { data: dbUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', user.email!)
+            .single();
+
+          if (dbUser) {
+            token.id = dbUser.id;
+          }
+        } else {
+          token.id = user.id;
+        }
       }
       return token;
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url
+      // Default redirect to home page after sign in
+      return baseUrl
     },
   },
   pages: {

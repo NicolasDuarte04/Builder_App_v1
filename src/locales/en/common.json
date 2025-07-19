@@ -145,16 +145,18 @@
     }
   },
   "assistant": {
-    "title": "Insurance Assistant",
-    "subtitle": "Ask about coverage, compare policies, or analyze your documents",
-    "input_placeholder": "Ask about coverage, compare policies, or analyze documents...",
-    "loading_title": "Loading your assistant",
-    "loading_subtitle": "We're preparing everything to help you with your insurance...",
-    "analyze_policy": "Analyze Policy PDF",
-    "compare_policies": "Compare Policies",
-    "analyze_coverage": "Analyze Coverage",
-    "compare_suggestions": "Policy comparison suggestions",
-    "analyze_suggestions": "Coverage analysis suggestions",
+    "title": "AI Assistant",
+    "subtitle": "Your personalized insurance assistant",
+    "inputPlaceholder": "Ask about coverage, compare policies or analyze documents...",
+    "uploadButton": "Upload file",
+    "sendButton": "Send",
+    "thinking": "Thinking...",
+    "auth": {
+      "title": "Exclusive access for users",
+      "description": "Sign in to access your personalized AI insurance assistant.",
+      "signIn": "Sign in",
+      "createAccount": "Create account"
+    },
     "suggestions": {
       "compare": [
         "Compare health insurance policies",

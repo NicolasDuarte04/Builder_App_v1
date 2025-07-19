@@ -124,11 +124,18 @@
     }
   },
   "assistant": {
-    "title": "Asistente de Seguros",
-    "subtitle": "Pregunta sobre cobertura, compara pólizas o analiza tus documentos",
-    "input_placeholder": "Pregunta sobre cobertura, compara pólizas o analiza documentos...",
-    "loading_title": "Cargando tu asistente",
-    "loading_subtitle": "Estamos preparando todo para ayudarte con tus seguros...",
+    "title": "Asistente IA",
+    "subtitle": "Tu asistente de seguros personalizado",
+    "inputPlaceholder": "Pregunta sobre coberturas, compara pólizas o analiza documentos...",
+    "uploadButton": "Subir archivo",
+    "sendButton": "Enviar",
+    "thinking": "Pensando...",
+    "auth": {
+      "title": "Acceso exclusivo para usuarios",
+      "description": "Inicia sesión para acceder a tu asistente de seguros personalizado con IA.",
+      "signIn": "Iniciar sesión",
+      "createAccount": "Crear cuenta"
+    },
     "analyze_policy": "Analizar Póliza PDF",
     "compare_policies": "Comparar Pólizas",
     "analyze_coverage": "Analizar Cobertura",

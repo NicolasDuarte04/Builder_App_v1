@@ -19,6 +19,7 @@ import { PolicyAnalysisDisplay } from "./PolicyAnalysisDisplay";
 import { PolicyHistory } from "./PolicyHistory";
 import { X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface AIAssistantInterfaceProps {
   isLoading?: boolean;
@@ -43,6 +44,8 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
     clearChat,
   } = useBrikiChat();
 
+  const { data: session } = useSession();
+  const [userId, setUserId] = useState<string>(''); // Initialize as empty string
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const [showUploadAnimation, setShowUploadAnimation] = useState(false);
   const [activeCommandCategory, setActiveCommandCategory] = useState<
@@ -51,8 +54,27 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
   const [showPDFUpload, setShowPDFUpload] = useState(false);
   const [policyAnalysis, setPolicyAnalysis] = useState<any>(null);
   const [showPolicyHistory, setShowPolicyHistory] = useState(false);
-  const [userId, setUserId] = useState<string>('test-user'); // TODO: Get from auth
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Set userId from session when available
+  useEffect(() => {
+    if (session?.user) {
+      const sessionUser = session.user as any;
+      if (sessionUser.id) {
+        setUserId(sessionUser.id);
+        console.log('🔐 User ID set from session:', sessionUser.id);
+      } else if (sessionUser.email) {
+        // Fallback to email if no ID
+        setUserId(sessionUser.email);
+        console.log('📧 Using email as user ID:', sessionUser.email);
+      }
+    } else {
+      // For chat functionality without auth, use a session-based ID
+      const sessionId = `guest-${Date.now()}`;
+      setUserId(sessionId);
+      console.log('👤 Using guest session ID:', sessionId);
+    }
+  }, [session]);
 
   // Inject onboarding context when component mounts and has data
   useEffect(() => {
@@ -101,6 +123,9 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
     
     return '';
   };
+
+  // Remove the authentication check - let users use the chat
+  // The PDFUpload component will handle its own auth check
 
   // Show loading state if data is still loading
   if (isLoading) {
@@ -517,7 +542,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder={t("assistant.input_placeholder")}
+                  placeholder={t("assistant.inputPlaceholder")}
                   value={input}
                   onChange={handleInputChange}
                   className="w-full text-gray-700 dark:text-gray-200 text-base outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent"

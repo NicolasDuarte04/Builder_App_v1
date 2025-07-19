@@ -2,20 +2,71 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, X, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, FileText, X, AlertCircle, CheckCircle, Lock } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 interface PDFUploadProps {
   onAnalysisComplete: (analysis: any) => void;
   onError: (error: string) => void;
-  userId: string;
+  userId: string; // Keep this for now but we won't use it in the request
 }
 
 export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProps) {
+  const { data: session, status } = useSession();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Show loading state while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="w-full p-8 text-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Show sign-in prompt for unauthenticated users
+  if (!session?.user) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full"
+      >
+        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-2xl p-8 text-center border border-blue-100 dark:border-blue-900/50">
+          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          </div>
+          
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            Inicia sesión para analizar pólizas
+          </h3>
+          
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-sm mx-auto">
+            Esta función está disponible solo para usuarios registrados. 
+            Crea una cuenta gratis para empezar a analizar tus documentos.
+          </p>
+          
+          <div className="flex gap-3 justify-center">
+            <Link href="/login">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+                Iniciar sesión
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button variant="outline" className="border-blue-200 hover:border-blue-300 dark:border-blue-800 dark:hover:border-blue-700">
+                Crear cuenta
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -43,7 +94,8 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
     try {
       const formData = new FormData();
       formData.append('file', uploadedFile);
-      formData.append('userId', userId);
+      // Remove userId from form data - we'll get it from session
+      // formData.append('userId', userId);
 
       // Simulate upload progress
       const progressInterval = setInterval(() => {
@@ -59,6 +111,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
       const response = await fetch('/api/ai/analyze-policy', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Important: include cookies for session
       });
 
       clearInterval(progressInterval);

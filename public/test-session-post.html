@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Debug Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0052a3;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Session Debug Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Test GET Request</h2>
+        <button onclick="testGet()">Test GET /api/test-session-debug</button>
+        <pre id="getResult"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test POST Request</h2>
+        <button onclick="testPost()">Test POST /api/test-session-debug</button>
+        <pre id="postResult"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Current User</h2>
+        <button onclick="testCurrentUser()">Test /api/auth/current-user</button>
+        <pre id="currentUserResult"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test PDF Analysis (No File)</h2>
+        <button onclick="testPdfAnalysis()">Test POST /api/ai/analyze-policy</button>
+        <pre id="pdfResult"></pre>
+    </div>
+
+    <script>
+        async function testGet() {
+            const result = document.getElementById('getResult');
+            try {
+                const response = await fetch('/api/test-session-debug', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                result.textContent = JSON.stringify(data, null, 2);
+                result.className = response.ok ? 'success' : 'error';
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+                result.className = 'error';
+            }
+        }
+
+        async function testPost() {
+            const result = document.getElementById('postResult');
+            try {
+                const response = await fetch('/api/test-session-debug', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                result.textContent = JSON.stringify(data, null, 2);
+                result.className = response.ok ? 'success' : 'error';
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+                result.className = 'error';
+            }
+        }
+
+        async function testCurrentUser() {
+            const result = document.getElementById('currentUserResult');
+            try {
+                const response = await fetch('/api/auth/current-user', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                result.textContent = JSON.stringify(data, null, 2);
+                result.className = response.ok ? 'success' : 'error';
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+                result.className = 'error';
+            }
+        }
+
+        async function testPdfAnalysis() {
+            const result = document.getElementById('pdfResult');
+            try {
+                // Create empty FormData (will fail validation but test auth)
+                const formData = new FormData();
+                
+                const response = await fetch('/api/ai/analyze-policy', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                result.textContent = JSON.stringify(data, null, 2);
+                result.className = response.ok ? 'success' : 'error';
+                
+                console.log('PDF Analysis test response:', data);
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+                result.className = 'error';
+            }
+        }
+
+        // Run all tests on load
+        window.onload = () => {
+            console.log('Session debug page loaded');
+        };
+    </script>
+</body>
+</html> 

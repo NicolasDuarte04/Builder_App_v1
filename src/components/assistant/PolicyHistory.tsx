@@ -17,14 +17,28 @@ export function PolicyHistory({ userId, onViewAnalysis }: PolicyHistoryProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadUploads();
+    if (userId && userId !== '') {
+      loadUploads();
+    } else {
+      setLoading(false);
+      setUploads([]);
+    }
   }, [userId]);
 
   const loadUploads = async () => {
+    if (!userId || userId === '') {
+      console.log('⚠️ No valid user ID, skipping policy history load');
+      setUploads([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
+      console.log('📂 Loading policy uploads for user:', userId);
       const userUploads = await getPolicyUploadsByUser(userId);
       setUploads(userUploads);
+      console.log('✅ Loaded uploads:', userUploads.length);
     } catch (err) {
       setError('Failed to load policy history');
       console.error('Error loading uploads:', err);

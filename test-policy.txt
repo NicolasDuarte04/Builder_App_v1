@@ -1,0 +1,48 @@
+INSURANCE POLICY DOCUMENT
+========================
+
+Policy Number: TEST-2024-001
+Policy Type: Health Insurance
+Effective Date: January 1, 2024
+Expiration Date: December 31, 2024
+
+INSURED INFORMATION
+------------------
+Primary Insured: John Doe
+Date of Birth: January 15, 1980
+Policy Holder ID: 123456789
+
+COVERAGE DETAILS
+---------------
+Premium: $150.00 USD Monthly
+
+Coverage Limits:
+- Hospitalization: $50,000
+- Outpatient Services: $10,000
+- Prescription Medications: $5,000
+- Emergency Services: $25,000
+
+Deductibles:
+- General Deductible: $500
+- Specialist Visit: $100
+- Emergency Room: $250
+
+EXCLUSIONS
+----------
+- Pre-existing conditions (first 12 months)
+- Cosmetic procedures
+- Experimental treatments
+- Self-inflicted injuries
+
+KEY FEATURES
+-----------
+- Nationwide network coverage
+- 24/7 Telemedicine access
+- Preventive care covered at 100%
+- Prescription drug coverage
+- Mental health services included
+
+TERMS AND CONDITIONS
+-------------------
+This policy is subject to the terms and conditions outlined in the full policy document. 
+Coverage is valid only when premiums are paid in full and on time. 
