@@ -150,7 +150,7 @@ export const authOptions: NextAuthOptions = {
             token.id = dbUser.id;
           }
         } else {
-          token.id = user.id;
+        token.id = user.id;
         }
       }
       return token;
