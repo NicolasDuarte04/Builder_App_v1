@@ -64,73 +64,54 @@ export const Header: React.FC = () => {
   const { t } = useTranslation();
   
   return (
-    <div className="relative z-10 max-w-7xl mx-auto py-16 md:py-20 px-4 w-full">
-      <div className="text-center">
-        {/* Main Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-4xl md:text-7xl font-bold text-black dark:text-white drop-shadow-sm leading-tight"
-          dangerouslySetInnerHTML={{ __html: t("hero.title") }}
-        />
+    <div className="relative z-10 min-h-[90vh] w-full flex items-center justify-center">
+      <div className="max-w-[1200px] w-full px-4 py-16 md:py-20">
+        <div className="text-center max-w-4xl mx-auto">
+          {/* Main Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-4xl md:text-6xl lg:text-7xl font-bold text-black dark:text-white leading-[1.1] tracking-[-0.02em] mb-8 md:mb-10"
+            dangerouslySetInnerHTML={{ __html: t("hero.title") }}
+          />
 
-        {/* Subheadline */}
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="max-w-3xl mx-auto mt-6 md:mt-8 text-lg md:text-xl text-gray-600 dark:text-gray-300 font-medium leading-relaxed"
-        >
-          {t("hero.subtitle")}
-        </motion.p>
-
-        {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8 md:mt-10"
-        >
-          <Button 
-            size="lg" 
-            className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-10 py-5 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all duration-300 transform hover:scale-105"
-            onClick={() => window.location.href = '/onboarding'}
+          {/* Subheadline */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="text-lg md:text-xl lg:text-2xl text-gray-600 dark:text-gray-300 font-normal leading-relaxed tracking-[-0.01em] max-w-3xl mx-auto mb-12 md:mb-14"
           >
-            {t("hero.cta_primary")}
-            <IconArrowRight className="ml-3 w-6 h-6" />
-          </Button>
-          <Button 
-            size="lg" 
-            variant="outline"
-            className="border-2 border-blue-500 text-blue-500 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20 px-10 py-5 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            onClick={() => window.location.href = '/assistant'}
-          >
-            {t("hero.cta_secondary")}
-            <IconSparkles className="ml-3 w-6 h-6" />
-          </Button>
-        </motion.div>
+            {t("hero.subtitle")}
+          </motion.p>
 
-        {/* Trust indicators */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-12 md:mt-16 flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-500 dark:text-gray-400"
-        >
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>{t("hero.trust.no_tech_setup")}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>{t("hero.trust.spanish_interface")}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>{t("hero.trust.start_in_2min")}</span>
-          </div>
-        </motion.div>
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col sm:flex-row justify-center items-center gap-4 md:gap-6"
+          >
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all duration-300 transform hover:scale-[1.02] min-w-[200px]"
+              onClick={() => window.location.href = '/onboarding'}
+            >
+              {t("hero.cta_primary")}
+              <IconArrowRight className="ml-2 w-5 h-5" strokeWidth={2} />
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="border-[1.5px] border-blue-500 text-blue-500 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20 px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] min-w-[200px]"
+              onClick={() => window.location.href = '/assistant'}
+            >
+              {t("hero.cta_secondary")}
+              <IconSparkles className="ml-2 w-5 h-5" strokeWidth={2} />
+            </Button>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
