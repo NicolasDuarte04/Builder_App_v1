@@ -147,10 +147,15 @@
   "assistant": {
     "title": "AI Assistant",
     "subtitle": "Your personalized insurance assistant",
+    "welcome_title": "Hello! I'm Briki",
+    "welcome_subtitle": "Your personalized insurance assistant. How can I help you today?",
     "inputPlaceholder": "Ask about coverage, compare policies or analyze documents...",
     "uploadButton": "Upload file",
     "sendButton": "Send",
     "thinking": "Thinking...",
+    "analyze_policy": "Analyze Policy PDF",
+    "search_insurance": "Search Insurance",
+    "context": "Context",
     "auth": {
       "title": "Exclusive access for users",
       "description": "Sign in to access your personalized AI insurance assistant.",

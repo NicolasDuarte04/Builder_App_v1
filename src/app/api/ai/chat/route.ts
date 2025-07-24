@@ -4,10 +4,42 @@ import { queryInsurancePlans } from '@/lib/render-db';
 import { InsurancePlan } from '@/types/project';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { getSystemPrompt, logPromptVersion, PROMPT_VERSION } from '@/config/systemPrompt';
+import { franc } from 'franc-min';
 
 export const runtime = 'nodejs';
 
 const hasValidKey = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-');
+
+// Language detection function
+function detectLanguage(text: string): 'english' | 'spanish' {
+  if (!text || text.trim().length === 0) return 'english'; // default to English
+  
+  const detected = franc(text);
+  console.log('🔍 Language detection:', { text: text.substring(0, 50) + '...', detected });
+  
+  // franc returns language codes like 'eng', 'spa', etc.
+  if (detected === 'eng') return 'english';
+  if (detected === 'spa') return 'spanish';
+  
+  // For uncertain detections, check for Spanish indicators
+  const spanishIndicators = /\b(el|la|los|las|de|del|en|con|para|por|que|es|son|un|una|y|o|pero|como|más|muy|todo|todos|esta|este|esto|esa|ese|eso|hola|gracias|por favor|buenos días|buenas tardes|buenas noches|seguro|seguros|necesito|quiero|ayuda|auto|salud|vida|hogar|viaje)\b/i;
+  const hasSpanishWords = spanishIndicators.test(text);
+  
+  // Check for Spanish punctuation patterns (¿, ¡)
+  const hasSpanishPunctuation = /[¿¡]/.test(text);
+  
+  // Check for English indicators
+  const englishIndicators = /\b(the|and|or|but|for|with|from|this|that|these|those|have|has|had|will|would|could|should|can|may|might|insurance|help|need|want|car|health|life|home|travel)\b/i;
+  const hasEnglishWords = englishIndicators.test(text);
+  
+  // Decision logic
+  if (hasSpanishWords || hasSpanishPunctuation) return 'spanish';
+  if (hasEnglishWords) return 'english';
+  
+  // Default to English for very short or unclear messages
+  return 'english';
+}
 
 // Mock model for fallback responses
 function createMockStream(reply: string) {
@@ -37,65 +69,38 @@ export async function POST(req: Request) {
   console.log('🔵 Chat API called with:', {
     messageCount: messages.length,
     lastMessage: messages[messages.length - 1]?.content?.substring(0, 50) + '...',
-    hasOpenAIKey: !!process.env.OPENAI_API_KEY
+    hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+    promptVersion: PROMPT_VERSION
   });
+
+  // Log prompt version for tracking
+  logPromptVersion();
 
   // Get user context from the last message if available
   const lastMessage = messages[messages.length - 1];
   const userContext = lastMessage.role === 'system' ? lastMessage.content : '';
 
-  const systemPrompt = `You are Briki, an AI insurance assistant. 
-${userContext ? `The user has provided the following context from an onboarding form: ${userContext}. Use this information to tailor your recommendations.` : ''}
+  // Detect language from the last user message
+  const userLanguage = lastMessage.role === 'user' ? detectLanguage(lastMessage.content) : 'english';
+  console.log('🌐 Detected user language:', userLanguage);
 
-CAPABILITIES:
-1. Category Detection:
-   - Automatically detect insurance categories from user messages:
-     - "seguro de viaje" → category: "viaje"
-     - "seguro de salud" → category: "salud"
-     - "seguro médico" → category: "salud"
-     - "seguro dental" → category: "salud"
-     - "seguro de vida" → category: "vida"
-     - "seguro de auto" → category: "auto"
-     - "seguro de carro" → category: "auto"
-     - "seguro de hogar" → category: "hogar"
-     - "seguro de casa" → category: "hogar"
-   - Only ask for category if it cannot be clearly inferred from the user's message
-
-2. Plan Display:
-   - When you receive tool results with insurance plans, present them in a user-friendly way
-   - The tool will provide the plans data automatically - you don't need to format it as JSON
-   - Simply describe the plans in natural language, highlighting their key features
-   - Focus on the benefits, prices, and how each plan meets the user's needs
-   - Never return plans as a markdown list or table
-   - Always mention that users can see interactive cards with the plans
-
-3. Currency Display:
-   - Always display Colombian prices in COP, not USD
-   - Format large numbers with commas: 1,000,000 COP
-   - Use the formatted price fields from the database
-
-4. Language:
-   - Respond in the same language as the user's message (Spanish or English)
-   - Be warm and helpful, but professional
-   - Keep explanations brief and focused on the plans' key benefits
-
-5. Plan Selection:
-   - Recommend plans based on user's specific needs and constraints
-   - Highlight key differentiators between plans
-   - If budget is mentioned, filter plans accordingly
-   - If specific coverage needs are mentioned, prioritize matching plans
-
-WHEN USERS ASK FOR INSURANCE:
-1. If category is missing and cannot be inferred from the message, ask for it.
-2. Use the \`get_insurance_plans\` tool with the available parameters.
-3. If the tool returns plans (\`hasRealPlans: true\`), describe them conversationally and mention that the interactive cards are displayed below.
-4. If the tool returns no plans (\`hasRealPlans: false\`), inform the user that no plans were found for their criteria and suggest they try different options.`;
+  // Get system prompt from configuration and add language instruction
+  const baseSystemPrompt = getSystemPrompt(userContext);
+  const languageInstruction = userLanguage === 'english' 
+    ? '\n\nIMPORTANT: The user is speaking in English. Always respond in English.'
+    : '\n\nIMPORTANT: The user is speaking in Spanish. Always respond in Spanish.';
+  
+  const systemPrompt = baseSystemPrompt + languageInstruction;
 
   // Development / invalid-key fallback -------------------------------------------------
   if (!hasValidKey) {
     console.warn('⚠️  OPENAI_API_KEY missing or invalid – using mock reply');
 
-    const stream = createMockStream('¡Hola! Soy Briki, tu asistente de seguros. ¿En qué puedo ayudarte hoy? (respuesta simulada)');
+    const mockReply = userLanguage === 'english' 
+      ? 'Hello! I\'m Briki, your insurance assistant. How can I help you today? (mock response)'
+      : '¡Hola! Soy Briki, tu asistente de seguros. ¿En qué puedo ayudarte hoy? (respuesta simulada)';
+
+    const stream = createMockStream(mockReply);
 
     return new NextResponse(stream, {
       status: 200,
@@ -222,7 +227,11 @@ WHEN USERS ASK FOR INSURANCE:
   } catch (err) {
     console.error(' streamText failed –', err);
 
-    const stream = createMockStream('Lo siento, hubo un problema al contactar con el modelo. (respuesta simulada)');
+    const errorReply = userLanguage === 'english'
+      ? 'Sorry, there was a problem contacting the model. (mock response)'
+      : 'Lo siento, hubo un problema al contactar con el modelo. (respuesta simulada)';
+
+    const stream = createMockStream(errorReply);
 
     return new NextResponse(stream, {
       status: 200,

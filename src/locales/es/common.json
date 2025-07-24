@@ -126,17 +126,21 @@
   "assistant": {
     "title": "Asistente IA",
     "subtitle": "Tu asistente de seguros personalizado",
+    "welcome_title": "¡Hola! Soy Briki",
+    "welcome_subtitle": "Tu asistente de seguros personalizado. ¿En qué puedo ayudarte hoy?",
     "inputPlaceholder": "Pregunta sobre coberturas, compara pólizas o analiza documentos...",
     "uploadButton": "Subir archivo",
     "sendButton": "Enviar",
     "thinking": "Pensando...",
+    "analyze_policy": "Analizar Póliza PDF",
+    "search_insurance": "Buscar Seguros",
+    "context": "Contexto",
     "auth": {
       "title": "Acceso exclusivo para usuarios",
       "description": "Inicia sesión para acceder a tu asistente de seguros personalizado con IA.",
       "signIn": "Iniciar sesión",
       "createAccount": "Crear cuenta"
     },
-    "analyze_policy": "Analizar Póliza PDF",
     "compare_policies": "Comparar Pólizas",
     "analyze_coverage": "Analizar Cobertura",
     "compare_suggestions": "Sugerencias de comparación de pólizas",

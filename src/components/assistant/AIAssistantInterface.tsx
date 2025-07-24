@@ -312,7 +312,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full px-6">
+            <div className="flex flex-col items-center justify-center h-full px-6 pt-8">
               {/* Logo with animated gradient */}
               <div className="mb-8 w-20 h-20 relative">
                 <svg
@@ -434,15 +434,15 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                 className="text-center mb-8"
               >
                 <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-400 mb-4">
-                  ¡Hola! Soy Briki
+                  {t("assistant.welcome_title")}
                 </h1>
                 <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md">
-                  Tu asistente de seguros personalizado. ¿En qué puedo ayudarte hoy?
+                  {t("assistant.welcome_subtitle")}
                 </p>
                 {onboardingData && Object.keys(onboardingData).length > 0 && (
                   <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <p className="text-sm text-blue-700 dark:text-blue-300">
-                      <strong>Contexto:</strong> {createContextMessage(onboardingData)}
+                      <strong>{t("assistant.context")}:</strong> {createContextMessage(onboardingData)}
                     </p>
                   </div>
                 )}
@@ -458,13 +458,13 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                 <div className="grid grid-cols-1 gap-3">
                   <CommandButton
                     icon={<Shield className="w-4 h-4" />}
-                    label="Buscar seguros"
+                    label={t("assistant.search_insurance")}
                     isActive={activeCommandCategory === 'compare'}
                     onClick={() => setActiveCommandCategory('compare')}
                   />
                   <CommandButton
                     icon={<FileText className="w-4 h-4" />}
-                    label="Analizar póliza"
+                    label={t("assistant.analyze_policy")}
                     isActive={activeCommandCategory === 'analyze'}
                     onClick={() => setActiveCommandCategory('analyze')}
                   />
@@ -494,7 +494,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
               </motion.div>
             </div>
           ) : (
-            <div className="px-4 py-4 space-y-4">
+            <div className="px-4 py-6 space-y-4">
               {messages.map((message, index) => {
                 // Check if this message contains insurance plans
                 const hasInsurancePlans = message.role === 'assistant' && 
@@ -602,7 +602,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                      Analizar Póliza de Seguro
+                      {t("assistant.analyze_policy")}
                     </h2>
                     <button
                       onClick={() => setShowPDFUpload(false)}
@@ -651,7 +651,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                      Análisis de Póliza
+                      {t("assistant.analyze_policy")}
                     </h2>
                     <button
                       onClick={() => setPolicyAnalysis(null)}
