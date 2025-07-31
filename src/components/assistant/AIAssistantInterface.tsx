@@ -661,7 +661,12 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                     </button>
                   </div>
                   
-                  <PolicyAnalysisDisplay analysis={policyAnalysis} />
+                  <PolicyAnalysisDisplay 
+                    analysis={policyAnalysis} 
+                    pdfUrl={policyAnalysis._pdfData?.pdfUrl}
+                    fileName={policyAnalysis._pdfData?.fileName}
+                    rawAnalysisData={policyAnalysis._pdfData?.rawAnalysisData}
+                  />
                 </div>
               </motion.div>
             </motion.div>

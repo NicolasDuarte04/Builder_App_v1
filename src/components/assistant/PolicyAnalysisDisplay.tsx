@@ -4,6 +4,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar } from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import { SavePolicyButton } from '../dashboard/SavePolicyButton';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useRouter } from 'next/navigation';
 
 interface PolicyAnalysis {
   policyType: string;
@@ -30,9 +33,14 @@ interface PolicyAnalysis {
 
 interface PolicyAnalysisDisplayProps {
   analysis: PolicyAnalysis;
+  pdfUrl?: string;
+  fileName?: string;
+  rawAnalysisData?: any;
 }
 
-export function PolicyAnalysisDisplay({ analysis }: PolicyAnalysisDisplayProps) {
+export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData }: PolicyAnalysisDisplayProps) {
+  const { t } = useTranslation();
+  const router = useRouter();
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -212,6 +220,40 @@ export function PolicyAnalysisDisplay({ analysis }: PolicyAnalysisDisplayProps) 
               </p>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Save Policy Section */}
+      <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col items-center text-center">
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            ¿Te gustaría guardar este análisis en tu Bóveda de Seguros?
+          </h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-md">
+            Guarda este análisis para acceder fácilmente a los detalles de tu póliza en cualquier momento.
+          </p>
+          <SavePolicyButton
+            policyData={{
+              custom_name: fileName || `${analysis.policyType} - ${new Date().toLocaleDateString()}`,
+              insurer_name: analysis.policyDetails.insured[0] || 'Sin Aseguradora',
+              policy_type: analysis.policyType || 'General',
+              priority: analysis.riskScore <= 3 ? 'low' : analysis.riskScore <= 6 ? 'medium' : 'high',
+              pdf_base64: pdfUrl,
+              metadata: {
+                policy_number: analysis.policyDetails.policyNumber,
+                effective_date: analysis.policyDetails.effectiveDate,
+                expiration_date: analysis.policyDetails.expirationDate,
+                premium_amount: analysis.premium.amount,
+                premium_currency: analysis.premium.currency,
+                premium_frequency: analysis.premium.frequency,
+                risk_score: analysis.riskScore,
+              },
+              extracted_data: rawAnalysisData || analysis,
+            }}
+            onSuccess={() => {
+              router.push('/dashboard/insurance');
+            }}
+          />
         </div>
       </div>
     </motion.div>

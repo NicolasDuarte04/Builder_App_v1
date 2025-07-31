@@ -29,7 +29,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
     );
   }
 
-  // Show sign-in prompt for unauthenticated users
+  // Require authentication for PDF analysis
   if (!session?.user) {
     return (
       <motion.div
@@ -94,8 +94,6 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
     try {
       const formData = new FormData();
       formData.append('file', uploadedFile);
-      // Remove userId from form data - we'll get it from session
-      // formData.append('userId', userId);
 
       // Simulate upload progress
       const progressInterval = setInterval(() => {
@@ -124,13 +122,27 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
 
       const result = await response.json();
       
-      // Add a small delay to show completion
-      setTimeout(() => {
-        onAnalysisComplete(result.analysis);
-        setUploadedFile(null);
-        setUploadProgress(0);
-        setIsUploading(false);
-      }, 500);
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(uploadedFile);
+      reader.onload = () => {
+        const base64Data = reader.result as string;
+        
+        // Add a small delay to show completion
+        setTimeout(() => {
+          onAnalysisComplete({
+            ...result.analysis,
+            _pdfData: {
+              fileName: uploadedFile.name,
+              pdfUrl: base64Data,
+              rawAnalysisData: result.analysis
+            }
+          });
+          setUploadedFile(null);
+          setUploadProgress(0);
+          setIsUploading(false);
+        }, 500);
+      };
 
     } catch (error) {
       console.error('Upload error:', error);
@@ -182,6 +194,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
+
             <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Subir póliza de seguro

@@ -5,6 +5,7 @@
     "about": "Acerca de",
     "contact": "Contacto",
     "assistant": "Asistente IA",
+    "myInsurance": "Mis Seguros",
     "login": "Iniciar sesión",
     "signup": "Registrarse"
   },
@@ -331,6 +332,26 @@
           "extract": "Información extraída",
           "identify": "Brechas de cobertura identificadas"
         }
+      }
+    }
+  },
+  "dashboard": {
+    "insurance": {
+      "title": "Mis Seguros",
+      "subtitle": "Gestiona tus pólizas analizadas y planes de seguros rastreados",
+      "tabs": {
+        "savedAnalyses": "Análisis Guardados",
+        "trackedPlans": "Planes Rastreados"
+      },
+      "savedAnalyses": {
+        "emptyTitle": "No hay pólizas guardadas aún",
+        "emptyDescription": "Cuando analices documentos de seguros con Briki AI, podrás guardarlos aquí para referencia futura.",
+        "analyzeButton": "Analizar Nueva Póliza"
+      },
+      "trackedPlans": {
+        "emptyTitle": "No has agregado ningún plan aún",
+        "emptyDescription": "Rastrea todos tus planes de seguros activos en un solo lugar. Agrega planes manualmente para mantener todo organizado.",
+        "addButton": "Agregar Plan"
       }
     }
   }

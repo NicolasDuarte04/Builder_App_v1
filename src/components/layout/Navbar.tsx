@@ -19,19 +19,24 @@ import { useSession, signOut } from "next-auth/react";
 import { ChevronDown, LogOut, User } from "lucide-react";
 import Link from "next/link";
 
-const getNavItems = (t: (key: string) => string) => [
-  { name: t("nav.home"), link: "/" },
-  { name: t("nav.about"), link: "/about" },
-  { name: t("nav.assistant"), link: "/assistant" },
-];
+const getNavItems = (t: (key: string) => string, isAuthenticated: boolean) => {
+  const items = [
+    { name: t("nav.home"), link: "/" },
+    { name: t("nav.about"), link: "/about" },
+    { name: t("nav.assistant"), link: "/assistant" },
+    { name: t("nav.myInsurance"), link: "/dashboard/insurance" },
+  ];
+
+  return items;
+};
 
 export function MainNavbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { t } = useTranslation();
-  const navItems = getNavItems(t);
   const { data: session, status } = useSession();
+  const navItems = getNavItems(t, !!session);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

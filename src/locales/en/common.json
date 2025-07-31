@@ -5,6 +5,7 @@
     "about": "About",
     "contact": "Contact",
     "assistant": "AI Assistant",
+    "myInsurance": "My Insurance",
     "login": "Log in",
     "signup": "Sign up"
   },
@@ -346,6 +347,26 @@
           "extract": "Information extracted",
           "identify": "Coverage gaps identified"
         }
+      }
+    }
+  },
+  "dashboard": {
+    "insurance": {
+      "title": "My Insurance",
+      "subtitle": "Manage your saved policy analyses and tracked insurance plans",
+      "tabs": {
+        "savedAnalyses": "Saved Analyses",
+        "trackedPlans": "Tracked Plans"
+      },
+      "savedAnalyses": {
+        "emptyTitle": "No policies saved yet",
+        "emptyDescription": "When you analyze insurance documents with Briki AI, you can save them here for future reference.",
+        "analyzeButton": "Analyze New Policy"
+      },
+      "trackedPlans": {
+        "emptyTitle": "You haven't added any plans yet",
+        "emptyDescription": "Track all your active insurance plans in one place. Add plans manually to keep everything organized.",
+        "addButton": "Add Plan"
       }
     }
   }

@@ -1,25 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
+  
+  const isFromInsurance = searchParams.get('callbackUrl')?.includes('/dashboard/insurance');
 
   // Redirect if already authenticated
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/");
+      const callbackUrl = searchParams.get('callbackUrl');
+      router.push(callbackUrl || "/");
     }
-  }, [status, router]);
+  }, [status, router, searchParams]);
 
   // Show loading state while checking session
   if (status === "loading") {
@@ -46,12 +50,22 @@ export default function LoginPage() {
         redirect: false,
       });
       
+      console.log('Sign in result:', result);
+      
       if (result?.error) {
         setError('Invalid email or password. Please try again.');
+        console.error('Sign in error:', result.error);
       } else if (result?.ok) {
+        console.log('Sign in successful, refreshing and redirecting...');
+        // Force a session refresh before redirecting
+        router.refresh();
+        // Add a small delay to ensure session is established
+        setTimeout(() => {
         router.push('/');
+        }, 100);
       }
     } catch (error) {
+      console.error('Sign in exception:', error);
       setError('An error occurred during sign in. Please try again.');
     } finally {
       setIsLoading(false);
@@ -69,7 +83,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+    <div className={`min-h-screen flex items-center justify-center p-4 ${isFromInsurance ? 'bg-gradient-to-br from-blue-600/10 to-cyan-500/10 backdrop-blur-sm' : 'bg-white'}`}>
       <motion.div 
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 20 }}
@@ -77,12 +91,30 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
       >
         <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">
-            Welcome back
-          </h1>
-          <p className="text-gray-600 text-center mb-8">
-            Sign in to your Briki AI account
-          </p>
+          {isFromInsurance ? (
+            <>
+              <div className="flex justify-center mb-6">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                  <Lock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">
+                Sign in to continue
+              </h1>
+              <p className="text-gray-600 text-center mb-8">
+                Access your insurance vault and saved policies
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">
+                Welcome back
+              </h1>
+              <p className="text-gray-600 text-center mb-8">
+                Sign in to your Briki AI account
+              </p>
+            </>
+          )}
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
