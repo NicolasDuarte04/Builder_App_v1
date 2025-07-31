@@ -2,70 +2,62 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { type NextAuthOptions } from "next-auth";
+import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
-import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client with service role for auth operations
+// Create Supabase client for user management
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-
-// Debug environment variables
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  console.warn('NEXT_PUBLIC_SUPABASE_URL is not set');
-}
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  console.warn('SUPABASE_SERVICE_ROLE_KEY is not set');
-}
-if (!process.env.GOOGLE_CLIENT_ID) {
-  console.warn('GOOGLE_CLIENT_ID is not set');
-}
-if (!process.env.GOOGLE_CLIENT_SECRET) {
-  console.warn('GOOGLE_CLIENT_SECRET is not set');
-}
-if (!process.env.NEXTAUTH_URL) {
-  console.warn('NEXTAUTH_URL is not set - this is critical for production OAuth!');
-}
 
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      httpOptions: {
-        timeout: 10000, // 10 seconds timeout
-      },
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log("Authorize called with email:", credentials?.email);
+        
         if (!credentials?.email || !credentials?.password) {
+          console.log("Missing credentials");
           return null;
         }
         
         try {
-          // Get user from database
+          // Check if user exists in database
           const { data: user, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', credentials.email)
+            .from("users")
+            .select("id, email, name, password")
+            .eq("email", credentials.email)
             .single();
           
           if (error || !user) {
+            console.log("User not found:", error);
             return null;
           }
           
-          // Check password
-          const passwordMatch = await bcrypt.compare(credentials.password, user.password);
+          console.log("User found:", user.email);
+
+          // Verify password
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
           
-          if (!passwordMatch) {
+          if (!isPasswordValid) {
+            console.log("Invalid password for user:", user.email);
             return null;
           }
+
+          console.log("Password valid, returning user");
           
           // Return user object (without password)
           return {
@@ -74,103 +66,102 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
           };
         } catch (error) {
-          console.error('Auth error:', error);
+          console.error("Error in authorize:", error);
           return null;
         }
-      }
+      },
     }),
   ],
-  // Remove adapter to use JWT strategy for OAuth
-  // When using custom user table with OAuth, JWT is simpler
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google") {
+      if (account?.provider === "google" && profile) {
         try {
           // Check if user exists
           const { data: existingUser } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', user.email!)
+            .from("users")
+            .select("id, email, name")
+            .eq("email", user.email)
             .single();
 
           if (!existingUser) {
-            // Create new user for Google sign-in
-            const { error } = await supabase
-              .from('users')
+            // Create new user
+            const { data: newUser, error } = await supabase
+              .from("users")
               .insert({
-                email: user.email!,
-                name: user.name || profile?.name || 'Google User',
-                // No password for OAuth users
-              });
+                email: user.email,
+                name: user.name || "Google User",
+                password: "oauth_user", // Placeholder for OAuth users
+              })
+              .select()
+              .single();
 
             if (error) {
-              console.error('Error creating user:', error);
+              console.error("Error creating user:", error);
               return false;
             }
+
+            console.log("Created new user:", newUser);
+          } else {
+            console.log("User already exists:", existingUser);
           }
-          return true;
         } catch (error) {
-          console.error('SignIn callback error:', error);
+          console.error("Error in signIn callback:", error);
           return false;
         }
       }
       return true;
     },
     async session({ session, token }) {
-      if (session?.user && token?.sub) {
-        // Get user from database to ensure we have the correct ID
-        const { data: dbUser } = await supabase
-          .from('users')
-          .select('id, email, name')
-          .eq('email', session.user.email!)
+      if (session?.user) {
+        // Map the JWT sub to user ID
+        session.user.id = token.sub!;
+        
+        // Fetch user data from database
+        try {
+          const { data: userData } = await supabase
+            .from("users")
+            .select("id, email, name")
+            .eq("email", session.user.email)
           .single();
 
-        if (dbUser) {
-          (session.user as any).id = dbUser.id;
+          if (userData) {
+            session.user.id = userData.id;
+            session.user.name = userData.name;
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
         }
       }
       return session;
     },
     async jwt({ token, user, account }) {
-      // Initial sign in
-      if (account && user) {
-        // For Google sign-ins, get the user ID from database
-        if (account.provider === "google") {
-          const { data: dbUser } = await supabase
-            .from('users')
-            .select('id')
-            .eq('email', user.email!)
-            .single();
-
-          if (dbUser) {
-            token.id = dbUser.id;
+      console.log("JWT callback - user:", user, "account:", account?.provider);
+      
+      if (user) {
+        // Store user ID in token for both providers
+        token.sub = user.id;
+        token.email = user.email;
+        token.name = user.name;
           }
-        } else {
-        token.id = user.id;
-        }
-      }
+      
+      console.log("JWT token after update:", token);
       return token;
     },
     async redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      // Allow Vercel preview URLs
-      if (url.includes('vercel.app')) return url
-      // Default redirect to home page after sign in
-      return baseUrl
+      // Handle Vercel preview URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
     },
   },
   pages: {
-    signIn: '/login',
-    error: '/login',
+    signIn: "/login",
+    error: "/login",
   },
-  debug: process.env.NODE_ENV === 'development',
+  debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET,
 };
 

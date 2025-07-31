@@ -1,6 +1,3 @@
-// Temporarily use a mock PDF parser to avoid build issues
-// TODO: Replace with a proper PDF parsing library like pdfjs-dist
-
 export interface PolicyAnalysis {
   policyType: string;
   premium: {
@@ -26,80 +23,135 @@ export interface PolicyAnalysis {
 
 export async function extractTextFromPDF(file: File): Promise<string> {
   try {
-    // For now, return a mock text extraction
-    // In production, implement with pdfjs-dist or another library
-    console.log('📄 Mock PDF extraction for:', file.name);
+    console.log('📄 Extracting text from PDF:', file.name, 'Size:', file.size);
     
     // Basic file validation
     if (file.type !== 'application/pdf') {
       throw new Error('Invalid file type. Only PDF files are supported.');
     }
     
-    // Return mock extracted text
-    return `
-      MOCK PDF CONTENT - Replace with actual PDF parsing
+    // Convert File to Buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    console.log('📄 Starting PDF text extraction...');
+    
+    // Use dynamic import to avoid build issues
+    const PDFParser = (await import('pdf2json')).default;
+    
+    return new Promise((resolve, reject) => {
+      const pdfParser = new PDFParser();
       
-      Policy Number: POL-2024-001
-      Policy Type: Health Insurance
-      Premium: 150,000 COP Monthly
+      // Set up event handlers
+      pdfParser.on('pdfParser_dataError', (errData: any) => {
+        console.error('❌ PDF parsing error:', errData.parserError);
+        reject(new Error(`PDF parsing failed: ${errData.parserError}`));
+      });
       
-      Coverage Details:
-      - Hospitalization: 50,000,000 COP
-      - Outpatient: 10,000,000 COP
-      - Medications: 5,000,000 COP
+      pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
+        try {
+          console.log('📄 PDF data ready, extracting text...');
+          
+          // Extract text from all pages
+          let fullText = '';
+          const pages = pdfData.Pages || [];
+          
+          console.log(`📄 Processing ${pages.length} pages...`);
+          
+          for (let i = 0; i < pages.length; i++) {
+            const page = pages[i];
+            let pageText = '';
+            
+            // Extract text from each text element
+            if (page.Texts) {
+              for (const textItem of page.Texts) {
+                if (textItem.R) {
+                  for (const textRun of textItem.R) {
+                    if (textRun.T) {
+                      // Decode URI component to get actual text
+                      const decodedText = decodeURIComponent(textRun.T);
+                      pageText += decodedText + ' ';
+                    }
+                  }
+                }
+              }
+            }
+            
+            if (pageText.trim()) {
+              fullText += `\n--- Page ${i + 1} ---\n${pageText.trim()}\n`;
+            }
+          }
+          
+          // Clean up the text
+          fullText = fullText
+            .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+            .replace(/\n\s*\n\s*\n/g, '\n\n') // Clean up multiple newlines
+            .trim();
+          
+          console.log(`✅ Successfully extracted ${fullText.length} characters from ${pages.length} pages`);
+          
+          if (!fullText || fullText.length < 50) {
+            console.warn('⚠️ No meaningful text content found in PDF');
+            reject(new Error('No text content could be extracted from this PDF. The file might contain only images or be a scanned document.'));
+            return;
+          }
+          
+          console.log('📄 First 300 characters:', fullText.substring(0, 300) + '...');
+          resolve(fullText);
+        } catch (error) {
+          console.error('❌ Error processing PDF data:', error);
+          reject(new Error(`Failed to process PDF data: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        }
+      });
       
-      This is a temporary mock implementation.
-      In production, use a proper PDF parsing library.
-    `;
+      // Parse the PDF buffer
+      console.log('📄 Starting PDF parsing...');
+      pdfParser.parseBuffer(buffer);
+    });
   } catch (error) {
-    console.error('Error extracting PDF text:', error);
-    throw new Error('Failed to extract text from PDF');
+    console.error('❌ Error extracting PDF text:', error);
+    
+    // Provide more specific error messages
+    if (error instanceof Error) {
+      if (error.message.includes('Invalid PDF')) {
+        throw new Error('The PDF file appears to be corrupted or invalid.');
+      }
+      if (error.message.includes('Password') || error.message.includes('Encrypted')) {
+        throw new Error('This PDF is password protected. Please remove the password protection and try again.');
+      }
+      if (error.message.includes('No text content')) {
+        throw error; // Re-throw our custom error
+      }
+      // For other errors, include the original message
+      throw new Error(`PDF extraction failed: ${error.message}`);
+    }
+    
+    throw new Error('Failed to extract text from PDF. Please ensure the file is a valid PDF document.');
   }
 }
 
 export async function analyzeInsurancePolicy(pdfText: string): Promise<PolicyAnalysis> {
-  // This would be called by the AI to analyze the policy
-  // For now, return a mock analysis
+  // This is now handled by the AI in the API route
+  // This function is no longer used but kept for backwards compatibility
+  console.warn('analyzeInsurancePolicy is deprecated. Analysis is now done by AI in the API route.');
+  
   return {
-    policyType: "Health Insurance",
+    policyType: "Unknown",
     premium: {
-      amount: 150000,
+      amount: 0,
       currency: "COP",
-      frequency: "monthly"
+      frequency: "unknown"
     },
     coverage: {
-      limits: {
-        "Hospitalization": 50000000,
-        "Outpatient": 10000000,
-        "Medications": 5000000
-      },
-      deductibles: {
-        "General": 50000,
-        "Specialists": 100000
-      },
-      exclusions: [
-        "Pre-existing conditions",
-        "Cosmetic procedures",
-        "Experimental treatments"
-      ]
+      limits: {},
+      deductibles: {},
+      exclusions: []
     },
     policyDetails: {
-      policyNumber: "POL-2024-001",
-      effectiveDate: "2024-01-01",
-      expirationDate: "2024-12-31",
-      insured: ["John Doe", "Jane Doe"]
+      insured: []
     },
-    keyFeatures: [
-      "Network coverage nationwide",
-      "Telemedicine included",
-      "Prescription drug coverage",
-      "Preventive care at 100%"
-    ],
-    recommendations: [
-      "Consider increasing outpatient coverage",
-      "Review medication coverage limits",
-      "Add dental coverage if needed"
-    ],
-    riskScore: 7
+    keyFeatures: [],
+    recommendations: [],
+    riskScore: 5
   };
 } 

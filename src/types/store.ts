@@ -34,6 +34,7 @@ export interface ProjectStore {
   // New Chat Actions
   setChatMode: (mode: ChatMode) => void;
   setChatHistory: (history: Message[]) => void;
+  appendChatHistory: (newMessages: Message[]) => void;
   addMessage: (message: Message) => void;
   clearChatHistory: () => void;
 } 

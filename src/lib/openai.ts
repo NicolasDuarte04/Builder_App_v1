@@ -1,3 +1,8 @@
+// 🔴 DEPRECATED — This file and its roadmap generation functionality is no longer in use
+// Briki AI is now an insurance assistant, not a project roadmap builder
+// The active system prompt is in src/config/systemPrompt.ts
+// TODO: Remove this file and related roadmap endpoints after confirming no production dependencies
+
 import OpenAI from 'openai';
 
 if (!process.env.OPENAI_API_KEY) {

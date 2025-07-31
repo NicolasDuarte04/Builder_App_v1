@@ -66,6 +66,8 @@ export async function queryInsurancePlans(filters: {
   category?: string;
   max_price?: number;
   country?: string;
+  tags?: string[];
+  benefits_contain?: string;
   limit?: number;
 }): Promise<InsurancePlan[]> {
   try {
@@ -89,6 +91,14 @@ export async function queryInsurancePlans(filters: {
     if (filters.max_price) {
       query += ` AND base_price <= $${paramIndex++}`;
       params.push(filters.max_price);
+    }
+    if (filters.tags && filters.tags.length > 0) {
+      query += ` AND tags @> $${paramIndex++}::text[]`;
+      params.push(filters.tags);
+    }
+    if (filters.benefits_contain) {
+      query += ` AND benefits::text ILIKE $${paramIndex++}`;
+      params.push(`%${filters.benefits_contain}%`);
     }
 
     query += ' ORDER BY base_price ASC';

@@ -11,6 +11,19 @@ export interface PolicyUpload {
   ai_summary: string;
   status: 'uploading' | 'processing' | 'completed' | 'error';
   error_message?: string;
+  // Enhanced metadata fields
+  insurer_name?: string;
+  insurer_contact?: string;
+  emergency_lines?: string[];
+  policy_start_date?: string;
+  policy_end_date?: string;
+  policy_link?: string;
+  renewal_reminders?: boolean;
+  legal_obligations?: string[];
+  compliance_notes?: string[];
+  coverage_geography?: string;
+  claim_instructions?: string[];
+  analysis_language?: string;
 }
 
 export interface CreatePolicyUploadData {
@@ -102,6 +115,8 @@ export async function updatePolicyUpload(
 
 export async function getPolicyUploadsByUser(userId: string): Promise<PolicyUpload[]> {
   try {
+    console.log('📂 Fetching policy uploads for userId:', userId);
+    
     const { data: uploads, error } = await supabase
       .from('policy_uploads')
       .select('*')
@@ -109,13 +124,14 @@ export async function getPolicyUploadsByUser(userId: string): Promise<PolicyUplo
       .order('upload_time', { ascending: false });
 
     if (error) {
-      console.error('Error fetching policy uploads:', error);
+      console.error('❌ Error fetching policy uploads:', error);
       return [];
     }
 
+    console.log(`✅ Found ${uploads?.length || 0} uploads for user ${userId}`);
     return uploads || [];
   } catch (error) {
-    console.error('Error fetching policy uploads:', error);
+    console.error('❌ Error fetching policy uploads:', error);
     return [];
   }
 }

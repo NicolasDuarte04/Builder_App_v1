@@ -72,8 +72,11 @@ export default function RegisterPage() {
         });
         
         if (result?.ok) {
+          // Force a session refresh before redirecting
+          router.refresh();
           router.push('/onboarding');
         } else {
+          // If auto-login fails, redirect to login page
           router.push('/login');
         }
       }

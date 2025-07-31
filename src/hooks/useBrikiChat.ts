@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { shallow } from 'zustand/shallow';
@@ -9,6 +9,7 @@ export function useBrikiChat() {
   const setChatHistory = useProjectStore((state) => state.setChatHistory);
   const setError = useProjectStore((state) => state.setError);
   const clearStoreHistory = useProjectStore((state) => state.clearChatHistory);
+  const appendChatHistory = useProjectStore((state) => state.appendChatHistory);
 
   const [currentToolInvocations, setCurrentToolInvocations] = useState<any[]>([]);
 
@@ -34,30 +35,27 @@ export function useBrikiChat() {
     },
   });
 
-  // Sync messages from useChat hook to Zustand store in real-time
+  // Optimized message sync with proper dependency management
   useEffect(() => {
-    // Only update if the new messages are different from the store's history
     const storeHistory = useProjectStore.getState().chatHistory;
-    if (messages.length > storeHistory.length) {
-      const newMessages = messages.slice(storeHistory.length);
-      useProjectStore.getState().appendChatHistory(newMessages);
-      
-      // Clear tool invocations when a new assistant message is added
-      if (newMessages.some(m => m.role === 'assistant')) {
-        setCurrentToolInvocations([]);
-      }
-    } else if (messages.length < storeHistory.length) {
-      // Handle message deletion/clearing
-      setChatHistory(messages);
-    }
     
-    // Debug logging to track updates
-    console.log('useBrikiChat: Syncing messages to store', {
-      messagesLength: messages.length,
-      lastMessage: messages[messages.length - 1]?.content?.substring(0, 50) + '...',
-      isLoading
-    });
-  }, [messages, setChatHistory, isLoading]);
+    // Only update if there's an actual difference in message count
+    if (messages.length !== storeHistory.length) {
+      if (messages.length > storeHistory.length) {
+        // Add only new messages
+        const newMessages = messages.slice(storeHistory.length);
+        appendChatHistory(newMessages);
+        
+        // Clear tool invocations when a new assistant message is added
+        if (newMessages.some(m => m.role === 'assistant')) {
+          setCurrentToolInvocations([]);
+        }
+      } else {
+        // Handle message deletion/clearing
+        setChatHistory(messages);
+      }
+    }
+  }, [messages, setChatHistory, appendChatHistory]);
 
   // Handle chat errors
   useEffect(() => {
@@ -67,16 +65,11 @@ export function useBrikiChat() {
     }
   }, [chatError, setError]);
   
-  const clearChat = () => {
+  const clearChat = useCallback(() => {
     clearStoreHistory();
     setMessages([]);
-  };
-
-  const appendChatHistory = (newMessages: any[]) => {
-    setChatHistory([...useProjectStore.getState().chatHistory, ...newMessages]);
-  };
-
-  useProjectStore.setState({ appendChatHistory });
+    setCurrentToolInvocations([]);
+  }, [clearStoreHistory, setMessages]);
 
   return {
     messages,

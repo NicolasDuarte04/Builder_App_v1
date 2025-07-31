@@ -78,6 +78,18 @@ export async function POST(req: Request) {
 
   // Get user context from the last message if available
   const lastMessage = messages[messages.length - 1];
+  const userContent = lastMessage.content || '';
+
+  // Simple check for ambiguous queries
+  const isAmbiguous = userContent.trim().length < 15 && !userContent.match(/(auto|salud|vida|hogar|viaje|empresarial|mascotas|educacion)/i);
+
+  if (isAmbiguous) {
+    // Manually guide the AI to ask a clarifying question
+    messages.push({
+      role: 'assistant',
+      content: 'The user query is too short. Ask a clarifying question to understand what type of insurance they need.'
+    });
+  }
   const userContext = lastMessage.role === 'system' ? lastMessage.content : '';
 
   // Detect language from the last user message
@@ -124,19 +136,53 @@ export async function POST(req: Request) {
         get_insurance_plans: tool({
           description: 'Get a list of insurance plans based on user criteria.',
           parameters: z.object({
-            category: z.string().describe('The category of insurance (e.g., salud, vida, auto, hogar, viaje, empresarial).'),
-            max_price: z.number().optional().describe('The maximum base price the user is willing to pay.'),
-            country: z.string().optional().describe('The country code (e.g., CO for Colombia).')
+            category: z.string().describe(
+              'The category of insurance. Available options are: auto, salud, vida, hogar, viaje, empresarial, mascotas, educacion.'
+            ),
+            max_price: z
+              .number()
+              .optional()
+              .describe('The maximum base price the user is willing to pay.'),
+            country: z
+              .string()
+              .optional()
+              .describe('The country code (e.g., CO for Colombia).'),
+            tags: z
+              .array(z.string())
+              .optional()
+              .describe(
+                'A list of tags to filter by. For example, ["popular", "completo"] to find popular or complete plans.'
+              ),
+            benefits_contain: z
+              .string()
+              .optional()
+              .describe(
+                'A keyword to search for within the benefits description. For example, "portátil" to find plans covering laptops.'
+              ),
           }),
-          execute: async ({ category, max_price, country }) => {
+          execute: async ({
+            category,
+            max_price,
+            country,
+            tags,
+            benefits_contain,
+          }) => {
             try {
               console.log('✅✅✅ TOOL EXECUTION STARTED ✅✅✅');
-              console.log('Received parameters:', { category, max_price, country });
-              
+              console.log('Received parameters:', {
+                category,
+                max_price,
+                country,
+                tags,
+                benefits_contain,
+              });
+
               const plans = await queryInsurancePlans({
                 category,
                 max_price,
                 country,
+                tags,
+                benefits_contain,
                 limit: 4,
               });
               
