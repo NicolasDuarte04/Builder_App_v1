@@ -2,56 +2,81 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Validation schema for save policy request
+const SavePolicySchema = z.object({
+  custom_name: z.string().min(1).max(255),
+  insurer_name: z.string().optional(),
+  policy_type: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  pdf_base64: z.string().optional(),
+  metadata: z.record(z.any()).default({}),
+  extracted_data: z.record(z.any()).default({})
+});
+
 // GET /api/policies - Fetch all saved policies for logged-in user
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "No autorizado" },
         { status: 401 }
       );
     }
 
-    // Get user from Supabase auth
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(
-      session.user.email
-    );
+    // Parse query parameters for filtering and pagination
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+    const priority = searchParams.get('priority');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
-    if (authError || !authUser?.user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+    // Build query
+    let query = supabase
+      .from("saved_policies")
+      .select("*", { count: 'exact' })
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    // Apply search filter
+    if (search) {
+      query = query.or(`custom_name.ilike.%${search}%,insurer_name.ilike.%${search}%`);
     }
 
-    // Fetch saved policies for the user
-    const { data: policies, error } = await supabase
-      .from("saved_policies")
-      .select("*")
-      .eq("user_id", authUser.user.id)
-      .order("created_at", { ascending: false });
+    // Apply priority filter
+    if (priority && ['low', 'medium', 'high'].includes(priority)) {
+      query = query.eq('priority', priority);
+    }
+
+    const { data: policies, error, count } = await query;
 
     if (error) {
       console.error("Error fetching policies:", error);
       return NextResponse.json(
-        { error: "Failed to fetch policies" },
+        { error: "Error al obtener las pólizas guardadas" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ policies: policies || [] });
+    return NextResponse.json({ 
+      policies: policies || [],
+      total: count || 0,
+      limit,
+      offset
+    });
   } catch (error) {
     console.error("Error in GET /api/policies:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Error interno del servidor" },
       { status: 500 }
     );
   }
@@ -62,40 +87,50 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "No autorizado" },
         { status: 401 }
       );
     }
 
-    // Get user from Supabase auth
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(
-      session.user.email
-    );
-
-    if (authError || !authUser?.user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+    // Parse and validate request body
+    const body = await request.json();
+    let validatedData;
+    
+    try {
+      validatedData = SavePolicySchema.parse(body);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        return NextResponse.json(
+          { error: "Datos inválidos", details: validationError.errors },
+          { status: 400 }
+        );
+      }
+      throw validationError;
     }
 
-    const body = await request.json();
     const { 
       custom_name,
       insurer_name,
       policy_type,
-      priority = "medium",
+      priority,
       pdf_base64,
-      metadata = {},
-      extracted_data = {}
-    } = body;
+      metadata,
+      extracted_data
+    } = validatedData;
 
-    // Validate required fields
-    if (!custom_name) {
+    // Check if user already has a policy with the same name
+    const { data: existingPolicy } = await supabase
+      .from("saved_policies")
+      .select("id")
+      .eq("user_id", session.user.id)
+      .eq("custom_name", custom_name)
+      .single();
+
+    if (existingPolicy) {
       return NextResponse.json(
-        { error: "Policy name is required" },
+        { error: "Ya tienes un análisis guardado con ese nombre" },
         { status: 400 }
       );
     }
@@ -111,7 +146,7 @@ export async function POST(request: NextRequest) {
         const buffer = Buffer.from(base64Data, "base64");
         
         // Generate unique filename
-        const filename = `${authUser.user.id}/${Date.now()}_${custom_name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+        const filename = `${session.user.id}/${Date.now()}_${custom_name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
         
         // Upload to Supabase Storage
         const { data: uploadData, error: uploadError } = await supabase.storage
@@ -150,7 +185,7 @@ export async function POST(request: NextRequest) {
     const { data: policy, error: insertError } = await supabase
       .from("saved_policies")
       .insert({
-        user_id: authUser.user.id,
+        user_id: session.user.id,
         custom_name,
         insurer_name,
         policy_type,
@@ -166,16 +201,19 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error("Error inserting policy:", insertError);
       return NextResponse.json(
-        { error: "Failed to save policy" },
+        { error: "Error al guardar la póliza" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ policy });
+    return NextResponse.json({ 
+      policy,
+      message: "Análisis guardado exitosamente"
+    });
   } catch (error) {
     console.error("Error in POST /api/policies:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Error interno del servidor" },
       { status: 500 }
     );
   }

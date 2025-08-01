@@ -42,8 +42,8 @@ export function SavePolicyButton({ policyData, onSuccess }: SavePolicyButtonProp
       const data = await response.json();
       
       toast({
-        title: "Success",
-        description: "Policy saved successfully",
+        title: "¡Éxito!",
+        description: data.message || "Análisis guardado exitosamente",
       });
 
       onSuccess?.();
@@ -51,7 +51,7 @@ export function SavePolicyButton({ policyData, onSuccess }: SavePolicyButtonProp
       console.error("Error saving policy:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save policy",
+        description: error instanceof Error ? error.message : "Error al guardar el análisis",
         variant: "destructive",
       });
     } finally {
@@ -66,7 +66,7 @@ export function SavePolicyButton({ policyData, onSuccess }: SavePolicyButtonProp
       className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
     >
       <Save className="h-4 w-4 mr-2" />
-      {isSaving ? "Saving..." : "Save Policy"}
+      {isSaving ? "Guardando..." : "Guardar Análisis"}
     </Button>
   );
 }

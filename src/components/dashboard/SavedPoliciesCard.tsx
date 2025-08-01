@@ -1,9 +1,9 @@
 "use client";
 
-import { FileText, Download, Trash2, Calendar, Building2, Shield } from "lucide-react";
+import { FileText, Download, Trash2, Calendar, Building2, Shield, Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/Badge";
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -24,9 +24,19 @@ interface SavedPoliciesCardProps {
   policy: SavedPolicy;
   onDelete?: (id: string) => void;
   onView?: (policy: SavedPolicy) => void;
+  isSelected?: boolean;
+  onSelect?: (id: string) => void;
+  selectionMode?: boolean;
 }
 
-export function SavedPoliciesCard({ policy, onDelete, onView }: SavedPoliciesCardProps) {
+export function SavedPoliciesCard({ 
+  policy, 
+  onDelete, 
+  onView, 
+  isSelected = false, 
+  onSelect, 
+  selectionMode = false 
+}: SavedPoliciesCardProps) {
   const { locale } = useTranslation();
   const dateLocale = locale === "es" ? es : enUS;
 
@@ -42,8 +52,21 @@ export function SavedPoliciesCard({ policy, onDelete, onView }: SavedPoliciesCar
     }
   };
 
+  const handleCardClick = () => {
+    if (selectionMode && onSelect) {
+      onSelect(policy.id);
+    } else {
+      onView?.(policy);
+    }
+  };
+
   return (
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onView?.(policy)}>
+    <Card 
+      className={`hover:shadow-lg transition-all cursor-pointer ${
+        isSelected ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-900/20' : ''
+      }`} 
+      onClick={handleCardClick}
+    >
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -68,9 +91,16 @@ export function SavedPoliciesCard({ policy, onDelete, onView }: SavedPoliciesCar
               </div>
             </div>
           </div>
-          <Badge className={priorityColors[policy.priority as keyof typeof priorityColors] || priorityColors.medium}>
-            {policy.priority}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {selectionMode && isSelected && (
+              <div className="p-1 bg-blue-500 rounded-full">
+                <Check className="h-3 w-3 text-white" />
+              </div>
+            )}
+            <Badge className={priorityColors[policy.priority as keyof typeof priorityColors] || priorityColors.medium}>
+              {policy.priority}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent>

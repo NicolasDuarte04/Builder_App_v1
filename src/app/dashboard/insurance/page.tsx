@@ -6,9 +6,13 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Shield, Plus, Loader2, RefreshCw } from "lucide-react";
+import { FileText, Shield, Plus, Loader2, RefreshCw, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SavedPoliciesCard } from "@/components/dashboard/SavedPoliciesCard";
+import { PolicyDetailModal } from "@/components/dashboard/PolicyDetailModal";
+import { PolicyComparisonView } from "@/components/dashboard/PolicyComparisonView";
 import { useToast } from "@/hooks/use-toast";
 
 interface SavedPolicy {
@@ -32,12 +36,24 @@ export default function MyInsurancePage() {
   const [savedPolicies, setSavedPolicies] = useState<SavedPolicy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState<string>("");
+  const [selectedPolicy, setSelectedPolicy] = useState<SavedPolicy | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
 
-  // Fetch saved policies
+  // Fetch saved policies with filters
   const fetchPolicies = async () => {
     try {
       setIsRefreshing(true);
-      const response = await fetch("/api/policies");
+      
+      // Build URL with query parameters
+      const url = new URL("/api/policies", window.location.origin);
+      if (searchTerm) url.searchParams.append("search", searchTerm);
+      if (priorityFilter) url.searchParams.append("priority", priorityFilter);
+      
+      const response = await fetch(url.toString());
       
       if (!response.ok) {
         throw new Error("Failed to fetch policies");
@@ -49,7 +65,7 @@ export default function MyInsurancePage() {
       console.error("Error fetching policies:", error);
       toast({
         title: "Error",
-        description: "Failed to load saved policies",
+        description: "Error al cargar las pólizas guardadas",
         variant: "destructive",
       });
     } finally {
@@ -73,14 +89,14 @@ export default function MyInsurancePage() {
       setSavedPolicies(prev => prev.filter(p => p.id !== policyId));
       
       toast({
-        title: "Success",
-        description: "Policy deleted successfully",
+        title: "Éxito",
+        description: "Póliza eliminada exitosamente",
       });
     } catch (error) {
       console.error("Error deleting policy:", error);
       toast({
         title: "Error",
-        description: "Failed to delete policy",
+        description: "Error al eliminar la póliza",
         variant: "destructive",
       });
     }
@@ -88,14 +104,14 @@ export default function MyInsurancePage() {
 
   // View policy details
   const handleViewPolicy = (policy: SavedPolicy) => {
-    // TODO: Implement policy detail view
-    console.log("View policy:", policy);
+    setSelectedPolicy(policy);
+    setIsModalOpen(true);
   };
 
-  // Load policies on component mount
+  // Load policies on component mount and when filters change
   useEffect(() => {
     fetchPolicies();
-  }, []);
+  }, [searchTerm, priorityFilter]);
 
   // Require authentication for insurance dashboard
   useEffect(() => {
@@ -144,6 +160,38 @@ export default function MyInsurancePage() {
 
         {/* Saved Analyses Tab */}
         <TabsContent value="saved-analyses" className="space-y-4">
+          {/* Search and Filter Section */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value === " " ? "" : value)}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filtrar por prioridad" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value=" ">Todas las prioridades</SelectItem>
+                <SelectItem value="high">Alta</SelectItem>
+                <SelectItem value="medium">Media</SelectItem>
+                <SelectItem value="low">Baja</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={fetchPolicies}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -152,17 +200,42 @@ export default function MyInsurancePage() {
             <>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">
-                  {savedPolicies.length} {savedPolicies.length === 1 ? 'policy' : 'policies'} saved
+                  {savedPolicies.length} {savedPolicies.length === 1 ? 'análisis guardado' : 'análisis guardados'}
                 </h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={fetchPolicies}
-                  disabled={isRefreshing}
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  Refresh
-                </Button>
+                <div className="flex items-center gap-2">
+                  {selectedForComparison.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedForComparison([]);
+                      }}
+                    >
+                      Cancelar selección ({selectedForComparison.length})
+                    </Button>
+                  )}
+                  {selectedForComparison.length >= 2 && (
+                    <Button
+                      size="sm"
+                      onClick={() => setShowComparison(true)}
+                      className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
+                    >
+                      Comparar ({selectedForComparison.length})
+                    </Button>
+                  )}
+                  {savedPolicies.length >= 2 && selectedForComparison.length === 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Start comparison mode
+                        setSelectedForComparison([]);
+                      }}
+                    >
+                      Comparar pólizas
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {savedPolicies.map((policy) => (
@@ -171,6 +244,15 @@ export default function MyInsurancePage() {
                     policy={policy}
                     onDelete={handleDeletePolicy}
                     onView={handleViewPolicy}
+                    isSelected={selectedForComparison.includes(policy.id)}
+                    onSelect={(id) => {
+                      setSelectedForComparison(prev => 
+                        prev.includes(id) 
+                          ? prev.filter(p => p !== id)
+                          : [...prev, id]
+                      );
+                    }}
+                    selectionMode={selectedForComparison.length > 0 || savedPolicies.length >= 2}
                   />
                 ))}
               </div>
@@ -219,6 +301,27 @@ export default function MyInsurancePage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Policy Detail Modal */}
+      <PolicyDetailModal
+        policy={selectedPolicy}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedPolicy(null);
+        }}
+      />
+
+      {/* Policy Comparison View */}
+      {showComparison && (
+        <PolicyComparisonView
+          policies={savedPolicies.filter(p => selectedForComparison.includes(p.id))}
+          onClose={() => {
+            setShowComparison(false);
+            setSelectedForComparison([]);
+          }}
+        />
+      )}
     </div>
   );
 }

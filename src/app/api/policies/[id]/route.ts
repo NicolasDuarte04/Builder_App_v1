@@ -8,6 +8,45 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// GET /api/policies/[id] - Get a specific saved policy
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "No autorizado" },
+        { status: 401 }
+      );
+    }
+
+    const { data: policy, error } = await supabase
+      .from("saved_policies")
+      .select("*")
+      .eq("id", params.id)
+      .eq("user_id", session.user.id)
+      .single();
+
+    if (error || !policy) {
+      return NextResponse.json(
+        { error: "Póliza no encontrada" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ policy });
+  } catch (error) {
+    console.error("Error in GET /api/policies/[id]:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
+  }
+}
+
 // DELETE /api/policies/[id] - Delete a saved policy
 export async function DELETE(
   request: NextRequest,
@@ -16,22 +55,10 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "No autorizado" },
         { status: 401 }
-      );
-    }
-
-    // Get user from Supabase auth
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(
-      session.user.email
-    );
-
-    if (authError || !authUser?.user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
       );
     }
 
@@ -40,12 +67,12 @@ export async function DELETE(
       .from("saved_policies")
       .select("*")
       .eq("id", params.id)
-      .eq("user_id", authUser.user.id)
+      .eq("user_id", session.user.id)
       .single();
 
     if (fetchError || !policy) {
       return NextResponse.json(
-        { error: "Policy not found" },
+        { error: "Póliza no encontrada" },
         { status: 404 }
       );
     }
@@ -67,21 +94,24 @@ export async function DELETE(
       .from("saved_policies")
       .delete()
       .eq("id", params.id)
-      .eq("user_id", authUser.user.id);
+      .eq("user_id", session.user.id);
 
     if (deleteError) {
       console.error("Error deleting policy:", deleteError);
       return NextResponse.json(
-        { error: "Failed to delete policy" },
+        { error: "Error al eliminar la póliza" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      message: "Póliza eliminada exitosamente" 
+    });
   } catch (error) {
     console.error("Error in DELETE /api/policies/[id]:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Error interno del servidor" },
       { status: 500 }
     );
   }

@@ -53,9 +53,8 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
     );
     
     if (insurancePlanTool && insurancePlanTool.result) {
-      if (hasValidPlansData(insurancePlanTool.result)) {
-        return renderPlans(insurancePlanTool.result);
-      }
+      // Always render the component, let it handle empty states
+      return renderPlansOrEmptyState(insurancePlanTool.result);
     }
   }
 
@@ -63,22 +62,14 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
   if (role === 'tool' && name === 'get_insurance_plans') {
     try {
       const parsed = JSON.parse(content);
-      if (hasValidPlansData(parsed)) {
-        return renderPlans(parsed);
-      } else {
-        return renderNoPlansMessage(parsed);
-      }
+      return renderPlansOrEmptyState(parsed);
     } catch (error) {
       // If that fails, look for JSON within the content
       try {
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
-          if (hasValidPlansData(parsed)) {
-            return renderPlans(parsed);
-          } else {
-            return renderNoPlansMessage(parsed);
-          }
+          return renderPlansOrEmptyState(parsed);
         }
       } catch (err) {
         // console.warn('⚠️ Assistant content JSON parse failed:', err);
@@ -92,10 +83,8 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
     try {
       // First, try to parse the entire content as JSON
       const parsed = JSON.parse(content);
-      if (hasValidPlansData(parsed)) {
-        return renderPlans(parsed);
-      } else {
-        return renderNoPlansMessage(parsed);
+      if (parsed.type === 'insurance_plans' || parsed.plans !== undefined) {
+        return renderPlansOrEmptyState(parsed);
       }
     } catch (error) {
       // If that fails, look for JSON within the content
@@ -103,10 +92,8 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
-          if (hasValidPlansData(parsed)) {
-            return renderPlans(parsed);
-          } else {
-            return renderNoPlansMessage(parsed);
+          if (parsed.type === 'insurance_plans' || parsed.plans !== undefined) {
+            return renderPlansOrEmptyState(parsed);
           }
         }
       } catch (err) {
@@ -182,19 +169,57 @@ export function MessageRenderer({ content, role, name, toolInvocations }: Messag
   }
 
   function renderNoPlansMessage(parsed: any) {
+    const category = parsed.insuranceType || 'seguros';
     
     return (
-      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-          <p className="text-sm text-blue-700 dark:text-blue-300">
-            No se encontraron planes de seguros disponibles para los criterios especificados.
-          </p>
+      <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+        <div className="flex items-start space-x-3">
+          <div className="mt-1">
+            <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              No encontramos planes de {category} con esos criterios
+            </p>
+            <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+              Intenta ajustar tus filtros o pregúntame por otros tipos de seguros. 
+              También puedo ayudarte a comparar planes o analizar tu póliza actual.
+            </p>
+          </div>
         </div>
-        <p className="mt-2 text-xs text-blue-600 dark:text-blue-400">
-          Intenta con diferentes parámetros o contacta directamente con las aseguradoras.
-        </p>
       </div>
     );
+  }
+
+  function renderPlansOrEmptyState(parsed: any) {
+    // Check if we have valid plans data structure
+    if (!parsed || typeof parsed !== 'object') {
+      return renderNoPlansMessage(parsed);
+    }
+
+    // Extract plans array - could be in different locations
+    const plans = parsed.plans || [];
+    
+    // Filter valid plans
+    const validPlans = plans.filter((plan: any) => 
+      plan && 
+      plan.name && 
+      plan.name !== 'No hay planes disponibles públicamente' &&
+      plan.name !== 'Plan de Seguro' &&
+      plan.provider &&
+      plan.provider !== 'Proveedor' &&
+      plan.base_price > 0 &&
+      plan.external_link
+    );
+
+    // If no valid plans, show empty state
+    if (validPlans.length === 0) {
+      return renderNoPlansMessage(parsed);
+    }
+
+    // Otherwise render the plans
+    return renderPlans({ ...parsed, plans: validPlans });
   }
 } 
