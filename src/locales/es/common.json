@@ -136,6 +136,7 @@
     "analyze_policy": "Analizar Póliza PDF",
     "search_insurance": "Buscar Seguros",
     "context": "Contexto",
+    "restart_chat": "Reiniciar Chat",
     "auth": {
       "title": "Acceso exclusivo para usuarios",
       "description": "Inicia sesión para acceder a tu asistente de seguros personalizado con IA.",

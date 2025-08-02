@@ -102,6 +102,7 @@ export async function POST(request: NextRequest) {
       validatedData = SavePolicySchema.parse(body);
     } catch (validationError) {
       if (validationError instanceof z.ZodError) {
+        console.error("Validation error:", validationError.errors);
         return NextResponse.json(
           { error: "Datos inválidos", details: validationError.errors },
           { status: 400 }
@@ -158,8 +159,17 @@ export async function POST(request: NextRequest) {
 
         if (uploadError) {
           console.error("Error uploading PDF:", uploadError);
+          // In development, expose detailed error
+          const isDevelopment = process.env.NODE_ENV === 'development';
           return NextResponse.json(
-            { error: "Failed to upload PDF" },
+            { 
+              error: "Failed to upload PDF",
+              details: isDevelopment ? {
+                message: uploadError.message,
+                statusCode: uploadError.statusCode,
+                hint: "Check if 'policy-documents' storage bucket exists and has proper permissions"
+              } : undefined
+            },
             { status: 500 }
           );
         }
@@ -174,8 +184,14 @@ export async function POST(request: NextRequest) {
         pdf_url = urlData.publicUrl;
       } catch (uploadError) {
         console.error("Error processing PDF upload:", uploadError);
+        const isDevelopment = process.env.NODE_ENV === 'development';
         return NextResponse.json(
-          { error: "Failed to process PDF" },
+          { 
+            error: "Failed to process PDF",
+            details: isDevelopment ? {
+              message: uploadError instanceof Error ? uploadError.message : String(uploadError)
+            } : undefined
+          },
           { status: 500 }
         );
       }
@@ -200,8 +216,17 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error("Error inserting policy:", insertError);
+      const isDevelopment = process.env.NODE_ENV === 'development';
       return NextResponse.json(
-        { error: "Error al guardar la póliza" },
+        { 
+          error: "Error al guardar la póliza",
+          details: isDevelopment ? {
+            message: insertError.message,
+            code: insertError.code,
+            details: insertError.details,
+            hint: insertError.hint || "Check if saved_policies table exists and schema matches"
+          } : undefined
+        },
         { status: 500 }
       );
     }

@@ -60,9 +60,9 @@ export async function POST(request: NextRequest) {
 
     // Query insurance plans with filters
     const plans = await queryInsurancePlans({
-      type: insuranceType,
-      maxPremium: budget ? parseFloat(budget) : undefined,
-      preferences: preferences || [],
+      category: insuranceType,
+      max_price: budget ? parseFloat(budget) : undefined,
+      benefits_contain: preferences && preferences.length > 0 ? preferences[0] : undefined,
       limit: parseInt(limit) || 4
     });
 

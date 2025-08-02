@@ -157,6 +157,7 @@
     "analyze_policy": "Analyze Policy PDF",
     "search_insurance": "Search Insurance",
     "context": "Context",
+    "restart_chat": "Restart Chat",
     "auth": {
       "title": "Exclusive access for users",
       "description": "Sign in to access your personalized AI insurance assistant.",

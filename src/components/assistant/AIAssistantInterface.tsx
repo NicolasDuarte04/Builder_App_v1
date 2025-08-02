@@ -10,16 +10,21 @@ import {
   Shield,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BackgroundLines } from "@/components/ui/background-lines";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBrikiChat } from "@/hooks/useBrikiChat";
 import { MessageRenderer } from "./MessageRenderer";
 import { PDFUpload } from "./PDFUpload";
 import { PolicyAnalysisDisplay } from "./PolicyAnalysisDisplay";
 import { PolicyHistory } from "./PolicyHistory";
-import { X } from "lucide-react";
+import { X, Sidebar, MessageSquare, Layout } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { PlanResultsProvider, usePlanResults } from "@/contexts/PlanResultsContext";
+import { PlanResultsSidebar } from "./PlanResultsSidebar";
+import { LayoutModeToggle } from "./LayoutModeToggle";
+import { PlanResultsObserver } from "./PlanResultsObserver";
+import { PlanPinObserver } from "./PlanPinObserver";
+import { CategoryFallbackObserver } from "./CategoryFallbackObserver";
 
 interface AIAssistantInterfaceProps {
   isLoading?: boolean;
@@ -32,8 +37,23 @@ interface AIAssistantInterfaceProps {
 }
 
 export function AIAssistantInterface({ isLoading = false, onboardingData = {} }: AIAssistantInterfaceProps) {
+  return (
+    <PlanResultsProvider defaultDualPanelMode={true}>
+      <AIAssistantInterfaceInner isLoading={isLoading} onboardingData={onboardingData} />
+    </PlanResultsProvider>
+  );
+}
+
+function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: AIAssistantInterfaceProps) {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
+  const { 
+    currentResults, 
+    isRightPanelOpen, 
+    hideRightPanel, 
+    isDualPanelMode, 
+    setDualPanelMode 
+  } = usePlanResults();
   const {
     messages,
     input,
@@ -42,6 +62,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
     isLoading: chatLoading,
     error: chatError,
     clearChat,
+    appendAssistantMessage,
   } = useBrikiChat();
 
   const { data: session } = useSession();
@@ -130,7 +151,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
   // Show loading state if data is still loading
   if (isLoading) {
     return (
-      <BackgroundLines className="h-screen w-screen">
+      <div className="h-screen w-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-black">
         <div className="h-full w-full flex flex-col items-center justify-center p-6">
           {/* Logo with animated gradient */}
           <div className="mb-8 w-20 h-20 relative">
@@ -267,7 +288,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         </div>
-      </BackgroundLines>
+      </div>
     );
   }
 
@@ -299,16 +320,38 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (input.trim()) {
-      handleSubmit(e);
+      await handleSubmit(e);
     }
   };
 
+  console.log('🎯 GEMINI-STYLE: Layout state:', { isDualPanelMode, isRightPanelOpen, currentResults });
+
   return (
-    <BackgroundLines className="h-screen w-screen">
-      <div className="h-full w-full flex flex-col pt-16">
+    <div className="h-screen w-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-black">
+      {/* PlanResultsObserver - Listens for structured data events */}
+      <PlanResultsObserver />
+      
+      {/* PlanPinObserver - Listens for plan pin/unpin events */}
+      <PlanPinObserver appendAssistantMessage={appendAssistantMessage} />
+      
+      {/* CategoryFallbackObserver - Listens for category not found events */}
+      <CategoryFallbackObserver appendAssistantMessage={appendAssistantMessage} />
+      
+      {/* Layout Mode Toggle */}
+      <LayoutModeToggle variant="floating" size="sm" />
+      
+      {/* GEMINI-STYLE: True dual-panel layout with automatic compression */}
+      <div className="h-full w-full flex pt-16">
+        {/* LEFT PANEL: Chat Area */}
+        <div className={`flex flex-col transition-all duration-300 ${
+          isDualPanelMode && isRightPanelOpen 
+            ? 'w-[calc(100%-28rem)] lg:w-[calc(100%-32rem)]' // Compressed when panel open
+            : 'w-full' // Full width when panel closed
+        }`}>
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
@@ -453,7 +496,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="w-full max-w-md"
+                className="w-full max-w-xl mx-auto"
               >
                 <div className="grid grid-cols-1 gap-3">
                   <CommandButton
@@ -482,7 +525,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                           <button
                             key={index}
                             onClick={() => handleCommandSelect(suggestion)}
-                            className="w-full text-left p-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                            className="w-full text-left p-2 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                           >
                             {suggestion}
                           </button>
@@ -494,13 +537,11 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
               </motion.div>
             </div>
           ) : (
-            <div className="px-4 py-6 space-y-4">
+            <div className={`${
+              isDualPanelMode && isRightPanelOpen ? 'max-w-lg' : 'max-w-2xl'
+            } mx-auto px-3 py-3 space-y-2 sm:space-y-1.5`}>
               {messages.map((message, index) => {
-                // Check if this message contains insurance plans
-                const hasInsurancePlans = message.role === 'assistant' && 
-                  ((message as any).toolInvocations?.some((tool: any) => 
-                    tool.toolName === 'get_insurance_plans' && tool.result?.plans?.length > 0
-                  ) || message.content.includes('"type":"insurance_plans"'));
+                // No need to hide plan messages - MessageRenderer handles this automatically
                 
                 return (
                   <div
@@ -510,14 +551,10 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                     }`}
                   >
                     <div
-                      className={`${
-                        hasInsurancePlans ? 'w-full' : 'max-w-[80%]'
-                      } rounded-lg p-3 ${
+                      className={`max-w-full sm:max-w-[85%] rounded-lg px-4 py-3 text-xl leading-relaxed ${
                         message.role === 'user'
                           ? 'bg-blue-600 text-white'
-                          : hasInsurancePlans 
-                            ? 'bg-transparent p-0' 
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-neutral-700'
                       }`}
                     >
                       <MessageRenderer
@@ -535,17 +572,19 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
         </div>
 
         {/* Sticky Input Area */}
-        <div className="p-4 border-t bg-white/80 dark:bg-black/50 backdrop-blur-md">
-          <div className="max-w-4xl mx-auto">
-            <form onSubmit={handleSendMessage} className="w-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-sm overflow-hidden">
-              <div className="p-4">
+        <div className="sticky bottom-0 z-10 border-t bg-white dark:bg-black">
+          <div className={`${
+            isDualPanelMode && isRightPanelOpen ? 'max-w-lg' : 'max-w-2xl'
+          } mx-auto px-3`}>
+            <form onSubmit={handleSendMessage} className="w-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden my-2">
+              <div className="p-3">
                 <input
                   ref={inputRef}
                   type="text"
                   placeholder={t("assistant.inputPlaceholder")}
                   value={input}
                   onChange={handleInputChange}
-                  className="w-full text-gray-700 dark:text-gray-200 text-base outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent"
+                  className="w-full text-gray-700 dark:text-gray-200 text-sm outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent"
                 />
               </div>
               <div className="px-4 py-2 border-t border-gray-100 dark:border-neutral-700 flex items-center justify-between">
@@ -558,7 +597,18 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
                   <span>{t("assistant.analyze_policy")}</span>
                 </button>
                 <div className="flex items-center gap-2">
-                  <button className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                  {messages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearChat}
+                      className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full transition-colors hover:border-gray-300 dark:hover:border-gray-600"
+                    >
+                      {t("assistant.restart_chat")}
+                    </button>
+                  )}
+                  <button 
+                    type="button"
+                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                     <Mic className="w-5 h-5" />
                   </button>
                   <button
@@ -672,8 +722,21 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
+
+        {/* RIGHT PANEL: Insurance Results (Gemini-style) */}
+        {isDualPanelMode && isRightPanelOpen && (
+          <div className="w-96 lg:w-[32rem] h-full border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <PlanResultsSidebar
+              isOpen={true}
+              onClose={hideRightPanel}
+              currentResults={currentResults}
+              className="relative h-full w-full border-l-0 shadow-none"
+            />
+          </div>
+        )}
       </div>
-    </BackgroundLines>
+    </div>
   );
 }
 

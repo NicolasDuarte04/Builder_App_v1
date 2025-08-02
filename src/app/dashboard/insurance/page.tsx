@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SavedPoliciesCard } from "@/components/dashboard/SavedPoliciesCard";
 import { PolicyDetailModal } from "@/components/dashboard/PolicyDetailModal";
 import { PolicyComparisonView } from "@/components/dashboard/PolicyComparisonView";
+import { AddPlanModal } from "@/components/dashboard/AddPlanModal";
 import { useToast } from "@/hooks/use-toast";
 
 interface SavedPolicy {
@@ -42,6 +43,7 @@ export default function MyInsurancePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
   const [showComparison, setShowComparison] = useState(false);
+  const [showAddPlanModal, setShowAddPlanModal] = useState(false);
 
   // Fetch saved policies with filters
   const fetchPolicies = async () => {
@@ -106,6 +108,37 @@ export default function MyInsurancePage() {
   const handleViewPolicy = (policy: SavedPolicy) => {
     setSelectedPolicy(policy);
     setIsModalOpen(true);
+  };
+
+  // Handle adding a new tracked plan
+  const handleAddPlan = async (plan: {
+    provider: string;
+    planName: string;
+    policyNumber: string;
+    category: string;
+    monthlyPremium: number;
+    renewalDate: string;
+  }) => {
+    try {
+      // TODO: Implement API call to save tracked plan
+      console.log("Adding tracked plan:", plan);
+      
+      toast({
+        title: "Plan agregado",
+        description: `${plan.planName} ha sido agregado a tus planes rastreados`,
+      });
+      
+      setShowAddPlanModal(false);
+      
+      // TODO: Refresh tracked plans list
+    } catch (error) {
+      console.error("Error adding tracked plan:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo agregar el plan",
+        variant: "destructive",
+      });
+    }
   };
 
   // Load policies on component mount and when filters change
@@ -293,6 +326,7 @@ export default function MyInsurancePage() {
               <Button 
                 variant="outline"
                 className="border-gradient"
+                onClick={() => setShowAddPlanModal(true)}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {t("dashboard.insurance.trackedPlans.addButton")}
@@ -322,6 +356,13 @@ export default function MyInsurancePage() {
           }}
         />
       )}
+
+      {/* Add Plan Modal */}
+      <AddPlanModal
+        isOpen={showAddPlanModal}
+        onClose={() => setShowAddPlanModal(false)}
+        onAdd={handleAddPlan}
+      />
     </div>
   );
 }
