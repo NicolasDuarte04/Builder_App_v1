@@ -1,11 +1,12 @@
 import { streamText, tool } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { queryInsurancePlans } from '@/lib/render-db';
+import { queryInsurancePlans, hasDatabaseUrl } from '@/lib/render-db';
 import { InsurancePlan } from '@/types/project';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSystemPrompt, logPromptVersion, PROMPT_VERSION } from '@/config/systemPrompt';
 import { franc } from 'franc-min';
+import { logToolError } from '@/lib/ai-error-handler';
 
 export const runtime = 'nodejs';
 
@@ -92,8 +93,23 @@ export async function POST(req: Request) {
   }
   const userContext = lastMessage.role === 'system' ? lastMessage.content : '';
 
-  // Detect language from the last user message
-  const userLanguage = lastMessage.role === 'user' ? detectLanguage(lastMessage.content) : 'english';
+  // Detect language from the conversation history, prioritizing earlier messages
+  let userLanguage: 'english' | 'spanish' = 'english';
+  
+  // Look through all user messages to detect the predominant language
+  const userMessages = messages.filter((m: any) => m.role === 'user');
+  if (userMessages.length > 0) {
+    // Prioritize the first user message for language detection
+    const firstUserMessage = userMessages[0];
+    userLanguage = detectLanguage(firstUserMessage.content);
+    
+    // If first message is ambiguous, check all messages
+    if (firstUserMessage.content.trim().length < 20) {
+      const allUserContent = userMessages.map((m: any) => m.content).join(' ');
+      userLanguage = detectLanguage(allUserContent);
+    }
+  }
+  
   console.log('🌐 Detected user language:', userLanguage);
 
   // Get system prompt from configuration and add language instruction
@@ -177,6 +193,12 @@ export async function POST(req: Request) {
                 benefits_contain,
               });
 
+              console.log('🔍 Database connection status:', {
+                hasDatabaseUrl,
+                envVarSet: !!process.env.RENDER_POSTGRES_URL,
+                envVarLength: process.env.RENDER_POSTGRES_URL?.length || 0
+              });
+
               const plans = await queryInsurancePlans({
                 category,
                 max_price,
@@ -186,11 +208,17 @@ export async function POST(req: Request) {
                 limit: 4,
               });
               
+              // Check if we got fuzzy matches (different categories)
+              const isExactMatch = plans.length > 0 && plans.every(plan => 
+                plan.category.toLowerCase() === category.toLowerCase()
+              );
+              
               console.log(`✅ Raw database response:`, {
                 planCount: plans.length,
                 rawPlans: plans,
                 firstPlan: plans[0] || null,
-                planStructure: plans[0] ? Object.keys(plans[0]) : []
+                planStructure: plans[0] ? Object.keys(plans[0]) : [],
+                isExactMatch
               });
               
               // STRICT VALIDATION: Only return plans that are real and complete
@@ -243,6 +271,9 @@ export async function POST(req: Request) {
                 plans: finalPlans,
                 insuranceType: category,
                 hasRealPlans: finalPlans.length > 0,
+                isExactMatch: isExactMatch && finalPlans.length > 0,
+                noExactMatchesFound: !isExactMatch && finalPlans.length > 0,
+                categoriesFound: [...new Set(finalPlans.map(p => p.category))]
               };
               
               console.log('✅✅✅ TOOL EXECUTION FINISHED ✅✅✅');
@@ -250,14 +281,29 @@ export async function POST(req: Request) {
                 planCount: finalPlans.length,
                 hasRealPlans: finalPlans.length > 0,
                 insuranceType: category,
+                isExactMatch: toolResult.isExactMatch,
+                noExactMatchesFound: toolResult.noExactMatchesFound,
+                categoriesFound: toolResult.categoriesFound,
                 samplePlanName: finalPlans[0]?.name
               });
               
               return toolResult;
             } catch (error) {
               console.error('❌ Error executing get_insurance_plans tool:', error);
-              // Return empty array instead of sample data
-              const errorResult = { plans: [], insuranceType: category, hasRealPlans: false };
+              logToolError({ 
+                toolName: 'get_insurance_plans', 
+                error, 
+                context: { category, max_price, country, tags, benefits_contain } 
+              });
+              
+              // Return empty array with error flag
+              const errorResult = { 
+                plans: [], 
+                insuranceType: category, 
+                hasRealPlans: false,
+                error: true,
+                errorMessage: error instanceof Error ? error.message : 'Unknown error'
+              };
               console.log(`📤 Error fallback result:`, errorResult);
               return errorResult;
             }

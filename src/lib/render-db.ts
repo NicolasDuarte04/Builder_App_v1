@@ -4,6 +4,13 @@ import { InsurancePlan, InsurancePlanFromDB } from '@/types/project';
 // Check for database URL and initialize connection pool
 export const hasDatabaseUrl = !!process.env.RENDER_POSTGRES_URL;
 
+console.log('🔌 Database URL status:', hasDatabaseUrl ? 'Present' : 'Missing');
+if (!hasDatabaseUrl) {
+  console.warn('⚠️  RENDER_POSTGRES_URL environment variable is not set');
+  console.warn('💡 If running in production, make sure to add RENDER_POSTGRES_URL to your deployment environment variables');
+  console.warn('🔍 Current NODE_ENV:', process.env.NODE_ENV);
+}
+
 export const pool = hasDatabaseUrl
   ? new Pool({
       connectionString: process.env.RENDER_POSTGRES_URL,
@@ -16,7 +23,7 @@ export const pool = hasDatabaseUrl
 if (pool) {
   pool.on('error', (err, client) => {
     console.error('Unexpected error on idle client', err);
-    process.exit(-1);
+    // Don't exit the process, just log the error
   });
 }
 
@@ -72,7 +79,9 @@ export async function queryInsurancePlans(filters: {
 }): Promise<InsurancePlan[]> {
   try {
     if (!pool) {
-      console.error('❌ Database connection not available.');
+      console.error('❌ No database connection available. Cannot query insurance plans.');
+      console.error('💡 Make sure RENDER_POSTGRES_URL is set in your environment variables');
+      // Return empty array instead of throwing to prevent frontend errors
       return [];
     }
 
@@ -81,8 +90,14 @@ export async function queryInsurancePlans(filters: {
     let paramIndex = 1;
 
     if (filters.category) {
+      // Normalize category to remove accents for better matching
+      const normalizedCategory = filters.category
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, ''); // Remove accents
+      console.log(`🔍 Normalized category: ${filters.category} -> ${normalizedCategory}`);
+      
       query += ` AND category ILIKE $${paramIndex++}`;
-      params.push(`%${filters.category}%`);
+      params.push(`%${normalizedCategory}%`);
     }
     if (filters.country) {
       query += ` AND country = $${paramIndex++}`;
@@ -107,12 +122,126 @@ export async function queryInsurancePlans(filters: {
 
     const result = await pool.query(query, params);
 
+    // If no exact matches found, try a fuzzy search
+    if (result.rows.length === 0 && filters.category) {
+      console.log(`📝 No exact matches for category '${filters.category}'. Trying fuzzy search...`);
+      return await getFuzzyMatchPlans(filters);
+    }
+
     return result.rows.map(transformPlan);
   } catch (error) {
     console.error('❌ Error querying insurance plans:', error);
+    throw error; // Let the caller handle the error
+  }
+}
+
+// Get fuzzy match plans when no exact matches are found
+async function getFuzzyMatchPlans(filters: {
+  category?: string;
+  max_price?: number;
+  country?: string;
+  tags?: string[];
+  benefits_contain?: string;
+  limit?: number;
+}): Promise<InsurancePlan[]> {
+  try {
+    if (!pool) {
+      console.error('❌ No database connection available.');
+      return [];
+    }
+
+    console.log(`🔍 Attempting fuzzy search for category: ${filters.category}`);
+
+    // First, check if this is a typo or variant of the category
+    if (filters.category) {
+      // Normalize category to remove accents
+      const normalizedCategory = filters.category
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      
+      // Try searching with partial match on category
+      let query = 'SELECT * FROM insurance_plans WHERE category ILIKE $1';
+      const params: any[] = [`%${normalizedCategory}%`];
+      let paramIndex = 2;
+
+      // Add other filters
+      if (filters.country) {
+        query += ` AND country = $${paramIndex++}`;
+        params.push(filters.country);
+      }
+      if (filters.max_price) {
+        query += ` AND base_price <= $${paramIndex++}`;
+        params.push(filters.max_price);
+      }
+
+      query += ' ORDER BY base_price ASC';
+      query += ` LIMIT $${paramIndex++}`;
+      params.push(filters.limit || 4);
+
+      console.log('🔍 Trying partial category match...');
+      const partialResult = await pool.query(query, params);
+      
+      if (partialResult.rows.length > 0) {
+        console.log(`✅ Found ${partialResult.rows.length} plans with partial category match`);
+        return partialResult.rows.map(transformPlan);
+      }
+    }
+
+    // If no partial match, fall back to showing any plans within constraints
+    // but this should be marked as a true fallback
+    console.log('🔍 No category match found. Showing general fallback plans...');
+    
+    let query = 'SELECT * FROM insurance_plans WHERE 1=1';
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    // Keep country filter if specified
+    if (filters.country) {
+      query += ` AND country = $${paramIndex++}`;
+      params.push(filters.country);
+    }
+
+    // Keep price filter if specified
+    if (filters.max_price) {
+      query += ` AND base_price <= $${paramIndex++}`;
+      params.push(filters.max_price);
+    }
+
+    // Order by price to show most affordable options
+    query += ' ORDER BY base_price ASC';
+    query += ` LIMIT $${paramIndex++}`;
+    params.push(filters.limit || 4);
+
+    const result = await pool.query(query, params);
+
+    if (result.rows.length === 0) {
+      // If still no results, remove all filters except country
+      console.log('🔍 No results with price filter. Trying without price limit...');
+      let fallbackQuery = 'SELECT * FROM insurance_plans WHERE 1=1';
+      const fallbackParams: any[] = [];
+      let fallbackIndex = 1;
+
+      if (filters.country) {
+        fallbackQuery += ` AND country = $${fallbackIndex++}`;
+        fallbackParams.push(filters.country);
+      }
+
+      fallbackQuery += ' ORDER BY base_price ASC';
+      fallbackQuery += ` LIMIT $${fallbackIndex++}`;
+      fallbackParams.push(filters.limit || 4);
+
+      const fallbackResult = await pool.query(fallbackQuery, fallbackParams);
+      return fallbackResult.rows.map(transformPlan);
+    }
+
+    return result.rows.map(transformPlan);
+  } catch (error) {
+    console.error('❌ Error in fuzzy search:', error);
     return [];
   }
 }
+
+
 
 // Get all available insurance types
 export async function getInsuranceTypes(): Promise<string[]> {
