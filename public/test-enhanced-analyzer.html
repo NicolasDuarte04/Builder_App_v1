@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Enhanced PDF Analyzer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .upload-area {
+            border: 2px dashed #4CAF50;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            background: #f9f9f9;
+        }
+        .upload-area.dragover {
+            background: #e8f5e9;
+            border-color: #2E7D32;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 30px;
+        }
+        .result-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .result-section h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .red-flags {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .red-flags ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .source-quotes {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        details {
+            margin: 10px 0;
+        }
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        blockquote {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-left: 3px solid #1976d2;
+        }
+        .comparison-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .policy-card {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+        }
+        .policy-card.selected {
+            border-color: #4CAF50;
+        }
+        .comparison-results {
+            grid-column: 1 / -1;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Test Enhanced PDF Analyzer</h1>
+        
+        <div class="upload-area" id="uploadArea">
+            <p>📄 Arrastra un PDF aquí o haz clic para seleccionar</p>
+            <input type="file" id="fileInput" accept=".pdf" />
+            <button class="btn" onclick="document.getElementById('fileInput').click()">
+                Seleccionar PDF
+            </button>
+        </div>
+
+        <div id="fileName" style="margin: 20px 0; font-weight: bold;"></div>
+
+        <div style="text-align: center;">
+            <button class="btn" id="testExtractBtn" onclick="testExtraction()" disabled>
+                🧪 Test Extraction Only
+            </button>
+            <button class="btn" id="analyzeBtn" onclick="analyzePolicy()" disabled>
+                🔍 Full Analysis
+            </button>
+        </div>
+
+        <div id="results" class="results"></div>
+
+        <div class="comparison-section" id="comparisonSection" style="display: none;">
+            <h2 style="grid-column: 1 / -1;">📊 Policy Comparison</h2>
+            <div class="policy-card" id="policyA">
+                <h3>Policy A</h3>
+                <div id="policyAContent"></div>
+            </div>
+            <div class="policy-card" id="policyB">
+                <h3>Policy B</h3>
+                <div id="policyBContent"></div>
+            </div>
+            <div class="comparison-results">
+                <button class="btn" onclick="compareStoredPolicies()">
+                    Compare Policies
+                </button>
+                <div id="comparisonResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let storedPolicies = [];
+
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const testExtractBtn = document.getElementById('testExtractBtn');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            selectedFile = file;
+            fileName.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            testExtractBtn.disabled = false;
+            analyzeBtn.disabled = false;
+        }
+
+        async function testExtraction() {
+            if (!selectedFile) return;
+
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="loading"><div class="spinner"></div><p>Testing PDF extraction...</p></div>';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/api/test-pdf-analyzer', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    results.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Extraction Successful</h3>
+                            <p><strong>Method:</strong> ${data.method}</p>
+                            <p><strong>Text Length:</strong> ${data.textLength} characters</p>
+                            <p><strong>Message:</strong> ${data.message}</p>
+                        </div>
+                        <div class="result-section">
+                            <h3>Preview</h3>
+                            <pre>${data.preview}</pre>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Extraction Failed</h3>
+                            <p>${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Request Failed</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function analyzePolicy() {
+            if (!selectedFile) return;
+
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="loading"><div class="spinner"></div><p>Analyzing policy... This may take a minute.</p></div>';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/api/ai/analyze-policy', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayAnalysisResults(data);
+                    
+                    // Store for comparison
+                    if (storedPolicies.length < 2) {
+                        storedPolicies.push({
+                            fileName: selectedFile.name,
+                            analysis: data.analysis
+                        });
+                        updateComparisonSection();
+                    }
+                } else {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Analysis Failed</h3>
+                            <p>${data.error}</p>
+                            <p>${data.details || ''}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Request Failed</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayAnalysisResults(data) {
+            const results = document.getElementById('results');
+            const analysis = data.analysis;
+
+            let html = `
+                <div class="success">
+                    <h3>✅ Analysis Complete</h3>
+                    <p><strong>File:</strong> ${data.fileName}</p>
+                    <p><strong>Extraction Method:</strong> ${data.extractionMethod || 'standard'}</p>
+                </div>
+            `;
+
+            // Basic Info
+            html += `
+                <div class="result-section">
+                    <h3>📋 Basic Information</h3>
+                    <p><strong>Policy Type:</strong> ${analysis.policyType}</p>
+                    <p><strong>Insurer:</strong> ${analysis.insurer?.name || 'Unknown'}</p>
+                    <p><strong>Premium:</strong> ${analysis.premium?.amount || 0} ${analysis.premium?.currency || 'COP'} (${analysis.premium?.frequency || 'Unknown'})</p>
+                    <p><strong>Risk Score:</strong> ${analysis.riskScore}/10</p>
+                </div>
+            `;
+
+            // Red Flags
+            if (analysis.redFlags && analysis.redFlags.length > 0) {
+                html += `
+                    <div class="red-flags">
+                        <h3>⚠️ Red Flags</h3>
+                        <ul>
+                            ${analysis.redFlags.map(flag => `<li>${flag}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Missing Info
+            if (analysis.missingInfo && analysis.missingInfo.length > 0) {
+                html += `
+                    <div class="result-section">
+                        <h3>❓ Missing Information</h3>
+                        <ul>
+                            ${analysis.missingInfo.map(info => `<li>${info}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Source Quotes
+            if (analysis.sourceQuotes && Object.keys(analysis.sourceQuotes).length > 0) {
+                html += `
+                    <div class="source-quotes">
+                        <h3>📝 Source Quotes</h3>
+                        ${Object.entries(analysis.sourceQuotes).map(([field, quote]) => `
+                            <details>
+                                <summary>${field}</summary>
+                                <blockquote>${quote}</blockquote>
+                            </details>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Full JSON
+            html += `
+                <div class="result-section">
+                    <h3>🔧 Full Analysis JSON</h3>
+                    <details>
+                        <summary>Click to expand</summary>
+                        <pre>${JSON.stringify(analysis, null, 2)}</pre>
+                    </details>
+                </div>
+            `;
+
+            results.innerHTML = html;
+        }
+
+        function updateComparisonSection() {
+            if (storedPolicies.length > 0) {
+                document.getElementById('comparisonSection').style.display = 'grid';
+                
+                if (storedPolicies[0]) {
+                    document.getElementById('policyAContent').innerHTML = `
+                        <p><strong>File:</strong> ${storedPolicies[0].fileName}</p>
+                        <p><strong>Type:</strong> ${storedPolicies[0].analysis.policyType}</p>
+                        <p><strong>Premium:</strong> ${storedPolicies[0].analysis.premium?.amount || 0} ${storedPolicies[0].analysis.premium?.currency || 'COP'}</p>
+                    `;
+                }
+                
+                if (storedPolicies[1]) {
+                    document.getElementById('policyBContent').innerHTML = `
+                        <p><strong>File:</strong> ${storedPolicies[1].fileName}</p>
+                        <p><strong>Type:</strong> ${storedPolicies[1].analysis.policyType}</p>
+                        <p><strong>Premium:</strong> ${storedPolicies[1].analysis.premium?.amount || 0} ${storedPolicies[1].analysis.premium?.currency || 'COP'}</p>
+                    `;
+                }
+            }
+        }
+
+        async function compareStoredPolicies() {
+            if (storedPolicies.length < 2) {
+                alert('Please analyze two policies first');
+                return;
+            }
+
+            // This would call a comparison endpoint in production
+            // For now, we'll show a placeholder
+            document.getElementById('comparisonResults').innerHTML = `
+                <div class="result-section">
+                    <h3>Comparison Results</h3>
+                    <p>Policy comparison functionality is ready!</p>
+                    <p>Import the comparePolicies function from policy-comparison.ts to see detailed results.</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

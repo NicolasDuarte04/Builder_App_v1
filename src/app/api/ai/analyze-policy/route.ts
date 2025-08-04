@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractTextFromPDF } from '@/lib/pdf-analyzer';
+import { extractTextFromPDFWithOCR } from '@/lib/pdf-analyzer-enhanced';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
 import { createPolicyUpload, updatePolicyUpload } from '@/lib/supabase-policy';
@@ -47,7 +48,11 @@ const PolicyAnalysisSchema = z.object({
   }).default({ limits: {}, deductibles: {}, exclusions: [], geography: "Colombia", claimInstructions: [] }),
   keyFeatures: z.array(z.string()).default([]),
   recommendations: z.array(z.string()).default([]),
-  riskScore: z.number().min(1).max(10).default(5)
+  riskScore: z.number().min(1).max(10).default(5),
+  // Enhanced fields for traceability and transparency
+  sourceQuotes: z.record(z.string()).default({}),
+  redFlags: z.array(z.string()).default([]),
+  missingInfo: z.array(z.string()).default([])
 });
 
 export async function POST(request: NextRequest) {
@@ -168,15 +173,29 @@ export async function POST(request: NextRequest) {
     uploadId = uploadRecord.id;
 
     try {
-      // Extract text from PDF
+      // Extract text from PDF with OCR fallback
       console.log('📄 Extracting text from PDF...');
-      const pdfText = await extractTextFromPDF(file);
-      console.log('✅ PDF text extracted, length:', pdfText.length);
+      let pdfText: string;
+      let extractionMethod: 'text' | 'ocr' = 'text';
+      
+      try {
+        // Try enhanced extraction with OCR fallback
+        const extractionResult = await extractTextFromPDFWithOCR(file);
+        pdfText = extractionResult.text;
+        extractionMethod = extractionResult.method;
+        console.log(`✅ PDF text extracted using ${extractionMethod}, length: ${pdfText.length}`);
+      } catch (enhancedError) {
+        // If enhanced extraction fails, fall back to standard extraction
+        console.log('⚠️ Enhanced extraction failed, trying standard method...');
+        pdfText = await extractTextFromPDF(file);
+        console.log('✅ PDF text extracted using standard method, length:', pdfText.length);
+      }
 
       // Update record with extracted text
       await updatePolicyUpload(uploadRecord.id, {
         extracted_text: pdfText,
-        status: 'processing'
+        status: 'processing',
+        extraction_method: extractionMethod
       }, serverSupabase);
 
       // Analyze with AI using generateObject for structured output
@@ -211,7 +230,8 @@ export async function POST(request: NextRequest) {
         success: true,
         analysis,
         fileName: file.name,
-        uploadId: uploadRecord.id
+        uploadId: uploadRecord.id,
+        extractionMethod: extractionMethod
       });
 
     } catch (error) {
@@ -255,31 +275,59 @@ async function analyzePolicyWithAI(pdfText: string, oai: any) {
     const language = isSpanish ? 'Spanish' : 'English';
     console.log(`🌐 Detected language: ${language}`);
 
-    const systemPrompt = `You are an expert document analyst specializing in insurance policies. Analyze the provided document and extract comprehensive information.
+    const systemPrompt = `You are an expert insurance analyst specializing in Latin American insurance policies. Analyze the provided document and extract comprehensive information.
 
-IMPORTANT INSTRUCTIONS:
-1. RESPOND IN ${language.toUpperCase()} - match the document's language
-2. The document might be an insurance policy OR another type of document
-3. Extract ALL available information, even if some fields are empty
+CRITICAL INSTRUCTIONS:
+1. RESPOND IN ${language.toUpperCase()} - all user-facing text must be in ${language}
+2. Extract exact quotes from the document for traceability
+3. Flag any concerning issues or missing coverage as red flags
+4. Track fields where information could not be found
 
-FOR INSURANCE POLICIES, extract:
-- Policy Type (health, life, auto, home, business, etc.)
-- Premium details (amount, currency, frequency)
-- Insurer information (name, contact, emergency lines)
-- Policy management (dates, renewal info, policy links)
-- Coverage details (limits, deductibles, geography, claim instructions)
-- Legal obligations and compliance notes
-- Exclusions and limitations
-- Key features and benefits
-- Risk assessment (1-10 scale)
-- Recommendations and gaps
+EXTRACTION REQUIREMENTS:
 
-FOR NON-INSURANCE DOCUMENTS:
-- Adapt the analysis creatively to fit the schema
-- Focus on key points, risks, and actionable information
-- Use fields like "insurer" for "company", "coverage" for "scope", etc.
+1. POLICY BASICS:
+   - Policy Type (salud, vida, auto, hogar, empresarial, etc.)
+   - Premium (monto, moneda, frecuencia)
+   - Insurer details (nombre, contacto, líneas de emergencia)
+   - Policy dates and numbers
 
-ALWAYS provide meaningful analysis in ${language}.`;
+2. COVERAGE ANALYSIS:
+   - Limits: Extract specific coverage amounts with their descriptions
+   - Deductibles: List all deductibles with exact amounts
+   - Exclusions: List ALL exclusions found in the document
+   - Geographic coverage area
+   - Claim instructions (step by step if available)
+
+3. SOURCE QUOTES (sourceQuotes):
+   For each extracted field, save the EXACT text from the document that was used.
+   Example: "coverage.limits.medical": "Gastos médicos hasta $50,000,000 COP por evento"
+   
+4. RED FLAGS (redFlags):
+   Identify and list concerning issues such as:
+   - Missing essential coverage (e.g., "Sin cobertura de maternidad")
+   - Unusually high deductibles
+   - Restrictive exclusions (e.g., "Excluye condiciones preexistentes")
+   - Short coverage periods
+   - Limited geographic coverage
+   
+5. MISSING INFORMATION (missingInfo):
+   List any important fields that could not be found, such as:
+   - "Emergency contact numbers not specified"
+   - "Deductible amounts not clearly stated"
+   - "Claims process not documented"
+
+6. USER-FRIENDLY SUMMARIES:
+   - keyFeatures: Simple, clear benefits in ${language} (e.g., "Cobertura nacional 24/7")
+   - recommendations: Actionable advice in ${language} (e.g., "Considere aumentar cobertura de responsabilidad civil")
+   - legal.obligations: User responsibilities in plain ${language}
+   - coverage.claimInstructions: Step-by-step process in simple ${language}
+
+7. RISK SCORE (1-10):
+   - 1-3: Excellent coverage, minimal gaps
+   - 4-6: Adequate coverage with some gaps
+   - 7-10: Significant gaps or concerns
+
+IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but still extract source quotes and identify any risks or important information.`;
 
     // Check if the PDF has no extractable text
     if (!pdfText.trim() || pdfText.includes('No text content could be extracted')) {
@@ -363,7 +411,10 @@ ALWAYS provide meaningful analysis in ${language}.`;
       },
       keyFeatures: ["Document analysis encountered an error"],
       recommendations: ["Please ensure the PDF contains readable text", "Try uploading a different document"],
-      riskScore: 5
+      riskScore: 5,
+      sourceQuotes: {},
+      redFlags: ["Unable to analyze document - possible scanned PDF or image-based content"],
+      missingInfo: ["All fields - document could not be analyzed"]
     };
   }
 } 
