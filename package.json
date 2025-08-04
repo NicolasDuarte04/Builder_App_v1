@@ -29,7 +29,6 @@
     "@types/uuid": "^10.0.0",
     "ai": "^4.3.17",
     "bcryptjs": "^3.0.2",
-    "canvas": "^3.1.2",
     "clsx": "^2.1.1",
     "cobe": "^0.6.4",
     "dagre": "^0.8.5",
@@ -47,7 +46,6 @@
     "next-themes": "^0.4.6",
     "openai": "^5.8.4",
     "pdf-lib": "^1.17.1",
-    "pdf-to-png-converter": "^3.7.1",
     "pdf2json": "^3.1.6",
     "pg": "^8.16.3",
     "react": "^19.0.0",
@@ -73,6 +71,7 @@
     "critters": "^0.0.23",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "ignore-loader": "^0.1.2",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"

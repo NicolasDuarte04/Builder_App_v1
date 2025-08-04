@@ -119,33 +119,36 @@ async function convertPDFToImages(file: File): Promise<Buffer[]> {
   try {
     console.log('🔄 Converting PDF to images for OCR...');
     
-    // For Node.js environment, we'll use pdf-to-png-converter
-    const { pdf } = await import('pdf-to-png-converter');
-    
-    // Convert File to Buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
-    // Convert PDF to PNG images
-    const options = {
-      disableFontFace: true, // Disable font face to avoid errors
-      useSystemFonts: true,  // Use system fonts
-      viewportScale: 2.0,    // Higher resolution for better OCR
-    };
-    
-    console.log('📄 Starting PDF to PNG conversion...');
-    const pngPages = await pdf(buffer, options);
-    
-    console.log(`✅ Converted ${pngPages.length} pages to images`);
-    
-    // Return the image buffers
-    return pngPages.map(page => page.content);
+    // Try to import pdf-to-png-converter, but handle if it's not available
+    try {
+      const { pdf } = await import('pdf-to-png-converter');
+      
+      // Convert File to Buffer
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      // Convert PDF to PNG images
+      const options = {
+        disableFontFace: true, // Disable font face to avoid errors
+        useSystemFonts: true,  // Use system fonts
+        viewportScale: 2.0,    // Higher resolution for better OCR
+      };
+      
+      console.log('📄 Starting PDF to PNG conversion...');
+      const pngPages = await pdf(buffer, options);
+      
+      console.log(`✅ Converted ${pngPages.length} pages to images`);
+      
+      // Return the image buffers
+      return pngPages.map(page => page.content);
+    } catch (importError) {
+      console.warn('⚠️ pdf-to-png-converter not available in this environment');
+      console.log('ℹ️ This is expected in serverless environments like Vercel');
+      return [];
+    }
     
   } catch (error) {
     console.error('❌ PDF to image conversion failed:', error);
-    
-    // If pdf-to-png-converter fails, try a fallback approach
-    console.log('⚠️ Trying fallback PDF extraction method...');
     
     // Return empty array to indicate conversion failure
     return [];
