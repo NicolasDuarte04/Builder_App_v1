@@ -115,37 +115,36 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async session({ session, token }) {
-      if (session?.user) {
-        // Map the JWT sub to user ID
-        session.user.id = token.sub!;
-        
-        // Fetch user data from database
-        try {
-          const { data: userData } = await supabase
-            .from("users")
-            .select("id, email, name")
-            .eq("email", session.user.email)
-          .single();
-
-          if (userData) {
-            session.user.id = userData.id;
-            session.user.name = userData.name;
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
+      if (session?.user && token) {
+        // Use the stored database user ID from the token
+        session.user.id = token.userId as string || token.sub!;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
       }
       return session;
     },
     async jwt({ token, user, account }) {
       console.log("JWT callback - user:", user, "account:", account?.provider);
       
-      if (user) {
-        // Store user ID in token for both providers
-        token.sub = user.id;
-        token.email = user.email;
-        token.name = user.name;
+      // When user signs in, store their database ID
+      if (user && account) {
+        try {
+          // Fetch the actual database user ID
+          const { data: dbUser } = await supabase
+            .from("users")
+            .select("id")
+            .eq("email", user.email)
+            .single();
+          
+          if (dbUser) {
+            token.userId = dbUser.id; // Store the actual database ID
+            token.email = user.email;
+            token.name = user.name;
           }
+        } catch (error) {
+          console.error("Error fetching user ID in JWT callback:", error);
+        }
+      }
       
       console.log("JWT token after update:", token);
       return token;

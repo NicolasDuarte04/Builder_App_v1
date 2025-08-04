@@ -86,16 +86,19 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    console.log("POST /api/policies - Session:", session);
 
     if (!session?.user?.id) {
+      console.error("No user ID in session:", session);
       return NextResponse.json(
-        { error: "No autorizado" },
+        { error: "No autorizado - No se encontró ID de usuario" },
         { status: 401 }
       );
     }
 
     // Parse and validate request body
     const body = await request.json();
+    console.log("POST /api/policies - Request body:", JSON.stringify(body, null, 2));
     let validatedData;
     
     try {

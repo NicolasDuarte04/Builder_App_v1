@@ -235,7 +235,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
           <SavePolicyButton
             policyData={{
               custom_name: fileName || `${analysis.policyType} - ${new Date().toLocaleDateString()}`,
-              insurer_name: analysis.policyDetails.insured[0] || 'Sin Aseguradora',
+              insurer_name: analysis.insurer?.name || 'Sin Aseguradora',
               policy_type: analysis.policyType || 'General',
               priority: analysis.riskScore <= 3 ? 'low' : analysis.riskScore <= 6 ? 'medium' : 'high',
               pdf_base64: pdfUrl,
