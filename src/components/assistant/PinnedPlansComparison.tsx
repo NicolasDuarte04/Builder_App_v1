@@ -33,14 +33,15 @@ export function PinnedPlansComparison({
     benefits: 'Key Benefits'
   };
   
-  const formatPrice = (price: string) => {
+  const formatPrice = (price: string | undefined) => {
+    if (!price) return '0';
     // Extract numeric value from price string
     const numericPrice = parseInt(price.replace(/[^0-9]/g, ''));
     return new Intl.NumberFormat('es-CO', {
       style: 'decimal',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(numericPrice);
+    }).format(numericPrice || 0);
   };
   
   const getBenefitsList = (benefits: string) => {
@@ -50,9 +51,12 @@ export function PinnedPlansComparison({
   };
   
   const getPriceComparison = (plans: InsurancePlan[]) => {
-    const prices = plans.map(p => parseInt(p.price.replace(/[^0-9]/g, '')));
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
+    const prices = plans.map(p => {
+      if (!p.price) return 0;
+      return parseInt(p.price.replace(/[^0-9]/g, '')) || 0;
+    });
+    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+    const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
     return { minPrice, maxPrice };
   };
   
@@ -103,8 +107,8 @@ export function PinnedPlansComparison({
                 💰 Price
               </td>
               {plans.map((plan) => {
-                const price = parseInt(plan.price.replace(/[^0-9]/g, ''));
-                const isLowest = price === minPrice;
+                const price = plan.price ? parseInt(plan.price.replace(/[^0-9]/g, '')) || 0 : 0;
+                const isLowest = price === minPrice && price > 0;
                 const isHighest = price === maxPrice && minPrice !== maxPrice;
                 
                 return (

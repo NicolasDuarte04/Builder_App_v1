@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useBrikiEvent, BrikiEvents, StructuredDataEvent } from '@/lib/event-bus';
 import { usePlanResults } from '@/contexts/PlanResultsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface PlanResultsObserverProps {
   appendAssistantMessage?: (content: string) => void;
@@ -14,6 +15,7 @@ interface PlanResultsObserverProps {
  */
 export function PlanResultsObserver({ appendAssistantMessage }: PlanResultsObserverProps = {}) {
   const { showPanelWithPlans, isDualPanelMode } = usePlanResults();
+  const { language } = useTranslation();
 
   // Keep track of whether we've already shown an acknowledgment for this set of results
   let lastAcknowledgedPlans: string | null = null;
@@ -36,8 +38,13 @@ export function PlanResultsObserver({ appendAssistantMessage }: PlanResultsObser
         if (plansKey !== lastAcknowledgedPlans) {
           lastAcknowledgedPlans = plansKey;
           
-          // Vary the acknowledgment messages
-          const acknowledgments = [
+          // Vary the acknowledgment messages based on language
+          const acknowledgments = language === 'en' ? [
+            `I found ${event.data.plans.length} options for you.`,
+            `Here are ${event.data.plans.length} plans that match.`,
+            `Check out these ${event.data.plans.length} available plans.`,
+            `I'm showing you ${event.data.plans.length} alternatives.`
+          ] : [
             `Encontré ${event.data.plans.length} opciones para ti.`,
             `Aquí tienes ${event.data.plans.length} planes que se ajustan.`,
             `Mira estos ${event.data.plans.length} planes disponibles.`,
@@ -45,8 +52,11 @@ export function PlanResultsObserver({ appendAssistantMessage }: PlanResultsObser
           ];
           const randomAck = acknowledgments[Math.floor(Math.random() * acknowledgments.length)];
           
+          // Use setTimeout to avoid state update during render
           setTimeout(() => {
-            appendAssistantMessage(randomAck);
+            if (appendAssistantMessage) {
+              appendAssistantMessage(randomAck);
+            }
           }, 500); // Small delay to ensure plans appear first
         }
       }
@@ -71,15 +81,22 @@ export function PlanResultsObserver({ appendAssistantMessage }: PlanResultsObser
         if (plansKey !== lastAcknowledgedPlans) {
           lastAcknowledgedPlans = plansKey;
           
-          const acknowledgments = [
+          const acknowledgments = language === 'en' ? [
+            `I found ${data.plans.length} plans.`,
+            `Here are ${data.plans.length} options.`,
+            `Check these ${data.plans.length} plans.`
+          ] : [
             `Encontré ${data.plans.length} planes.`,
             `Aquí hay ${data.plans.length} opciones.`,
             `Revisa estos ${data.plans.length} planes.`
           ];
           const randomAck = acknowledgments[Math.floor(Math.random() * acknowledgments.length)];
           
+          // Use setTimeout to avoid state update during render
           setTimeout(() => {
-            appendAssistantMessage(randomAck);
+            if (appendAssistantMessage) {
+              appendAssistantMessage(randomAck);
+            }
           }, 500);
         }
       }

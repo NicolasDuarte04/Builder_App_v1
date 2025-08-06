@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useBrikiEvent, eventBus } from '@/lib/event-bus';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface PlanPinObserverProps {
   appendAssistantMessage: (content: string) => void;
@@ -16,6 +17,7 @@ const sentMessages = new Set<string>();
 export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps) {
   const lastPinnedPlanId = useRef<number | null>(null);
   const lastUnpinnedPlanId = useRef<number | null>(null);
+  const { language } = useTranslation();
   
   // Listen for plan pinned events
   useBrikiEvent('plan-pinned', (event: any) => {
@@ -29,8 +31,12 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
     
     lastPinnedPlanId.current = event.plan.id;
     
-    // Short, varied messages
-    const messages = [
+    // Short, varied messages based on language
+    const messages = language === 'en' ? [
+      `Pinned "${event.plan.name}".`,
+      `Marked "${event.plan.name}".`,
+      `Saved "${event.plan.name}".`
+    ] : [
       `Marcaste "${event.plan.name}".`,
       `Plan fijado: "${event.plan.name}".`,
       `Guardado: "${event.plan.name}".`
@@ -41,7 +47,10 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
     const messageKey = `pin-${event.plan.id}`;
     if (!sentMessages.has(messageKey)) {
       sentMessages.add(messageKey);
-      appendAssistantMessage(message);
+      // Use setTimeout to avoid state update during render
+      setTimeout(() => {
+        appendAssistantMessage(message);
+      }, 100);
     }
   });
   
@@ -59,7 +68,11 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
     
     // Only send message if all plans are unpinned
     if (event.pinnedCount === 0) {
-      const messages = [
+      const messages = language === 'en' ? [
+        `Unpinned.`,
+        `Removed.`,
+        `Cleared.`
+      ] : [
         `Desmarcado.`,
         `Quitado.`,
         `Liberado.`
@@ -69,7 +82,10 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
       const messageKey = `unpin-${event.plan.id}`;
       if (!sentMessages.has(messageKey)) {
         sentMessages.add(messageKey);
-        appendAssistantMessage(message);
+        // Use setTimeout to avoid state update during render
+        setTimeout(() => {
+          appendAssistantMessage(message);
+        }, 100);
       }
     }
   });
