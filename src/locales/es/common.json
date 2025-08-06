@@ -162,7 +162,12 @@
         "Verificar si mi póliza cubre esto",
         "Analizar exclusiones de póliza"
       ]
-    }
+    },
+    "plansFound": "Encontré planes de seguro que coinciden con tus criterios. Puedes verlos en el panel derecho.",
+    "checkRightPanel": "Revisa el panel derecho para comparar planes y obtener cotizaciones.",
+    "comparingPlans": "Aquí está la comparación detallada de los planes seleccionados:",
+    "pinToCompare": "Fija planes para compararlos lado a lado",
+    "comparisonSummary": "Resumen de Comparación"
   },
   "plans": {
     "notFound": "No se encontraron planes recomendados para tu solicitud.",

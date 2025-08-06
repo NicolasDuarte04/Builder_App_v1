@@ -179,7 +179,12 @@
         "Check if my policy covers this",
         "Analyze policy exclusions"
       ]
-    }
+    },
+    "plansFound": "I found insurance plans that match your criteria. You can view them on the right panel.",
+    "checkRightPanel": "Check the right panel to compare plans and get quotes.",
+    "comparingPlans": "Here's a detailed comparison of the selected plans:",
+    "pinToCompare": "Pin plans to compare them side by side",
+    "comparisonSummary": "Comparison Summary"
   },
   "plans": {
     "notFound": "No recommended plans found for your request.",

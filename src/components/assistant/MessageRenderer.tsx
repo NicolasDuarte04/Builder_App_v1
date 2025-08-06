@@ -267,10 +267,10 @@ export const MessageRenderer = React.memo(function MessageRenderer({
         </div>
         <div className="flex-1">
           <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-            {t('assistant.plansFound', 'Los planes de seguro se muestran en el panel derecho')}
+            {t('assistant.plansFound')}
           </p>
           <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">
-            {t('assistant.checkRightPanel', 'Revisa el panel para comparar planes y obtener cotizaciones')}
+            {t('assistant.checkRightPanel')}
           </p>
         </div>
       </div>

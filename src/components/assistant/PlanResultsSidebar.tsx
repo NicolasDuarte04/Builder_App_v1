@@ -11,6 +11,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { eventBus } from '@/lib/event-bus';
+import { PinnedPlansComparison } from './PinnedPlansComparison';
 
 interface PlanResultsData {
   title: string;
@@ -239,25 +240,37 @@ export function PlanResultsSidebar({
                 {/* Pinned Plans Section */}
                 {pinnedPlansList.length > 0 && (
                   <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Pin className="h-4 w-4 text-blue-600" />
-                      <h3 className="font-medium text-gray-900 dark:text-white">
-                        Pinned Plans
-                      </h3>
-                    </div>
-                    <div className="space-y-3">
-                      {pinnedPlansList.map((plan) => (
-                        <PlanCard
-                          key={plan.id}
-                          plan={plan}
-                          onViewDetails={handleViewDetails}
-                          onQuote={handleQuote}
-                          onPin={handlePinPlan}
-                          isPinned={true}
-                          isCompact={true}
-                        />
-                      ))}
-                    </div>
+                    {/* Show comparison view for 2+ pinned plans */}
+                    {pinnedPlansList.length >= 2 ? (
+                      <PinnedPlansComparison
+                        plans={pinnedPlansList}
+                        onViewDetails={handleViewDetails}
+                        onQuote={handleQuote}
+                        onUnpin={handlePinPlan}
+                      />
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Pin className="h-4 w-4 text-blue-600" />
+                          <h3 className="font-medium text-gray-900 dark:text-white">
+                            Pinned Plans
+                          </h3>
+                        </div>
+                        <div className="space-y-3">
+                          {pinnedPlansList.map((plan) => (
+                            <PlanCard
+                              key={plan.id}
+                              plan={plan}
+                              onViewDetails={handleViewDetails}
+                              onQuote={handleQuote}
+                              onPin={handlePinPlan}
+                              isPinned={true}
+                              isCompact={true}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
