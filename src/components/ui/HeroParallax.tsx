@@ -11,7 +11,7 @@ import {
 import Image from "next/image";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { IconSparkles, IconArrowRight, IconPlayerPlay } from "@tabler/icons-react";
+import { IconSparkles, IconPlayerPlay } from "@tabler/icons-react";
 
 interface Product {
   title: string;
@@ -86,25 +86,16 @@ export const Header: React.FC = () => {
             {t("hero.subtitle")}
           </motion.p>
 
-          {/* CTA Buttons */}
+          {/* CTA Button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col sm:flex-row justify-center items-center gap-4 md:gap-6"
+            className="flex justify-center items-center"
           >
             <Button 
               size="lg" 
               className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl dark:shadow-[0_0_20px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all duration-300 transform hover:scale-[1.02] min-w-[200px]"
-              onClick={() => window.location.href = '/onboarding'}
-            >
-              {t("hero.cta_primary")}
-              <IconArrowRight className="ml-2 w-5 h-5" strokeWidth={2} />
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="border-[1.5px] border-blue-500 text-blue-500 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20 px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] min-w-[200px]"
               onClick={() => window.location.href = '/assistant'}
             >
               {t("hero.cta_secondary")}
