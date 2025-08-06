@@ -6,18 +6,24 @@ import { useProjectStore } from '@/store/useProjectStore';
 import { shallow } from 'zustand/shallow';
 import { eventBus, BrikiEvents } from '@/lib/event-bus';
 import { usePlanResults } from '@/contexts/PlanResultsContext';
+import { useLanguage } from '@/components/LanguageProvider';
 
-export function useBrikiChat() {
+export function useBrikiChat(initialMessages?: any[]) {
   const setChatHistory = useProjectStore((state) => state.setChatHistory);
   const setError = useProjectStore((state) => state.setError);
   const clearStoreHistory = useProjectStore((state) => state.clearChatHistory);
   const appendChatHistory = useProjectStore((state) => state.appendChatHistory);
   const { showPanelWithPlans, isDualPanelMode } = usePlanResults();
+  const { language } = useLanguage();
 
   const [currentToolInvocations, setCurrentToolInvocations] = useState<any[]>([]);
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, error: chatError, setMessages } = useChat({
     api: '/api/ai/chat',
+    initialMessages: initialMessages || [],
+    body: {
+      preferredLanguage: language // Pass the navbar language preference
+    },
     onFinish: (message) => {
         console.log('🎯 Chat message finished:', message.content?.substring(0, 50) + '...');
         

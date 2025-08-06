@@ -355,5 +355,92 @@
         "addButton": "Agregar Plan"
       }
     }
+  },
+  "onboarding": {
+    "questions": {
+      "insuranceType": "¿Qué tipo de seguro necesitas hoy?",
+      "coverageFor": "¿Para quién es este seguro?",
+      "budget": "¿Cuánto puedes pagar al mes (aproximadamente)?",
+      "city": "¿En qué ciudad estás?"
+    },
+    "options": {
+      "health": {
+        "label": "🏥 Salud",
+        "description": "Seguro médico y dental"
+      },
+      "life": {
+        "label": "💝 Vida",
+        "description": "Protección para tu familia"
+      },
+      "auto": {
+        "label": "🚗 Auto",
+        "description": "Seguro vehicular"
+      },
+      "home": {
+        "label": "🏠 Hogar",
+        "description": "Seguro de vivienda"
+      },
+      "travel": {
+        "label": "✈️ Viaje",
+        "description": "Seguro de viajes"
+      },
+      "business": {
+        "label": "💼 Empresarial",
+        "description": "Seguro para tu negocio"
+      },
+      "unsure": {
+        "label": "❓ No estoy seguro",
+        "description": "Ayúdame a decidir"
+      },
+      "me": {
+        "label": "🙋‍♂️ Para mí",
+        "description": "Cobertura individual"
+      },
+      "couple": {
+        "label": "👫 Para mí y mi pareja",
+        "description": "Cobertura de pareja"
+      },
+      "family": {
+        "label": "👨‍👩‍👧‍👦 Para mi familia",
+        "description": "Cobertura familiar"
+      },
+      "business_coverage": {
+        "label": "🏢 Para mi negocio",
+        "description": "Cobertura empresarial"
+      },
+      "under_50k": {
+        "label": "💰 Menos de $50.000 COP",
+        "description": "Presupuesto básico (mensual)"
+      },
+      "50k_to_100k": {
+        "label": "💵 $50.000 a $100.000 COP",
+        "description": "Presupuesto medio (mensual)"
+      },
+      "over_100k": {
+        "label": "💎 Más de $100.000 COP",
+        "description": "Presupuesto premium (mensual)"
+      },
+      "unsure_budget": {
+        "label": "❓ No estoy seguro",
+        "description": "Ayúdame a evaluar"
+      }
+    },
+    "placeholder": {
+      "city": "Ejemplo: Medellín, Bogotá, Cali..."
+    },
+    "completion": {
+      "title": "¡Perfecto! 🎉",
+      "subtitle": "Hemos personalizado tu experiencia con Briki",
+      "yourInfo": "Tu información recopilada:",
+      "insuranceType": "Tipo de seguro",
+      "coverage": "Cobertura",
+      "budget": "Presupuesto",
+      "location": "Ubicación",
+      "whatNow": "Lo que puedes hacer ahora:",
+      "compare": "Comparar planes de seguro en tiempo real",
+      "analyze": "Analizar documentos de seguros con IA",
+      "recommendations": "Recibir recomendaciones personalizadas",
+      "findInsurance": "¡Encontrar mi seguro! 🚀"
+    }
   }
 } 

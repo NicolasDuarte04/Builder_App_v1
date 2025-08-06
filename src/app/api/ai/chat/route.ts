@@ -64,14 +64,15 @@ function createMockStream(reply: string) {
 // const getSamplePlans = (category: string) => { ... } - REMOVED
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages, preferredLanguage } = await req.json();
   const encoder = new TextEncoder();
 
   console.log('🔵 Chat API called with:', {
     messageCount: messages.length,
     lastMessage: messages[messages.length - 1]?.content?.substring(0, 50) + '...',
     hasOpenAIKey: !!process.env.OPENAI_API_KEY,
-    promptVersion: PROMPT_VERSION
+    promptVersion: PROMPT_VERSION,
+    preferredLanguage: preferredLanguage || 'not set'
   });
 
   // Log prompt version for tracking
@@ -81,32 +82,122 @@ export async function POST(req: Request) {
   const lastMessage = messages[messages.length - 1];
   const userContent = lastMessage.content || '';
 
-  // Simple check for ambiguous queries
-  const isAmbiguous = userContent.trim().length < 15 && !userContent.match(/(auto|salud|vida|hogar|viaje|empresarial|mascotas|educacion)/i);
+  // Check if this is a greeting or casual interaction
+  const greetings = ['hi', 'hello', 'hey', 'hola', 'buenos días', 'buenas tardes', 'buenas noches', 'qué tal', 'how are you', 'cómo estás'];
+  const isGreeting = greetings.some(g => userContent.toLowerCase().includes(g));
+  
+  // Check if this is a help request
+  const helpRequests = ['help', 'ayuda', 'ayúdame', 'necesito ayuda', 'qué puedes hacer'];
+  const isHelpRequest = helpRequests.some(h => userContent.toLowerCase().includes(h));
+  
+  // Only treat as ambiguous if it's not a greeting, help request, or insurance-related
+  const isAmbiguous = userContent.trim().length < 15 && 
+                      !userContent.match(/(auto|salud|vida|hogar|viaje|empresarial|mascotas|educacion)/i) &&
+                      !isGreeting && 
+                      !isHelpRequest;
 
   if (isAmbiguous) {
-    // Manually guide the AI to ask a clarifying question
+    // Only guide to insurance if it's truly ambiguous (not a greeting)
     messages.push({
       role: 'assistant',
-      content: 'The user query is too short. Ask a clarifying question to understand what type of insurance they need.'
+      content: 'The user query is too short. Ask a clarifying question to understand what they need.'
     });
   }
-  const userContext = lastMessage.role === 'system' ? lastMessage.content : '';
-
-  // Detect language from the conversation history, prioritizing earlier messages
-  let userLanguage: 'english' | 'spanish' = 'english';
+  // Look for system messages in the entire message array
+  const systemMessage = messages.find((m: any) => m.role === 'system');
+  const userContext = systemMessage ? systemMessage.content : '';
   
-  // Look through all user messages to detect the predominant language
-  const userMessages = messages.filter((m: any) => m.role === 'user');
-  if (userMessages.length > 0) {
-    // Prioritize the first user message for language detection
-    const firstUserMessage = userMessages[0];
-    userLanguage = detectLanguage(firstUserMessage.content);
-    
-    // If first message is ambiguous, check all messages
-    if (firstUserMessage.content.trim().length < 20) {
-      const allUserContent = userMessages.map((m: any) => m.content).join(' ');
-      userLanguage = detectLanguage(allUserContent);
+  // Log if we found a system message with context
+  if (userContext) {
+    console.log('🎯 Found system message with user context:', userContext.substring(0, 100) + '...');
+  }
+
+  // Detect language with priority order:
+  // 1. Navbar language preference (if set)
+  // 2. Explicit language switch in message
+  // 3. Auto-detect from message content
+  // 4. Default to Spanish
+  
+  let userLanguage: 'english' | 'spanish' = 'spanish';
+  
+  // First priority: Use navbar language preference if available
+  if (preferredLanguage) {
+    userLanguage = preferredLanguage === 'en' ? 'english' : 'spanish';
+    console.log('🌐 Using navbar language preference:', userLanguage);
+  }
+  
+  // Check for explicit language switch in the last user message (can override navbar)
+  const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
+  if (lastUserMessage) {
+    const lastContent = lastUserMessage.content.toLowerCase().trim();
+    // More comprehensive English detection
+    if (lastContent.includes('english') || 
+        lastContent.includes('inglés') || 
+        lastContent.includes('ingles') ||
+        lastContent.includes('in english') ||
+        lastContent === 'en') {
+      userLanguage = 'english';
+      console.log('🌐 Explicit switch to English per user request');
+    } else if (lastContent.includes('español') || 
+               lastContent.includes('espanol') || 
+               lastContent.includes('spanish') ||
+               lastContent.includes('en español') ||
+               lastContent === 'es') {
+      userLanguage = 'spanish';
+      console.log('🌐 Explicit switch to Spanish per user request');
+    } else if (!preferredLanguage) {
+      // Only auto-detect if no navbar preference is set
+      // Check if there's onboarding context - if it's in Spanish, keep Spanish
+      if (userContext && userContext.includes('Ciudad:')) {
+        userLanguage = 'spanish';
+        console.log('🌐 Using Spanish based on onboarding context');
+      } else {
+        // Look through all user messages to detect the predominant language
+        const userMessages = messages.filter((m: any) => m.role === 'user');
+        if (userMessages.length > 0) {
+          // Check if any assistant messages exist - maintain their language
+          const assistantMessages = messages.filter((m: any) => m.role === 'assistant');
+          if (assistantMessages.length > 0 && assistantMessages[0].content) {
+            // If assistant already spoke Spanish, keep Spanish
+            if (assistantMessages[0].content.includes('¡') || assistantMessages[0].content.includes('¿')) {
+              userLanguage = 'spanish';
+            } else {
+              // Otherwise detect from user messages
+              const firstUserMessage = userMessages[0];
+              userLanguage = detectLanguage(firstUserMessage.content);
+              
+              // If first message is ambiguous (like "no" or "sí"), default to Spanish
+              if (firstUserMessage.content.trim().length < 20) {
+                userLanguage = 'spanish'; // Default to Spanish for short messages
+              }
+            }
+          } else {
+            // No assistant messages yet, detect from user
+            const firstUserMessage = userMessages[0];
+            const messageContent = firstUserMessage.content.toLowerCase();
+            
+            // Check for clear English indicators first
+            if (messageContent.includes('how are you') || 
+                messageContent.includes('hi briki') ||
+                messageContent.includes('hello') ||
+                messageContent.includes('can you') ||
+                messageContent.includes('what') ||
+                messageContent.includes('please') ||
+                messageContent.includes('thanks') ||
+                messageContent.includes('help me')) {
+              userLanguage = 'english';
+              console.log('🌐 Detected English from message patterns');
+            } else {
+              userLanguage = detectLanguage(firstUserMessage.content);
+              
+              // Default to Spanish for ambiguous short messages ONLY if not clearly English
+              if (firstUserMessage.content.trim().length < 20 && userLanguage !== 'english') {
+                userLanguage = 'spanish';
+              }
+            }
+          }
+        }
+      }
     }
   }
   

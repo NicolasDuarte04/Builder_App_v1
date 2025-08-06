@@ -370,5 +370,92 @@
         "addButton": "Add Plan"
       }
     }
+  },
+  "onboarding": {
+    "questions": {
+      "insuranceType": "What type of insurance do you need today?",
+      "coverageFor": "Who is this insurance for?",
+      "budget": "How much can you pay per month (approximately)?",
+      "city": "What city are you in?"
+    },
+    "options": {
+      "health": {
+        "label": "🏥 Health",
+        "description": "Medical and dental insurance"
+      },
+      "life": {
+        "label": "💝 Life",
+        "description": "Protection for your family"
+      },
+      "auto": {
+        "label": "🚗 Auto",
+        "description": "Vehicle insurance"
+      },
+      "home": {
+        "label": "🏠 Home",
+        "description": "Home insurance"
+      },
+      "travel": {
+        "label": "✈️ Travel",
+        "description": "Travel insurance"
+      },
+      "business": {
+        "label": "💼 Business",
+        "description": "Business insurance"
+      },
+      "unsure": {
+        "label": "❓ Not sure",
+        "description": "Help me decide"
+      },
+      "me": {
+        "label": "🙋‍♂️ For me",
+        "description": "Individual coverage"
+      },
+      "couple": {
+        "label": "👫 For me and my partner",
+        "description": "Couple coverage"
+      },
+      "family": {
+        "label": "👨‍👩‍👧‍👦 For my family",
+        "description": "Family coverage"
+      },
+      "business_coverage": {
+        "label": "🏢 For my business",
+        "description": "Business coverage"
+      },
+      "under_50k": {
+        "label": "💰 Less than $50,000",
+        "description": "Basic budget"
+      },
+      "50k_to_100k": {
+        "label": "💵 $50,000 to $100,000",
+        "description": "Medium budget"
+      },
+      "over_100k": {
+        "label": "💎 More than $100,000",
+        "description": "Premium budget"
+      },
+      "unsure_budget": {
+        "label": "❓ Not sure",
+        "description": "Help me evaluate"
+      }
+    },
+    "placeholder": {
+      "city": "Example: Medellín, Bogotá, Cali..."
+    },
+    "completion": {
+      "title": "Perfect! 🎉",
+      "subtitle": "We've personalized your Briki experience",
+      "yourInfo": "Your collected information:",
+      "insuranceType": "Insurance type",
+      "coverage": "Coverage",
+      "budget": "Budget",
+      "location": "Location",
+      "whatNow": "What you can do now:",
+      "compare": "Compare insurance plans in real-time",
+      "analyze": "Analyze insurance documents with AI",
+      "recommendations": "Receive personalized recommendations",
+      "findInsurance": "Find my insurance! 🚀"
+    }
   }
 } 

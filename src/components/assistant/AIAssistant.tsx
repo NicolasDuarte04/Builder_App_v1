@@ -24,7 +24,7 @@ export function AIAssistant({ onboardingData, isLoading = false }: AIAssistantPr
 
   return (
     <div className="min-h-screen">
-      <AIAssistantInterface isLoading={isLoading} />
+      <AIAssistantInterface isLoading={isLoading} onboardingData={onboardingData} />
     </div>
   );
 } 

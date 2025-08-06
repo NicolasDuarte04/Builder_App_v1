@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useOnboarding } from './OnboardingProvider';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface QuestionOption {
   value: string;
@@ -52,6 +53,7 @@ function TypewriterEffect({ text, className }: { text: string; className?: strin
 }
 
 export function QuestionCard({ question, onAnswer }: QuestionCardProps) {
+  const { t, language } = useTranslation();
   const [selectedOption, setSelectedOption] = React.useState<string | null>(null);
   const [textInput, setTextInput] = React.useState('');
 
@@ -81,7 +83,9 @@ export function QuestionCard({ question, onAnswer }: QuestionCardProps) {
           />
         </div>
         <p className="text-gray-600 text-lg animate-fade-in" style={{ animationDelay: '800ms', animationFillMode: 'both' }}>
-          {isTextQuestion ? 'Escribe tu ciudad' : 'Selecciona la opción que mejor te describa'}
+          {isTextQuestion ? 
+            (language === 'en' ? 'Enter your city' : 'Escribe tu ciudad') : 
+            (language === 'en' ? 'Select the option that best describes you' : 'Selecciona la opción que mejor te describa')}
         </p>
       </div>
       

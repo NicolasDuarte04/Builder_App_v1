@@ -45,7 +45,7 @@ export function AIAssistantInterface({ isLoading = false, onboardingData = {} }:
 }
 
 function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: AIAssistantInterfaceProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const searchParams = useSearchParams();
   const { 
     currentResults, 
@@ -54,6 +54,211 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     isDualPanelMode, 
     setDualPanelMode 
   } = usePlanResults();
+
+  // Helper function to create context message from onboarding data
+  const createContextMessage = (data: any, userLanguage: string) => {
+    const parts = [];
+    const isEnglish = userLanguage === 'en';
+    
+    // Map the values based on language
+    const insuranceTypeMap: Record<string, string> = isEnglish ? {
+      'health': 'health',
+      'life': 'life',
+      'auto': 'auto',
+      'home': 'home',
+      'travel': 'travel',
+      'business': 'business',
+      'unsure': 'undefined'
+    } : {
+      'health': 'salud',
+      'life': 'vida',
+      'auto': 'auto',
+      'home': 'hogar',
+      'travel': 'viaje',
+      'business': 'empresarial',
+      'unsure': 'no definido'
+    };
+    
+    const coverageMap: Record<string, string> = isEnglish ? {
+      'me': 'individual',
+      'couple': 'couple',
+      'family': 'family',
+      'business': 'business'
+    } : {
+      'me': 'individual',
+      'couple': 'pareja',
+      'family': 'familiar',
+      'business': 'empresarial'
+    };
+    
+    const budgetMap: Record<string, string> = isEnglish ? {
+      'under_50k': 'under $50,000 COP (~$12 USD/month)',
+      '50k_to_100k': '$50,000 to $100,000 COP (~$12-25 USD/month)',
+      'over_100k': 'over $100,000 COP (~$25+ USD/month)',
+      'unsure': 'undefined'
+    } : {
+      'under_50k': 'menos de $50.000 COP',
+      '50k_to_100k': '$50.000 a $100.000 COP',
+      'over_100k': 'más de $100.000 COP',
+      'unsure': 'no definido'
+    };
+    
+    if (data.insuranceType) {
+      const label = isEnglish ? 'Insurance type' : 'Tipo de seguro';
+      const insuranceLabel = insuranceTypeMap[data.insuranceType] || data.insuranceType;
+      parts.push(`${label}: ${insuranceLabel}`);
+    }
+    if (data.coverageFor) {
+      const label = isEnglish ? 'Coverage' : 'Cobertura';
+      const coverageLabel = coverageMap[data.coverageFor] || data.coverageFor;
+      parts.push(`${label}: ${coverageLabel}`);
+    }
+    if (data.budget) {
+      const label = isEnglish ? 'Monthly budget' : 'Presupuesto mensual';
+      const budgetLabel = budgetMap[data.budget] || data.budget;
+      parts.push(`${label}: ${budgetLabel}`);
+    }
+    if (data.city) {
+      const label = isEnglish ? 'City' : 'Ciudad';
+      parts.push(`${label}: ${data.city}`);
+    }
+    
+    if (parts.length > 0) {
+      const contextPrefix = isEnglish ? 'User context' : 'Contexto del usuario';
+      const contextSuffix = isEnglish ? 
+        'Use this information to provide more accurate and relevant recommendations.' :
+        'Usa esta información para proporcionar recomendaciones más precisas y relevantes.';
+      return `${contextPrefix}: ${parts.join(', ')}. ${contextSuffix}`;
+    }
+    
+    return '';
+  };
+
+  // Try to load onboarding data from localStorage if not provided via props
+  const [loadedOnboardingData, setLoadedOnboardingData] = useState(() => {
+    // First try to use props
+    if (onboardingData && Object.keys(onboardingData).length > 0) {
+      console.log('📊 Using onboarding data from props:', onboardingData);
+      return onboardingData;
+    }
+    
+    // If no props, try localStorage
+    try {
+      const savedState = localStorage.getItem('briki-onboarding');
+      if (savedState) {
+        const { answers } = JSON.parse(savedState);
+        if (answers && Object.keys(answers).length > 0) {
+          console.log('💾 Loaded onboarding data from localStorage:', answers);
+          return answers;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading onboarding data from localStorage:', error);
+    }
+    
+    console.log('⚠️ No onboarding data found');
+    return {};
+  });
+
+  // Create initial messages with onboarding context
+  const [initialMessages] = useState(() => {
+    const hasOnboardingData = loadedOnboardingData && Object.keys(loadedOnboardingData).length > 0;
+    
+    console.log('🔍 Checking onboarding data for initial messages:', {
+      hasData: hasOnboardingData,
+      data: loadedOnboardingData
+    });
+    
+    if (!hasOnboardingData) return [];
+
+    const contextMessage = createContextMessage(loadedOnboardingData, language);
+    if (!contextMessage) return [];
+
+    console.log('🎯 Creating initial system message with onboarding context:', contextMessage);
+    
+    // Include both system message for context and a welcome message
+    const messages = [{
+      id: 'system-context',
+      role: 'system',
+      content: contextMessage
+    }];
+    
+    // Add a personalized welcome message based on onboarding data
+    if (loadedOnboardingData.insuranceType && loadedOnboardingData.city) {
+      const isEnglish = language === 'en';
+      
+      const insuranceTypeMap: Record<string, string> = isEnglish ? {
+        'health': 'health insurance',
+        'life': 'life insurance',
+        'auto': 'auto insurance',
+        'home': 'home insurance',
+        'travel': 'travel insurance',
+        'business': 'business insurance',
+        'unsure': 'the ideal insurance'
+      } : {
+        'health': 'seguro de salud',
+        'life': 'seguro de vida',
+        'auto': 'seguro de auto',
+        'home': 'seguro de hogar',
+        'travel': 'seguro de viaje',
+        'business': 'seguro empresarial',
+        'unsure': 'el seguro ideal'
+      };
+      
+      const coverageMap: Record<string, string> = isEnglish ? {
+        'me': 'you',
+        'couple': 'you and your partner',
+        'family': 'your family',
+        'business': 'your business'
+      } : {
+        'me': 'ti',
+        'couple': 'ti y tu pareja',
+        'family': 'tu familia',
+        'business': 'tu negocio'
+      };
+      
+      const budgetMap: Record<string, string> = isEnglish ? {
+        'under_50k': 'basic budget (under $50,000 COP)',
+        '50k_to_100k': 'medium budget ($50,000 to $100,000 COP)',
+        'over_100k': 'premium budget (over $100,000 COP)',
+        'unsure': 'budget to be defined'
+      } : {
+        'under_50k': 'presupuesto básico (menos de $50.000 COP)',
+        '50k_to_100k': 'presupuesto medio ($50.000 a $100.000 COP)',
+        'over_100k': 'presupuesto premium (más de $100.000 COP)',
+        'unsure': 'presupuesto por definir'
+      };
+      
+      const insuranceLabel = insuranceTypeMap[loadedOnboardingData.insuranceType] || loadedOnboardingData.insuranceType;
+      const coverageLabel = coverageMap[loadedOnboardingData.coverageFor || ''] || (isEnglish ? 'you' : 'ti');
+      const budgetLabel = budgetMap[loadedOnboardingData.budget || ''] || (isEnglish ? 'your budget' : 'tu presupuesto');
+      
+      // Create varied welcome messages to avoid repetition
+      const welcomeTemplates = isEnglish ? [
+        `Perfect! Should I search for ${insuranceLabel}?`,
+        `Ready! Want to see ${insuranceLabel} options?`,
+        `Great! Should I start with ${insuranceLabel}?`,
+        `Got it! Search for ${insuranceLabel} now?`
+      ] : [
+        `¡Perfecto! ¿Busco planes de ${insuranceLabel}?`,
+        `¡Listo! ¿Quieres ver opciones de ${insuranceLabel}?`,
+        `¡Genial! ¿Empiezo con ${insuranceLabel}?`,
+        `¡Entendido! ¿Busco ${insuranceLabel} ahora?`
+      ];
+      const welcomeMessage = welcomeTemplates[Math.floor(Math.random() * welcomeTemplates.length)];
+      
+      messages.push({
+        id: 'welcome-message',
+        role: 'assistant',
+        content: welcomeMessage
+      });
+      
+      console.log('💬 Added welcome message to initial messages');
+    }
+    
+    return messages;
+  });
+
   const {
     messages,
     input,
@@ -63,7 +268,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     error: chatError,
     clearChat,
     appendAssistantMessage,
-  } = useBrikiChat();
+  } = useBrikiChat(initialMessages);
 
   const { data: session } = useSession();
   const [userId, setUserId] = useState<string>(''); // Initialize as empty string
@@ -121,28 +326,63 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     }
   }, [searchParams]);
 
-  // Helper function to create context message from onboarding data
-  const createContextMessage = (data: any) => {
-    const parts = [];
+  // Helper function to check if user input is an affirmative command
+  const isAffirmativeCommand = (text: string): boolean => {
+    const affirmatives = [
+      'sí', 'si', 'yes', 'dale', 'ok', 'okay', 
+      'búscalos', 'buscalos', 'busca', 'muéstrame', 'muestrame',
+      'adelante', 'vamos', 'claro', 'por supuesto', 'obvio',
+      'ya', 'ahora', 'búscalos ya', 'buscalos ya', 'hazlo'
+    ];
+    const normalizedText = text.toLowerCase().trim();
+    return affirmatives.some(word => normalizedText.includes(word));
+  };
+
+  // Handle form submission with intent detection
+  const handleSmartSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     
-    if (data.insuranceType) {
-      parts.push(`Tipo de seguro: ${data.insuranceType}`);
+    if (input.trim()) {
+      // Check if this is an affirmative response and we have onboarding data
+      const hasOnboardingData = loadedOnboardingData && Object.keys(loadedOnboardingData).length > 0;
+      const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop();
+      const isWaitingForConfirmation = lastAssistantMessage?.content?.includes('¿Busco planes ahora?');
+      
+      if (hasOnboardingData && isWaitingForConfirmation && isAffirmativeCommand(input)) {
+        // Transform affirmative to a search query
+        const insuranceTypeMap: Record<string, string> = {
+          'health': 'salud',
+          'life': 'vida',
+          'auto': 'auto',
+          'home': 'hogar',
+          'travel': 'viaje',
+          'business': 'empresarial'
+        };
+        
+        const insuranceCategory = insuranceTypeMap[loadedOnboardingData.insuranceType] || loadedOnboardingData.insuranceType;
+        
+        // Vary the search query to avoid repetition
+        const searchTemplates = [
+          `Buscar planes de ${insuranceCategory}`,
+          `Mostrar seguros de ${insuranceCategory}`,
+          `Ver opciones de ${insuranceCategory}`,
+          `Planes de ${insuranceCategory} disponibles`
+        ];
+        const searchQuery = searchTemplates[Math.floor(Math.random() * searchTemplates.length)];
+        
+        // Replace the input with the search query
+        handleInputChange({ target: { value: searchQuery } } as React.ChangeEvent<HTMLInputElement>);
+        
+        // Submit after a brief moment
+        setTimeout(() => {
+          handleSubmit(e);
+        }, 100);
+      } else {
+        // Normal submission
+        await handleSubmit(e);
+      }
     }
-    if (data.coverageFor) {
-      parts.push(`Cobertura para: ${data.coverageFor}`);
-    }
-    if (data.budget) {
-      parts.push(`Presupuesto: ${data.budget}`);
-    }
-    if (data.city) {
-      parts.push(`Ciudad: ${data.city}`);
-    }
-    
-    if (parts.length > 0) {
-      return `Contexto del usuario: ${parts.join(', ')}. Usa esta información para proporcionar recomendaciones más precisas.`;
-    }
-    
-    return '';
   };
 
   // Remove the authentication check - let users use the chat
@@ -320,20 +560,14 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     }
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (input.trim()) {
-      await handleSubmit(e);
-    }
-  };
+
 
   console.log('🎯 GEMINI-STYLE: Layout state:', { isDualPanelMode, isRightPanelOpen, currentResults });
 
   return (
     <div className="h-screen w-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-black">
       {/* PlanResultsObserver - Listens for structured data events */}
-      <PlanResultsObserver />
+      <PlanResultsObserver appendAssistantMessage={appendAssistantMessage} />
       
       {/* PlanPinObserver - Listens for plan pin/unpin events */}
       <PlanPinObserver appendAssistantMessage={appendAssistantMessage} />
@@ -482,10 +716,10 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md">
                   {t("assistant.welcome_subtitle")}
                 </p>
-                {onboardingData && Object.keys(onboardingData).length > 0 && (
+                {loadedOnboardingData && Object.keys(loadedOnboardingData).length > 0 && (
                   <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <p className="text-sm text-blue-700 dark:text-blue-300">
-                      <strong>{t("assistant.context")}:</strong> {createContextMessage(onboardingData)}
+                      <strong>{t("assistant.context")}:</strong> {createContextMessage(loadedOnboardingData)}
                     </p>
                   </div>
                 )}
@@ -540,33 +774,33 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
             <div className={`${
               isDualPanelMode && isRightPanelOpen ? 'max-w-lg' : 'max-w-2xl'
             } mx-auto px-3 py-3 space-y-2 sm:space-y-1.5`}>
-              {messages.map((message, index) => {
-                // No need to hide plan messages - MessageRenderer handles this automatically
-                
-                return (
-                  <div
-                    key={index}
-                    className={`flex ${
-                      message.role === 'user' ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
+              {messages
+                .filter(message => message.role !== 'system') // Hide system messages from UI
+                .map((message, index) => {
+                  return (
                     <div
-                      className={`max-w-full sm:max-w-[85%] rounded-lg px-4 py-3 text-xl leading-relaxed ${
-                        message.role === 'user'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-neutral-700'
+                      key={index}
+                      className={`flex ${
+                        message.role === 'user' ? 'justify-end' : 'justify-start'
                       }`}
                     >
-                      <MessageRenderer
-                        content={message.content}
-                        role={message.role}
-                        name={(message as any).name}
-                        toolInvocations={(message as any).toolInvocations}
-                      />
+                      <div
+                        className={`max-w-full sm:max-w-[85%] rounded-lg px-4 py-3 text-xl leading-relaxed ${
+                          message.role === 'user'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-neutral-700'
+                        }`}
+                      >
+                        <MessageRenderer
+                          content={message.content}
+                          role={message.role}
+                          name={(message as any).name}
+                          toolInvocations={(message as any).toolInvocations}
+                        />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           )}
         </div>
@@ -576,7 +810,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
           <div className={`${
             isDualPanelMode && isRightPanelOpen ? 'max-w-lg' : 'max-w-2xl'
           } mx-auto px-3`}>
-            <form onSubmit={handleSendMessage} className="w-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden my-2">
+            <form onSubmit={handleSmartSubmit} className="w-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden my-2">
               <div className="p-3">
                 <input
                   ref={inputRef}

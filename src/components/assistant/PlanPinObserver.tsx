@@ -29,10 +29,13 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
     
     lastPinnedPlanId.current = event.plan.id;
     
-    // Simple, professional message without emojis
-    const message = `Plan marcado: "${event.plan.name}" de ${event.plan.provider}. 
-
-¿Deseas ver más detalles o solicitar una cotización?`;
+    // Short, varied messages
+    const messages = [
+      `Marcaste "${event.plan.name}".`,
+      `Plan fijado: "${event.plan.name}".`,
+      `Guardado: "${event.plan.name}".`
+    ];
+    const message = messages[Math.floor(Math.random() * messages.length)];
     
     // Check if we've already sent this exact message
     const messageKey = `pin-${event.plan.id}`;
@@ -56,7 +59,12 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
     
     // Only send message if all plans are unpinned
     if (event.pinnedCount === 0) {
-      const message = `Plan desmarcado.`;
+      const messages = [
+        `Desmarcado.`,
+        `Quitado.`,
+        `Liberado.`
+      ];
+      const message = messages[Math.floor(Math.random() * messages.length)];
       
       const messageKey = `unpin-${event.plan.id}`;
       if (!sentMessages.has(messageKey)) {

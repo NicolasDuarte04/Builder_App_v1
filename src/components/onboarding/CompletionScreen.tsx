@@ -4,17 +4,28 @@ import * as React from 'react';
 import { useOnboarding } from './OnboardingProvider';
 import { BackgroundPaths } from '@/components/ui/background-paths';
 import { TextGenerateEffect } from '@/components/ui/text-generate-effect';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function CompletionScreen() {
   const { answers, completeOnboarding } = useOnboarding();
+  const { t, language } = useTranslation();
 
   const generateInsuranceSummary = (answers: any) => {
     const insuranceType = answers.insuranceType || 'unsure';
     const coverageFor = answers.coverageFor || 'me';
     const budget = answers.budget || 'unsure';
     const city = answers.city || 'Colombia';
+    const isEnglish = language === 'en';
     
-    const insuranceTypeMap: { [key: string]: string } = {
+    const insuranceTypeMap: { [key: string]: string } = isEnglish ? {
+      health: 'health insurance',
+      life: 'life insurance',
+      auto: 'auto insurance',
+      home: 'home insurance',
+      travel: 'travel insurance',
+      business: 'business insurance',
+      unsure: 'insurance'
+    } : {
       health: 'seguro de salud',
       life: 'seguro de vida',
       auto: 'seguro vehicular',
@@ -24,21 +35,40 @@ export function CompletionScreen() {
       unsure: 'seguro'
     };
 
-    const coverageMap: { [key: string]: string } = {
+    const coverageMap: { [key: string]: string } = isEnglish ? {
+      me: 'individual coverage',
+      couple: 'couple coverage',
+      family: 'family coverage',
+      business: 'business coverage'
+    } : {
       me: 'cobertura individual',
       couple: 'cobertura de pareja',
       family: 'cobertura familiar',
       business: 'cobertura empresarial'
     };
 
-    const budgetMap: { [key: string]: string } = {
-      under_50k: 'presupuesto básico (menos de $50.000)',
-      '50k_to_100k': 'presupuesto medio ($50.000 a $100.000)',
-      over_100k: 'presupuesto premium (más de $100.000)',
+    const budgetMap: { [key: string]: string } = isEnglish ? {
+      under_50k: 'basic budget (under $50,000 COP ~$12 USD/month)',
+      '50k_to_100k': 'medium budget ($50,000-$100,000 COP ~$12-25 USD/month)',
+      over_100k: 'premium budget (over $100,000 COP ~$25+ USD/month)',
+      unsure: 'budget to be defined'
+    } : {
+      under_50k: 'presupuesto básico (menos de $50.000 COP)',
+      '50k_to_100k': 'presupuesto medio ($50.000 a $100.000 COP)',
+      over_100k: 'presupuesto premium (más de $100.000 COP)',
       unsure: 'presupuesto por definir'
     };
 
-    return `Perfecto! He recopilado tu información:
+    const summaryText = isEnglish ? 
+      `Perfect! I've collected your information:
+
+🏥 Insurance type: ${insuranceTypeMap[insuranceType]}
+👥 Coverage: ${coverageMap[coverageFor]}
+💰 Budget: ${budgetMap[budget]}
+📍 Location: ${city}
+
+Now I can help you find the best insurance plans that fit your specific needs.` :
+      `Perfecto! He recopilado tu información:
 
 🏥 Tipo de seguro: ${insuranceTypeMap[insuranceType]}
 👥 Cobertura: ${coverageMap[coverageFor]}
@@ -46,6 +76,8 @@ export function CompletionScreen() {
 📍 Ubicación: ${city}
 
 Ahora puedo ayudarte a encontrar los mejores planes de seguro que se ajusten a tus necesidades específicas.`;
+
+    return summaryText;
   };
 
   const insuranceSummary = generateInsuranceSummary(answers);
@@ -66,18 +98,18 @@ Ahora puedo ayudarte a encontrar los mejores planes de seguro que se ajusten a t
           </div>
             <div className="mb-2">
               <TextGenerateEffect 
-                words="¡Perfecto! 🎉"
+                words={t("onboarding.completion.title")}
                 className="text-3xl text-gray-800"
                 duration={1.0}
               />
             </div>
           <p className="text-gray-600 text-lg">
-            Hemos personalizado tu experiencia con Briki
+            {t("onboarding.completion.subtitle")}
           </p>
         </div>
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Tu información recopilada:
+              {t("onboarding.completion.yourInfo")}
           </h2>
           <div className="bg-gray-50 rounded-xl p-6 border-l-4 border-blue-500">
             <p className="text-gray-700 whitespace-pre-line leading-relaxed">
@@ -87,20 +119,20 @@ Ahora puedo ayudarte a encontrar los mejores planes de seguro que se ajusten a t
         </div>
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-gray-800 mb-3">
-            💡 Lo que puedes hacer ahora:
+            💡 {t("onboarding.completion.whatNow")}
           </h3>
           <ul className="space-y-2 text-gray-600">
             <li className="flex items-start">
               <span className="text-blue-500 mr-2">•</span>
-              Comparar planes de seguro en tiempo real
+              {t("onboarding.completion.compare")}
             </li>
             <li className="flex items-start">
               <span className="text-blue-500 mr-2">•</span>
-              Analizar documentos de seguros con IA
+              {t("onboarding.completion.analyze")}
             </li>
             <li className="flex items-start">
               <span className="text-blue-500 mr-2">•</span>
-              Recibir recomendaciones personalizadas
+              {t("onboarding.completion.recommendations")}
             </li>
           </ul>
         </div>
@@ -111,7 +143,7 @@ Ahora puedo ayudarte a encontrar los mejores planes de seguro que se ajusten a t
               }}
               className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
-              ¡Encontrar mi seguro! 🚀
+              {t("onboarding.completion.findInsurance")}
             </button>
           </div>
         </div>

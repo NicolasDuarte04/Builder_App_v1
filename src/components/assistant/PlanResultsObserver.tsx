@@ -4,12 +4,19 @@ import { useEffect } from 'react';
 import { useBrikiEvent, BrikiEvents, StructuredDataEvent } from '@/lib/event-bus';
 import { usePlanResults } from '@/contexts/PlanResultsContext';
 
+interface PlanResultsObserverProps {
+  appendAssistantMessage?: (content: string) => void;
+}
+
 /**
  * PlanResultsObserver - Listens for structured data events and updates the right panel
  * This component bridges the event bus with the PlanResultsContext
  */
-export function PlanResultsObserver() {
+export function PlanResultsObserver({ appendAssistantMessage }: PlanResultsObserverProps = {}) {
   const { showPanelWithPlans, isDualPanelMode } = usePlanResults();
+
+  // Keep track of whether we've already shown an acknowledgment for this set of results
+  let lastAcknowledgedPlans: string | null = null;
 
   // Listen for structured data events
   useBrikiEvent(BrikiEvents.STRUCTURED_DATA_RECEIVED, (event: StructuredDataEvent) => {
@@ -22,6 +29,27 @@ export function PlanResultsObserver() {
         category: event.data.category,
         query: event.metadata?.query,
       });
+      
+      // Add a short acknowledgment message when plans are shown
+      if (appendAssistantMessage && event.data.plans.length > 0) {
+        const plansKey = JSON.stringify(event.data.plans.map((p: any) => p.id));
+        if (plansKey !== lastAcknowledgedPlans) {
+          lastAcknowledgedPlans = plansKey;
+          
+          // Vary the acknowledgment messages
+          const acknowledgments = [
+            `Encontré ${event.data.plans.length} opciones para ti.`,
+            `Aquí tienes ${event.data.plans.length} planes que se ajustan.`,
+            `Mira estos ${event.data.plans.length} planes disponibles.`,
+            `Te muestro ${event.data.plans.length} alternativas.`
+          ];
+          const randomAck = acknowledgments[Math.floor(Math.random() * acknowledgments.length)];
+          
+          setTimeout(() => {
+            appendAssistantMessage(randomAck);
+          }, 500); // Small delay to ensure plans appear first
+        }
+      }
     }
   });
 
@@ -36,6 +64,25 @@ export function PlanResultsObserver() {
         category: data.category,
         query: data.query,
       });
+      
+      // Add acknowledgment for this event too
+      if (appendAssistantMessage && data.plans.length > 0) {
+        const plansKey = JSON.stringify(data.plans.map((p: any) => p.id));
+        if (plansKey !== lastAcknowledgedPlans) {
+          lastAcknowledgedPlans = plansKey;
+          
+          const acknowledgments = [
+            `Encontré ${data.plans.length} planes.`,
+            `Aquí hay ${data.plans.length} opciones.`,
+            `Revisa estos ${data.plans.length} planes.`
+          ];
+          const randomAck = acknowledgments[Math.floor(Math.random() * acknowledgments.length)];
+          
+          setTimeout(() => {
+            appendAssistantMessage(randomAck);
+          }, 500);
+        }
+      }
     }
   });
 
