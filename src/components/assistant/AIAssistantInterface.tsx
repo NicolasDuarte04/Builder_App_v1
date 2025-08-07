@@ -134,129 +134,18 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     return '';
   };
 
-  // Try to load onboarding data from localStorage if not provided via props
+  // Disable onboarding data loading - start with clean state
   const [loadedOnboardingData, setLoadedOnboardingData] = useState(() => {
-    // First try to use props
-    if (onboardingData && Object.keys(onboardingData).length > 0) {
-      console.log('📊 Using onboarding data from props:', onboardingData);
-      return onboardingData;
-    }
-    
-    // If no props, try localStorage
-    try {
-      const savedState = localStorage.getItem('briki-onboarding');
-      if (savedState) {
-        const { answers } = JSON.parse(savedState);
-        if (answers && Object.keys(answers).length > 0) {
-          console.log('💾 Loaded onboarding data from localStorage:', answers);
-          return answers;
-        }
-      }
-    } catch (error) {
-      console.error('Error loading onboarding data from localStorage:', error);
-    }
-    
-    console.log('⚠️ No onboarding data found');
+    // Always return empty object to start with clean state
+    console.log('🎯 Starting with clean state - no onboarding data');
     return {};
   });
 
-  // Create initial messages with onboarding context
+  // Create initial messages - always start with empty array for clean state
   const [initialMessages] = useState(() => {
-    const hasOnboardingData = loadedOnboardingData && Object.keys(loadedOnboardingData).length > 0;
-    
-    console.log('🔍 Checking onboarding data for initial messages:', {
-      hasData: hasOnboardingData,
-      data: loadedOnboardingData
-    });
-    
-    if (!hasOnboardingData) return [];
-
-    const contextMessage = createContextMessage(loadedOnboardingData, language);
-    if (!contextMessage) return [];
-
-    console.log('🎯 Creating initial system message with onboarding context:', contextMessage);
-    
-    // Include both system message for context and a welcome message
-    const messages = [{
-      id: 'system-context',
-      role: 'system',
-      content: contextMessage
-    }];
-    
-    // Add a personalized welcome message based on onboarding data
-    if (loadedOnboardingData.insuranceType && loadedOnboardingData.city) {
-      const isEnglish = language === 'en';
-      
-      const insuranceTypeMap: Record<string, string> = isEnglish ? {
-        'health': 'health insurance',
-        'life': 'life insurance',
-        'auto': 'auto insurance',
-        'home': 'home insurance',
-        'travel': 'travel insurance',
-        'business': 'business insurance',
-        'unsure': 'the ideal insurance'
-      } : {
-        'health': 'seguro de salud',
-        'life': 'seguro de vida',
-        'auto': 'seguro de auto',
-        'home': 'seguro de hogar',
-        'travel': 'seguro de viaje',
-        'business': 'seguro empresarial',
-        'unsure': 'el seguro ideal'
-      };
-      
-      const coverageMap: Record<string, string> = isEnglish ? {
-        'me': 'you',
-        'couple': 'you and your partner',
-        'family': 'your family',
-        'business': 'your business'
-      } : {
-        'me': 'ti',
-        'couple': 'ti y tu pareja',
-        'family': 'tu familia',
-        'business': 'tu negocio'
-      };
-      
-      const budgetMap: Record<string, string> = isEnglish ? {
-        'under_50k': 'basic budget (under $50,000 COP)',
-        '50k_to_100k': 'medium budget ($50,000 to $100,000 COP)',
-        'over_100k': 'premium budget (over $100,000 COP)',
-        'unsure': 'budget to be defined'
-      } : {
-        'under_50k': 'presupuesto básico (menos de $50.000 COP)',
-        '50k_to_100k': 'presupuesto medio ($50.000 a $100.000 COP)',
-        'over_100k': 'presupuesto premium (más de $100.000 COP)',
-        'unsure': 'presupuesto por definir'
-      };
-      
-      const insuranceLabel = insuranceTypeMap[loadedOnboardingData.insuranceType] || loadedOnboardingData.insuranceType;
-      const coverageLabel = coverageMap[loadedOnboardingData.coverageFor || ''] || (isEnglish ? 'you' : 'ti');
-      const budgetLabel = budgetMap[loadedOnboardingData.budget || ''] || (isEnglish ? 'your budget' : 'tu presupuesto');
-      
-      // Create varied welcome messages to avoid repetition
-      const welcomeTemplates = isEnglish ? [
-        `Perfect! Should I search for ${insuranceLabel}?`,
-        `Ready! Want to see ${insuranceLabel} options?`,
-        `Great! Should I start with ${insuranceLabel}?`,
-        `Got it! Search for ${insuranceLabel} now?`
-      ] : [
-        `¡Perfecto! ¿Busco planes de ${insuranceLabel}?`,
-        `¡Listo! ¿Quieres ver opciones de ${insuranceLabel}?`,
-        `¡Genial! ¿Empiezo con ${insuranceLabel}?`,
-        `¡Entendido! ¿Busco ${insuranceLabel} ahora?`
-      ];
-      const welcomeMessage = welcomeTemplates[Math.floor(Math.random() * welcomeTemplates.length)];
-      
-      messages.push({
-        id: 'welcome-message',
-        role: 'assistant',
-        content: welcomeMessage
-      });
-      
-      console.log('💬 Added welcome message to initial messages');
-    }
-    
-    return messages;
+    // Always return empty array - no pre-loaded messages or context
+    console.log('🎯 Starting with clean chat - no initial messages');
+    return [];
   });
 
   const {

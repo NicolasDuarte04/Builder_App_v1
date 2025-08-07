@@ -3,7 +3,7 @@
 import React from 'react';
 import { InsurancePlan } from '@/components/briki-ai-assistant/NewPlanCard';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Check, X, AlertCircle } from 'lucide-react';
+import { Check, X, AlertCircle, DollarSign, Building2, Star, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -94,8 +94,7 @@ export function PinnedPlansComparison({
     <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-4">
-        <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
+        <h3 className="text-white font-semibold text-lg">
           {t('assistant.comparisonSummary')}
         </h3>
         <p className="text-blue-50 text-sm mt-1">
@@ -130,9 +129,12 @@ export function PinnedPlansComparison({
           </thead>
           <tbody>
             {/* Price Row */}
-            <tr className="border-b border-gray-100 dark:border-gray-800">
-              <td className="p-4 font-medium text-gray-600 dark:text-gray-400">
-                💰 Price
+            <tr className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <td className="p-4">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Price</span>
+                </div>
               </td>
               {plans.map((plan) => {
                 // Handle both basePrice (from NewPlanCard) and price fields
@@ -154,13 +156,13 @@ export function PinnedPlansComparison({
                         ${formatPrice(plan.basePrice || (plan as any).price)} {plan.currency || 'COP'}
                       </div>
                       {isLowest && (
-                        <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded">
-                          Lowest price
+                        <span className="text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-md font-medium">
+                          Best price
                         </span>
                       )}
                       {isHighest && (
-                        <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-2 py-1 rounded">
-                          Higher price
+                        <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-md">
+                          Premium
                         </span>
                       )}
                     </div>
@@ -170,9 +172,12 @@ export function PinnedPlansComparison({
             </tr>
             
             {/* Provider Row */}
-            <tr className="border-b border-gray-100 dark:border-gray-800">
-              <td className="p-4 font-medium text-gray-600 dark:text-gray-400">
-                🏢 Provider
+            <tr className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <td className="p-4">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Provider</span>
+                </div>
               </td>
               {plans.map((plan) => (
                 <td key={plan.id} className="p-4">
@@ -184,9 +189,12 @@ export function PinnedPlansComparison({
             </tr>
             
             {/* Rating Row */}
-            <tr className="border-b border-gray-100 dark:border-gray-800">
-              <td className="p-4 font-medium text-gray-600 dark:text-gray-400">
-                ⭐ Rating
+            <tr className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <td className="p-4">
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Rating</span>
+                </div>
               </td>
               {plans.map((plan) => {
                 // Handle rating as either number or string
@@ -207,8 +215,8 @@ export function PinnedPlansComparison({
                         {plan.rating ? (typeof plan.rating === 'number' ? plan.rating.toFixed(1) : plan.rating) : 'N/A'}
                       </span>
                       {isBest && rating > 0 && (
-                        <span className="text-xs text-yellow-600 dark:text-yellow-400">
-                          Best rated
+                        <span className="text-xs bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-md font-medium">
+                          Top rated
                         </span>
                       )}
                     </div>
@@ -218,9 +226,12 @@ export function PinnedPlansComparison({
             </tr>
             
             {/* Benefits Row */}
-            <tr className="border-b border-gray-100 dark:border-gray-800">
-              <td className="p-4 font-medium text-gray-600 dark:text-gray-400 align-top">
-                ✅ Benefits
+            <tr className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <td className="p-4 align-top">
+                <div className="flex items-start gap-2 pt-1">
+                  <Shield className="h-4 w-4 text-gray-500 dark:text-gray-400 mt-0.5" />
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Benefits</span>
+                </div>
               </td>
               {plans.map((plan) => {
                 const benefits = getBenefitsList(plan.benefits);
@@ -229,9 +240,9 @@ export function PinnedPlansComparison({
                   <td key={plan.id} className="p-4">
                     <ul className="space-y-2">
                       {benefits.map((benefit, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
-                          <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span>{benefit}</span>
+                        <li key={idx} className="flex items-start gap-2 text-sm">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400 mt-1.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 leading-relaxed">{benefit}</span>
                         </li>
                       ))}
                     </ul>
