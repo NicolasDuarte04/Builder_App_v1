@@ -11,7 +11,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { eventBus } from '@/lib/event-bus';
-import { PinnedPlansComparison } from './PinnedPlansComparison';
+
 
 interface PlanResultsData {
   title: string;
@@ -240,36 +240,40 @@ export function PlanResultsSidebar({
                 {/* Pinned Plans Section */}
                 {pinnedPlansList.length > 0 && (
                   <div>
-                    {/* Show comparison view for 2+ pinned plans */}
-                    {pinnedPlansList.length >= 2 ? (
-                      <PinnedPlansComparison
-                        plans={pinnedPlansList}
-                        onViewDetails={handleViewDetails}
-                        onQuote={handleQuote}
-                        onUnpin={handlePinPlan}
-                      />
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-2 mb-3">
-                          <Pin className="h-4 w-4 text-blue-600" />
-                          <h3 className="font-medium text-gray-900 dark:text-white">
-                            Pinned Plans
-                          </h3>
-                        </div>
-                        <div className="space-y-3">
-                          {pinnedPlansList.map((plan) => (
-                            <PlanCard
-                              key={plan.id}
-                              plan={plan}
-                              onViewDetails={handleViewDetails}
-                              onQuote={handleQuote}
-                              onPin={handlePinPlan}
-                              isPinned={true}
-                              isCompact={true}
-                            />
-                          ))}
-                        </div>
-                      </>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Pin className="h-4 w-4 text-blue-600" />
+                      <h3 className="font-medium text-gray-900 dark:text-white">
+                        Pinned Plans ({pinnedPlansList.length})
+                      </h3>
+                    </div>
+                    <div className="space-y-3">
+                      {pinnedPlansList.map((plan) => (
+                        <PlanCard
+                          key={plan.id}
+                          plan={plan}
+                          onViewDetails={handleViewDetails}
+                          onQuote={handleQuote}
+                          onPin={handlePinPlan}
+                          isPinned={true}
+                          isCompact={true}
+                        />
+                      ))}
+                    </div>
+                    {pinnedPlansList.length >= 2 && (
+                      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                          You have {pinnedPlansList.length} plans pinned for comparison
+                        </p>
+                        <button
+                          onClick={() => {
+                            // Trigger comparison event
+                            eventBus.emit('comparison:request');
+                          }}
+                          className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded transition-colors"
+                        >
+                          View Comparison
+                        </button>
+                      </div>
                     )}
                   </div>
                 )}

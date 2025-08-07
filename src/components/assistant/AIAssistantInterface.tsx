@@ -25,6 +25,7 @@ import { LayoutModeToggle } from "./LayoutModeToggle";
 import { PlanResultsObserver } from "./PlanResultsObserver";
 import { PlanPinObserver } from "./PlanPinObserver";
 import { CategoryFallbackObserver } from "./CategoryFallbackObserver";
+import { ComparisonObserver } from "./ComparisonObserver";
 
 interface AIAssistantInterfaceProps {
   isLoading?: boolean;
@@ -463,6 +464,9 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
       
       {/* CategoryFallbackObserver - Listens for category not found events */}
       <CategoryFallbackObserver appendAssistantMessage={appendAssistantMessage} />
+      
+      {/* ComparisonObserver - Listens for comparison requests */}
+      <ComparisonObserver appendAssistantMessage={appendAssistantMessage} />
       
       {/* Layout Mode Toggle */}
       <LayoutModeToggle variant="floating" size="sm" />

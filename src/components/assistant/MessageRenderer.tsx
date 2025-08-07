@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRightPanelTrigger } from '@/contexts/PlanResultsContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { ComparisonMessage } from './ComparisonMessage';
 
 interface MessageRendererProps {
   content: string;
@@ -280,6 +281,34 @@ export const MessageRenderer = React.memo(function MessageRenderer({
   // For tool messages, hide them completely in dual panel mode
   if (role === 'tool' && isDualPanelMode) {
     return null;
+  }
+
+  // Handle comparison messages
+  if (role === 'assistant') {
+    try {
+      const parsed = JSON.parse(content);
+      if (parsed.type === 'comparison' && parsed.plans) {
+        return (
+          <ComparisonMessage
+            plans={parsed.plans}
+            onViewDetails={(plan) => {
+              // Handle view details - could open modal or navigate
+              console.log('View details for plan:', plan);
+            }}
+            onQuote={(plan) => {
+              // Handle quote action
+              console.log('Quote plan:', plan);
+            }}
+            onUnpin={(planId) => {
+              // Handle unpin action
+              console.log('Unpin plan:', planId);
+            }}
+          />
+        );
+      }
+    } catch {
+      // Not JSON, continue to default rendering
+    }
   }
 
   // Default text rendering for all other content
