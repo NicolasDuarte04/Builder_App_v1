@@ -91,7 +91,7 @@ export function PinnedPlansComparison({
   const { minPrice, maxPrice } = getPriceComparison(plans);
   
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden max-w-full">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-4">
         <h3 className="text-white font-semibold text-lg">
@@ -103,24 +103,24 @@ export function PinnedPlansComparison({
       </div>
       
       {/* Comparison Grid */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      <div className="overflow-x-auto max-w-full">
+        <table className="w-full min-w-[600px]">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700">
-              <th className="text-left p-4 font-medium text-gray-600 dark:text-gray-400 w-32">
+              <th className="text-left p-3 font-medium text-gray-600 dark:text-gray-400 w-24">
                 Feature
               </th>
               {plans.map((plan) => (
-                <th key={plan.id} className="p-4 text-left">
-                  <div className="space-y-2">
-                    <div className="font-semibold text-gray-900 dark:text-white">
+                <th key={plan.id} className="p-3 text-left">
+                  <div className="space-y-1">
+                    <div className="font-semibold text-gray-900 dark:text-white text-sm">
                       {plan.name}
                     </div>
                     <button
                       onClick={() => onUnpin(plan.id)}
                       className="text-xs text-gray-500 hover:text-red-500 transition-colors"
                     >
-                      Remove from comparison
+                      Remove
                     </button>
                   </div>
                 </th>
@@ -130,10 +130,10 @@ export function PinnedPlansComparison({
           <tbody>
             {/* Price Row */}
             <tr className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-              <td className="p-4">
+              <td className="p-3">
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Price</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">Price</span>
                 </div>
               </td>
               {plans.map((plan) => {
@@ -145,10 +145,10 @@ export function PinnedPlansComparison({
                 const isHighest = price === maxPrice && minPrice !== maxPrice;
                 
                 return (
-                  <td key={plan.id} className="p-4">
+                  <td key={plan.id} className="p-3">
                     <div className="space-y-1">
                       <div className={cn(
-                        "text-lg font-bold",
+                        "text-base font-bold",
                         isLowest && "text-green-600 dark:text-green-400",
                         isHighest && "text-orange-600 dark:text-orange-400",
                         !isLowest && !isHighest && "text-gray-900 dark:text-white"
@@ -173,15 +173,15 @@ export function PinnedPlansComparison({
             
             {/* Provider Row */}
             <tr className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-              <td className="p-4">
+              <td className="p-3">
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Provider</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">Provider</span>
                 </div>
               </td>
               {plans.map((plan) => (
-                <td key={plan.id} className="p-4">
-                  <div className="text-gray-900 dark:text-white">
+                <td key={plan.id} className="p-3">
+                  <div className="text-gray-900 dark:text-white text-sm">
                     {plan.provider}
                   </div>
                 </td>
@@ -190,10 +190,10 @@ export function PinnedPlansComparison({
             
             {/* Rating Row */}
             <tr className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-              <td className="p-4">
+              <td className="p-3">
                 <div className="flex items-center gap-2">
                   <Star className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Rating</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">Rating</span>
                 </div>
               </td>
               {plans.map((plan) => {
@@ -205,10 +205,10 @@ export function PinnedPlansComparison({
                 const isBest = rating === maxRating && rating > 0;
                 
                 return (
-                  <td key={plan.id} className="p-4">
+                  <td key={plan.id} className="p-3">
                     <div className="flex items-center gap-2">
                       <span className={cn(
-                        "text-lg font-semibold",
+                        "text-base font-semibold",
                         isBest && "text-yellow-600 dark:text-yellow-400",
                         !isBest && "text-gray-700 dark:text-gray-300"
                       )}>
@@ -227,21 +227,21 @@ export function PinnedPlansComparison({
             
             {/* Benefits Row */}
             <tr className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-              <td className="p-4 align-top">
+              <td className="p-3 align-top">
                 <div className="flex items-start gap-2 pt-1">
                   <Shield className="h-4 w-4 text-gray-500 dark:text-gray-400 mt-0.5" />
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Benefits</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">Benefits</span>
                 </div>
               </td>
               {plans.map((plan) => {
                 const benefits = getBenefitsList(plan.benefits);
                 
                 return (
-                  <td key={plan.id} className="p-4">
-                    <ul className="space-y-2">
+                  <td key={plan.id} className="p-3">
+                    <ul className="space-y-1">
                       {benefits.map((benefit, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm">
-                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400 mt-1.5 flex-shrink-0" />
+                        <li key={idx} className="flex items-start gap-2 text-xs">
+                          <div className="w-1 h-1 rounded-full bg-blue-500 dark:bg-blue-400 mt-1 flex-shrink-0" />
                           <span className="text-gray-700 dark:text-gray-300 leading-relaxed">{benefit}</span>
                         </li>
                       ))}
@@ -255,22 +255,22 @@ export function PinnedPlansComparison({
       </div>
       
       {/* Action Buttons */}
-      <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
-        <div className="grid grid-cols-1 md:grid-cols-{plans.length} gap-3">
+      <div className="p-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-1 gap-2">
           {plans.map((plan) => (
             <div key={plan.id} className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onViewDetails(plan)}
-                className="flex-1"
+                className="flex-1 text-xs"
               >
                 Details
               </Button>
               <Button
                 size="sm"
                 onClick={() => onQuote(plan)}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white"
+                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white text-xs"
               >
                 Quote
               </Button>
