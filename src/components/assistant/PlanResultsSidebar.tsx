@@ -266,9 +266,9 @@ export function PlanResultsSidebar({
                         </p>
                         <button
                           onClick={() => {
-                            // Trigger comparison event
-                            console.log('🔍 PlanResultsSidebar: Comparison button clicked');
-                            eventBus.emit('comparison:request');
+                            // Trigger comparison event with actual pinned plans
+                            console.log('🔍 PlanResultsSidebar: Comparison button clicked with pinned plans:', pinnedPlansList);
+                            eventBus.emit('comparison:request', { pinnedPlans: pinnedPlansList });
                           }}
                           className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded transition-colors"
                         >

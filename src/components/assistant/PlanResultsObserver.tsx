@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useBrikiEvent, BrikiEvents, StructuredDataEvent } from '@/lib/event-bus';
 import { usePlanResults } from '@/contexts/PlanResultsContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -17,8 +17,9 @@ export function PlanResultsObserver({ appendAssistantMessage }: PlanResultsObser
   const { showPanelWithPlans, isDualPanelMode } = usePlanResults();
   const { language } = useTranslation();
 
-  // Keep track of whether we've already shown an acknowledgment for this set of results
-  let lastAcknowledgedPlans: string | null = null;
+  // Use refs to track acknowledgment state across renders
+  const lastAcknowledgedPlansRef = useRef<string | null>(null);
+  const lastAcknowledgmentTimeRef = useRef<number>(0);
 
   // Listen for structured data events
   useBrikiEvent(BrikiEvents.STRUCTURED_DATA_RECEIVED, (event: StructuredDataEvent) => {
@@ -34,34 +35,38 @@ export function PlanResultsObserver({ appendAssistantMessage }: PlanResultsObser
       
       // Add a short acknowledgment message when plans are shown (only for new searches)
       if (appendAssistantMessage && event.data.plans.length > 0) {
-        const plansKey = JSON.stringify(event.data.plans.map((p: any) => p.id));
-        if (plansKey !== lastAcknowledgedPlans) {
-          lastAcknowledgedPlans = plansKey;
+        const plansKey = JSON.stringify(event.data.plans.map((p: any) => p.id).sort());
+        const currentTime = Date.now();
+        
+        // Check if this is a fresh search and we haven't acknowledged these plans recently
+        const isFreshSearch = !event.metadata?.fromPin;
+        const isNewPlans = plansKey !== lastAcknowledgedPlansRef.current;
+        const isRecentAcknowledgment = currentTime - lastAcknowledgmentTimeRef.current < 2000; // 2 second cooldown
+        
+        if (isFreshSearch && isNewPlans && !isRecentAcknowledgment) {
+          lastAcknowledgedPlansRef.current = plansKey;
+          lastAcknowledgmentTimeRef.current = currentTime;
           
-          // Only add acknowledgment if this is a fresh search (not from pinning)
-          const isFreshSearch = !event.metadata?.fromPin;
-          if (isFreshSearch) {
-            // Vary the acknowledgment messages based on language
-            const acknowledgments = language === 'en' ? [
-              `I found ${event.data.plans.length} options for you.`,
-              `Here are ${event.data.plans.length} plans that match.`,
-              `Check out these ${event.data.plans.length} available plans.`,
-              `I'm showing you ${event.data.plans.length} alternatives.`
-            ] : [
-              `Encontré ${event.data.plans.length} opciones para ti.`,
-              `Aquí tienes ${event.data.plans.length} planes que se ajustan.`,
-              `Mira estos ${event.data.plans.length} planes disponibles.`,
-              `Te muestro ${event.data.plans.length} alternativas.`
-            ];
-            const randomAck = acknowledgments[Math.floor(Math.random() * acknowledgments.length)];
-            
-            // Use setTimeout to avoid state update during render
-            setTimeout(() => {
-              if (appendAssistantMessage) {
-                appendAssistantMessage(randomAck);
-              }
-            }, 500); // Small delay to ensure plans appear first
-          }
+          // Vary the acknowledgment messages based on language
+          const acknowledgments = language === 'en' ? [
+            `I found ${event.data.plans.length} options for you.`,
+            `Here are ${event.data.plans.length} plans that match.`,
+            `Check out these ${event.data.plans.length} available plans.`,
+            `I'm showing you ${event.data.plans.length} alternatives.`
+          ] : [
+            `Encontré ${event.data.plans.length} opciones para ti.`,
+            `Aquí tienes ${event.data.plans.length} planes que se ajustan.`,
+            `Mira estos ${event.data.plans.length} planes disponibles.`,
+            `Te muestro ${event.data.plans.length} alternativas.`
+          ];
+          const randomAck = acknowledgments[Math.floor(Math.random() * acknowledgments.length)];
+          
+          // Use setTimeout to avoid state update during render
+          setTimeout(() => {
+            if (appendAssistantMessage) {
+              appendAssistantMessage(randomAck);
+            }
+          }, 500); // Small delay to ensure plans appear first
         }
       }
     }
@@ -79,11 +84,18 @@ export function PlanResultsObserver({ appendAssistantMessage }: PlanResultsObser
         query: data.query,
       });
       
-      // Add acknowledgment for this event too
+      // Add acknowledgment for this event too (with improved deduplication)
       if (appendAssistantMessage && data.plans.length > 0) {
-        const plansKey = JSON.stringify(data.plans.map((p: any) => p.id));
-        if (plansKey !== lastAcknowledgedPlans) {
-          lastAcknowledgedPlans = plansKey;
+        const plansKey = JSON.stringify(data.plans.map((p: any) => p.id).sort());
+        const currentTime = Date.now();
+        
+        // Check if we haven't acknowledged these plans recently
+        const isNewPlans = plansKey !== lastAcknowledgedPlansRef.current;
+        const isRecentAcknowledgment = currentTime - lastAcknowledgmentTimeRef.current < 2000; // 2 second cooldown
+        
+        if (isNewPlans && !isRecentAcknowledgment) {
+          lastAcknowledgedPlansRef.current = plansKey;
+          lastAcknowledgmentTimeRef.current = currentTime;
           
           const acknowledgments = language === 'en' ? [
             `I found ${data.plans.length} plans.`,

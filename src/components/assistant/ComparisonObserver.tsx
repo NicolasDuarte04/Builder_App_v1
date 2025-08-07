@@ -12,15 +12,12 @@ export function ComparisonObserver({ appendAssistantMessage }: ComparisonObserve
   const { currentResults } = usePlanResults();
 
   useEffect(() => {
-    const handleComparisonRequest = () => {
-      if (!currentResults?.plans) return;
-
-      // Get the actual pinned plans from the current results
-      // For now, we'll use the first 2 plans as "pinned" for demonstration
-      const pinnedPlans = currentResults.plans.slice(0, 2); // Take first 2 plans
-
+    const handleComparisonRequest = (eventData?: any) => {
+      // Get pinned plans from the event data if available
+      const pinnedPlans = eventData?.pinnedPlans || [];
+      
       if (pinnedPlans.length >= 2) {
-        console.log('🔄 ComparisonObserver: Creating comparison message with plans:', pinnedPlans);
+        console.log('🔄 ComparisonObserver: Creating comparison message with pinned plans:', pinnedPlans);
         
         const comparisonMessage = {
           type: 'comparison',
@@ -31,7 +28,11 @@ export function ComparisonObserver({ appendAssistantMessage }: ComparisonObserve
         // Add the comparison as a special message type
         appendAssistantMessage(JSON.stringify(comparisonMessage));
       } else {
-        console.log('⚠️ ComparisonObserver: Not enough plans for comparison (need 2+, got', pinnedPlans.length, ')');
+        console.log('⚠️ ComparisonObserver: Not enough pinned plans for comparison (need 2+, got', pinnedPlans.length, ')');
+        
+        // Send a helpful message to the user
+        const message = 'Necesitas marcar al menos 2 planes para poder compararlos. Marca algunos planes primero y luego intenta de nuevo.';
+        appendAssistantMessage(message);
       }
     };
 

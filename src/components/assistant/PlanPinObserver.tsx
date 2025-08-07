@@ -17,11 +17,14 @@ const sentMessages = new Set<string>();
 export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps) {
   const lastPinnedPlanId = useRef<number | null>(null);
   const lastUnpinnedPlanId = useRef<number | null>(null);
+  const lastPinMessageTime = useRef<number>(0);
   const { language } = useTranslation();
   
   // Listen for plan pinned events
   useBrikiEvent('plan-pinned', (event: any) => {
     console.log('📌 Plan pinned:', event);
+    
+    const currentTime = Date.now();
     
     // Prevent duplicate messages for the same plan
     if (lastPinnedPlanId.current === event.plan.id) {
@@ -29,7 +32,14 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
       return;
     }
     
+    // Prevent too frequent messages (cooldown of 1 second)
+    if (currentTime - lastPinMessageTime.current < 1000) {
+      console.log('Preventing too frequent pin messages');
+      return;
+    }
+    
     lastPinnedPlanId.current = event.plan.id;
+    lastPinMessageTime.current = currentTime;
     
     // Only send pin message if we have 2+ pinned plans (for comparison context)
     if (event.pinnedCount >= 2) {
@@ -44,10 +54,18 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
       ];
       const message = messages[Math.floor(Math.random() * messages.length)];
       
-      // Check if we've already sent this exact message
-      const messageKey = `pin-count-${event.pinnedCount}`;
+      // Check if we've already sent this exact message recently
+      const messageKey = `pin-count-${event.pinnedCount}-${currentTime}`;
       if (!sentMessages.has(messageKey)) {
         sentMessages.add(messageKey);
+        
+        // Clean up old messages from the set (keep only last 10)
+        if (sentMessages.size > 10) {
+          const messagesArray = Array.from(sentMessages);
+          sentMessages.clear();
+          messagesArray.slice(-5).forEach(msg => sentMessages.add(msg));
+        }
+        
         // Use setTimeout to avoid state update during render
         setTimeout(() => {
           appendAssistantMessage(message);
@@ -60,13 +78,22 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
   useBrikiEvent('plan-unpinned', (event: any) => {
     console.log('📌 Plan unpinned:', event);
     
+    const currentTime = Date.now();
+    
     // Prevent duplicate messages for the same plan
     if (lastUnpinnedPlanId.current === event.plan.id) {
       console.log('Preventing duplicate unpin message for plan:', event.plan.id);
       return;
     }
     
+    // Prevent too frequent messages (cooldown of 1 second)
+    if (currentTime - lastPinMessageTime.current < 1000) {
+      console.log('Preventing too frequent unpin messages');
+      return;
+    }
+    
     lastUnpinnedPlanId.current = event.plan.id;
+    lastPinMessageTime.current = currentTime;
     
     // Only send message if all plans are unpinned
     if (event.pinnedCount === 0) {
@@ -81,9 +108,17 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
       ];
       const message = messages[Math.floor(Math.random() * messages.length)];
       
-      const messageKey = `unpin-${event.plan.id}`;
+      const messageKey = `unpin-${event.plan.id}-${currentTime}`;
       if (!sentMessages.has(messageKey)) {
         sentMessages.add(messageKey);
+        
+        // Clean up old messages from the set (keep only last 10)
+        if (sentMessages.size > 10) {
+          const messagesArray = Array.from(sentMessages);
+          sentMessages.clear();
+          messagesArray.slice(-5).forEach(msg => sentMessages.add(msg));
+        }
+        
         // Use setTimeout to avoid state update during render
         setTimeout(() => {
           appendAssistantMessage(message);
