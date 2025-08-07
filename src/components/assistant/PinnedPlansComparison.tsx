@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { InsurancePlan } from '@/types/project';
+import { InsurancePlan } from '@/components/briki-ai-assistant/NewPlanCard';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Check, X, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,27 +33,55 @@ export function PinnedPlansComparison({
     benefits: 'Key Benefits'
   };
   
-  const formatPrice = (price: string | undefined) => {
-    if (!price) return '0';
-    // Extract numeric value from price string
-    const numericPrice = parseInt(price.replace(/[^0-9]/g, ''));
+  const formatPrice = (price: number | string | undefined) => {
+    if (!price && price !== 0) return '0';
+    
+    // Handle both number and string formats
+    let numericPrice: number;
+    if (typeof price === 'number') {
+      numericPrice = price;
+    } else {
+      // Extract numeric value from price string
+      numericPrice = parseInt(price.replace(/[^0-9]/g, '')) || 0;
+    }
+    
     return new Intl.NumberFormat('es-CO', {
       style: 'decimal',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(numericPrice || 0);
+    }).format(numericPrice);
   };
   
-  const getBenefitsList = (benefits: string) => {
-    // Parse benefits string into list
-    const benefitsList = benefits.split(',').map(b => b.trim()).filter(b => b.length > 0);
-    return benefitsList.slice(0, 3); // Show top 3 benefits
+  const getBenefitsList = (benefits: string | string[] | undefined | null) => {
+    // Handle different types of benefits data
+    if (!benefits) {
+      return [];
+    }
+    
+    // If benefits is already an array, use it directly
+    if (Array.isArray(benefits)) {
+      return benefits.slice(0, 3); // Show top 3 benefits
+    }
+    
+    // If benefits is a string, parse it
+    if (typeof benefits === 'string') {
+      const benefitsList = benefits.split(',').map(b => b.trim()).filter(b => b.length > 0);
+      return benefitsList.slice(0, 3); // Show top 3 benefits
+    }
+    
+    return [];
   };
   
   const getPriceComparison = (plans: InsurancePlan[]) => {
     const prices = plans.map(p => {
-      if (!p.price) return 0;
-      return parseInt(p.price.replace(/[^0-9]/g, '')) || 0;
+      // Handle both basePrice (from NewPlanCard) and price fields
+      const priceValue = p.basePrice || (p as any).price;
+      if (!priceValue) return 0;
+      
+      if (typeof priceValue === 'number') {
+        return priceValue;
+      }
+      return parseInt(priceValue.replace(/[^0-9]/g, '')) || 0;
     });
     const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
     const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
@@ -107,7 +135,10 @@ export function PinnedPlansComparison({
                 💰 Price
               </td>
               {plans.map((plan) => {
-                const price = plan.price ? parseInt(plan.price.replace(/[^0-9]/g, '')) || 0 : 0;
+                // Handle both basePrice (from NewPlanCard) and price fields
+                const priceValue = plan.basePrice || (plan as any).price;
+                const price = typeof priceValue === 'number' ? priceValue : 
+                             (priceValue ? parseInt(priceValue.replace(/[^0-9]/g, '')) || 0 : 0);
                 const isLowest = price === minPrice && price > 0;
                 const isHighest = price === maxPrice && minPrice !== maxPrice;
                 
@@ -120,7 +151,7 @@ export function PinnedPlansComparison({
                         isHighest && "text-orange-600 dark:text-orange-400",
                         !isLowest && !isHighest && "text-gray-900 dark:text-white"
                       )}>
-                        ${formatPrice(plan.price)} COP
+                        ${formatPrice(plan.basePrice || (plan as any).price)} {plan.currency || 'COP'}
                       </div>
                       {isLowest && (
                         <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded">
@@ -158,8 +189,11 @@ export function PinnedPlansComparison({
                 ⭐ Rating
               </td>
               {plans.map((plan) => {
-                const rating = parseFloat(plan.rating || '0');
-                const maxRating = Math.max(...plans.map(p => parseFloat(p.rating || '0')));
+                // Handle rating as either number or string
+                const rating = typeof plan.rating === 'number' ? plan.rating : parseFloat(plan.rating || '0');
+                const maxRating = Math.max(...plans.map(p => 
+                  typeof p.rating === 'number' ? p.rating : parseFloat(p.rating || '0')
+                ));
                 const isBest = rating === maxRating && rating > 0;
                 
                 return (
@@ -170,7 +204,7 @@ export function PinnedPlansComparison({
                         isBest && "text-yellow-600 dark:text-yellow-400",
                         !isBest && "text-gray-700 dark:text-gray-300"
                       )}>
-                        {plan.rating || 'N/A'}
+                        {plan.rating ? (typeof plan.rating === 'number' ? plan.rating.toFixed(1) : plan.rating) : 'N/A'}
                       </span>
                       {isBest && rating > 0 && (
                         <span className="text-xs text-yellow-600 dark:text-yellow-400">
