@@ -286,8 +286,12 @@ export const MessageRenderer = React.memo(function MessageRenderer({
   // Handle comparison messages
   if (role === 'assistant') {
     try {
+      console.log('🔍 MessageRenderer: Attempting to parse assistant message:', content.substring(0, 100) + '...');
       const parsed = JSON.parse(content);
+      console.log('🔍 MessageRenderer: Parsed message type:', parsed.type);
+      
       if (parsed.type === 'comparison' && parsed.plans) {
+        console.log('✅ MessageRenderer: Rendering comparison with', parsed.plans.length, 'plans');
         return (
           <ComparisonMessage
             plans={parsed.plans}
@@ -306,7 +310,8 @@ export const MessageRenderer = React.memo(function MessageRenderer({
           />
         );
       }
-    } catch {
+    } catch (error) {
+      console.log('🔍 MessageRenderer: Not a JSON message, continuing to default rendering');
       // Not JSON, continue to default rendering
     }
   }

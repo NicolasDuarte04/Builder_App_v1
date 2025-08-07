@@ -22,61 +22,86 @@ export function ComparisonMessage({
 }: ComparisonMessageProps) {
   const { t } = useTranslation();
   
-  if (plans.length === 0) return null;
+  // Add error boundary
+  if (!plans || plans.length === 0) {
+    console.error('ComparisonMessage: No plans provided');
+    return (
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <p className="text-red-700 dark:text-red-300 text-sm">
+          Error: No hay planes para comparar.
+        </p>
+      </div>
+    );
+  }
   
   const formatPrice = (price: number | string | undefined) => {
-    if (!price && price !== 0) return '0';
-    
-    // Handle both number and string formats
-    let numericPrice: number;
-    if (typeof price === 'number') {
-      numericPrice = price;
-    } else {
-      // Extract numeric value from price string
-      numericPrice = parseInt(price.replace(/[^0-9]/g, '')) || 0;
+    try {
+      if (!price && price !== 0) return '0';
+      
+      // Handle both number and string formats
+      let numericPrice: number;
+      if (typeof price === 'number') {
+        numericPrice = price;
+      } else {
+        // Extract numeric value from price string
+        numericPrice = parseInt(price.replace(/[^0-9]/g, '')) || 0;
+      }
+      
+      return new Intl.NumberFormat('es-CO', {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(numericPrice);
+    } catch (error) {
+      console.error('Error formatting price:', error);
+      return '0';
     }
-    
-    return new Intl.NumberFormat('es-CO', {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(numericPrice);
   };
   
   const getBenefitsList = (benefits: string | string[] | undefined | null) => {
-    // Handle different types of benefits data
-    if (!benefits) {
+    try {
+      // Handle different types of benefits data
+      if (!benefits) {
+        return [];
+      }
+      
+      // If benefits is already an array, use it directly
+      if (Array.isArray(benefits)) {
+        return benefits.slice(0, 3); // Show top 3 benefits
+      }
+      
+      // If benefits is a string, parse it
+      if (typeof benefits === 'string') {
+        const benefitsList = benefits.split(',').map(b => b.trim()).filter(b => b.length > 0);
+        return benefitsList.slice(0, 3); // Show top 3 benefits
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('Error processing benefits:', error);
       return [];
     }
-    
-    // If benefits is already an array, use it directly
-    if (Array.isArray(benefits)) {
-      return benefits.slice(0, 3); // Show top 3 benefits
-    }
-    
-    // If benefits is a string, parse it
-    if (typeof benefits === 'string') {
-      const benefitsList = benefits.split(',').map(b => b.trim()).filter(b => b.length > 0);
-      return benefitsList.slice(0, 3); // Show top 3 benefits
-    }
-    
-    return [];
   };
   
   const getPriceComparison = (plans: InsurancePlan[]) => {
-    const prices = plans.map(p => {
-      // Handle both basePrice (from NewPlanCard) and price fields
-      const priceValue = p.basePrice || (p as any).price;
-      if (!priceValue) return 0;
-      
-      if (typeof priceValue === 'number') {
-        return priceValue;
-      }
-      return parseInt(priceValue.replace(/[^0-9]/g, '')) || 0;
-    });
-    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-    const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-    return { minPrice, maxPrice };
+    try {
+      const prices = plans.map(p => {
+        // Handle both basePrice (from NewPlanCard) and price fields
+        const priceValue = p.basePrice || (p as any).price;
+        if (!priceValue) return 0;
+        
+        if (typeof priceValue === 'number') {
+          return priceValue;
+        }
+        return parseInt(priceValue.replace(/[^0-9]/g, '')) || 0;
+      });
+      const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+      const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+      return { minPrice, maxPrice };
+    } catch (error) {
+      console.error('Error calculating price comparison:', error);
+      return { minPrice: 0, maxPrice: 0 };
+    }
   };
   
   const { minPrice, maxPrice } = getPriceComparison(plans);
@@ -128,7 +153,6 @@ export function ComparisonMessage({
                 </div>
               </td>
               {plans.map((plan) => {
-                // Handle both basePrice (from NewPlanCard) and price fields
                 const priceValue = plan.basePrice || (plan as any).price;
                 const price = typeof priceValue === 'number' ? priceValue : 
                              (priceValue ? parseInt(priceValue.replace(/[^0-9]/g, '')) || 0 : 0);
@@ -188,7 +212,6 @@ export function ComparisonMessage({
                 </div>
               </td>
               {plans.map((plan) => {
-                // Handle rating as either number or string
                 const rating = typeof plan.rating === 'number' ? plan.rating : parseFloat(plan.rating || '0');
                 const maxRating = Math.max(...plans.map(p => 
                   typeof p.rating === 'number' ? p.rating : parseFloat(p.rating || '0')
