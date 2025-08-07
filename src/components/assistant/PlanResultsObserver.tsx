@@ -32,32 +32,36 @@ export function PlanResultsObserver({ appendAssistantMessage }: PlanResultsObser
         query: event.metadata?.query,
       });
       
-      // Add a short acknowledgment message when plans are shown
+      // Add a short acknowledgment message when plans are shown (only for new searches)
       if (appendAssistantMessage && event.data.plans.length > 0) {
         const plansKey = JSON.stringify(event.data.plans.map((p: any) => p.id));
         if (plansKey !== lastAcknowledgedPlans) {
           lastAcknowledgedPlans = plansKey;
           
-          // Vary the acknowledgment messages based on language
-          const acknowledgments = language === 'en' ? [
-            `I found ${event.data.plans.length} options for you.`,
-            `Here are ${event.data.plans.length} plans that match.`,
-            `Check out these ${event.data.plans.length} available plans.`,
-            `I'm showing you ${event.data.plans.length} alternatives.`
-          ] : [
-            `Encontré ${event.data.plans.length} opciones para ti.`,
-            `Aquí tienes ${event.data.plans.length} planes que se ajustan.`,
-            `Mira estos ${event.data.plans.length} planes disponibles.`,
-            `Te muestro ${event.data.plans.length} alternativas.`
-          ];
-          const randomAck = acknowledgments[Math.floor(Math.random() * acknowledgments.length)];
-          
-          // Use setTimeout to avoid state update during render
-          setTimeout(() => {
-            if (appendAssistantMessage) {
-              appendAssistantMessage(randomAck);
-            }
-          }, 500); // Small delay to ensure plans appear first
+          // Only add acknowledgment if this is a fresh search (not from pinning)
+          const isFreshSearch = !event.metadata?.fromPin;
+          if (isFreshSearch) {
+            // Vary the acknowledgment messages based on language
+            const acknowledgments = language === 'en' ? [
+              `I found ${event.data.plans.length} options for you.`,
+              `Here are ${event.data.plans.length} plans that match.`,
+              `Check out these ${event.data.plans.length} available plans.`,
+              `I'm showing you ${event.data.plans.length} alternatives.`
+            ] : [
+              `Encontré ${event.data.plans.length} opciones para ti.`,
+              `Aquí tienes ${event.data.plans.length} planes que se ajustan.`,
+              `Mira estos ${event.data.plans.length} planes disponibles.`,
+              `Te muestro ${event.data.plans.length} alternativas.`
+            ];
+            const randomAck = acknowledgments[Math.floor(Math.random() * acknowledgments.length)];
+            
+            // Use setTimeout to avoid state update during render
+            setTimeout(() => {
+              if (appendAssistantMessage) {
+                appendAssistantMessage(randomAck);
+              }
+            }, 500); // Small delay to ensure plans appear first
+          }
         }
       }
     }

@@ -15,11 +15,13 @@ export function ComparisonObserver({ appendAssistantMessage }: ComparisonObserve
     const handleComparisonRequest = () => {
       if (!currentResults?.plans) return;
 
-      // For now, we'll use all plans as "pinned" for demonstration
-      // In a real implementation, you'd track which plans are actually pinned
-      const pinnedPlans = currentResults.plans.slice(0, 3); // Take first 3 plans
+      // Get the actual pinned plans from the current results
+      // For now, we'll use the first 2 plans as "pinned" for demonstration
+      const pinnedPlans = currentResults.plans.slice(0, 2); // Take first 2 plans
 
       if (pinnedPlans.length >= 2) {
+        console.log('🔄 ComparisonObserver: Creating comparison message with plans:', pinnedPlans);
+        
         const comparisonMessage = {
           type: 'comparison',
           plans: pinnedPlans,
@@ -28,6 +30,8 @@ export function ComparisonObserver({ appendAssistantMessage }: ComparisonObserve
 
         // Add the comparison as a special message type
         appendAssistantMessage(JSON.stringify(comparisonMessage));
+      } else {
+        console.log('⚠️ ComparisonObserver: Not enough plans for comparison (need 2+, got', pinnedPlans.length, ')');
       }
     };
 

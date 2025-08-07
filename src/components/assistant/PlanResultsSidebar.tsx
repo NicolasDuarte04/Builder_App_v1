@@ -267,6 +267,7 @@ export function PlanResultsSidebar({
                         <button
                           onClick={() => {
                             // Trigger comparison event
+                            console.log('🔍 PlanResultsSidebar: Comparison button clicked');
                             eventBus.emit('comparison:request');
                           }}
                           className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded transition-colors"

@@ -31,26 +31,28 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
     
     lastPinnedPlanId.current = event.plan.id;
     
-    // Short, varied messages based on language
-    const messages = language === 'en' ? [
-      `Pinned "${event.plan.name}".`,
-      `Marked "${event.plan.name}".`,
-      `Saved "${event.plan.name}".`
-    ] : [
-      `Marcaste "${event.plan.name}".`,
-      `Plan fijado: "${event.plan.name}".`,
-      `Guardado: "${event.plan.name}".`
-    ];
-    const message = messages[Math.floor(Math.random() * messages.length)];
-    
-    // Check if we've already sent this exact message
-    const messageKey = `pin-${event.plan.id}`;
-    if (!sentMessages.has(messageKey)) {
-      sentMessages.add(messageKey);
-      // Use setTimeout to avoid state update during render
-      setTimeout(() => {
-        appendAssistantMessage(message);
-      }, 100);
+    // Only send pin message if we have 2+ pinned plans (for comparison context)
+    if (event.pinnedCount >= 2) {
+      const messages = language === 'en' ? [
+        `Ready to compare ${event.pinnedCount} plans.`,
+        `${event.pinnedCount} plans pinned for comparison.`,
+        `You can now compare ${event.pinnedCount} plans.`
+      ] : [
+        `Listo para comparar ${event.pinnedCount} planes.`,
+        `${event.pinnedCount} planes marcados para comparar.`,
+        `Ya puedes comparar ${event.pinnedCount} planes.`
+      ];
+      const message = messages[Math.floor(Math.random() * messages.length)];
+      
+      // Check if we've already sent this exact message
+      const messageKey = `pin-count-${event.pinnedCount}`;
+      if (!sentMessages.has(messageKey)) {
+        sentMessages.add(messageKey);
+        // Use setTimeout to avoid state update during render
+        setTimeout(() => {
+          appendAssistantMessage(message);
+        }, 100);
+      }
     }
   });
   
