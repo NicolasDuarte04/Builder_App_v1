@@ -82,10 +82,13 @@ export async function extractTextFromPDF(file: File): Promise<string> {
             }
           }
           
-          // Clean up the text
+          // Preserve line breaks better to keep simple table rows recognizable
           fullText = fullText
-            .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-            .replace(/\n\s*\n\s*\n/g, '\n\n') // Clean up multiple newlines
+            .replace(/\r\n/g, '\n')
+            .replace(/\u00A0/g, ' ')
+            .replace(/\t+/g, ' ')
+            .replace(/ +/g, ' ')
+            .replace(/\n{3,}/g, '\n\n')
             .trim();
           
           console.log(`✅ Successfully extracted ${fullText.length} characters from ${pages.length} pages`);

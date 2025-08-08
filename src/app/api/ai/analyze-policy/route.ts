@@ -8,8 +8,9 @@ import { z } from 'zod';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { parseCopMoney } from '@/lib/money';
 
-// Define the schema for the policy analysis - enhanced with user-relevant fields
+  // Define the schema for the policy analysis - enhanced with user-relevant fields
 const PolicyAnalysisSchema = z.object({
   policyType: z.string().default("Unknown"),
   premium: z.object({
@@ -51,6 +52,13 @@ const PolicyAnalysisSchema = z.object({
   riskScore: z.number().min(1).max(10).default(5),
   // New: require an explicit justification string for transparency
   riskJustification: z.string().default(''),
+  // Optional premium table parsed from document tables
+  premiumTable: z.array(z.object({
+    label: z.string().optional(),
+    year: z.union([z.string(), z.number()]).optional(),
+    plan: z.string().optional(),
+    amount: z.union([z.number(), z.string()]).optional(),
+  })).default([]),
   // Enhanced fields for traceability and transparency
   sourceQuotes: z.record(z.string()).default({}),
   redFlags: z.array(z.string()).default([]),
@@ -275,13 +283,24 @@ export async function POST(request: NextRequest) {
         analysis_language: isSpanish ? 'Spanish' : 'English'
       }, serverSupabase);
 
+      // Debug: summarize extraction & chunk info in dev
+      const debugInfo = process.env.NODE_ENV !== 'production' ? {
+        extraction: {
+          method: extractionMethod,
+          textLength: pdfText.length,
+          head: pdfText.slice(0, 400),
+          tail: pdfText.slice(-400)
+        }
+      } : undefined;
+
       return NextResponse.json({
         success: true,
         analysis: finalAnalysis,
         fileName: file.name,
         uploadId: uploadRecord.id,
         extractionMethod: extractionMethod,
-        pdfUrl: pdfPublicUrl || undefined
+        pdfUrl: pdfPublicUrl || undefined,
+        ...(debugInfo ? { debug: debugInfo } : {})
       });
 
     } catch (error) {
@@ -392,7 +411,14 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
 
     const chunks = splitIntoSemanticChunks(pdfText);
     const MAX_CHUNKS = 3; // bound for latency
-    const selectedChunks = chunks.slice(0, MAX_CHUNKS);
+    // Prioritize chunks that likely contain pricing tables / premiums first
+    const priceKeywords = /(PRIMA|VALOR|PRECIO|TARIFA|COSTO|SEMESTRE|AÑO|ANUAL|MENSUAL|MATRÍCULA|TUITION|PREMIUM|PRICE)/i;
+    const sorted = [...chunks].sort((a, b) => {
+      const aScore = priceKeywords.test(a.title) || priceKeywords.test(a.text.slice(0, 200)) ? 1 : 0;
+      const bScore = priceKeywords.test(b.title) || priceKeywords.test(b.text.slice(0, 200)) ? 1 : 0;
+      return bScore - aScore;
+    });
+    const selectedChunks = sorted.slice(0, MAX_CHUNKS);
 
     // If short, single-call analysis
     if (selectedChunks.length <= 1 && pdfText.length <= 7000) {
@@ -400,7 +426,7 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
         const result = await generateObject({
           model: oai('gpt-4-turbo-preview'),
           system: systemPrompt,
-          prompt: `Please analyze this document and provide a structured analysis. Be specific and avoid hallucinations.\n\n${pdfText.substring(0, 8000)}`,
+          prompt: `Please analyze this document and provide a structured analysis. If premiums/tariffs appear in tables, extract them into premiumTable and infer main premium if applicable. Be specific and avoid hallucinations.\n\n${pdfText.substring(0, 8000)}`,
           schema: PolicyAnalysisSchema,
           temperature: 0.3,
           maxTokens: 2000,
@@ -412,7 +438,7 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
         const fallbackResult = await generateObject({
           model: oai('gpt-3.5-turbo'),
           system: systemPrompt,
-          prompt: `Analyze this document and return structured data faithfully.\n\n${pdfText.substring(0, 4000)}`,
+          prompt: `Analyze this document and return structured data faithfully. If premiums/tariffs appear in tables, extract them into premiumTable.\n\n${pdfText.substring(0, 4000)}`,
           schema: PolicyAnalysisSchema,
           temperature: 0.5,
           maxTokens: 1500,
@@ -558,6 +584,7 @@ function mergeAnalyses(results: any[]): any {
     recommendations: [] as string[],
     riskScore: 5,
     riskJustification: '',
+    premiumTable: [] as any[],
     sourceQuotes: {} as Record<string, string>,
     redFlags: [] as string[],
     missingInfo: [] as string[]
@@ -603,6 +630,7 @@ function mergeAnalyses(results: any[]): any {
     if (Array.isArray(cur.recommendations)) acc.recommendations = Array.from(new Set([...(acc.recommendations || []), ...cur.recommendations]));
     if (Array.isArray(cur.legal?.obligations)) acc.legal.obligations = Array.from(new Set([...(acc.legal.obligations || []), ...cur.legal.obligations]));
     if (Array.isArray(cur.legal?.complianceNotes)) acc.legal.complianceNotes = Array.from(new Set([...(acc.legal.complianceNotes || []), ...cur.legal.complianceNotes]));
+    if (Array.isArray(cur.premiumTable)) acc.premiumTable = [ ...(acc.premiumTable || []), ...cur.premiumTable ];
 
     // Risk: keep max risk and concatenate justifications
     if (typeof cur.riskScore === 'number') acc.riskScore = Math.max(acc.riskScore || 0, cur.riskScore);
@@ -618,6 +646,17 @@ function mergeAnalyses(results: any[]): any {
 
   // Reasonable defaults
   if (!merged.coverage.geography) merged.coverage.geography = 'Colombia';
+
+  // Normalize premiumTable amounts to integers (COP) if strings
+  if (Array.isArray(merged.premiumTable)) {
+    merged.premiumTable = merged.premiumTable.map((row: any) => {
+      if (row && typeof row.amount === 'string') {
+        const parsed = parseCopMoney(row.amount);
+        if (parsed !== null) row.amount = parsed;
+      }
+      return row;
+    });
+  }
   return merged;
 }
 
@@ -626,28 +665,17 @@ function postProcessAnalysis(pdfText: string, analysis: any, opts: { extractionM
 
   // Normalize premium if zero: try regex parse
   if (!result.premium || !result.premium.amount || result.premium.amount === 0) {
-    const currencyPatterns = [
-      /\$\s?([0-9]{1,3}(?:[\.,][0-9]{3})*(?:[\.,][0-9]{2})?)/, // $ 1.234.567,89
-      /COP\s?([0-9]{1,3}(?:[\.,][0-9]{3})*(?:[\.,][0-9]{2})?)/i,
-      /USD\s?([0-9]{1,3}(?:[\.,][0-9]{3})*(?:[\.,][0-9]{2})?)/i,
-    ];
-    for (const re of currencyPatterns) {
-      const m = re.exec(pdfText);
-      if (m && m[1]) {
-        const raw = m[1].replace(/\./g, '').replace(/,/g, '');
-        const amount = Number(raw);
-        if (!Number.isNaN(amount) && amount > 0) {
-          result.premium = result.premium || {};
-          result.premium.amount = amount;
-          if (/USD/i.test(re.source)) result.premium.currency = 'USD';
-          else result.premium.currency = 'COP';
-          if (!result.premium.frequency) {
-            // Guess frequency
-            if (/mensual|month|mensuales/i.test(pdfText)) result.premium.frequency = 'monthly';
-            else if (/anual|annual|año/i.test(pdfText)) result.premium.frequency = 'yearly';
-            else result.premium.frequency = 'unknown';
-          }
-          break;
+    const match = /(?:COP|\$)\s*([0-9][0-9 .,:]{4,})/.exec(pdfText);
+    if (match && match[1]) {
+      const parsed = parseCopMoney(match[1]);
+      if (parsed !== null && parsed > 0) {
+        result.premium = result.premium || {};
+        result.premium.amount = parsed;
+        result.premium.currency = /USD/i.test(match[0]) ? 'USD' : 'COP';
+        if (!result.premium.frequency) {
+          if (/mensual|month|mensuales/i.test(pdfText)) result.premium.frequency = 'monthly';
+          else if (/anual|annual|año/i.test(pdfText)) result.premium.frequency = 'yearly';
+          else result.premium.frequency = 'unknown';
         }
       }
     }
