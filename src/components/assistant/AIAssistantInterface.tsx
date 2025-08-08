@@ -484,8 +484,8 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
       {/* ComparisonObserver - Listens for comparison requests */}
       <ComparisonObserver appendAssistantMessage={appendAssistantMessage} />
       
-      {/* Layout Mode Toggle */}
-      <LayoutModeToggle variant="floating" size="sm" />
+      {/* Layout Mode Toggle hidden per design cleanup */}
+      {/* <LayoutModeToggle variant="floating" size="sm" /> */}
       
       {/* GEMINI-STYLE: True dual-panel layout with automatic compression */}
       <div className="h-full w-full flex pt-16">

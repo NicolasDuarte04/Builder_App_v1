@@ -43,7 +43,7 @@ export function LayoutModeToggle({
     : 'flex items-center gap-2';
 
   return (
-    <div className={`${baseClasses} ${className}`}>
+    <div className={`${baseClasses} ${className}`} style={{ display: 'none' }}>
       {/* Layout Mode Toggle */}
       <button
         onClick={() => setDualPanelMode(!isDualPanelMode)}
@@ -73,7 +73,7 @@ export function LayoutModeToggle({
       )}
 
       {/* Status indicator */}
-      {isDualPanelMode && currentResults && currentResults.plans.length > 0 && (
+      {false && isDualPanelMode && currentResults && currentResults.plans.length > 0 && (
         <div className={`flex items-center gap-2 ${sizeClasses[size]} bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 rounded-full`}>
           <span className="bg-green-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[1rem] h-4 flex items-center justify-center">
             {currentResults.plans.length}
@@ -83,7 +83,7 @@ export function LayoutModeToggle({
       )}
 
       {/* Legacy mode indicator */}
-      {!isDualPanelMode && currentResults && currentResults.plans.length > 0 && (
+      {false && !isDualPanelMode && currentResults && currentResults.plans.length > 0 && (
         <div className="relative">
           <button
             onClick={() => setDualPanelMode(true)}

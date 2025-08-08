@@ -120,9 +120,10 @@ export function PlanResultsSidebar({
           });
           
           // Emit event for assistant
+          // Use the actual current size after adding (no +1)
           eventBus.emit('plan-pinned', {
             plan: plan,
-            pinnedCount: newSet.size + 1
+            pinnedCount: newSet.size
           });
         }
         return newSet;

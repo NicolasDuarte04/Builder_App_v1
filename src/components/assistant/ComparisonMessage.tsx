@@ -2,9 +2,11 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Minus, Star, TrendingUp } from 'lucide-react';
+import { CheckCircle, XCircle, Minus, Star, TrendingUp, Info } from 'lucide-react';
 import { InsurancePlan } from '@/components/briki-ai-assistant/NewPlanCard';
 import { Badge } from '@/components/ui/Badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { jsPDF } from 'jspdf';
 
 interface ComparisonMessageProps {
   plans: InsurancePlan[];
@@ -41,6 +43,33 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
 
   const features = compareFeatures();
 
+  const getRowDiffClass = (values: Array<string | number | undefined>) => {
+    const normalized = values.map((v) => (v === undefined || v === null ? '—' : String(v)));
+    const first = normalized[0];
+    const allSame = normalized.every((v) => v === first);
+    return allSame ? '' : 'bg-yellow-50/50 dark:bg-yellow-900/10';
+  };
+
+  const exportComparisonPDF = () => {
+    const doc = new jsPDF();
+    let y = 15;
+    doc.setFontSize(14);
+    doc.text('Comparación de Planes', 14, y); y += 8;
+    plans.forEach((p, idx) => {
+      doc.setFontSize(11);
+      doc.text(`${idx + 1}. ${p.name} - ${p.provider}`, 14, y); y += 6;
+      if (p.basePrice) {
+        doc.text(`Precio: ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: p.currency || 'COP', minimumFractionDigits: 0 }).format(p.basePrice)}/mes`, 18, y); y += 6;
+      }
+      doc.text(`Categoría: ${p.category || 'General'}`, 18, y); y += 6;
+      const feats = (p.benefits || []).slice(0, 8).join(', ');
+      if (feats) { doc.text(`Beneficios: ${feats}`, 18, y); y += 6; }
+      y += 2;
+      if (y > 270) { doc.addPage(); y = 15; }
+    });
+    doc.save('comparacion_planes.pdf');
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -52,9 +81,13 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Comparación de Planes ({plans.length} planes)
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Análisis detallado de los planes seleccionados
-        </p>
+        <div className="mt-1 flex items-center gap-2 text-sm">
+          <span className="text-gray-600 dark:text-gray-400">Análisis detallado de los planes seleccionados</span>
+          <Badge variant="outline" className="text-[10px]">Recomendado para ti</Badge>
+          <button onClick={exportComparisonPDF} className="ml-auto text-xs text-blue-600 dark:text-blue-300 hover:underline">
+            Exportar a PDF
+          </button>
+        </div>
       </div>
 
       {/* Comparison Table */}
@@ -81,7 +114,7 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
           </thead>
           <tbody>
             {/* Price */}
-            <tr className="border-b border-gray-100 dark:border-gray-800">
+            <tr className={`border-b border-gray-100 dark:border-gray-800 ${getRowDiffClass(plans.map(p => p.basePrice))}`}>
               <td className="p-3 font-medium text-sm">Precio Mensual</td>
               {plans.map((plan) => (
                 <td key={plan.id} className="p-3 text-center">
@@ -104,7 +137,7 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
             </tr>
 
             {/* Rating */}
-            <tr className="border-b border-gray-100 dark:border-gray-800">
+            <tr className={`border-b border-gray-100 dark:border-gray-800 ${getRowDiffClass(plans.map(p => p.rating))}`}>
               <td className="p-3 font-medium text-sm">Calificación</td>
               {plans.map((plan) => (
                 <td key={plan.id} className="p-3 text-center">
@@ -125,7 +158,7 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
             </tr>
 
             {/* Category */}
-            <tr className="border-b border-gray-100 dark:border-gray-800">
+            <tr className={`border-b border-gray-100 dark:border-gray-800 ${getRowDiffClass(plans.map(p => p.category))}`}>
               <td className="p-3 font-medium text-sm">Categoría</td>
               {plans.map((plan) => (
                 <td key={plan.id} className="p-3 text-center">
@@ -145,9 +178,19 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
               </td>
             </tr>
             {features.map((feature, index) => (
-              <tr key={index} className="border-b border-gray-100 dark:border-gray-800">
+              <tr key={index} className={`border-b border-gray-100 dark:border-gray-800 ${getRowDiffClass(plans.map(p => (p.benefits||[]).includes(feature)))}`}>
                 <td className="p-3 text-sm text-gray-700 dark:text-gray-300">
-                  {feature}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="inline-flex items-center gap-1">
+                        {feature}
+                        <Info className="h-3 w-3 text-gray-400" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Explicación: Beneficio que puede incluir cobertura específica o ventajas adicionales.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </td>
                 {plans.map((plan) => {
                   const hasFeature = plan.benefits?.includes(feature);
@@ -156,7 +199,9 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
                       {hasFeature ? (
                         <CheckCircle className="h-5 w-5 mx-auto text-green-500" />
                       ) : (
-                        <XCircle className="h-5 w-5 mx-auto text-gray-300" />
+                        <span className="inline-flex items-center gap-1 text-xs text-red-500">
+                          <XCircle className="h-4 w-4" /> No incluido
+                        </span>
                       )}
                     </td>
                   );
