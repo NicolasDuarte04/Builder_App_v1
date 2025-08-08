@@ -18,6 +18,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isScannedPDF, setIsScannedPDF] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Show loading state while checking authentication
@@ -94,6 +95,9 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
     try {
       const formData = new FormData();
       formData.append('file', uploadedFile);
+      if (isScannedPDF) {
+        formData.append('forceOcr', 'true');
+      }
 
       // Simulate upload progress
       const progressInterval = setInterval(() => {
@@ -134,8 +138,10 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
             ...result.analysis,
             _pdfData: {
               fileName: uploadedFile.name,
-              pdfUrl: base64Data,
-              rawAnalysisData: result.analysis
+              // Prefer server public url if provided; fallback to local base64 preview
+              pdfUrl: result.pdfUrl || base64Data,
+              rawAnalysisData: result.analysis,
+              extractionMethod: result.extractionMethod
             }
           });
           setUploadedFile(null);
@@ -231,6 +237,20 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Scanned PDF toggle */}
+            <div className="mb-4 flex items-center gap-2">
+              <input
+                id="scannedPdfToggle"
+                type="checkbox"
+                className="h-4 w-4"
+                checked={isScannedPDF}
+                onChange={(e) => setIsScannedPDF(e.target.checked)}
+              />
+              <label htmlFor="scannedPdfToggle" className="text-sm text-gray-700 dark:text-gray-300">
+                Este es un PDF escaneado (forzar OCR)
+              </label>
             </div>
 
             {isUploading ? (
