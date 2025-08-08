@@ -19,9 +19,9 @@ const path = require('path');
 
 // Configuration
 const CONFIG = {
-  databaseUrl: process.env.RENDER_POSTGRES_URL,
+  databaseUrl: process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL,
   backupDir: './backups',
-  webhoundDataPath: './data/webhound-insurance-plans.json',
+  webhoundDataPath: '../data/transformed-insurance-plans.json',
   dryRun: process.argv.includes('--dry-run'),
   backupOnly: process.argv.includes('--backup-only'),
   rollback: process.argv.includes('--rollback')
@@ -36,16 +36,14 @@ const pool = new Pool({
 // Schema validation for Webhound data
 const WEBHOUND_SCHEMA = {
   required: ['name', 'provider', 'category', 'base_price'],
-  optional: ['external_link', 'benefits', 'features', 'tags'],
+  optional: ['quote_link', 'benefits'],
   types: {
     name: 'string',
     provider: 'string', 
     category: 'string',
     base_price: 'number',
-    external_link: 'string',
-    benefits: 'array',
-    features: 'object',
-    tags: 'array'
+    quote_link: 'string',
+    benefits: 'array'
   }
 };
 
@@ -55,10 +53,8 @@ const DB_SCHEMA_MAPPING = {
   provider: 'provider',
   category: 'category', 
   base_price: 'base_price',
-  external_link: 'external_link',
+  quote_link: 'external_link', // Map quote_link to external_link
   benefits: 'benefits',
-  features: 'features',
-  tags: 'tags',
   // Default values for missing fields
   country: 'CO',
   currency: 'COP',
@@ -146,11 +142,16 @@ class InsurancePlansRefresher {
         }
       });
       
-      // Check field types
+      // Check field types (with more flexible validation for optional fields)
       Object.entries(WEBHOUND_SCHEMA.types).forEach(([field, expectedType]) => {
-        if (field in plan) {
+        if (field in plan && plan[field] !== null) {
           const actualType = Array.isArray(plan[field]) ? 'array' : typeof plan[field];
           if (actualType !== expectedType) {
+            // Allow string for features (can be JSON string or object-like string)
+            if (field === 'features' && actualType === 'string') {
+              // Skip validation for features as string - will be handled in transform
+              return;
+            }
             errors.push(`Plan ${index}: Field '${field}' should be ${expectedType}, got ${actualType}`);
           }
         }
@@ -220,32 +221,21 @@ class InsurancePlansRefresher {
   }
 
   transformPlanForDB(webhoundPlan) {
-    const dbPlan = {};
-    
-    // Map fields according to schema mapping
-    Object.entries(DB_SCHEMA_MAPPING).forEach(([webhoundField, dbField]) => {
-      if (webhoundField in webhoundPlan) {
-        dbPlan[dbField] = webhoundPlan[webhoundField];
-      } else if (dbField in DB_SCHEMA_MAPPING) {
-        // Use default value
-        dbPlan[dbField] = DB_SCHEMA_MAPPING[dbField];
-      }
-    });
-    
-    // Ensure benefits is stored as JSONB
-    if (dbPlan.benefits && Array.isArray(dbPlan.benefits)) {
-      dbPlan.benefits = JSON.stringify(dbPlan.benefits);
-    }
-    
-    // Ensure features is stored as JSONB
-    if (dbPlan.features && typeof dbPlan.features === 'object') {
-      dbPlan.features = JSON.stringify(dbPlan.features);
-    }
-    
-    // Ensure tags is stored as JSONB
-    if (dbPlan.tags && Array.isArray(dbPlan.tags)) {
-      dbPlan.tags = JSON.stringify(dbPlan.tags);
-    }
+    const dbPlan = {
+      name: webhoundPlan.name,
+      provider: webhoundPlan.provider,
+      category: webhoundPlan.category,
+      base_price: Math.round(parseFloat(webhoundPlan.base_price) || 0),
+      external_link: webhoundPlan.quote_link,
+      benefits: Array.isArray(webhoundPlan.benefits) ? JSON.stringify(webhoundPlan.benefits) : '[]',
+      country: 'CO',
+      currency: 'COP',
+      rating: '4.5',
+      reviews: 0,
+      is_external: true,
+      brochure_link: null,
+      coverage_amount: 0
+    };
     
     return dbPlan;
   }

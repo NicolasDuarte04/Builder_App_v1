@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Mic,
   ArrowUp,
@@ -159,6 +159,22 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     clearChat,
     appendAssistantMessage,
   } = useBrikiChat(initialMessages);
+
+  // Detect comparison messages to allow wider chat area when sidebar is open
+  // Declare this BEFORE any early returns to preserve hook order
+  const hasComparisonMessage = useMemo(() => {
+    return messages.some((m) => {
+      if (m.role !== 'assistant') return false;
+      try {
+        const parsed = JSON.parse(m.content as string);
+        return parsed?.type === 'comparison';
+      } catch {
+        return false;
+      }
+    });
+  }, [messages]);
+
+  
 
   const { data: session } = useSession();
   const [userId, setUserId] = useState<string>(''); // Initialize as empty string
@@ -665,11 +681,16 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
             </div>
           ) : (
             <div className={`${
-              isDualPanelMode && isRightPanelOpen ? 'max-w-lg' : 'max-w-2xl'
-            } mx-auto px-3 py-3 space-y-2 sm:space-y-1.5`}>
+              isDualPanelMode && isRightPanelOpen ? (hasComparisonMessage ? 'max-w-4xl' : 'max-w-lg') : 'max-w-2xl'
+            } mx-auto px-3 py-3 space-y-2 sm:space-y-1.5 transition-all duration-300`}>
               {messages
                 .filter(message => message.role !== 'system') // Hide system messages from UI
                 .map((message, index) => {
+                  let isComparison = false;
+                  try {
+                    const parsed = JSON.parse(message.content);
+                    isComparison = parsed?.type === 'comparison';
+                  } catch {}
                   return (
                     <div
                       key={index}
@@ -678,7 +699,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                       }`}
                     >
                       <div
-                        className={`max-w-full sm:max-w-[85%] rounded-lg px-4 py-3 text-xl leading-relaxed ${
+                        className={`max-w-full ${isComparison ? 'sm:max-w-[95%]' : 'sm:max-w-[85%]'} rounded-lg px-4 py-3 text-xl leading-relaxed ${
                           message.role === 'user'
                             ? 'bg-blue-600 text-white'
                             : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-neutral-700'
@@ -701,8 +722,8 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
         {/* Sticky Input Area */}
         <div className="sticky bottom-0 z-10 border-t bg-white dark:bg-black">
           <div className={`${
-            isDualPanelMode && isRightPanelOpen ? 'max-w-lg' : 'max-w-2xl'
-          } mx-auto px-3`}>
+            isDualPanelMode && isRightPanelOpen ? (hasComparisonMessage ? 'max-w-4xl' : 'max-w-lg') : 'max-w-2xl'
+          } mx-auto px-3 transition-all duration-300`}>
             <form onSubmit={handleSmartSubmit} className="w-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden my-2">
               <div className="p-3">
                 <input

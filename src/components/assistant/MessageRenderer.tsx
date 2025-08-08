@@ -91,11 +91,12 @@ export const MessageRenderer = React.memo(function MessageRenderer({
       }
     }
 
-    // Check assistant messages for embedded plan data
+    // Check assistant messages for embedded plan data (only insurance_plans, not comparison)
     if (role === 'assistant') {
       try {
         const parsed = JSON.parse(content);
-        if (parsed.type === 'insurance_plans' || parsed.plans !== undefined) {
+        // Only treat explicit insurance_plans payloads as structured plan data
+        if (parsed.type === 'insurance_plans') {
           // Check for category mismatch
           const isCategoryMismatch = parsed.noExactMatchesFound && 
                                      parsed.insuranceType && 
@@ -115,7 +116,7 @@ export const MessageRenderer = React.memo(function MessageRenderer({
         if (jsonMatch) {
           try {
             const parsed = JSON.parse(jsonMatch[0]);
-            if (parsed.type === 'insurance_plans' || parsed.plans !== undefined) {
+            if (parsed.type === 'insurance_plans') {
               // Check for category mismatch
               const isCategoryMismatch = parsed.noExactMatchesFound && 
                                          parsed.insuranceType && 
@@ -237,15 +238,14 @@ export const MessageRenderer = React.memo(function MessageRenderer({
     if (role === 'assistant') {
       try {
         const parsed = JSON.parse(content);
-        return (parsed.type === 'insurance_plans' || parsed.plans !== undefined) && 
-               parsed.plans?.length > 0;
+        // Only compress when it's the insurance_plans payload
+        return parsed.type === 'insurance_plans' && parsed.plans?.length > 0;
       } catch {
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           try {
             const parsed = JSON.parse(jsonMatch[0]);
-            return (parsed.type === 'insurance_plans' || parsed.plans !== undefined) && 
-                   parsed.plans?.length > 0;
+            return parsed.type === 'insurance_plans' && parsed.plans?.length > 0;
           } catch {
             return false;
           }
@@ -295,18 +295,6 @@ export const MessageRenderer = React.memo(function MessageRenderer({
         return (
           <ComparisonMessage
             plans={parsed.plans}
-            onViewDetails={(plan) => {
-              // Handle view details - could open modal or navigate
-              console.log('View details for plan:', plan);
-            }}
-            onQuote={(plan) => {
-              // Handle quote action
-              console.log('Quote plan:', plan);
-            }}
-            onUnpin={(planId) => {
-              // Handle unpin action
-              console.log('Unpin plan:', planId);
-            }}
           />
         );
       }

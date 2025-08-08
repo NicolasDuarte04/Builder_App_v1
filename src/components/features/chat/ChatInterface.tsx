@@ -11,6 +11,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Plus, Send, Loader2, AlertTriangle } from "lucide-react";
 import { Message } from "ai";
 import { InsurancePlansMessage } from "@/components/assistant/InsurancePlansMessage";
+import { ComparisonMessage } from "@/components/assistant/ComparisonMessage";
 import { InsurancePlan } from "@/components/briki-ai-assistant/NewPlanCard";
 
 interface ChatInterfaceProps {
@@ -34,6 +35,15 @@ const tryParseJSON = (content: string) => {
 // Message content renderer
 const MessageContent = ({ content }: { content: string }) => {
   const jsonContent = tryParseJSON(content);
+
+  // If it's a comparison message
+  if (jsonContent?.type === 'comparison' && Array.isArray(jsonContent.plans)) {
+    return (
+      <ComparisonMessage
+        plans={jsonContent.plans}
+      />
+    );
+  }
 
   // If it's an insurance plans message
   if (jsonContent?.type === 'insurance_plans' && Array.isArray(jsonContent.plans)) {

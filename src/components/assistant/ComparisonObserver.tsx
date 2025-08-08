@@ -24,9 +24,24 @@ export function ComparisonObserver({ appendAssistantMessage }: ComparisonObserve
         console.log('✅ Creating comparison message with', pinnedPlans.length, 'plans');
         
         try {
+          // Ensure plans have the correct structure for the comparison component
+          const formattedPlans = pinnedPlans.map(plan => ({
+            id: plan.id,
+            name: plan.name,
+            provider: plan.provider,
+            basePrice: plan.basePrice || 0,
+            currency: plan.currency || 'COP',
+            benefits: Array.isArray(plan.benefits) ? plan.benefits : [],
+            category: plan.category || 'seguro',
+            rating: plan.rating || 4.0,
+            is_external: plan.is_external !== undefined ? plan.is_external : true,
+            external_link: plan.external_link || null,
+            tags: plan.tags || []
+          }));
+
           const comparisonMessage = {
             type: 'comparison',
-            plans: pinnedPlans,
+            plans: formattedPlans,
             timestamp: new Date().toISOString()
           };
 
@@ -53,11 +68,12 @@ export function ComparisonObserver({ appendAssistantMessage }: ComparisonObserve
       }
     };
 
-    // Listen for comparison requests
-    eventBus.on('comparison:request', handleComparisonRequest);
+    // Listen for comparison requests and keep the unsubscribe to avoid removing other listeners
+    const unsubscribe = eventBus.on('comparison:request', handleComparisonRequest);
 
     return () => {
-      eventBus.off('comparison:request', handleComparisonRequest);
+      // Properly unsubscribe only this handler
+      unsubscribe();
     };
   }, [appendAssistantMessage, currentResults]);
 

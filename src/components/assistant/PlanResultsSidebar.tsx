@@ -272,7 +272,7 @@ export function PlanResultsSidebar({
                           }}
                           className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded transition-colors"
                         >
-                          View Comparison
+                          View Comparison in Chat
                         </button>
                       </div>
                     )}
@@ -414,24 +414,26 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
         </div>
       )}
 
-      {/* Actions */}
-      <div className="flex gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onViewDetails(plan.id)}
-          className="flex-1 h-7 text-xs"
-        >
-          Details
-        </Button>
-        <Button
-          size="sm"
-          onClick={() => onQuote(plan.id)}
-          className="flex-1 h-7 text-xs bg-blue-600 hover:bg-blue-700"
-        >
-          Quote
-        </Button>
-      </div>
+      {/* Actions - Only show for unpinned plans */}
+      {!isPinned && (
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onViewDetails(plan.id)}
+            className="flex-1 h-7 text-xs"
+          >
+            Details
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => onQuote(plan.id)}
+            className="flex-1 h-7 text-xs bg-blue-600 hover:bg-blue-700"
+          >
+            Quote
+          </Button>
+        </div>
+      )}
     </motion.div>
   );
 }
