@@ -346,23 +346,42 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
             Guarda este análisis para acceder fácilmente a los detalles de tu póliza en cualquier momento.
           </p>
           <SavePolicyButton
-            policyData={{
-              custom_name: fileName || `${analysis.policyType} - ${new Date().toLocaleDateString()}`,
-              insurer_name: analysis.insurer?.name || 'Sin Aseguradora',
-              policy_type: analysis.policyType || 'General',
-              priority: analysis.riskScore <= 3 ? 'low' : analysis.riskScore <= 6 ? 'medium' : 'high',
-              pdf_base64: pdfUrl,
-              metadata: {
-                policy_number: analysis.policyDetails.policyNumber,
-                effective_date: analysis.policyDetails.effectiveDate,
-                expiration_date: analysis.policyDetails.expirationDate,
-                premium_amount: analysis.premium.amount,
-                premium_currency: analysis.premium.currency,
-                premium_frequency: analysis.premium.frequency,
-                risk_score: analysis.riskScore,
-              },
-              extracted_data: rawAnalysisData || analysis,
-            }}
+            policyData={(function() {
+              const payload: any = {
+                custom_name: fileName || `${analysis.policyType} - ${new Date().toLocaleDateString()}`,
+                insurer_name: analysis.insurer?.name || 'Sin Aseguradora',
+                policy_type: analysis.policyType || 'General',
+                priority: analysis.riskScore <= 3 ? 'low' : analysis.riskScore <= 6 ? 'medium' : 'high',
+                metadata: {
+                  policy_number: analysis.policyDetails.policyNumber,
+                  effective_date: analysis.policyDetails.effectiveDate,
+                  expiration_date: analysis.policyDetails.expirationDate,
+                  premium_amount: analysis.premium.amount,
+                  premium_currency: analysis.premium.currency,
+                  premium_frequency: analysis.premium.frequency,
+                  risk_score: analysis.riskScore,
+                },
+                extracted_data: rawAnalysisData || analysis,
+              };
+
+              // Prefer identifiers returned by analyzer
+              const anyAnalysis: any = (rawAnalysisData || {}) as any;
+              const uploadId = anyAnalysis?.uploadId ?? (analysis as any)?.uploadId;
+              const storagePath = anyAnalysis?.storagePath ?? (analysis as any)?.storagePath;
+              const signedUrl = anyAnalysis?.pdfUrl ?? (analysis as any)?.pdfUrl ?? pdfUrl;
+
+              if (uploadId) {
+                payload.upload_id = uploadId;
+              } else if (storagePath) {
+                payload.storage_path = storagePath;
+                if (signedUrl) payload.pdf_url = signedUrl;
+              } else if (signedUrl && /^data:application\/pdf;base64,/.test(String(signedUrl))) {
+                // Only send base64 if we truly have it
+                payload.pdf_base64 = signedUrl;
+              }
+
+              return payload;
+            })()}
             onSuccess={() => {
               router.push('/dashboard/insurance');
             }}

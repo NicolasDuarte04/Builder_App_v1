@@ -15,6 +15,9 @@ const SavePolicySchema = z.object({
   insurer_name: z.string().optional(),
   policy_type: z.string().optional(),
   priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  upload_id: z.string().uuid().optional(),
+  storage_path: z.string().optional(),
+  pdf_url: z.string().url().optional(),
   pdf_base64: z.string().optional(),
   metadata: z.record(z.any()).default({}),
   extracted_data: z.record(z.any()).default({})
@@ -98,7 +101,12 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
-    console.log("POST /api/policies - Request body:", JSON.stringify(body, null, 2));
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        const keys = Object.keys(body || {});
+        console.log("POST /api/policies - body keys:", keys);
+      } catch {}
+    }
     let validatedData;
     
     try {
@@ -119,6 +127,9 @@ export async function POST(request: NextRequest) {
       insurer_name,
       policy_type,
       priority,
+      upload_id,
+      storage_path: provided_storage_path,
+      pdf_url: provided_pdf_url,
       pdf_base64,
       metadata,
       extracted_data
@@ -139,11 +150,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let storage_path = null;
-    let pdf_url = null;
+    let storage_path = null as string | null;
+    let pdf_url = null as string | null;
 
-    // If PDF is provided, upload to Supabase Storage
-    if (pdf_base64) {
+    // Resolution order: upload_id -> storage_path/pdf_url -> pdf_base64
+    if (upload_id) {
+      // Lookup storage path from policy_uploads scoped to user
+      const { data: lookup, error: lookupError } = await supabase
+        .from('policy_uploads')
+        .select('storage_path')
+        .eq('id', upload_id)
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (lookupError || !lookup?.storage_path) {
+        return NextResponse.json({ error: 'upload_id not found' }, { status: 400 });
+      }
+
+      storage_path = lookup.storage_path as string;
+      // Create a signed URL (object paths in storage APIs are bucket-relative)
+      try {
+        const signed = await supabase.storage
+          .from('policy-documents')
+          .createSignedUrl(storage_path, 60 * 60);
+        pdf_url = signed?.data?.signedUrl || null;
+      } catch (e) {
+        console.warn('[policies] signing url failed for upload_id', e);
+      }
+    } else if (provided_storage_path) {
+      storage_path = provided_storage_path;
+      try {
+        const signed = await supabase.storage
+          .from('policy-documents')
+          .createSignedUrl(storage_path, 60 * 60);
+        pdf_url = signed?.data?.signedUrl || provided_pdf_url || null;
+      } catch (e) {
+        console.warn('[policies] signing url failed for provided storage_path', e);
+        pdf_url = provided_pdf_url || null;
+      }
+    } else if (pdf_base64) {
       try {
         // Convert base64 to buffer
         const base64Data = pdf_base64.replace(/^data:application\/pdf;base64,/, "");
@@ -177,7 +222,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        storage_path = uploadData.path;
+        storage_path = uploadData.path as string;
         
         // Get public URL
         const { data: urlData } = supabase.storage
@@ -198,6 +243,14 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+    }
+
+    // Guard: must have at least one of the identifiers resolved or a url
+    if (!storage_path && !pdf_url) {
+      return NextResponse.json(
+        { error: 'Missing upload_id | storage_path | pdf_base64' },
+        { status: 400 }
+      );
     }
 
     // Insert policy record

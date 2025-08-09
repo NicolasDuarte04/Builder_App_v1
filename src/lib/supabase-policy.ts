@@ -11,6 +11,9 @@ export interface PolicyUpload {
   ai_summary: string;
   status: 'uploading' | 'processing' | 'completed' | 'error';
   error_message?: string;
+  extraction_method?: 'text' | 'ocr';
+  pdf_url?: string | null;
+  storage_path?: string | null;
   // Enhanced metadata fields
   insurer_name?: string;
   insurer_contact?: string;
