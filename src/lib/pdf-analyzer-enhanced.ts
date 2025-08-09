@@ -41,6 +41,11 @@ export async function extractTextFromPDFWithOCR(file: File): Promise<{ text: str
   }
 }
 
+// Exported helper to force OCR-only path when caller knows the PDF is scanned
+export async function extractTextFromPDFOCROnly(file: File): Promise<{ text: string; method: 'ocr' }> {
+  return performOCR(file);
+}
+
 /**
  * Perform OCR on a PDF file using Tesseract.js
  */

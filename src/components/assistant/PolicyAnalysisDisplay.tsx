@@ -19,6 +19,8 @@ interface PolicyAnalysis {
     limits: Record<string, number>;
     deductibles: Record<string, number>;
     exclusions: string[];
+    geography?: string;
+    claimInstructions?: string[];
   };
   policyDetails: {
     policyNumber?: string;
@@ -26,9 +28,19 @@ interface PolicyAnalysis {
     expirationDate?: string;
     insured: string[];
   };
+  insurer?: {
+    name?: string;
+    contact?: string;
+    emergencyLines?: string[];
+  };
+  premiumTable?: { label?: string; year?: string | number; plan?: string; amount?: number | string }[];
   keyFeatures: string[];
   recommendations: string[];
   riskScore: number;
+  riskJustification?: string;
+  sourceQuotes?: Record<string, string>;
+  redFlags?: string[];
+  missingInfo?: string[];
 }
 
 interface PolicyAnalysisDisplayProps {
@@ -84,6 +96,35 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
             /{analysis.premium.frequency}
           </span>
         </div>
+        {/* Optional: Show how we calculated */}
+        {Array.isArray(analysis.premiumTable) && analysis.premiumTable.length > 0 && (
+          <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            <details>
+              <summary className="cursor-pointer">Cómo lo calculamos</summary>
+              <div className="mt-2">
+                <p className="mb-2">Valores detectados en tablas:</p>
+                <ul className="list-disc ml-5">
+                  {analysis.premiumTable.slice(0, 6).map((row, idx) => (
+                    <li key={idx}>{[row.year, row.plan, row.label].filter(Boolean).join(' • ')}: {typeof row.amount === 'number' ? formatCurrency(row.amount, analysis.premium.currency) : row.amount}</li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          </div>
+        )}
+        {/* View original PDF button if available */}
+        {(pdfUrl as string) && (
+          <div className="mt-3">
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Ver PDF original
+            </a>
+          </div>
+        )}
       </div>
 
       {/* Coverage Limits */}
@@ -173,6 +214,11 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
           {analysis.riskScore <= 3 ? 'Riesgo bajo' : 
            analysis.riskScore <= 6 ? 'Riesgo moderado' : 'Riesgo alto'}
         </p>
+        {analysis.riskJustification && (
+          <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            {analysis.riskJustification}
+          </p>
+        )}
       </div>
 
       {/* Recommendations */}
@@ -220,8 +266,75 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
               </p>
             </div>
           )}
+          {analysis.insurer?.contact && (
+            <div>
+              <p className="text-gray-600 dark:text-gray-400">Contacto de la aseguradora</p>
+              <p className="font-medium text-gray-900 dark:text-white">{analysis.insurer.contact}</p>
+            </div>
+          )}
+          {analysis.insurer?.emergencyLines && analysis.insurer.emergencyLines.length > 0 && (
+            <div className="md:col-span-2">
+              <p className="text-gray-600 dark:text-gray-400">Líneas de emergencia</p>
+              <p className="font-medium text-gray-900 dark:text-white">{analysis.insurer.emergencyLines.join(', ')}</p>
+            </div>
+          )}
+          {analysis.coverage?.geography && (
+            <div>
+              <p className="text-gray-600 dark:text-gray-400">Cobertura geográfica</p>
+              <p className="font-medium text-gray-900 dark:text-white">{analysis.coverage.geography}</p>
+            </div>
+          )}
+          {analysis.coverage?.claimInstructions && analysis.coverage.claimInstructions.length > 0 && (
+            <div className="md:col-span-2">
+              <p className="text-gray-600 dark:text-gray-400">Instrucciones de reclamo</p>
+              <ul className="list-disc ml-5 text-gray-900 dark:text-white">
+                {analysis.coverage.claimInstructions.map((step, idx) => (
+                  <li key={idx} className="mb-1">{step}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Traceability: Source quotes, red flags, missing info */}
+      {(analysis.sourceQuotes && Object.keys(analysis.sourceQuotes).length > 0) && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <details>
+            <summary className="cursor-pointer font-semibold text-gray-900 dark:text-white">Citas de origen (sourceQuotes)</summary>
+            <div className="mt-3 space-y-2">
+              {Object.entries(analysis.sourceQuotes).map(([k, v]) => (
+                <div key={k} className="text-sm">
+                  <p className="text-gray-600 dark:text-gray-400">{k}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{v}</p>
+                </div>
+              ))}
+            </div>
+          </details>
+        </div>
+      )}
+
+      {(analysis.redFlags && analysis.redFlags.length > 0) && (
+        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
+          <h4 className="font-semibold text-red-800 dark:text-red-200 mb-2">Señales de alerta</h4>
+          <ul className="list-disc ml-5 text-sm text-red-900 dark:text-red-100">
+            {analysis.redFlags.map((f, i) => (
+              <li key={i}>{f}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {(analysis.missingInfo && analysis.missingInfo.length > 0) && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
+          <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Información faltante</h4>
+          <ul className="list-disc ml-5 text-sm text-yellow-900 dark:text-yellow-100">
+            {analysis.missingInfo.map((m, i) => (
+              <li key={i}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Save Policy Section */}
       <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
