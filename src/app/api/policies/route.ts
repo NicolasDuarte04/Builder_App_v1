@@ -11,24 +11,21 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Validation schema for save policy request
+// Validation schema for save policy request (final)
 const SavePolicySchema = z.object({
-  custom_name: z.string().min(1).max(255),
+  custom_name: z.string(),
   insurer_name: z.string().optional(),
   policy_type: z.string().optional(),
   priority: z.enum(['low', 'medium', 'high']).default('medium'),
-<<<<<<< HEAD
-  upload_id: z.string().uuid().optional(),
-  storage_path: z.string().optional(),
-  pdf_url: z.string().url().optional(),
-=======
+
   // Preferred reuse of analyzer artifacts
-  upload_id: z.string().optional(),
+  upload_id: z.string().uuid().optional(),
   pdf_url: z.string().url().optional(),
   storage_path: z.string().optional(),
-  // Legacy
->>>>>>> 6b247f8 (feat: implement reliable analyze-save workflow with ownership tracking and guardrails)
+
+  // Legacy path (only when truly raw base64 is sent)
   pdf_base64: z.string().optional(),
+
   metadata: z.record(z.any()).default({}),
   extracted_data: z.record(z.any()).default({})
 });
@@ -114,14 +111,7 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body
     const body = await request.json();
     if (process.env.NODE_ENV !== 'production') {
-<<<<<<< HEAD
-      try {
-        const keys = Object.keys(body || {});
-        console.log("POST /api/policies - body keys:", keys);
-      } catch {}
-=======
       console.log('[policies] body keys:', Object.keys(body || {}));
->>>>>>> 6b247f8 (feat: implement reliable analyze-save workflow with ownership tracking and guardrails)
     }
     let validatedData;
     
@@ -144,13 +134,8 @@ export async function POST(request: NextRequest) {
       policy_type,
       priority,
       upload_id,
-<<<<<<< HEAD
-      storage_path: provided_storage_path,
-      pdf_url: provided_pdf_url,
-=======
       pdf_url: providedPdfUrl,
       storage_path: providedStoragePath,
->>>>>>> 6b247f8 (feat: implement reliable analyze-save workflow with ownership tracking and guardrails)
       pdf_base64,
       metadata,
       extracted_data
@@ -171,47 +156,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-<<<<<<< HEAD
-    let storage_path = null as string | null;
-    let pdf_url = null as string | null;
-
-    // Resolution order: upload_id -> storage_path/pdf_url -> pdf_base64
-    if (upload_id) {
-      // Lookup storage path from policy_uploads scoped to user
-      const { data: lookup, error: lookupError } = await supabase
-        .from('policy_uploads')
-        .select('storage_path')
-        .eq('id', upload_id)
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (lookupError || !lookup?.storage_path) {
-        return NextResponse.json({ error: 'upload_id not found' }, { status: 400 });
-      }
-
-      storage_path = lookup.storage_path as string;
-      // Create a signed URL (object paths in storage APIs are bucket-relative)
-      try {
-        const signed = await supabase.storage
-          .from('policy-documents')
-          .createSignedUrl(storage_path, 60 * 60);
-        pdf_url = signed?.data?.signedUrl || null;
-      } catch (e) {
-        console.warn('[policies] signing url failed for upload_id', e);
-      }
-    } else if (provided_storage_path) {
-      storage_path = provided_storage_path;
-      try {
-        const signed = await supabase.storage
-          .from('policy-documents')
-          .createSignedUrl(storage_path, 60 * 60);
-        pdf_url = signed?.data?.signedUrl || provided_pdf_url || null;
-      } catch (e) {
-        console.warn('[policies] signing url failed for provided storage_path', e);
-        pdf_url = provided_pdf_url || null;
-      }
-    } else if (pdf_base64) {
-=======
     let storage_path: string | null = null;
     let pdf_url: string | null = null;
 
@@ -338,7 +282,6 @@ export async function POST(request: NextRequest) {
         }
         pdf_url = asUrl;
       } else {
->>>>>>> 6b247f8 (feat: implement reliable analyze-save workflow with ownership tracking and guardrails)
       try {
         // Convert base64 to buffer
         const base64Data = pdf_base64.replace(/^data:application\/pdf;base64,/, "");
@@ -365,33 +308,19 @@ export async function POST(request: NextRequest) {
           );
         }
 
-<<<<<<< HEAD
         storage_path = uploadData.path as string;
-        
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from("policy-documents")
-          .getPublicUrl(storage_path);
-        
-        pdf_url = urlData.publicUrl;
-=======
-        storage_path = uploadData.path;
+        // Prefer signed URL, fallback to public
         try {
           const { data: signed } = await supabase.storage
-            .from("policy-documents")
-            .createSignedUrl(storage_path, 60 * 60 * 24 * 30);
-          pdf_url = signed?.signedUrl || null;
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('[policies] sign result:', { ok: !!signed?.signedUrl });
-          }
-        } catch (e: any) {
-          console.warn('[policies] sign error after upload', e?.message);
-          return NextResponse.json(
-            { where: 'sign', error: 'Failed to sign URL after upload', message: e?.message, code: e?.code },
-            { status: 502 }
-          );
+            .from('policy-documents')
+            .createSignedUrl(storage_path, 60 * 60);
+          pdf_url = signed?.signedUrl ?? null;
+        } catch {
+          const { data: urlData } = supabase.storage
+            .from('policy-documents')
+            .getPublicUrl(storage_path);
+          pdf_url = urlData.publicUrl;
         }
->>>>>>> 6b247f8 (feat: implement reliable analyze-save workflow with ownership tracking and guardrails)
       } catch (uploadError) {
         console.error("Error processing PDF upload:", uploadError);
         return NextResponse.json(

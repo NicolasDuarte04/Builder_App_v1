@@ -237,13 +237,9 @@ export async function POST(request: NextRequest) {
       // Update record with extracted text
       await updatePolicyUpload(uploadRecord.id, {
         extracted_text: pdfText,
-<<<<<<< HEAD
-        status: 'processing'
-=======
         status: 'processing',
         extraction_method: extractionMethod,
         user_id: userId
->>>>>>> 6b247f8 (feat: implement reliable analyze-save workflow with ownership tracking and guardrails)
       }, serverSupabase);
 
       // Analyze with AI using generateObject for structured output (supports chunking + merge)
@@ -309,7 +305,6 @@ export async function POST(request: NextRequest) {
         analysis: finalAnalysis,
         fileName: file.name,
         uploadId: uploadRecord.id,
-        storagePath: storagePath || undefined,
         extractionMethod: extractionMethod,
         pdfUrl: pdfPublicUrl || undefined,
         storagePath: storagePath || undefined,
