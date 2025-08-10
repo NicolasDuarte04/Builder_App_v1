@@ -136,28 +136,15 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
         setTimeout(() => {
           onAnalysisComplete({
             ...result.analysis,
-            uploadId: result.uploadId,
-            storagePath: result.storagePath,
-            pdfUrl: result.pdfUrl,
             _pdfData: {
               fileName: uploadedFile.name,
               // Prefer server public url if provided; fallback to local base64 preview
               pdfUrl: result.pdfUrl || base64Data,
-<<<<<<< HEAD
-              rawAnalysisData: {
-                ...result.analysis,
-                uploadId: result.uploadId,
-                storagePath: result.storagePath,
-                pdfUrl: result.pdfUrl
-              },
-              extractionMethod: result.extractionMethod
-=======
               rawAnalysisData: result.analysis,
               extractionMethod: result.extractionMethod,
               uploadId: result.uploadId,
               storagePath: result.storagePath,
               uploaderUserId: result.uploaderUserId,
->>>>>>> 6b247f8 (feat: implement reliable analyze-save workflow with ownership tracking and guardrails)
             }
           });
           setUploadedFile(null);
