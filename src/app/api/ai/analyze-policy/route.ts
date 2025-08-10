@@ -10,6 +10,10 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { parseCopMoney } from '@/lib/money';
 
+// Force Node.js runtime for NextAuth/Supabase compatibility
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
   // Define the schema for the policy analysis - enhanced with user-relevant fields
 const PolicyAnalysisSchema = z.object({
   policyType: z.string().default("Unknown"),
@@ -94,8 +98,9 @@ export async function POST(request: NextRequest) {
     console.log('🔐 Session check:', session ? 'Authenticated' : 'Not authenticated');
 
     if (!session || !session.user || !(session.user as any).id) {
+      console.log('❌ No valid session found - returning 401');
       return NextResponse.json(
-        { error: 'Authentication required. Please log in to analyze PDFs.' },
+        { error: 'unauthorized', message: 'Sign in required to analyze policies', where: 'session-check' },
         { status: 401 }
       );
     }
@@ -338,22 +343,21 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-  } catch (error) {
-    console.error('❌ Error analyzing policy:', error);
+  } catch (error: any) {
+    console.error('[analyze-policy] error:', error);
     
     // Return more detailed error information
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorDetails = {
-      error: 'Failed to analyze policy',
-      details: errorMessage,
-      uploadId: uploadId,
-      timestamp: new Date().toISOString()
-    };
-
-    // Log the full error for debugging
-    console.error('Full error details:', errorDetails);
-    
-    return NextResponse.json(errorDetails, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json(
+      { 
+        error: 'internal', 
+        where: 'analyze-policy',
+        message: errorMessage,
+        uploadId: uploadId,
+        timestamp: new Date().toISOString()
+      },
+      { status: 500 }
+    );
   }
 }
 

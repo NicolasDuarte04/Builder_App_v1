@@ -6,6 +6,10 @@ import { z } from "zod";
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { inferStoragePathFromUrl } from '@/lib/storage';
 
+// Force Node.js runtime for NextAuth/Supabase compatibility
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -83,10 +87,10 @@ export async function GET(request: NextRequest) {
       limit,
       offset
     });
-  } catch (error) {
-    console.error("Error in GET /api/policies:", error);
+  } catch (error: any) {
+    console.error("[policies GET] error:", error);
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      { error: "internal", where: "policies-get", message: error?.message ?? String(error) },
       { status: 500 }
     );
   }
@@ -101,9 +105,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (!session?.user?.id) {
-      console.error("No user ID in session:", session);
+      console.log('[policies] No valid session found - returning 401');
       return NextResponse.json(
-        { error: "No autorizado - No se encontró ID de usuario" },
+        { error: "unauthorized", message: "Sign in required to save policies", where: "session-check" },
         { status: 401 }
       );
     }
@@ -368,10 +372,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ id: policy.id, pdf_url: policy.pdf_url, saved: true, signed: !!policy.pdf_url, message: "Análisis guardado exitosamente" });
-  } catch (error) {
-    console.error("Error in POST /api/policies:", error);
+  } catch (error: any) {
+    console.error("[policies POST] error:", error);
     return NextResponse.json(
-      { where: 'unknown', error: 'Error interno del servidor', message: error instanceof Error ? error.message : String(error) },
+      { error: 'internal', where: 'policies-post', message: error?.message ?? String(error) },
       { status: 500 }
     );
   }
