@@ -14,6 +14,25 @@ import { parseCopMoney } from '@/lib/money';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// GET health check endpoint
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+    return NextResponse.json({
+      ok: true,
+      runtime: process.env.NEXT_RUNTIME ?? 'unknown',
+      hasSession: !!session,
+      userId: (session?.user as any)?.id ?? null,
+      now: new Date().toISOString(),
+    });
+  } catch (e: any) {
+    return NextResponse.json(
+      { ok: false, where: 'analyze-policy::GET', message: String(e) },
+      { status: 500 }
+    );
+  }
+}
+
   // Define the schema for the policy analysis - enhanced with user-relevant fields
 const PolicyAnalysisSchema = z.object({
   policyType: z.string().default("Unknown"),
