@@ -3,7 +3,7 @@ import { extractTextFromPDF } from '@/lib/pdf-analyzer';
 import { extractTextFromPDFWithOCR, extractTextFromPDFOCROnly } from '@/lib/pdf-analyzer-enhanced';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
-import { createPolicyUpload, updatePolicyUpload } from '@/lib/supabase-policy';
+import { updatePolicyUpload } from '@/lib/supabase-policy';
 import { z } from 'zod';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -150,13 +150,25 @@ export async function POST(request: NextRequest) {
 
     // Create initial upload record
     console.log('💾 Creating upload record in database...');
-    const uploadRecord = await createPolicyUpload({
-      user_id: userId,
-      file_name: file.name,
-      file_path: `uploads/${userId}/${Date.now()}_${file.name}`,
-      extracted_text: '',
-      status: 'uploading'
-    }, serverSupabase);
+    // Insert initial upload row directly
+    const { data: uploadRecord, error: createErr } = await serverSupabase
+      .from('policy_uploads')
+      .insert({
+        user_id: userId,
+        file_name: file.name,
+        storage_path: null,
+        pdf_url: null,
+        extraction_method: null,
+      })
+      .select()
+      .single();
+    if (createErr) {
+      console.error('❌ Failed to create upload record in database', createErr);
+      return NextResponse.json(
+        { error: 'Failed to create upload record. Please check database configuration.' },
+        { status: 500 }
+      );
+    }
 
     if (!uploadRecord) {
       console.error('❌ Failed to create upload record in database');
@@ -240,7 +252,7 @@ export async function POST(request: NextRequest) {
         status: 'processing',
         extraction_method: extractionMethod,
         user_id: userId
-      }, serverSupabase);
+      });
 
       // Analyze with AI using generateObject for structured output (supports chunking + merge)
       console.log('🤖 Starting AI analysis...');
@@ -275,7 +287,7 @@ export async function POST(request: NextRequest) {
         coverage_geography: finalAnalysis.coverage?.geography || 'Colombia',
         claim_instructions: finalAnalysis.coverage?.claimInstructions || [],
         analysis_language: isSpanish ? 'Spanish' : 'English'
-      }, serverSupabase);
+      });
 
       // Debug: summarize extraction & chunk info in dev
       const debugInfo = process.env.NODE_ENV !== 'production' ? {
@@ -321,7 +333,7 @@ export async function POST(request: NextRequest) {
         status: 'error',
         error_message: errorMessage,
         user_id: (session?.user as any)?.id || null
-      }, serverSupabase);
+      });
 
       throw error;
     }

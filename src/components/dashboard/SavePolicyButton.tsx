@@ -12,9 +12,6 @@ interface SavePolicyButtonProps {
     insurer_name?: string;
     policy_type?: string;
     priority?: string;
-    upload_id?: string;
-    storage_path?: string;
-    pdf_url?: string;
     pdf_base64?: string;
     // Preferred fields from analyzer
     upload_id?: string;
