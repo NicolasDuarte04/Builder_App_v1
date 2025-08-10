@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { SavePolicyButton } from '../dashboard/SavePolicyButton';
+import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'next/navigation';
 
@@ -53,6 +54,8 @@ interface PolicyAnalysisDisplayProps {
 export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData }: PolicyAnalysisDisplayProps) {
   const { t } = useTranslation();
   const router = useRouter();
+  const { data: session } = useSession();
+  const sessionUserId = (session?.user as any)?.id;
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -66,6 +69,10 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     if (score <= 6) return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
     return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
   };
+
+  const meta = (analysis as any)?._pdfData || {};
+  const safePdfUrl = typeof meta.pdfUrl === 'string' && /^https?:\/\//i.test(meta.pdfUrl) ? meta.pdfUrl : undefined;
+  const shouldSendBase64 = !meta.uploadId && !safePdfUrl && typeof pdfUrl === 'string' && /^data:application\/pdf;base64,/i.test(pdfUrl);
 
   return (
     <motion.div
@@ -345,7 +352,13 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-md">
             Guarda este análisis para acceder fácilmente a los detalles de tu póliza en cualquier momento.
           </p>
+          {meta.uploaderUserId && sessionUserId && meta.uploaderUserId !== sessionUserId && (
+            <p className="text-xs text-yellow-700 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-300 px-3 py-2 rounded mb-3">
+              Este análisis fue generado con otra cuenta.
+            </p>
+          )}
           <SavePolicyButton
+<<<<<<< HEAD
             policyData={(function() {
               const payload: any = {
                 custom_name: fileName || `${analysis.policyType} - ${new Date().toLocaleDateString()}`,
@@ -382,6 +395,29 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
 
               return payload;
             })()}
+=======
+            policyData={{
+              custom_name: fileName || `${analysis.policyType} - ${new Date().toLocaleDateString()}`,
+              insurer_name: analysis.insurer?.name || 'Sin Aseguradora',
+              policy_type: analysis.policyType || 'General',
+              priority: analysis.riskScore <= 3 ? 'low' : analysis.riskScore <= 6 ? 'medium' : 'high',
+              pdf_base64: shouldSendBase64 ? pdfUrl : undefined,
+              pdf_url: safePdfUrl,
+              upload_id: meta.uploadId,
+              storage_path: meta.storagePath,
+              uploader_user_id: meta.uploaderUserId,
+              metadata: {
+                policy_number: analysis.policyDetails.policyNumber,
+                effective_date: analysis.policyDetails.effectiveDate,
+                expiration_date: analysis.policyDetails.expirationDate,
+                premium_amount: analysis.premium.amount,
+                premium_currency: analysis.premium.currency,
+                premium_frequency: analysis.premium.frequency,
+                risk_score: analysis.riskScore,
+              },
+              extracted_data: rawAnalysisData || analysis,
+            }}
+>>>>>>> 6b247f8 (feat: implement reliable analyze-save workflow with ownership tracking and guardrails)
             onSuccess={() => {
               router.push('/dashboard/insurance');
             }}

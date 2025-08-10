@@ -11,9 +11,17 @@ export interface PolicyUpload {
   ai_summary: string;
   status: 'uploading' | 'processing' | 'completed' | 'error';
   error_message?: string;
-  extraction_method?: 'text' | 'ocr';
-  pdf_url?: string | null;
+<<<<<<< HEAD
+  // Storage fields
   storage_path?: string | null;
+  pdf_url?: string | null;
+  extraction_method?: 'text' | 'ocr' | string;
+=======
+  // Storage fields
+  storage_path?: string | null;
+  pdf_url?: string | null;
+  extraction_method?: 'text' | 'ocr' | string;
+>>>>>>> 6b247f8 (feat: implement reliable analyze-save workflow with ownership tracking and guardrails)
   // Enhanced metadata fields
   insurer_name?: string;
   insurer_contact?: string;
@@ -90,7 +98,7 @@ export async function createPolicyUpload(
 
 export async function updatePolicyUpload(
   id: string, 
-  updates: Partial<Omit<PolicyUpload, 'id' | 'user_id' | 'file_name' | 'file_path' | 'upload_time'>>,
+  updates: Partial<Omit<PolicyUpload, 'id' | 'upload_time'>>,
   client?: SupabaseClient
 ): Promise<PolicyUpload | null> {
   const supabaseClient = client || supabase;
