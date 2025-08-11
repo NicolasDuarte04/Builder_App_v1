@@ -67,7 +67,7 @@ export function useBrikiChat(initialMessages?: any[]) {
     }
   };
 
-  const { messages, input, handleInputChange, /* default submit ignored */, isLoading, error: chatError, setMessages } = useChat({
+  const { messages, input, handleInputChange, handleSubmit: _sdkHandleSubmit, isLoading, error: chatError, setMessages } = useChat({
     api: CHAT_API, // ensure correct endpoint for SDK internals
     initialMessages: initialMessages || [],
     body: { preferredLanguage: language },
