@@ -29,7 +29,9 @@ if (pool) {
 
 function transformPlan(plan: InsurancePlanFromDB): InsurancePlan {
   // Format currency values - always display in COP for Colombian market
-  const formatCurrencyValue = (value: number, originalCurrency: string) => {
+  const formatCurrencyValue = (value: number | null, originalCurrency: string) => {
+    if (value === null || value === undefined) return null;
+    
     // Convert to COP if needed (rough conversion rates)
     let copValue = value;
     if (originalCurrency === 'USD') {
@@ -44,6 +46,17 @@ function transformPlan(plan: InsurancePlanFromDB): InsurancePlan {
       maximumFractionDigits: 0,
     });
     return `${formatter.format(copValue)} COP`;
+  };
+
+  // Parse JSON fields safely
+  const parseJsonField = (field: any) => {
+    if (!field) return null;
+    if (typeof field === 'object') return field;
+    try {
+      return JSON.parse(field);
+    } catch {
+      return null;
+    }
   };
 
   return {
@@ -65,6 +78,29 @@ function transformPlan(plan: InsurancePlanFromDB): InsurancePlan {
     brochure_link: plan.brochure_link,
     created_at: new Date(plan.created_at).toISOString(),
     updated_at: new Date(plan.updated_at).toISOString(),
+    
+    // Extended fields for richer comparison
+    plan_name_es: plan.plan_name_es || plan.name,
+    plan_name_en: plan.plan_name_en,
+    provider_es: plan.provider_es || plan.provider,
+    provider_en: plan.provider_en,
+    monthly_premium: plan.monthly_premium ? parseFloat(plan.monthly_premium as any) : null,
+    monthly_premium_formatted: plan.monthly_premium ? formatCurrencyValue(parseFloat(plan.monthly_premium as any), plan.currency) : null,
+    deductible: plan.deductible ? parseFloat(plan.deductible as any) : null,
+    deductible_formatted: plan.deductible ? formatCurrencyValue(parseFloat(plan.deductible as any), plan.currency) : null,
+    min_age: plan.min_age,
+    max_age: plan.max_age,
+    requires_medical: plan.requires_medical,
+    features: parseJsonField(plan.features),
+    tags: Array.isArray(plan.tags) ? plan.tags : [],
+    benefits_en: Array.isArray(plan.benefits_en) ? plan.benefits_en : [],
+    subcategory: plan.subcategory,
+    price_range: plan.price_range,
+    target_demographic: Array.isArray(plan.target_demographic) ? plan.target_demographic : [],
+    coverage_type: plan.coverage_type,
+    quote_link: plan.quote_link,
+    data_source: plan.data_source,
+    last_synced_at: plan.last_synced_at ? new Date(plan.last_synced_at).toISOString() : null,
   };
 }
 
