@@ -18,7 +18,7 @@ export const fetchCache = 'force-no-store';
 export const preferredRegion = 'iad1';
 
 // Bundle timestamp – helps confirm the deployed code version
-console.log('[chat] bundle-loaded', { build: '2025-08-11T16:30Z' });
+console.error('[chat] bundle-loaded', { build: '2025-08-11T16:30Z' });
 
 const hasValidKey = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-');
 
@@ -78,7 +78,7 @@ function createMockStream(reply: string) {
 // const getSamplePlans = (category: string) => { ... } - REMOVED
 
 export async function POST(req: Request) {
-  console.log('[chat] boot', { runtimeEnv: process.env.NEXT_RUNTIME || 'node' });
+  console.error('[chat] boot', { runtimeEnv: process.env.NEXT_RUNTIME || 'node' });
   // --- DEBUG: begin ---
   const mask = (url?: string) => {
     if (!url) return 'none';
@@ -321,7 +321,7 @@ export async function POST(req: Request) {
             benefits_contain,
           }) => {
             try {
-              console.log('[tool] START get_insurance_plans', {
+              console.error('[tool] START get_insurance_plans', {
                 cat: category,
                 max_price,
                 country,
@@ -348,8 +348,8 @@ export async function POST(req: Request) {
 
               const dbUrlLength = (process.env.DATABASE_URL || '').length;
               const renderUrlLength = (process.env.RENDER_POSTGRES_URL || '').length;
-              console.log('[chat] env lengths:', { dbUrlLength, renderUrlLength });
-              console.log('[chat] filters:', { category: actualCategory, country, max_price });
+              console.error('[chat] env lengths:', { dbUrlLength, renderUrlLength });
+              console.error('[chat] filters:', { category: actualCategory, country, max_price });
               const t0 = Date.now();
               const plans = await searchPlans({
                 category: actualCategory,
@@ -360,7 +360,7 @@ export async function POST(req: Request) {
                 limit: 4,
               });
               const firstPlanInfo = plans.length ? { provider: plans[0].provider, name: plans[0].name } : null;
-              console.log('[chat] query done in', Date.now() - t0, 'ms; planCount =', plans.length, 'first:', firstPlanInfo);
+              console.error('[chat] query done in', Date.now() - t0, 'ms; planCount =', plans.length, 'first:', firstPlanInfo);
               
               // Check if we got fuzzy matches (different categories)
               const isExactMatch = plans.length > 0 && plans.every(plan => 
@@ -377,7 +377,7 @@ export async function POST(req: Request) {
               
               // Transform plans into the expected UI format
               // The frontend expects these exact fields for validation
-              console.log('[tool] END get_insurance_plans', {
+              console.error('[tool] END get_insurance_plans', {
                 planCount: plans.length,
                 first: firstPlanInfo,
               });
