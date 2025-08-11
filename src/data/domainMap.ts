@@ -1,7 +1,7 @@
 export const DOMAIN_MAP: Record<string, string[]> = {
   'Seguros SURA': ['sura.com', 'segurossura.com.co'],
   'Mapfre': ['mapfre.com.co'],
-  'Seguros Bolívar': ['segurosbolivar.com'],
+  'Seguros Bolívar': ['segurosbolivar.com', 'www.segurosbolivar.com'],
   'Seguros del Estado': ['segurosdelestado.com'],
   'AXA Colpatria': ['axa-colpatria.co', 'axa.co'],
   'Liberty Seguros': ['libertycolombia.com.co', 'libertyseguros.co'],
@@ -9,7 +9,8 @@ export const DOMAIN_MAP: Record<string, string[]> = {
   'HDI Seguros': ['hdi.com.co'],
   'Chubb': ['chubb.com', 'chubb.com/co-es'],
   'Colmena Seguros': ['colmena.com.co'],
-  'Colsanitas': ['colsanitas.com']
+  'Colsanitas': ['colsanitas.com'],
+  'BMI Cos': ['bmicos.com.co', 'www.bmicos.com.co', 'bmicos.com', 'www.bmicos.com']
 };
 
 export function isOnAllowedDomain(provider: string | null | undefined, url: string | null | undefined): boolean {

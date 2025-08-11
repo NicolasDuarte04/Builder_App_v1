@@ -6,8 +6,9 @@ const OK = (s) => s >= 200 && s < 400;
 
 // Optional allow-list per provider (fill later)
 const DOMAIN_MAP = {
-  // 'Seguros SURA': ['sura.com', 'segurossura.com.co'],
-  // 'Mapfre': ['mapfre.com.co'],
+  // Example entries; keep minimal to speed checks.
+  'Seguros Bolívar': ['segurosbolivar.com', 'www.segurosbolivar.com'],
+  'BMI Cos': ['bmicos.com.co', 'www.bmicos.com.co', 'bmicos.com', 'www.bmicos.com'],
 };
 
 function onAllowedDomain(provider, host) {
@@ -43,7 +44,7 @@ async function run({ limit = 500, provider = null, dryRun = false }) {
 
   const params = [];
   let where = 'external_link IS NOT NULL';
-  where += ' AND link_status IS NULL';
+  where += " AND (link_status IS NULL OR link_status = '')";
   if (provider) {
     params.push(provider);
     where += ` AND provider = $${params.length}`;
