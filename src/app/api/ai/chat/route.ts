@@ -18,7 +18,7 @@ export const fetchCache = 'force-no-store';
 export const preferredRegion = 'iad1';
 
 // Bundle timestamp – helps confirm the deployed code version
-console.log('[chat] bundle-loaded', { build: '2025-08-11T15:05Z' });
+console.log('[chat] bundle-loaded', { build: '2025-08-11T16:30Z' });
 
 const hasValidKey = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-');
 
@@ -321,13 +321,12 @@ export async function POST(req: Request) {
             benefits_contain,
           }) => {
             try {
-              console.log('✅✅✅ TOOL EXECUTION STARTED ✅✅✅');
-              console.log('Received parameters:', {
-                category,
+              console.log('[tool] START get_insurance_plans', {
+                cat: category,
                 max_price,
                 country,
-                tags,
-                benefits_contain,
+                plansApiLen: (process.env.NEXT_PUBLIC_PLANS_API_URL || process.env.PLANS_API_URL || '').length,
+                dbUrlLen: (process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL || '').length,
               });
               
               // Map natural language to actual category
@@ -378,6 +377,11 @@ export async function POST(req: Request) {
               
               // Transform plans into the expected UI format
               // The frontend expects these exact fields for validation
+              console.log('[tool] END get_insurance_plans', {
+                planCount: plans.length,
+                first: firstPlanInfo,
+              });
+
               const finalPlans = plans.map((plan, index) => ({
                 id: plan.id,
                 name: plan.name,
