@@ -108,7 +108,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 });
   }
   const { messages, preferredLanguage } = bodyJson;
-  const encoder = new TextEncoder();
+
+  // Query param parsing
+  const urlParams = new URL(req.url).searchParams;
+  const noStream = urlParams.get('nostream') === '1';
 
   console.log('🔵 Chat API called with:', {
     messageCount: messages.length,
@@ -272,6 +275,15 @@ export async function POST(req: Request) {
         Connection: 'keep-alive',
       },
     });
+  }
+
+  if (noStream) {
+    console.error('[chat] nostream fallback engaged');
+    // For simplicity use the last user message as category text
+    const catText = messages.filter((m: any) => m.role === 'user').pop()?.content || '';
+    const mapped = await mapUserInputToCategory(catText);
+    const plans = await searchPlans({ category: mapped.category || catText, limit: 4 });
+    return NextResponse.json({ tools: { insurance_plans: { plans, insuranceType: mapped.category || catText } } });
   }
 
   console.error('[chat] passed key guard; building streamText');
@@ -449,13 +461,40 @@ export async function POST(req: Request) {
     });
 
     const planCountDebug = (result as any)?.tools?.insurance_plans?.plans?.length ?? -1;
-    console.log('[chat] result:tools', {
+    console.error('[chat] result:tools', {
       hasTools: !!(result as any)?.tools,
       planCount: planCountDebug,
     });
 
-    console.log('🟢 streamText done, returning DataStreamResponse');
-    return result.toDataStreamResponse();
+    // --- SSE peek diagnostics ---
+    const reader = result.toReadableStream().getReader();
+    const first = await reader.read();
+    if (first.value) {
+      console.error('[chat] peek-sse', new TextDecoder().decode(first.value).slice(0, 400));
+    }
+    const newStream = new ReadableStream({
+      start(controller) {
+        if (first.value) controller.enqueue(first.value);
+        function pump() {
+          reader.read().then(({ done, value }) => {
+            if (done) { controller.close(); return; }
+            controller.enqueue(value);
+            pump();
+          });
+        }
+        pump();
+      }
+    });
+
+    console.error('🟢 streamText done, returning custom SSE stream');
+    return new NextResponse(newStream, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      }
+    });
 
   } catch (err) {
     console.error('[chat] error', {
