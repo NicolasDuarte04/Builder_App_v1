@@ -7,6 +7,9 @@ import { eventBus, BrikiEvents } from '@/lib/event-bus';
 import { usePlanResults } from '@/contexts/PlanResultsContext';
 import { useLanguage } from '@/components/LanguageProvider';
 
+// Chat endpoint (can be overridden via env)
+const CHAT_API = (process.env.NEXT_PUBLIC_CHAT_API_URL || '/api/ai/chat').trim();
+
 export function useBrikiChat(initialMessages?: any[]) {
   const setChatHistory = useProjectStore((state) => state.setChatHistory);
   const setError = useProjectStore((state) => state.setError);
@@ -17,29 +20,35 @@ export function useBrikiChat(initialMessages?: any[]) {
   
   const [currentToolInvocations, setCurrentToolInvocations] = useState<any[]>([]);
 
-  const customSubmit = async (messages: Message[]) => {
-    const url = `/api/ai/chat${process.env.NEXT_PUBLIC_FORCE_NOSTREAM === '1' ? '?nostream=1' : ''}`;
+  const customSubmit = async (messagesPayload: Message[]) => {
+    const url = `${CHAT_API}${process.env.NEXT_PUBLIC_FORCE_NOSTREAM === '1' ? '?nostream=1' : ''}`;
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ messages, preferredLanguage: language }),
+      body: JSON.stringify({ messages: messagesPayload, preferredLanguage: language }),
     });
 
     const ctype = res.headers.get('content-type') || '';
     if (ctype.includes('application/json')) {
       const data = await res.json();
+      // Assistant reply text (if provided)
+      if (data.text) {
+        appendAssistantMessage(data.text);
+      }
+
+      // Tool payload (plans)
       const payload = data?.tools?.insurance_plans;
       if (payload?.plans?.length) {
         eventBus.emit(BrikiEvents.INSURANCE_PLANS_RECEIVED, {
           plans: payload.plans,
           insuranceType: payload.insuranceType,
         });
+        handleStructuredData({
+          plans: payload.plans,
+          insuranceType: payload.insuranceType,
+        });
       }
-      // Assuming the assistant's text response is also in the JSON
-      if (data.text) {
-        // You'll need a way to append this text to your chat messages state
-      }
-      return; // End of handling for JSON
+      return; // handled JSON path
     }
 
     // Fallback to streaming if not JSON
@@ -58,11 +67,10 @@ export function useBrikiChat(initialMessages?: any[]) {
     }
   };
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error: chatError, setMessages } = useChat({
+  const { messages, input, handleInputChange, /* default submit ignored */, isLoading, error: chatError, setMessages } = useChat({
+    api: CHAT_API, // ensure correct endpoint for SDK internals
     initialMessages: initialMessages || [],
-    body: {
-      preferredLanguage: language
-    },
+    body: { preferredLanguage: language },
     // We're overriding the default submission behavior
     // This is a conceptual change; the actual implementation may need to be more integrated
     // with the `useChat` state management if we don't handle the stream manually.
@@ -144,7 +152,7 @@ export function useBrikiChat(initialMessages?: any[]) {
     messages,
     input,
     handleInputChange,
-    handleSubmit, // You'd return `customHandleSubmit` instead
+    handleSubmit: customHandleSubmit,
     isLoading,
     error: chatError,
     clearChat,
