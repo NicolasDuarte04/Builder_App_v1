@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { useRightPanelTrigger } from '@/contexts/PlanResultsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ComparisonMessage } from './ComparisonMessage';
-import { BrikiEventBus, BrikiEvents } from '@/lib/event-bus';
+import { eventBus, BrikiEvents } from '@/lib/event-bus';
 
 interface MessageRendererProps {
   content: string;
@@ -47,7 +47,7 @@ export const MessageRenderer = React.memo(function MessageRenderer({
     // If it's a tool result with insurance plans, dispatch an event
     if (role === 'tool' && name === 'get_insurance_plans' && parsedContent && isToolInvocation(parsedContent)) {
       console.log('[MessageRenderer] Dispatching INSURANCE_PLANS_RECEIVED event with plans:', parsedContent.plans.length);
-      BrikiEventBus.dispatch(BrikiEvents.INSURANCE_PLANS_RECEIVED, {
+      eventBus.dispatch(BrikiEvents.INSURANCE_PLANS_RECEIVED, {
         title: "Planes de Seguro",
         plans: parsedContent.plans,
         category: parsedContent.insuranceType,

@@ -12,6 +12,30 @@ export interface PolicyUpload {
   updated_at?: string | null;
 }
 
+export async function getPolicyUploadsByUser(userId: string) {
+  const { data, error } = await supabase
+    .from('policy_uploads')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching policy uploads:', error);
+    throw error;
+  }
+  return data || [];
+}
+
+export async function deletePolicyUpload(id: string) {
+  const { error } = await supabase.from('policy_uploads').delete().eq('id', id);
+
+  if (error) {
+    console.error('Error deleting policy upload:', error);
+    return false;
+  }
+  return true;
+}
+
 export async function getPolicyUploadById(client: SupabaseClient, id: string) {
   return client.from('policy_uploads').select('*').eq('id', id).single();
 }
