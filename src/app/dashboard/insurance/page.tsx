@@ -7,7 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Shield, Plus, Loader2, RefreshCw, Search, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../../components/ui/tailwindcss-buttons";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SavedPoliciesCard } from "@/components/dashboard/SavedPoliciesCard";

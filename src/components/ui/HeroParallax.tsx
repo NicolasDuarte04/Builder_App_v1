@@ -10,7 +10,7 @@ import {
 } from "framer-motion";
 import Image from "next/image";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@/components/ui/button";
+import { Button } from "./tailwindcss-buttons";
 import { IconSparkles, IconPlayerPlay } from "@tabler/icons-react";
 
 interface Product {

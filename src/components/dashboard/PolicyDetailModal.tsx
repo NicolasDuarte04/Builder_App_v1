@@ -16,7 +16,7 @@ import {
   Copy,
   ExternalLink
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/tailwindcss-buttons";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
