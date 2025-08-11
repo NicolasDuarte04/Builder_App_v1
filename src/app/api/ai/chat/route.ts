@@ -20,10 +20,12 @@ export const preferredRegion = 'iad1';
 // Bundle timestamp – helps confirm the deployed code version
 console.error('[chat] bundle-loaded', { build: '2025-08-11T16:30Z' });
 
-const hasValidKey = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-');
+const key = process.env.OPENAI_API_KEY || '';
+const hasValidKey = !!key && key.startsWith('sk-');
+console.error('[chat] key check', { keyLen: key.length, startsWithSk: key.startsWith('sk-') });
 
 if (!hasValidKey) {
-  console.log('[chat] EARLY-EXIT: missing OPENAI key');
+  console.error('[chat] EARLY-EXIT: missing/invalid OPENAI_API_KEY');
 }
 
 // Language detection function
@@ -271,6 +273,8 @@ export async function POST(req: Request) {
       },
     });
   }
+
+  console.error('[chat] passed key guard; building streamText');
 
   // Real OpenAI call ------------------------------------------------------------------
   try {
