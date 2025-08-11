@@ -466,35 +466,23 @@ export async function POST(req: Request) {
       planCount: planCountDebug,
     });
 
-    // --- SSE peek diagnostics ---
-    const reader = result.toReadableStream().getReader();
-    const first = await reader.read();
-    if (first.value) {
-      console.error('[chat] peek-sse', new TextDecoder().decode(first.value).slice(0, 400));
-    }
-    const newStream = new ReadableStream({
-      start(controller) {
-        if (first.value) controller.enqueue(first.value);
-        function pump() {
-          reader.read().then(({ done, value }) => {
-            if (done) { controller.close(); return; }
-            controller.enqueue(value);
-            pump();
-          });
-        }
-        pump();
-      }
-    });
+    // --- SSE peek diagnostics using Response.tee() ---
+    const aiResp = result.toAIStreamResponse({ headers: { 'x-vercel-ai-data-stream': 'v1' } });
+    const body = aiResp.body;
+    if (!body) return aiResp;
 
-    console.error('🟢 streamText done, returning custom SSE stream');
-    return new NextResponse(newStream, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        Connection: 'keep-alive',
-      }
-    });
+    const [branch1, branch2] = body.tee();
+    const firstReader = branch1.getReader();
+    const firstChunk = await firstReader.read();
+    if (firstChunk.value) {
+      console.error('[chat] peek-sse', new TextDecoder().decode(firstChunk.value).slice(0, 400));
+    }
+
+    // Close the first branch completely to free resources
+    firstReader.cancel();
+
+    console.error('🟢 streamText done, returning SSE stream');
+    return new NextResponse(branch2, aiResp);
 
   } catch (err) {
     console.error('[chat] error', {
