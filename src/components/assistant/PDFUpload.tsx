@@ -144,14 +144,11 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
               fileName: uploadedFile.name,
               // Prefer server public url if provided; fallback to local base64 preview
               pdfUrl: result.pdfUrl || base64Data,
-              rawAnalysisData: {
-                ...result.analysis,
-                uploadId: result.uploadId,
-                uploaderUserId: result.uploaderUserId,
-                storagePath: result.storagePath,
-                pdfUrl: result.pdfUrl
-              },
-              extractionMethod: result.extractionMethod
+              rawAnalysisData: result.analysis,
+              extractionMethod: result.extractionMethod,
+              uploadId: result.uploadId,
+              storagePath: result.storagePath,
+              uploaderUserId: result.uploaderUserId,
             }
           });
           setUploadedFile(null);

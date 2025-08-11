@@ -3,22 +3,33 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { inferStoragePathFromUrl } from '@/lib/storage';
+
+// Force Node.js runtime for NextAuth/Supabase compatibility
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Validation schema for save policy request
+// Validation schema for save policy request (final)
 const SavePolicySchema = z.object({
-  custom_name: z.string().min(1).max(255),
+  custom_name: z.string(),
   insurer_name: z.string().optional(),
   policy_type: z.string().optional(),
   priority: z.enum(['low', 'medium', 'high']).default('medium'),
+
+  // Preferred reuse of analyzer artifacts
   upload_id: z.string().uuid().optional(),
-  storage_path: z.string().optional(),
   pdf_url: z.string().url().optional(),
+  storage_path: z.string().optional(),
+
+  // Legacy path (only when truly raw base64 is sent)
   pdf_base64: z.string().optional(),
+
   metadata: z.record(z.any()).default({}),
   extracted_data: z.record(z.any()).default({})
 });
@@ -76,10 +87,10 @@ export async function GET(request: NextRequest) {
       limit,
       offset
     });
-  } catch (error) {
-    console.error("Error in GET /api/policies:", error);
+  } catch (error: any) {
+    console.error("[policies GET] error:", error);
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      { error: "internal", where: "policies-get", message: error?.message ?? String(error) },
       { status: 500 }
     );
   }
@@ -89,12 +100,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    console.log("POST /api/policies - Session:", session);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[policies] session.user.id:', (session as any)?.user?.id);
+    }
 
     if (!session?.user?.id) {
-      console.error("No user ID in session:", session);
+      console.log('[policies] No valid session found - returning 401');
       return NextResponse.json(
-        { error: "No autorizado - No se encontró ID de usuario" },
+        { error: "unauthorized", message: "Sign in required to save policies", where: "session-check" },
         { status: 401 }
       );
     }
@@ -102,10 +115,7 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body
     const body = await request.json();
     if (process.env.NODE_ENV !== 'production') {
-      try {
-        const keys = Object.keys(body || {});
-        console.log("POST /api/policies - body keys:", keys);
-      } catch {}
+      console.log('[policies] body keys:', Object.keys(body || {}));
     }
     let validatedData;
     
@@ -128,8 +138,8 @@ export async function POST(request: NextRequest) {
       policy_type,
       priority,
       upload_id,
-      storage_path: provided_storage_path,
-      pdf_url: provided_pdf_url,
+      pdf_url: providedPdfUrl,
+      storage_path: providedStoragePath,
       pdf_base64,
       metadata,
       extracted_data
@@ -150,54 +160,132 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let storage_path = null as string | null;
-    let pdf_url = null as string | null;
+    let storage_path: string | null = null;
+    let pdf_url: string | null = null;
 
-    // Resolution order: upload_id -> storage_path/pdf_url -> pdf_base64
+    // DEV log of keys
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[policies] keys(validated):', Object.keys(validatedData));
+    }
+
+    // Case 1: upload_id preferred
     if (upload_id) {
-      // Dev-only debug logging
-      if (process.env.NODE_ENV !== 'production') {
-        console.log({ where: 'lookup', upload_id, session_user_id: session.user.id });
-      }
-
-      // Lookup storage path from policy_uploads scoped to user
-      const { data: lookup, error: lookupError } = await supabase
+      const serverSupabase = createServerSupabaseClient();
+      const { data: uploadRow, error: uploadErr } = await serverSupabase
         .from('policy_uploads')
-        .select('storage_path')
+        .select('id,user_id,storage_path,pdf_url')
         .eq('id', upload_id)
-        .eq('user_id', session.user.id)
-        .maybeSingle();
+        .single();
 
-      if (lookupError || !lookup?.storage_path) {
-        console.error({ where: 'lookup', upload_id, session_user_id: session.user.id, error: lookupError?.message || 'No storage_path found' });
-        return NextResponse.json({ 
-          error: 'upload_not_owned', 
-          hint: 'Sign in with the original account or re-analyze.' 
-        }, { status: 409 });
+      if (uploadErr && uploadErr.code === 'PGRST116') {
+        return NextResponse.json({ error: 'upload_not_found', where: 'lookup' }, { status: 404 });
+      }
+      if (uploadErr || !uploadRow) {
+        const details = { where: 'lookup', code: uploadErr?.code, message: uploadErr?.message };
+        console.error('[policies] lookup error:', details);
+        return NextResponse.json({ error: 'upload_not_found', ...details }, { status: 404 });
       }
 
-      storage_path = lookup.storage_path as string;
-      // Create a signed URL (object paths in storage APIs are bucket-relative)
-      try {
-        const signed = await supabase.storage
-          .from('policy-documents')
-          .createSignedUrl(storage_path.replace('policy-documents/', ''), 60 * 60);
-        pdf_url = signed?.signedUrl || null;
-      } catch (e) {
-        console.warn({ where: 'signed_url_creation', upload_id, error: e });
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[policies] lookup result:', { found: !!uploadRow, user_id: uploadRow.user_id, storage_path: uploadRow.storage_path });
       }
-    } else if (provided_storage_path) {
-      storage_path = provided_storage_path;
-      try {
-        const signed = await supabase.storage
-          .from('policy-documents')
-          .createSignedUrl(provided_storage_path.replace('policy-documents/', ''), 60 * 60);
-        pdf_url = signed?.signedUrl || provided_pdf_url || null;
-      } catch (e) {
-        console.warn({ where: 'signed_url_creation', storage_path: provided_storage_path, error: e });
-        pdf_url = provided_pdf_url || null;
+
+      if (uploadRow.user_id !== session.user.id) {
+        return NextResponse.json(
+          { error: 'upload_not_owned', hint: 'Sign in with the original account or re-analyze.', uploadUserId: uploadRow.user_id, sessionUserId: session.user.id },
+          { status: 409 }
+        );
       }
-    } else if (pdf_base64) {
+      storage_path = uploadRow.storage_path || null;
+      // Mint fresh signed URL
+      if (storage_path) {
+        try {
+          const { data: signed } = await serverSupabase.storage
+            .from('policy-documents')
+            .createSignedUrl(storage_path, 60 * 60 * 24 * 30);
+          pdf_url = signed?.signedUrl || uploadRow.pdf_url;
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[policies] sign result:', { ok: !!signed?.signedUrl });
+          }
+        } catch (e: any) {
+          console.warn('[policies] sign error, using existing pdf_url', e?.message);
+          pdf_url = uploadRow.pdf_url;
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[policies] sign result:', { ok: false, error: e?.message });
+          }
+          if (!pdf_url) {
+            return NextResponse.json(
+              { where: 'sign', error: 'Failed to sign URL and no fallback url available', message: e?.message, code: e?.code },
+              { status: 502 }
+            );
+          }
+        }
+      } else {
+        pdf_url = uploadRow.pdf_url;
+        if (!pdf_url) {
+          return NextResponse.json(
+            { where: 'lookup', error: 'Upload has no storage_path or pdf_url' },
+            { status: 404 }
+          );
+        }
+      }
+    }
+
+    // Case 2: provided pdf_url + storage_path (fallback)
+    if (!pdf_url && (providedPdfUrl || providedStoragePath)) {
+      const serverSupabase = createServerSupabaseClient();
+      if (providedStoragePath) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('[policies] saving with storage_path without upload_id');
+        }
+        storage_path = providedStoragePath;
+        try {
+          const { data: signed } = await serverSupabase.storage
+            .from('policy-documents')
+            .createSignedUrl(storage_path, 60 * 60 * 24 * 30);
+          pdf_url = signed?.signedUrl || providedPdfUrl || null;
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[policies] sign result:', { ok: !!signed?.signedUrl });
+          }
+        } catch (e: any) {
+          console.warn('[policies] sign error from provided storage_path', e?.message);
+          pdf_url = providedPdfUrl || null;
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[policies] sign result:', { ok: false, error: e?.message });
+          }
+          if (!pdf_url) {
+            return NextResponse.json(
+              { where: 'sign', error: 'Failed to sign URL from storage_path and no pdf_url provided', message: e?.message, code: e?.code },
+              { status: 502 }
+            );
+          }
+        }
+      } else {
+        // No storage path, just use provided URL
+        pdf_url = providedPdfUrl || null;
+        const inferred = providedPdfUrl ? inferStoragePathFromUrl(providedPdfUrl) : null;
+        if (inferred) {
+          storage_path = inferred;
+        }
+      }
+    }
+
+    // Case 3: legacy pdf_base64
+    if (!pdf_url && pdf_base64) {
+      // Validate it looks like a data URL for PDFs
+      if (!/^data:application\/pdf;base64,/i.test(pdf_base64) && !/^https?:\/\//i.test(pdf_base64)) {
+        return NextResponse.json({ error: 'invalid_pdf_base64' }, { status: 400 });
+      }
+      // Reject if this is actually a URL string
+      if (/^https?:\/\//i.test(pdf_base64)) {
+        // Treat as pdf_url guardrail
+        const asUrl = pdf_base64;
+        const inferred = inferStoragePathFromUrl(asUrl);
+        if (inferred) {
+          storage_path = inferred;
+        }
+        pdf_url = asUrl;
+      } else {
       try {
         // Convert base64 to buffer
         const base64Data = pdf_base64.replace(/^data:application\/pdf;base64,/, "");
@@ -216,41 +304,34 @@ export async function POST(request: NextRequest) {
 
         if (uploadError) {
           console.error("Error uploading PDF:", uploadError);
-          // In development, expose detailed error
-          const isDevelopment = process.env.NODE_ENV === 'development';
+          const code = (uploadError as any)?.statusCode ?? (uploadError as any)?.code ?? 'storage_upload_error';
+          const message = (uploadError as any)?.message ?? 'Unknown storage error';
           return NextResponse.json(
-            { 
-              error: "Failed to upload PDF",
-              details: isDevelopment ? {
-                message: uploadError.message,
-                statusCode: uploadError.statusCode,
-                hint: "Check if 'policy-documents' storage bucket exists and has proper permissions"
-              } : undefined
-            },
-            { status: 500 }
+            { where: 'upload', error: 'Failed to upload PDF', code, message },
+            { status: 502 }
           );
         }
 
         storage_path = uploadData.path as string;
-        
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from("policy-documents")
-          .getPublicUrl(storage_path);
-        
-        pdf_url = urlData.publicUrl;
+        // Prefer signed URL, fallback to public
+        try {
+          const { data: signed } = await supabase.storage
+            .from('policy-documents')
+            .createSignedUrl(storage_path, 60 * 60);
+          pdf_url = signed?.signedUrl ?? null;
+        } catch {
+          const { data: urlData } = supabase.storage
+            .from('policy-documents')
+            .getPublicUrl(storage_path);
+          pdf_url = urlData.publicUrl;
+        }
       } catch (uploadError) {
         console.error("Error processing PDF upload:", uploadError);
-        const isDevelopment = process.env.NODE_ENV === 'development';
         return NextResponse.json(
-          { 
-            error: "Failed to process PDF",
-            details: isDevelopment ? {
-              message: uploadError instanceof Error ? uploadError.message : String(uploadError)
-            } : undefined
-          },
-          { status: 500 }
+          { where: 'upload', error: 'Failed to process PDF', message: uploadError instanceof Error ? uploadError.message : String(uploadError) },
+          { status: 502 }
         );
+      }
       }
     }
 
@@ -282,29 +363,20 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error("Error inserting policy:", insertError);
-      const isDevelopment = process.env.NODE_ENV === 'development';
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[policies] insert error:', { code: insertError.code, message: insertError.message });
+      }
       return NextResponse.json(
-        { 
-          error: "Error al guardar la póliza",
-          details: isDevelopment ? {
-            message: insertError.message,
-            code: insertError.code,
-            details: insertError.details,
-            hint: insertError.hint || "Check if saved_policies table exists and schema matches"
-          } : undefined
-        },
+        { where: 'insert', error: 'Error al guardar la póliza', code: insertError.code, message: insertError.message },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ 
-      policy,
-      message: "Análisis guardado exitosamente"
-    });
-  } catch (error) {
-    console.error("Error in POST /api/policies:", error);
+    return NextResponse.json({ id: policy.id, pdf_url: policy.pdf_url, saved: true, signed: !!policy.pdf_url, message: "Análisis guardado exitosamente" });
+  } catch (error: any) {
+    console.error("[policies POST] error:", error);
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      { error: 'internal', where: 'policies-post', message: error?.message ?? String(error) },
       { status: 500 }
     );
   }

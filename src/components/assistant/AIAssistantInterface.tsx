@@ -208,6 +208,12 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     }
   }, [session]);
 
+  // Clear in-memory analysis if session user changes (sign-out or switch account)
+  useEffect(() => {
+    // When user signs out or switches, drop any existing analysis to prevent reuse of stale upload_id
+    setPolicyAnalysis(null);
+  }, [(session?.user as any)?.id]);
+
   // Inject onboarding context when component mounts and has data
   useEffect(() => {
     if (onboardingData && Object.keys(onboardingData).length > 0 && messages.length === 0) {
@@ -231,6 +237,16 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
       }
     }
   }, [searchParams]);
+
+  // Handle reanalyze request from SavePolicyButton guardrail modal
+  useEffect(() => {
+    const handler = () => {
+      setPolicyAnalysis(null);
+      setShowPDFUpload(true);
+    };
+    window.addEventListener('reanalyze-under-current-account', handler as EventListener);
+    return () => window.removeEventListener('reanalyze-under-current-account', handler as EventListener);
+  }, []);
 
   // Helper function to check if user input is an affirmative command
   const isAffirmativeCommand = (text: string): boolean => {

@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "validate:links": "ts-node scripts/validateExternalLinks.ts --limit 200",
+    "validate:provider": "ts-node scripts/validateExternalLinks.ts --provider='Seguros SURA' --limit 200",
     "webhound:transform": "node scripts/webhound-data-transformer.js",
     "webhound:refresh": "node scripts/webhound-refresh.js",
     "webhound:dry-run": "node scripts/webhound-refresh.js --dry-run",

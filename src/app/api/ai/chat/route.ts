@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { getSystemPrompt, logPromptVersion, PROMPT_VERSION } from '@/config/systemPrompt';
 import { franc } from 'franc-min';
 import { logToolError } from '@/lib/ai-error-handler';
+import { mapUserInputToCategory, getCategorySuggestions, getDynamicCategories } from '@/lib/category-mapper';
 
 export const runtime = 'nodejs';
 
@@ -234,6 +235,10 @@ export async function POST(req: Request) {
   // Real OpenAI call ------------------------------------------------------------------
   try {
     const oai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    
+    // Get dynamic categories for the tool description
+    const availableCategories = await getDynamicCategories();
+    const categoryList = availableCategories.join(', ');
 
     const result = await streamText({
       model: oai('gpt-3.5-turbo'),
@@ -244,7 +249,7 @@ export async function POST(req: Request) {
           description: 'Get a list of insurance plans based on user criteria.',
           parameters: z.object({
             category: z.string().describe(
-              'The category of insurance. Available options are: auto, salud, vida, hogar, viaje, empresarial, mascotas, educacion.'
+              `The category of insurance. Available categories from database: ${categoryList}. Also accepts natural language like "business insurance" which will be mapped to the correct category.`
             ),
             max_price: z
               .number()
@@ -283,6 +288,17 @@ export async function POST(req: Request) {
                 tags,
                 benefits_contain,
               });
+              
+              // Map natural language to actual category
+              const categoryMapping = await mapUserInputToCategory(category);
+              const actualCategory = categoryMapping.category || category;
+              
+              console.log('🗺️ Category mapping:', {
+                userInput: category,
+                mappedCategory: actualCategory,
+                confidence: categoryMapping.confidence,
+                availableCategories: categoryMapping.availableCategories
+              });
 
               console.log('🔍 Database connection status:', {
                 hasDatabaseUrl,
@@ -291,7 +307,7 @@ export async function POST(req: Request) {
               });
 
               const plans = await queryInsurancePlans({
-                category,
+                category: actualCategory,
                 max_price,
                 country,
                 tags,
@@ -331,11 +347,13 @@ export async function POST(req: Request) {
               const toolResult = { 
                 type: "insurance_plans",
                 plans: finalPlans,
-                insuranceType: category,
+                insuranceType: actualCategory,
+                originalQuery: category,
                 hasRealPlans: finalPlans.length > 0,
                 isExactMatch: isExactMatch && finalPlans.length > 0,
                 noExactMatchesFound: !isExactMatch && finalPlans.length > 0,
-                categoriesFound: [...new Set(finalPlans.map(p => p.category))]
+                categoriesFound: [...new Set(finalPlans.map(p => p.category))],
+                availableCategories: categoryMapping.availableCategories
               };
               
               console.log('✅✅✅ TOOL EXECUTION FINISHED ✅✅✅');

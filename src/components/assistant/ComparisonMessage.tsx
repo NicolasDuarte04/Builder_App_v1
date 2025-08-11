@@ -341,7 +341,7 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
                       Cotizar ahora
                     </a>
                   ) : (
-                    <span className="text-xs text-gray-500">No disponible</span>
+                    <span className="text-xs text-gray-500">Solicitar cotización</span>
                   )}
                 </td>
               ))}

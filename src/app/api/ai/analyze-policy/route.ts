@@ -3,12 +3,35 @@ import { extractTextFromPDF } from '@/lib/pdf-analyzer';
 import { extractTextFromPDFWithOCR, extractTextFromPDFOCROnly } from '@/lib/pdf-analyzer-enhanced';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
-import { createPolicyUpload, updatePolicyUpload } from '@/lib/supabase-policy';
+import { updatePolicyUpload } from '@/lib/supabase-policy';
 import { z } from 'zod';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { parseCopMoney } from '@/lib/money';
+
+// Force Node.js runtime for NextAuth/Supabase compatibility
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+// GET health check endpoint
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+    return NextResponse.json({
+      ok: true,
+      runtime: process.env.NEXT_RUNTIME ?? 'unknown',
+      hasSession: !!session,
+      userId: (session?.user as any)?.id ?? null,
+      now: new Date().toISOString(),
+    });
+  } catch (e: any) {
+    return NextResponse.json(
+      { ok: false, where: 'analyze-policy::GET', message: String(e) },
+      { status: 500 }
+    );
+  }
+}
 
   // Define the schema for the policy analysis - enhanced with user-relevant fields
 const PolicyAnalysisSchema = z.object({
@@ -16,8 +39,11 @@ const PolicyAnalysisSchema = z.object({
   premium: z.object({
     amount: z.number().default(0),
     currency: z.string().default("COP"),
-    frequency: z.string().default("monthly")
-  }).default({ amount: 0, currency: "COP", frequency: "monthly" }),
+    frequency: z.string().default("monthly"),
+    period: z.string().default('unknown'),
+    source: z.string().default('unknown'),
+    validated: z.boolean().default(false)
+  }).default({ amount: 0, currency: "COP", frequency: "monthly", period: 'unknown', source: 'unknown', validated: false }),
   policyDetails: z.object({
     policyNumber: z.string().optional(),
     effectiveDate: z.string().optional(),
@@ -86,38 +112,20 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Get the authenticated session
+    // Get the authenticated session (required in all environments)
     const session = await getServerSession(authOptions);
     console.log('🔐 Session check:', session ? 'Authenticated' : 'Not authenticated');
-    
-    // Allow unauthenticated access in development mode
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    let userId: string;
-    
-    if (isDevelopment) {
-      // Use a valid UUID for development mode
-      userId = '00000000-0000-0000-0000-000000000000';
-    } else {
-      if (!session || !session.user) {
-        return NextResponse.json(
-          { error: 'Authentication required. Please log in to analyze PDFs.' },
-          { status: 401 }
-        );
-      }
-      
-      // Get user ID from session in production
-      const sessionUser = session.user as any;
-      userId = sessionUser.id || sessionUser.email;
-      
-      if (!userId) {
-        console.error('❌ No user ID found in session');
-        return NextResponse.json(
-          { error: 'User ID not found in session. Please log in again.' },
-          { status: 401 }
-        );
-      }
+
+    if (!session || !session.user || !(session.user as any).id) {
+      console.log('❌ No valid session found - returning 401');
+      return NextResponse.json(
+        { error: 'unauthorized', message: 'Sign in required to analyze policies', where: 'session-check' },
+        { status: 401 }
+      );
     }
-    
+
+    const userId: string = (session.user as any).id;
+    const isDevelopment = process.env.NODE_ENV !== 'production';
     console.log('🔐 Using user ID:', userId, isDevelopment ? '(development mode)' : '(production mode)');
     
     // Check if OpenAI API key is configured
@@ -166,13 +174,25 @@ export async function POST(request: NextRequest) {
 
     // Create initial upload record
     console.log('💾 Creating upload record in database...');
-    const uploadRecord = await createPolicyUpload({
-      user_id: userId,
-      file_name: file.name,
-      file_path: `uploads/${userId}/${Date.now()}_${file.name}`,
-      extracted_text: '',
-      status: 'uploading'
-    }, serverSupabase);
+    // Insert initial upload row directly
+    const { data: uploadRecord, error: createErr } = await serverSupabase
+      .from('policy_uploads')
+      .insert({
+        user_id: userId,
+        file_name: file.name,
+        storage_path: null,
+        pdf_url: null,
+        extraction_method: null,
+      })
+      .select()
+      .single();
+    if (createErr) {
+      console.error('❌ Failed to create upload record in database', createErr);
+      return NextResponse.json(
+        { error: 'Failed to create upload record. Please check database configuration.' },
+        { status: 500 }
+      );
+    }
 
     if (!uploadRecord) {
       console.error('❌ Failed to create upload record in database');
@@ -200,15 +220,23 @@ export async function POST(request: NextRequest) {
           console.warn('⚠️ Failed to upload PDF to storage:', storageError);
         } else {
           storagePath = uploadData.path;
-          const { data: urlData } = serverSupabase.storage
-            .from('policy-documents')
-            .getPublicUrl(storagePath);
-          pdfPublicUrl = urlData.publicUrl;
+          try {
+            const { data: signed } = await serverSupabase.storage
+              .from('policy-documents')
+              .createSignedUrl(storagePath, 60 * 60 * 24 * 7);
+            pdfPublicUrl = signed?.signedUrl || null;
+          } catch (sigErr) {
+            console.warn('⚠️ Could not create signed URL, falling back to public URL (if bucket is public)', sigErr);
+            const { data: urlData } = serverSupabase.storage
+              .from('policy-documents')
+              .getPublicUrl(storagePath);
+            pdfPublicUrl = urlData.publicUrl;
+          }
           // Best-effort: update policy_uploads with pdf_url if column exists
           try {
             await serverSupabase
               .from('policy_uploads')
-              .update({ pdf_url: pdfPublicUrl, storage_path: storagePath })
+              .update({ pdf_url: pdfPublicUrl, storage_path: storagePath, user_id: userId })
               .eq('id', uploadRecord.id);
           } catch (e) {
             console.warn('⚠️ Could not set pdf_url/storage_path (missing columns?):', e);
@@ -245,8 +273,10 @@ export async function POST(request: NextRequest) {
       // Update record with extracted text
       await updatePolicyUpload(uploadRecord.id, {
         extracted_text: pdfText,
-        status: 'processing'
-      }, serverSupabase);
+        status: 'processing',
+        extraction_method: extractionMethod,
+        user_id: userId
+      });
 
       // Analyze with AI using generateObject for structured output (supports chunking + merge)
       console.log('🤖 Starting AI analysis...');
@@ -267,6 +297,7 @@ export async function POST(request: NextRequest) {
       await updatePolicyUpload(uploadRecord.id, {
         ai_summary: JSON.stringify(finalAnalysis),
         status: 'completed' as const,
+        user_id: userId,
         // Enhanced fields (these will be added by the migration)
         insurer_name: finalAnalysis.insurer?.name || '',
         insurer_contact: finalAnalysis.insurer?.contact || '',
@@ -280,7 +311,7 @@ export async function POST(request: NextRequest) {
         coverage_geography: finalAnalysis.coverage?.geography || 'Colombia',
         claim_instructions: finalAnalysis.coverage?.claimInstructions || [],
         analysis_language: isSpanish ? 'Spanish' : 'English'
-      }, serverSupabase);
+      });
 
       // Debug: summarize extraction & chunk info in dev
       const debugInfo = process.env.NODE_ENV !== 'production' ? {
@@ -289,9 +320,22 @@ export async function POST(request: NextRequest) {
           textLength: pdfText.length,
           head: pdfText.slice(0, 400),
           tail: pdfText.slice(-400)
+        },
+        chunks: {
+          count: Math.min(splitIntoSemanticChunks(pdfText).length, 5)
+        },
+        analysisStats: {
+          premiumAmount: finalAnalysis?.premium?.amount || 0,
+          premiumTableRows: Array.isArray(finalAnalysis?.premiumTable) ? finalAnalysis.premiumTable.length : 0,
+          quotes: finalAnalysis?.sourceQuotes ? Object.keys(finalAnalysis.sourceQuotes).length : 0,
+          redFlags: Array.isArray(finalAnalysis?.redFlags) ? finalAnalysis.redFlags.length : 0,
+          missingInfo: Array.isArray(finalAnalysis?.missingInfo) ? finalAnalysis.missingInfo.length : 0
         }
       } : undefined;
 
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[analyze] uploadId=${uploadRecord.id}, uploaderUserId=${userId}`);
+      }
       return NextResponse.json({
         success: true,
         analysis: finalAnalysis,
@@ -311,28 +355,28 @@ export async function POST(request: NextRequest) {
       
       await updatePolicyUpload(uploadRecord.id, {
         status: 'error',
-        error_message: errorMessage
-      }, serverSupabase);
+        error_message: errorMessage,
+        user_id: (session?.user as any)?.id || null
+      });
 
       throw error;
     }
 
-  } catch (error) {
-    console.error('❌ Error analyzing policy:', error);
+  } catch (error: any) {
+    console.error('[analyze-policy] error:', error);
     
     // Return more detailed error information
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorDetails = {
-      error: 'Failed to analyze policy',
-      details: errorMessage,
-      uploadId: uploadId,
-      timestamp: new Date().toISOString()
-    };
-
-    // Log the full error for debugging
-    console.error('Full error details:', errorDetails);
-    
-    return NextResponse.json(errorDetails, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json(
+      { 
+        error: 'internal', 
+        where: 'analyze-policy',
+        message: errorMessage,
+        uploadId: uploadId,
+        timestamp: new Date().toISOString()
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -411,7 +455,7 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
     console.log(`📄 Text length: ${pdfText.length} characters`);
 
     const chunks = splitIntoSemanticChunks(pdfText);
-    const MAX_CHUNKS = 3; // bound for latency
+    const MAX_CHUNKS = 5; // bound for latency
     // Prioritize chunks that likely contain pricing tables / premiums first
     const priceKeywords = /(PRIMA|VALOR|PRECIO|TARIFA|COSTO|SEMESTRE|AÑO|ANUAL|MENSUAL|MATRÍCULA|TUITION|PREMIUM|PRICE)/i;
     const sorted = [...chunks].sort((a, b) => {
@@ -664,6 +708,10 @@ function mergeAnalyses(results: any[]): any {
 function postProcessAnalysis(pdfText: string, analysis: any, opts: { extractionMethod: 'text'|'ocr'; pdfPublicUrl: string | null }) {
   const result = { ...analysis };
 
+  // Normalize premium and validate
+  const contextLower = pdfText.toLowerCase();
+  const near = (kw: RegExp) => kw.test(contextLower);
+
   // Normalize premium if zero: try regex parse
   if (!result.premium || !result.premium.amount || result.premium.amount === 0) {
     const match = /(?:COP|\$)\s*([0-9][0-9 .,:]{4,})/.exec(pdfText);
@@ -673,15 +721,31 @@ function postProcessAnalysis(pdfText: string, analysis: any, opts: { extractionM
         result.premium = result.premium || {};
         result.premium.amount = parsed;
         result.premium.currency = /USD/i.test(match[0]) ? 'USD' : 'COP';
-        if (!result.premium.frequency) {
-          if (/mensual|month|mensuales/i.test(pdfText)) result.premium.frequency = 'monthly';
-          else if (/anual|annual|año/i.test(pdfText)) result.premium.frequency = 'yearly';
-          else result.premium.frequency = 'unknown';
-        }
+        if (/mensual|mensualidad|month|mensuales/i.test(pdfText)) { result.premium.frequency = 'monthly'; result.premium.period = 'monthly'; }
+        else if (/anual|annual|año|anualidad/i.test(pdfText)) { result.premium.frequency = 'yearly'; result.premium.period = 'annual'; }
+        else { result.premium.frequency = 'unknown'; result.premium.period = 'unknown'; }
+        result.premium.source = 'text';
       }
     }
     if (!result.premium?.amount || result.premium.amount === 0) {
       result.missingInfo = Array.from(new Set([...(result.missingInfo || []), 'Premium amount not clearly stated']))
+    }
+  }
+
+  // Guardrails to avoid confusing sum insured with premium
+  if (result.premium?.amount) {
+    const nearSumAseg = /(suma asegurada|valor asegurado|sum insured)/i;
+    if (near(nearSumAseg)) {
+      // If the context is dominated by sum insured tokens and premium tokens are absent, mark unvalidated
+      const hasPremiumTokens = /(prima|tarifa|mensualidad|anualidad|precio|costo)/i.test(contextLower);
+      if (!hasPremiumTokens) {
+        result.premium.validated = false;
+        result.missingInfo = Array.from(new Set([...(result.missingInfo || []), 'Premium may be ambiguous (sum insured detected)']))
+      } else {
+        result.premium.validated = true;
+      }
+    } else {
+      result.premium.validated = true;
     }
   }
 

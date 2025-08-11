@@ -175,10 +175,10 @@ class WebHoundTransformer {
     const required = [
       'plan_name_es',
       'provider_es',
-      'base_price',
-      'currency',
+      // 'base_price', // Now optional
+      // 'currency', // Now optional since base_price is optional
       'category',
-      'quote_link',
+      // 'quote_link', // Make optional too since many are null
       'benefits'
     ];
     
@@ -188,8 +188,8 @@ class WebHoundTransformer {
       }
     }
     
-    // Validate data types
-    if (typeof plan.base_price !== 'number') {
+    // Validate data types only if base_price exists
+    if (plan.base_price !== null && plan.base_price !== undefined && typeof plan.base_price !== 'number') {
       throw new Error(`base_price must be a number, got ${typeof plan.base_price}`);
     }
     
@@ -201,8 +201,8 @@ class WebHoundTransformer {
       throw new Error(`benefits must have at least 3 items, got ${plan.benefits.length}`);
     }
     
-    // Validate URLs
-    if (!this.isValidUrl(plan.quote_link)) {
+    // Validate URLs only if they exist
+    if (plan.quote_link && !this.isValidUrl(plan.quote_link)) {
       throw new Error(`Invalid quote_link URL: ${plan.quote_link}`);
     }
     
@@ -210,10 +210,16 @@ class WebHoundTransformer {
       throw new Error(`Invalid brochure_link URL: ${plan.brochure_link}`);
     }
     
-    // Validate category
-    const validCategories = ['salud', 'vida', 'auto', 'viaje', 'hogar', 'dental'];
-    if (!validCategories.includes(plan.category.toLowerCase())) {
-      throw new Error(`Invalid category: ${plan.category}. Must be one of: ${validCategories.join(', ')}`);
+    // Validate category - now accepting more categories
+    const validCategories = [
+      'salud', 'vida', 'auto', 'viaje', 'hogar', 'dental',
+      'laboral_empresarial', 'viajes', 'otros', 'agricola_rural', 
+      'vida_financiera', 'salud especializada', 'nuevas tecnologías y digitales',
+      'mascotas y objetos', 'educacion', 'ahorro'
+    ];
+    if (plan.category && !validCategories.includes(plan.category.toLowerCase())) {
+      console.warn(`Unknown category: ${plan.category}. Using as-is.`);
+      // Don't throw error, just warn and continue
     }
     
     // Validate country
@@ -233,9 +239,9 @@ class WebHoundTransformer {
       // Core fields
       name: webhoundPlan.plan_name_es,
       provider: webhoundPlan.provider_es,
-      base_price: webhoundPlan.base_price,
-      currency: webhoundPlan.currency,
-      category: webhoundPlan.category.toLowerCase(),
+      base_price: webhoundPlan.base_price || null,
+      currency: webhoundPlan.currency || 'COP',
+      category: webhoundPlan.category ? webhoundPlan.category.toLowerCase() : 'otros',
       
       // Multilingual fields
       plan_name_es: webhoundPlan.plan_name_es,
@@ -248,8 +254,8 @@ class WebHoundTransformer {
       benefits_en: webhoundPlan.benefits_en || [],
       
       // Links with validation timestamps
-      quote_link: webhoundPlan.quote_link,
-      quote_link_checked_at: webhoundPlan.quote_link_checked_at || now,
+      quote_link: webhoundPlan.quote_link || null,
+      quote_link_checked_at: webhoundPlan.quote_link ? (webhoundPlan.quote_link_checked_at || now) : null,
       brochure_link: webhoundPlan.brochure_link || null,
       brochure_link_checked_at: webhoundPlan.brochure_link_checked_at || (webhoundPlan.brochure_link ? now : null),
       

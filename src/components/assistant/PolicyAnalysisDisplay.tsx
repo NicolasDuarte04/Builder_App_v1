@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
+import React from 'react';
+// motion removed to unblock build
+import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { SavePolicyButton } from '../dashboard/SavePolicyButton';
+import { ENABLE_SAVE_POLICY } from '@/lib/featureFlags';
+import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { Button } from '../ui/Button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/Dialog';
 
 interface PolicyAnalysis {
   policyType: string;
@@ -58,8 +57,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
   const { t } = useTranslation();
   const router = useRouter();
   const { data: session } = useSession();
-  const [showUserMismatchModal, setShowUserMismatchModal] = useState(false);
-  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const sessionUserId = (session?.user as any)?.id;
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -74,37 +72,12 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
   };
 
-  const checkUserConsistency = () => {
-    if (!uploaderUserId || !session?.user?.id) return true;
-    return uploaderUserId === session.user.id;
-  };
-
-  const handleSaveClick = () => {
-    if (!checkUserConsistency()) {
-      setShowUserMismatchModal(true);
-      return false;
-    }
-    return true;
-  };
-
-  const handleReanalyze = () => {
-    setIsReanalyzing(true);
-    // This will trigger a re-upload and analysis under the current user
-    // The parent component should handle this
-    setShowUserMismatchModal(false);
-    setIsReanalyzing(false);
-  };
-
-  const handleSwitchAccount = () => {
-    // Sign out and redirect to login
-    router.push('/login');
-  };
+  const meta = (analysis as any)?._pdfData || {};
+  const safePdfUrl = typeof meta.pdfUrl === 'string' && /^https?:\/\//i.test(meta.pdfUrl) ? meta.pdfUrl : undefined;
+  const shouldSendBase64 = !meta.uploadId && !safePdfUrl && typeof pdfUrl === 'string' && /^data:application\/pdf;base64,/i.test(pdfUrl);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+    <div
       className="space-y-6"
     >
       {/* Header */}
@@ -369,23 +342,32 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
         </div>
       )}
 
-      {/* Save Policy Section */}
-      <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex flex-col items-center text-center">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            ¿Te gustaría guardar este análisis en tu Bóveda de Seguros?
-          </h4>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-md">
-            Guarda este análisis para acceder fácilmente a los detalles de tu póliza en cualquier momento.
-          </p>
-          <SavePolicyButton
-            onBeforeSave={handleSaveClick}
-            policyData={(function() {
-              const payload: any = {
+      {/* Save Policy Section - temporarily hidden by flag */}
+      {ENABLE_SAVE_POLICY && (
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col items-center text-center">
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              ¿Te gustaría guardar este análisis en tu Bóveda de Seguros?
+            </h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-md">
+              Guarda este análisis para acceder fácilmente a los detalles de tu póliza en cualquier momento.
+            </p>
+            {meta.uploaderUserId && sessionUserId && meta.uploaderUserId !== sessionUserId && (
+              <p className="text-xs text-yellow-700 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-300 px-3 py-2 rounded mb-3">
+                Este análisis fue generado con otra cuenta.
+              </p>
+            )}
+            <SavePolicyButton
+              policyData={{
                 custom_name: fileName || `${analysis.policyType} - ${new Date().toLocaleDateString()}`,
                 insurer_name: analysis.insurer?.name || 'Sin Aseguradora',
                 policy_type: analysis.policyType || 'General',
                 priority: analysis.riskScore <= 3 ? 'low' : analysis.riskScore <= 6 ? 'medium' : 'high',
+                pdf_base64: shouldSendBase64 ? pdfUrl : undefined,
+                pdf_url: safePdfUrl,
+                upload_id: meta.uploadId,
+                storage_path: meta.storagePath,
+                uploader_user_id: meta.uploaderUserId,
                 metadata: {
                   policy_number: analysis.policyDetails.policyNumber,
                   effective_date: analysis.policyDetails.effectiveDate,
@@ -396,64 +378,14 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
                   risk_score: analysis.riskScore,
                 },
                 extracted_data: rawAnalysisData || analysis,
-              };
-
-              // Prefer identifiers returned by analyzer
-              const anyAnalysis: any = (rawAnalysisData || {}) as any;
-              const uploadId = anyAnalysis?.uploadId ?? (analysis as any)?.uploadId;
-              const storagePath = anyAnalysis?.storagePath ?? (analysis as any)?.storagePath;
-              const signedUrl = anyAnalysis?.pdfUrl ?? (analysis as any)?.pdfUrl ?? pdfUrl;
-
-              if (uploadId) {
-                payload.upload_id = uploadId;
-              } else if (storagePath) {
-                payload.storage_path = storagePath;
-                if (signedUrl) payload.pdf_url = signedUrl;
-              } else if (signedUrl && /^data:application\/pdf;base64,/.test(String(signedUrl))) {
-                // Only send base64 if we truly have it
-                payload.pdf_base64 = signedUrl;
-              }
-
-              return payload;
-            })()}
-            onSuccess={() => {
-              router.push('/dashboard/insurance');
-            }}
-          />
-        </div>
-      </div>
-
-      {/* User Mismatch Modal */}
-      <Dialog open={showUserMismatchModal} onOpenChange={setShowUserMismatchModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-yellow-600" />
-              Tu sesión cambió
-            </DialogTitle>
-            <DialogDescription>
-              Este análisis fue realizado con una cuenta diferente. Para guardarlo, necesitas usar la cuenta original o re-analizar el documento.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Button
-              onClick={handleReanalyze}
-              disabled={isReanalyzing}
-              className="w-full"
-              variant="default"
-            >
-              {isReanalyzing ? 'Re-analizando...' : 'Re-analizar bajo esta cuenta'}
-            </Button>
-            <Button
-              onClick={handleSwitchAccount}
-              variant="outline"
-              className="w-full"
-            >
-              Cambiar de cuenta
-            </Button>
+              }}
+              onSuccess={() => {
+                router.push('/dashboard/insurance');
+              }}
+            />
           </div>
-        </DialogContent>
-      </Dialog>
-    </motion.div>
+        </div>
+      )}
+    </div>
   );
 } 
