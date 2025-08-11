@@ -306,8 +306,10 @@ export async function POST(req: Request) {
                 envVarLength: (process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL)?.length || 0,
               });
 
-              const dbUrlLength = (process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL || '').length;
-              console.log('[chat] DB_URL length =', dbUrlLength);
+              const dbUrlLength = (process.env.DATABASE_URL || '').length;
+              const renderUrlLength = (process.env.RENDER_POSTGRES_URL || '').length;
+              console.log('[chat] env lengths:', { dbUrlLength, renderUrlLength });
+              console.log('[chat] filters:', { category: actualCategory, country, max_price });
               const t0 = Date.now();
               const plans = await queryInsurancePlans({
                 category: actualCategory,
@@ -317,7 +319,8 @@ export async function POST(req: Request) {
                 benefits_contain,
                 limit: 4,
               });
-              console.log('[chat] query done in', Date.now() - t0, 'ms; planCount =', plans.length);
+              const firstPlanInfo = plans.length ? { provider: plans[0].provider, name: plans[0].name } : null;
+              console.log('[chat] query done in', Date.now() - t0, 'ms; planCount =', plans.length, 'first:', firstPlanInfo);
               
               // Check if we got fuzzy matches (different categories)
               const isExactMatch = plans.length > 0 && plans.every(plan => 
