@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, X, AlertCircle, CheckCircle, Lock } from 'lucide-react';
-import { Button } from "../ui/tailwindcss-buttons";
+import { Button } from '../ui/button';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 

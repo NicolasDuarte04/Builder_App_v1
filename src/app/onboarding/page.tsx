@@ -3,7 +3,7 @@
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-import { Button } from "../../components/ui/tailwindcss-buttons";
+import { Button } from "@/components/ui/button";
 
 export default function OnboardingPage() {
   return (

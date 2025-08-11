@@ -2,7 +2,7 @@
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { ProblemCard } from "@/components/ui/problem-card";
-import { Button } from "../ui/tailwindcss-buttons";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import {
   IconPuzzle,
