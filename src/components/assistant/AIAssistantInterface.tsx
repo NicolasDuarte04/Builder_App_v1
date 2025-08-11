@@ -864,6 +864,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                     pdfUrl={policyAnalysis._pdfData?.pdfUrl}
                     fileName={policyAnalysis._pdfData?.fileName}
                     rawAnalysisData={policyAnalysis._pdfData?.rawAnalysisData}
+                    uploaderUserId={policyAnalysis.uploaderUserId}
                   />
                 </div>
               </motion.div>

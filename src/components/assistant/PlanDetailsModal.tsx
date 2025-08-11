@@ -105,7 +105,7 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
               {/* Quote Form or External Link */}
               {mode === 'quote' && (
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                  {plan.is_external && plan.external_link ? (
+                  {plan.is_external && plan.external_link && plan.link_status !== 'broken' ? (
                     <div className="text-center space-y-4">
                       <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
                         <ExternalLink className="w-5 h-5" />

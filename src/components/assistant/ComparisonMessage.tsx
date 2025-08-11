@@ -331,7 +331,7 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
               <td className="p-3 font-medium text-sm">Cotización</td>
               {plans.map((plan) => (
                 <td key={plan.id} className="p-3 text-center">
-                  {plan.external_link ? (
+                  {plan.external_link && plan.link_status !== 'broken' ? (
                     <a
                       href={plan.external_link}
                       target="_blank"

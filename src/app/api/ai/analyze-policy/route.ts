@@ -297,6 +297,7 @@ export async function POST(request: NextRequest) {
         analysis: finalAnalysis,
         fileName: file.name,
         uploadId: uploadRecord.id,
+        uploaderUserId: userId,
         storagePath: storagePath || undefined,
         extractionMethod: extractionMethod,
         pdfUrl: pdfPublicUrl || undefined,

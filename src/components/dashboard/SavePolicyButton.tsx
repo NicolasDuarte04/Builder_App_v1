@@ -19,13 +19,19 @@ interface SavePolicyButtonProps {
     extracted_data?: any;
   };
   onSuccess?: () => void;
+  onBeforeSave?: () => boolean | void;
 }
 
-export function SavePolicyButton({ policyData, onSuccess }: SavePolicyButtonProps) {
+export function SavePolicyButton({ policyData, onSuccess, onBeforeSave }: SavePolicyButtonProps) {
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   const handleSave = async () => {
+    // Check user consistency before proceeding
+    if (onBeforeSave && onBeforeSave() === false) {
+      return; // Stop execution if check fails
+    }
+
     try {
       setIsSaving(true);
       

@@ -155,6 +155,11 @@ export async function POST(request: NextRequest) {
 
     // Resolution order: upload_id -> storage_path/pdf_url -> pdf_base64
     if (upload_id) {
+      // Dev-only debug logging
+      if (process.env.NODE_ENV !== 'production') {
+        console.log({ where: 'lookup', upload_id, session_user_id: session.user.id });
+      }
+
       // Lookup storage path from policy_uploads scoped to user
       const { data: lookup, error: lookupError } = await supabase
         .from('policy_uploads')
@@ -164,7 +169,11 @@ export async function POST(request: NextRequest) {
         .maybeSingle();
 
       if (lookupError || !lookup?.storage_path) {
-        return NextResponse.json({ error: 'upload_id not found' }, { status: 400 });
+        console.error({ where: 'lookup', upload_id, session_user_id: session.user.id, error: lookupError?.message || 'No storage_path found' });
+        return NextResponse.json({ 
+          error: 'upload_not_owned', 
+          hint: 'Sign in with the original account or re-analyze.' 
+        }, { status: 409 });
       }
 
       storage_path = lookup.storage_path as string;
@@ -172,20 +181,20 @@ export async function POST(request: NextRequest) {
       try {
         const signed = await supabase.storage
           .from('policy-documents')
-          .createSignedUrl(storage_path, 60 * 60);
-        pdf_url = signed?.data?.signedUrl || null;
+          .createSignedUrl(storage_path.replace('policy-documents/', ''), 60 * 60);
+        pdf_url = signed?.signedUrl || null;
       } catch (e) {
-        console.warn('[policies] signing url failed for upload_id', e);
+        console.warn({ where: 'signed_url_creation', upload_id, error: e });
       }
     } else if (provided_storage_path) {
       storage_path = provided_storage_path;
       try {
         const signed = await supabase.storage
           .from('policy-documents')
-          .createSignedUrl(storage_path, 60 * 60);
-        pdf_url = signed?.data?.signedUrl || provided_pdf_url || null;
+          .createSignedUrl(provided_storage_path.replace('policy-documents/', ''), 60 * 60);
+        pdf_url = signed?.signedUrl || provided_pdf_url || null;
       } catch (e) {
-        console.warn('[policies] signing url failed for provided storage_path', e);
+        console.warn({ where: 'signed_url_creation', storage_path: provided_storage_path, error: e });
         pdf_url = provided_pdf_url || null;
       }
     } else if (pdf_base64) {
@@ -247,6 +256,7 @@ export async function POST(request: NextRequest) {
 
     // Guard: must have at least one of the identifiers resolved or a url
     if (!storage_path && !pdf_url) {
+      console.error({ where: 'missing_identifiers', message: 'Missing upload_id | storage_path | pdf_base64' });
       return NextResponse.json(
         { error: 'Missing upload_id | storage_path | pdf_base64' },
         { status: 400 }

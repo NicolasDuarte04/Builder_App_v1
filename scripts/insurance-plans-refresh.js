@@ -237,6 +237,22 @@ class InsurancePlansRefresher {
       coverage_amount: 0
     };
     
+    // Guard: enforce allowed domains for external_link
+    try {
+      const { DOMAIN_MAP } = require('../Briki-AI-Project-Builder-App-v1-/src/data/domainMap');
+      const allowed = DOMAIN_MAP[dbPlan.provider];
+      if (dbPlan.external_link && Array.isArray(allowed)) {
+        const host = new URL(dbPlan.external_link).hostname.toLowerCase();
+        const ok = allowed.some(d => host === d || host.endsWith(`.${d.toLowerCase()}`));
+        if (!ok) {
+          dbPlan.external_link = null;
+          dbPlan.link_status = 'broken';
+        }
+      }
+    } catch (e) {
+      // ignore if helper is not available in this runtime
+    }
+    
     return dbPlan;
   }
 

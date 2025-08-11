@@ -21,6 +21,7 @@ export interface InsurancePlan {
  features?: string[];
  rating?: number;
  tags?: string[];
+ link_status?: 'valid' | 'redirected' | 'broken' | null;
 }
 
 
@@ -58,7 +59,7 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
  const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (plan.is_external && plan.external_link) {
+    if (plan.is_external && plan.external_link && plan.link_status !== 'broken') {
       window.open(plan.external_link, '_blank', 'noopener,noreferrer');
     } else {
       onQuote(plan.id);
@@ -78,6 +79,7 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
    tags: Array.isArray(plan.tags) ? plan.tags : [],
    is_external: plan.is_external !== undefined ? plan.is_external : true,
    external_link: plan.external_link || null,
+   link_status: plan.link_status ?? null,
  };
 
  return (
@@ -200,7 +202,7 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
            >
              Ver detalles
            </Button>
-           {safePlan.external_link ? (
+           {safePlan.external_link && safePlan.link_status !== 'broken' ? (
              <a
                href={safePlan.external_link}
                target="_blank"

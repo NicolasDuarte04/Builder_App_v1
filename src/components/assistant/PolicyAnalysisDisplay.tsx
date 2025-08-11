@@ -1,12 +1,15 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar } from 'lucide-react';
+import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { SavePolicyButton } from '../dashboard/SavePolicyButton';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { Button } from '../ui/Button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/Dialog';
 
 interface PolicyAnalysis {
   policyType: string;
@@ -48,11 +51,15 @@ interface PolicyAnalysisDisplayProps {
   pdfUrl?: string;
   fileName?: string;
   rawAnalysisData?: any;
+  uploaderUserId?: string;
 }
 
-export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData }: PolicyAnalysisDisplayProps) {
+export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData, uploaderUserId }: PolicyAnalysisDisplayProps) {
   const { t } = useTranslation();
   const router = useRouter();
+  const { data: session } = useSession();
+  const [showUserMismatchModal, setShowUserMismatchModal] = useState(false);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -65,6 +72,32 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     if (score <= 3) return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
     if (score <= 6) return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
     return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+  };
+
+  const checkUserConsistency = () => {
+    if (!uploaderUserId || !session?.user?.id) return true;
+    return uploaderUserId === session.user.id;
+  };
+
+  const handleSaveClick = () => {
+    if (!checkUserConsistency()) {
+      setShowUserMismatchModal(true);
+      return false;
+    }
+    return true;
+  };
+
+  const handleReanalyze = () => {
+    setIsReanalyzing(true);
+    // This will trigger a re-upload and analysis under the current user
+    // The parent component should handle this
+    setShowUserMismatchModal(false);
+    setIsReanalyzing(false);
+  };
+
+  const handleSwitchAccount = () => {
+    // Sign out and redirect to login
+    router.push('/login');
   };
 
   return (
@@ -346,6 +379,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
             Guarda este análisis para acceder fácilmente a los detalles de tu póliza en cualquier momento.
           </p>
           <SavePolicyButton
+            onBeforeSave={handleSaveClick}
             policyData={(function() {
               const payload: any = {
                 custom_name: fileName || `${analysis.policyType} - ${new Date().toLocaleDateString()}`,
@@ -388,6 +422,38 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
           />
         </div>
       </div>
+
+      {/* User Mismatch Modal */}
+      <Dialog open={showUserMismatchModal} onOpenChange={setShowUserMismatchModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-yellow-600" />
+              Tu sesión cambió
+            </DialogTitle>
+            <DialogDescription>
+              Este análisis fue realizado con una cuenta diferente. Para guardarlo, necesitas usar la cuenta original o re-analizar el documento.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Button
+              onClick={handleReanalyze}
+              disabled={isReanalyzing}
+              className="w-full"
+              variant="default"
+            >
+              {isReanalyzing ? 'Re-analizando...' : 'Re-analizar bajo esta cuenta'}
+            </Button>
+            <Button
+              onClick={handleSwitchAccount}
+              variant="outline"
+              className="w-full"
+            >
+              Cambiar de cuenta
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 } 

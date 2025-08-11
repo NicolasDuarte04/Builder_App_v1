@@ -89,6 +89,9 @@ export async function queryInsurancePlans(filters: {
     const params: any[] = [];
     let paramIndex = 1;
 
+    // Filter by link status by default
+    query += ` AND link_status IN ('valid', 'redirected')`;
+
     if (filters.category) {
       // Normalize category to remove accents for better matching
       const normalizedCategory = filters.category

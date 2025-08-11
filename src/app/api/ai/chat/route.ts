@@ -312,38 +312,9 @@ export async function POST(req: Request) {
                 isExactMatch
               });
               
-              // STRICT VALIDATION: Only return plans that are real and complete
-              const validPlans = plans.filter(plan => 
-                plan && 
-                plan.name && 
-                plan.name !== 'No hay planes disponibles públicamente' &&
-                plan.name !== 'Plan de Seguro' &&
-                plan.provider &&
-                plan.provider !== 'Proveedor' &&
-                plan.base_price > 0 && // Must have a real price
-                plan.external_link // Must have an external link for quotes
-              );
-              
-              console.log(`🔍 Validation results:`, {
-                totalPlans: plans.length,
-                validPlans: validPlans.length,
-                invalidPlans: plans.length - validPlans.length,
-                reasons: plans.map(plan => ({
-                  name: plan.name,
-                  provider: plan.provider,
-                  base_price: plan.base_price,
-                  external_link: plan.external_link,
-                  isValid: plan.name && 
-                           plan.name !== 'No hay planes disponibles públicamente' &&
-                           plan.provider &&
-                           plan.base_price > 0 &&
-                           plan.external_link
-                }))
-              });
-              
               // Transform plans into the expected UI format
               // The frontend expects these exact fields for validation
-              const finalPlans = validPlans.map((plan, index) => ({
+              const finalPlans = plans.map((plan, index) => ({
                 id: plan.id,
                 name: plan.name,
                 provider: plan.provider,

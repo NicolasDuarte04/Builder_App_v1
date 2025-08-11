@@ -137,6 +137,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
           onAnalysisComplete({
             ...result.analysis,
             uploadId: result.uploadId,
+            uploaderUserId: result.uploaderUserId,
             storagePath: result.storagePath,
             pdfUrl: result.pdfUrl,
             _pdfData: {
@@ -146,6 +147,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
               rawAnalysisData: {
                 ...result.analysis,
                 uploadId: result.uploadId,
+                uploaderUserId: result.uploaderUserId,
                 storagePath: result.storagePath,
                 pdfUrl: result.pdfUrl
               },
