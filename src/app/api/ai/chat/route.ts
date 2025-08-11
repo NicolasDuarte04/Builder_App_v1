@@ -1,6 +1,9 @@
 import { streamText, tool } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { searchPlans } from '@/lib/plans-client';
+
+// Temporary: force JSON fallback until streaming SDK versions are aligned.
+export const FORCE_JSON = true; // set to false once streaming fixed
 import { hasDatabaseUrl } from '@/lib/render-db';
 import { InsurancePlan } from '@/types/project';
 import { NextResponse } from 'next/server';
@@ -111,7 +114,7 @@ export async function POST(req: Request) {
 
   // Query param parsing
   const urlParams = new URL(req.url).searchParams;
-  const noStream = urlParams.get('nostream') === '1';
+  const noStream = FORCE_JSON || urlParams.get('nostream') === '1';
 
   console.log('🔵 Chat API called with:', {
     messageCount: messages.length,
@@ -466,23 +469,36 @@ export async function POST(req: Request) {
       planCount: planCountDebug,
     });
 
-    // --- SSE peek diagnostics using Response.tee() ---
-    const aiResp = result.toAIStreamResponse({ headers: { 'x-vercel-ai-data-stream': 'v1' } });
-    const body = aiResp.body;
-    if (!body) return aiResp;
+    // ---- Compatibility shim for different AI SDK versions ----
+    let resp: Response;
+    const anyRes: any = result;
 
-    const [branch1, branch2] = body.tee();
-    const firstReader = branch1.getReader();
-    const firstChunk = await firstReader.read();
-    if (firstChunk.value) {
-      console.error('[chat] peek-sse', new TextDecoder().decode(firstChunk.value).slice(0, 400));
+    if (typeof anyRes.toAIStreamResponse === 'function') {
+      resp = anyRes.toAIStreamResponse({ headers: { 'x-vercel-ai-data-stream': 'v1' } });
+    } else if (typeof anyRes.toDataStreamResponse === 'function') {
+      resp = anyRes.toDataStreamResponse();
+    } else {
+      const { StreamingTextResponse }: any = await import('ai');
+      const rawStream = typeof anyRes.toAIStream === 'function' ? anyRes.toAIStream() : anyRes.stream;
+      resp = new StreamingTextResponse(rawStream as any);
     }
 
-    // Close the first branch completely to free resources
-    firstReader.cancel();
+    // -------- Peek first SSE chunk for diagnostics ----------
+    const body = resp.body;
+    if (body) {
+      const [b1, b2] = body.tee();
+      const reader = b1.getReader();
+      reader.read().then(({ value }) => {
+        if (value) {
+          console.error('[chat] peek-sse', new TextDecoder().decode(value).slice(0, 400));
+        }
+        reader.cancel();
+      });
+      resp = new NextResponse(b2, resp);
+    }
 
-    console.error('🟢 streamText done, returning SSE stream');
-    return new NextResponse(branch2, aiResp);
+    console.error('🟢 streamText done, returning SSE response');
+    return resp;
 
   } catch (err) {
     console.error('[chat] error', {
