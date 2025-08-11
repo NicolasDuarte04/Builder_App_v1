@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useRightPanelTrigger } from '@/contexts/PlanResultsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ComparisonMessage } from './ComparisonMessage';
-import { eventBus, BrikiEvents } from '@/lib/event-bus';
 
 interface MessageRendererProps {
   content: string;
@@ -13,284 +12,45 @@ interface MessageRendererProps {
   toolInvocations?: any[];
 }
 
-// Helper to determine if content is a tool invocation result
-const isToolInvocation = (content: any): content is { type: string; plans: any[] } => {
-  return content && typeof content === 'object' && content.type === 'insurance_plans' && Array.isArray(content.plans);
-};
-
-export const MessageRenderer = React.memo(function MessageRenderer({ 
-  content, 
-  role, 
-  name, 
-  toolInvocations 
+export const MessageRenderer = React.memo(function MessageRenderer({
+  content,
+  role,
+  name,
+  toolInvocations,
 }: MessageRendererProps) {
   const { t } = useTranslation();
   const { showPanelWithPlans, isDualPanelMode } = useRightPanelTrigger();
 
-  // Log when the component renders
-  console.log('[MessageRenderer] Rendering message:', { role, name, hasContent: !!content });
-
-  // Effect to detect and emit plan data to the right panel
-  useEffect(() => {
-    // Attempt to parse the content as JSON
-    let parsedContent;
+  const parsed = useMemo(() => {
+    const raw = content ?? '';
     try {
-      if (typeof content === 'string') {
-        parsedContent = JSON.parse(content);
-      } else if (typeof content === 'object' && content !== null) {
-        parsedContent = content;
-      }
-    } catch (error) {
-      // Not a JSON string, so it's a regular message
+      const json = JSON.parse(raw);
+      return { isJSON: true as const, payload: json };
+    } catch {
+      return { isJSON: false as const, payload: null };
     }
+  }, [content]);
 
-    // If it's a tool result with insurance plans, dispatch an event
-    if (role === 'tool' && name === 'get_insurance_plans' && parsedContent && isToolInvocation(parsedContent)) {
-      console.log('[MessageRenderer] Dispatching INSURANCE_PLANS_RECEIVED event with plans:', parsedContent.plans.length);
-      eventBus.dispatch(BrikiEvents.INSURANCE_PLANS_RECEIVED, {
-        title: "Planes de Seguro",
-        plans: parsedContent.plans,
-        category: parsedContent.insuranceType,
-        query: '' // We don't have the original query here
+  // Side-effect hook: runs every render (unconditional)
+  useEffect(() => {
+    if (!parsed.isJSON) return;
+    const p: any = parsed.payload;
+    if (p?.type === 'insurance_plans' && Array.isArray(p.plans)) {
+      console.log('[MessageRenderer] emitting plan data', p.plans.length);
+      showPanelWithPlans({
+        title: t('plans.recommendedTitle', { category: p.insuranceType || '' }),
+        plans: p.plans,
+        category: p.insuranceType,
+        query: p.originalQuery,
       });
     }
+  }, [parsed, showPanelWithPlans, t]);
 
-    // Check tool invocations first (priority)
-    if (toolInvocations && toolInvocations.length > 0) {
-      const insurancePlanTool = toolInvocations.find(
-        (tool: any) => tool.toolName === 'get_insurance_plans' && tool.result
-      );
-      
-      if (insurancePlanTool?.result) {
-        // Check for category mismatch
-        const result = insurancePlanTool.result;
-        const isCategoryMismatch = result.noExactMatchesFound && 
-                                   result.insuranceType && 
-                                   result.categoriesFound && 
-                                   !result.categoriesFound.includes(result.insuranceType);
-        
-        if (isCategoryMismatch) {
-          console.log('🚫 MessageRenderer: Blocking irrelevant plans');
-          return; // Don't process these plans
-        }
-        
-        handlePlanData(insurancePlanTool.result);
-        return;
-      }
-    }
+  // Determine if this is a blank meaningless message.
+  const isBlankText = !parsed.isJSON && !String(content || '').trim();
+  if (isBlankText) return null;
 
-    // Check if this is a tool result message
-    if (role === 'tool' && name === 'get_insurance_plans') {
-      try {
-        const parsed = JSON.parse(content);
-        
-        // Check for category mismatch
-        const isCategoryMismatch = parsed.noExactMatchesFound && 
-                                   parsed.insuranceType && 
-                                   parsed.categoriesFound && 
-                                   !parsed.categoriesFound.includes(parsed.insuranceType);
-        
-        if (isCategoryMismatch) {
-          console.log('🚫 MessageRenderer: Blocking irrelevant plans from tool result');
-          return; // Don't process these plans
-        }
-        
-        handlePlanData(parsed);
-        return;
-      } catch (error) {
-        // Try to extract JSON from content
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            const parsed = JSON.parse(jsonMatch[0]);
-            
-            // Check for category mismatch
-            const isCategoryMismatch = parsed.noExactMatchesFound && 
-                                       parsed.insuranceType && 
-                                       parsed.categoriesFound && 
-                                       !parsed.categoriesFound.includes(parsed.insuranceType);
-            
-            if (isCategoryMismatch) {
-              return; // Don't process these plans
-            }
-            
-            handlePlanData(parsed);
-            return;
-          } catch (err) {
-            console.warn('Failed to parse plan data from tool result');
-          }
-        }
-      }
-    }
-
-    // Check assistant messages for embedded plan data (only insurance_plans, not comparison)
-    if (role === 'assistant') {
-      try {
-        const parsed = JSON.parse(content);
-        // Only treat explicit insurance_plans payloads as structured plan data
-        if (parsed.type === 'insurance_plans') {
-          // Check for category mismatch
-          const isCategoryMismatch = parsed.noExactMatchesFound && 
-                                     parsed.insuranceType && 
-                                     parsed.categoriesFound && 
-                                     !parsed.categoriesFound.includes(parsed.insuranceType);
-          
-          if (isCategoryMismatch) {
-            return; // Don't process these plans
-          }
-          
-          handlePlanData(parsed);
-          return;
-        }
-      } catch (error) {
-        // Try to extract JSON from content
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            const parsed = JSON.parse(jsonMatch[0]);
-            if (parsed.type === 'insurance_plans') {
-              // Check for category mismatch
-              const isCategoryMismatch = parsed.noExactMatchesFound && 
-                                         parsed.insuranceType && 
-                                         parsed.categoriesFound && 
-                                         !parsed.categoriesFound.includes(parsed.insuranceType);
-              
-              if (isCategoryMismatch) {
-                return; // Don't process these plans
-              }
-              
-              handlePlanData(parsed);
-              return;
-            }
-          } catch (err) {
-            // Not plan data, render as normal text
-          }
-        }
-      }
-    }
-  }, [content, role, name, toolInvocations]);
-
-  // Handle plan data emission to right panel
-  const handlePlanData = (data: any) => {
-    if (!data || !Array.isArray(data.plans)) return;
-
-    // Filter and validate plans
-    const validPlans = data.plans.filter((plan: any) => 
-      plan && 
-      plan.name && 
-      plan.name !== 'No hay planes disponibles públicamente' &&
-      plan.name !== 'Plan de Seguro' &&
-      plan.provider &&
-      plan.provider !== 'Proveedor' &&
-      plan.base_price > 0 &&
-      plan.external_link
-    );
-
-    if (validPlans.length === 0) return;
-
-    // Map plans to the expected format
-    const mappedPlans = validPlans.map((plan: any, index: number) => {
-      const tags: string[] = [];
-      if (index === 0) tags.push(t('plans.tags.recommended'));
-      if (plan.base_price && plan.base_price > 0 && plan.base_price < 150000) {
-        tags.push(t('plans.tags.bestValue'));
-      }
-      
-      return {
-        id: plan.id ?? index,
-        name: plan.name || 'Plan de Seguro',
-        provider: plan.provider || 'Proveedor',
-        basePrice: plan.base_price || 0,
-        currency: plan.currency || 'COP',
-        benefits: Array.isArray(plan.benefits) ? plan.benefits : [],
-        externalLink: plan.external_link,
-        external_link: plan.external_link,
-        is_external: plan.is_external !== undefined ? plan.is_external : true,
-        category: plan.category || 'seguro',
-        rating: parseFloat(plan.rating) || 4.0,
-        tags,
-      };
-    });
-
-    // Prepare plan results data
-    const category = mappedPlans[0]?.category ?? t('plans.defaultCategory');
-    const titleTemplate = t('plans.recommendedTitle');
-    const title = titleTemplate.replace('{category}', category);
-    
-    const planResults = {
-      title,
-      plans: mappedPlans,
-      category,
-      query: data.query || undefined,
-    };
-
-    // Emit to right panel (if in dual panel mode)
-    if (isDualPanelMode) {
-      console.log('🎯 GEMINI-STYLE: Emitting plans to right panel:', planResults);
-      showPanelWithPlans(planResults);
-    }
-  };
-
-  // Check if this message contains plan data
-  const containsPlanData = () => {
-    // Check tool invocations
-    if (toolInvocations?.some((tool: any) => {
-      if (tool.toolName === 'get_insurance_plans' && tool.result?.plans?.length > 0) {
-        // Check for category mismatch
-        const result = tool.result;
-        const isCategoryMismatch = result.noExactMatchesFound && 
-                                   result.insuranceType && 
-                                   result.categoriesFound && 
-                                   !result.categoriesFound.includes(result.insuranceType);
-        
-        return !isCategoryMismatch; // Only return true if NOT a mismatch
-      }
-      return false;
-    })) {
-      return true;
-    }
-
-    // Check tool results
-    if (role === 'tool' && name === 'get_insurance_plans') {
-      try {
-        const parsed = JSON.parse(content);
-        // Check for category mismatch
-        const isCategoryMismatch = parsed.noExactMatchesFound && 
-                                   parsed.insuranceType && 
-                                   parsed.categoriesFound && 
-                                   !parsed.categoriesFound.includes(parsed.insuranceType);
-        
-        return parsed.plans?.length > 0 && !isCategoryMismatch;
-      } catch {
-        return false;
-      }
-    }
-
-    // Check assistant messages
-    if (role === 'assistant') {
-      try {
-        const parsed = JSON.parse(content);
-        // Only compress when it's the insurance_plans payload
-        return parsed.type === 'insurance_plans' && parsed.plans?.length > 0;
-      } catch {
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            const parsed = JSON.parse(jsonMatch[0]);
-            return parsed.type === 'insurance_plans' && parsed.plans?.length > 0;
-          } catch {
-            return false;
-          }
-        }
-      }
-    }
-
-    return false;
-  };
-
-  // GEMINI-STYLE: If in dual panel mode and this message contains plans, 
-  // show a simple notification instead of the full content
-  if (isDualPanelMode && containsPlanData()) {
+  if (isDualPanelMode && parsed.isJSON && parsed.payload?.type === 'insurance_plans' && parsed.payload?.plans?.length > 0) {
     return (
       <div className="flex items-start space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
         <div className="mt-1">
@@ -310,33 +70,14 @@ export const MessageRenderer = React.memo(function MessageRenderer({
     );
   }
 
-  // For tool messages, hide them completely in dual panel mode
   if (role === 'tool' && isDualPanelMode) {
     return null;
   }
-
-  // Handle comparison messages
-  if (role === 'assistant') {
-    try {
-      console.log('🔍 MessageRenderer: Attempting to parse assistant message:', content.substring(0, 100) + '...');
-      const parsed = JSON.parse(content);
-      console.log('🔍 MessageRenderer: Parsed message type:', parsed.type);
-      
-      if (parsed.type === 'comparison' && parsed.plans) {
-        console.log('✅ MessageRenderer: Rendering comparison with', parsed.plans.length, 'plans');
-        return (
-          <ComparisonMessage
-            plans={parsed.plans}
-          />
-        );
-      }
-    } catch (error) {
-      console.log('🔍 MessageRenderer: Not a JSON message, continuing to default rendering');
-      // Not JSON, continue to default rendering
-    }
+  
+  if (role === 'assistant' && parsed.isJSON && parsed.payload?.type === 'comparison' && parsed.payload?.plans) {
+    return <ComparisonMessage plans={parsed.payload.plans} />;
   }
 
-  // Default text rendering for all other content
   return (
     <div>
       <p className="text-sm whitespace-pre-wrap break-words">{content}</p>

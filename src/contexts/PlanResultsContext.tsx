@@ -59,8 +59,8 @@ export function PlanResultsProvider({
     
     setCurrentResults(newResults);
     
-    // AUTO-OPEN the right panel when plans are detected (core Gemini behavior)
-    if (isDualPanelMode && results.plans.length > 0) {
+    // AUTO-OPEN the right panel when plans are detected
+    if (results.plans.length > 0) {
       setRightPanelOpen(true);
       console.log('✅ Right panel auto-opened with', results.plans.length, 'plans');
     }

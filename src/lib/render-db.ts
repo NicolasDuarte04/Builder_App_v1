@@ -1,21 +1,39 @@
 import { Pool } from 'pg';
 import { InsurancePlan, InsurancePlanFromDB } from '@/types/project';
 
-// Check for database URL and initialize connection pool
-export const hasDatabaseUrl = !!process.env.RENDER_POSTGRES_URL;
+// Unified database URL resolution
+const DB_URL_CANDIDATE = process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL || '';
 
-console.log('🔌 Database URL status:', hasDatabaseUrl ? 'Present' : 'Missing');
+// Ensure sslmode=require is present
+let DB_URL = DB_URL_CANDIDATE;
+if (DB_URL_CANDIDATE && !/sslmode=require/.test(DB_URL_CANDIDATE)) {
+  DB_URL = `${DB_URL_CANDIDATE}${DB_URL_CANDIDATE.includes('?') ? '&' : '?'}sslmode=require`;
+}
+
+export const hasDatabaseUrl = !!DB_URL;
+const envVarSet = !!(process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL);
+
+// Debug logging
+const debugInfo = {
+  hasDatabaseUrl,
+  envVarSet,
+  envVarLength: DB_URL.length,
+};
+
+console.log('🔌 Database connection details:', debugInfo);
+
 if (!hasDatabaseUrl) {
-  console.warn('⚠️  RENDER_POSTGRES_URL environment variable is not set');
-  console.warn('💡 If running in production, make sure to add RENDER_POSTGRES_URL to your deployment environment variables');
+  console.warn('⚠️  DATABASE_URL or RENDER_POSTGRES_URL environment variable is not set.');
+  console.warn('💡 If running in production, make sure to add the connection string to your deployment environment variables.');
+  console.warn('💡 If running locally, ensure it is set in your .env.local file.');
   console.warn('🔍 Current NODE_ENV:', process.env.NODE_ENV);
 }
 
 export const pool = hasDatabaseUrl
   ? new Pool({
-      connectionString: process.env.RENDER_POSTGRES_URL,
+      connectionString: DB_URL,
       ssl: {
-        rejectUnauthorized: false,
+        rejectUnauthorized: false, // Required for some cloud providers
       },
     })
   : null;
@@ -117,28 +135,31 @@ export async function queryInsurancePlans(filters: {
   benefits_contain?: string;
   limit?: number;
 }): Promise<InsurancePlan[]> {
-  try {
-    if (!pool) {
-      console.error('❌ No database connection available. Cannot query insurance plans.');
-      console.error('💡 Make sure RENDER_POSTGRES_URL is set in your environment variables');
-      // Return empty array instead of throwing to prevent frontend errors
-      return [];
-    }
+  if (!pool) {
+    console.error('❌ No database connection available. Cannot query insurance plans.');
+    console.error('💡 Make sure RENDER_POSTGRES_URL is set in your environment variables');
+    return [];
+  }
 
-    let query = 'SELECT * FROM insurance_plans WHERE 1=1';
+  const buildQuery = (isCompat = false) => {
+    const selectClause = isCompat
+      ? `SELECT *,
+         'valid' as link_status,
+         external_link as final_url,
+         NOW() as last_verified_at`
+      : 'SELECT *';
+
+    let query = `${selectClause} FROM insurance_plans WHERE 1=1`;
     const params: any[] = [];
     let paramIndex = 1;
 
-    // Filter by link status by default
-    query += ` AND link_status IN ('valid', 'redirected')`;
+    if (!isCompat) {
+      query += ` AND link_status IN ('valid', 'redirected')`;
+    }
 
     if (filters.category) {
-      // Normalize category to remove accents for better matching
-      const normalizedCategory = filters.category
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, ''); // Remove accents
+      const normalizedCategory = filters.category.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
       console.log(`🔍 Normalized category: ${filters.category} -> ${normalizedCategory}`);
-      
       query += ` AND category ILIKE $${paramIndex++}`;
       params.push(`%${normalizedCategory}%`);
     }
@@ -163,30 +184,48 @@ export async function queryInsurancePlans(filters: {
     query += ` LIMIT $${paramIndex++}`;
     params.push(filters.limit || 4);
 
-    const result = await pool.query(query, params);
+    return { query, params };
+  };
 
-    // If no exact matches found, try a fuzzy search
+  try {
+    const { query, params } = buildQuery();
+    const result = await pool.query(query, params);
+    console.log(`[db] used rich query; rows: ${result.rows.length}`);
+
     if (result.rows.length === 0 && filters.category) {
       console.log(`📝 No exact matches for category '${filters.category}'. Trying fuzzy search...`);
       return await getFuzzyMatchPlans(filters);
     }
-
     return result.rows.map(transformPlan);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message.includes('column "link_status" does not exist')) {
+      console.warn('⚠️ Fallback to compatibility query due to missing "link_status" column.');
+      const { query, params } = buildQuery(true);
+      const result = await pool.query(query, params);
+      console.log(`[db] used compat query; rows: ${result.rows.length}`);
+
+      if (result.rows.length === 0 && filters.category) {
+        return await getFuzzyMatchPlans(filters, true);
+      }
+      return result.rows.map(transformPlan);
+    }
     console.error('❌ Error querying insurance plans:', error);
-    throw error; // Let the caller handle the error
+    throw error;
   }
 }
 
 // Get fuzzy match plans when no exact matches are found
-async function getFuzzyMatchPlans(filters: {
-  category?: string;
-  max_price?: number;
-  country?: string;
-  tags?: string[];
-  benefits_contain?: string;
-  limit?: number;
-}): Promise<InsurancePlan[]> {
+async function getFuzzyMatchPlans(
+  filters: {
+    category?: string;
+    max_price?: number;
+    country?: string;
+    tags?: string[];
+    benefits_contain?: string;
+    limit?: number;
+  },
+  isCompat = false
+): Promise<InsurancePlan[]> {
   try {
     if (!pool) {
       console.error('❌ No database connection available.');
