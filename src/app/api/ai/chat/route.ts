@@ -1,6 +1,7 @@
 import { streamText, tool } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { queryInsurancePlans, hasDatabaseUrl } from '@/lib/render-db';
+import { searchPlans } from '@/lib/plans-client';
+import { hasDatabaseUrl } from '@/lib/render-db';
 import { InsurancePlan } from '@/types/project';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -331,7 +332,7 @@ export async function POST(req: Request) {
               console.log('[chat] env lengths:', { dbUrlLength, renderUrlLength });
               console.log('[chat] filters:', { category: actualCategory, country, max_price });
               const t0 = Date.now();
-              const plans = await queryInsurancePlans({
+              const plans = await searchPlans({
                 category: actualCategory,
                 max_price,
                 country,
