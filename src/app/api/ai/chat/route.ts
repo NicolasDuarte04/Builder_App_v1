@@ -11,8 +11,19 @@ import { logToolError } from '@/lib/ai-error-handler';
 import { mapUserInputToCategory, getCategorySuggestions, getDynamicCategories } from '@/lib/category-mapper';
 
 export const runtime = 'nodejs';
+// Disable caching to ensure fresh execution and visible logs in prod
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
+// Bundle timestamp – helps confirm the deployed code version
+console.log('[chat] bundle-loaded', { build: '2025-08-11T15:05Z' });
 
 const hasValidKey = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-');
+
+if (!hasValidKey) {
+  console.log('[chat] EARLY-EXIT: missing OPENAI key');
+}
 
 // Language detection function
 function detectLanguage(text: string): 'english' | 'spanish' {
@@ -66,6 +77,7 @@ function createMockStream(reply: string) {
 // const getSamplePlans = (category: string) => { ... } - REMOVED
 
 export async function POST(req: Request) {
+  console.log('[chat] boot', { runtimeEnv: process.env.NEXT_RUNTIME || 'node' });
   // --- DEBUG: begin ---
   const mask = (url?: string) => {
     if (!url) return 'none';
@@ -255,6 +267,7 @@ export async function POST(req: Request) {
 
   // Real OpenAI call ------------------------------------------------------------------
   try {
+    console.log('[chat] about to streamText', { mappedCategoryAttempt: 'will log later' });
     const oai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
     
     // Get dynamic categories for the tool description
