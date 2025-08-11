@@ -65,6 +65,26 @@ function createMockStream(reply: string) {
 // const getSamplePlans = (category: string) => { ... } - REMOVED
 
 export async function POST(req: Request) {
+  // --- DEBUG: begin ---
+  const mask = (url?: string) => {
+    if (!url) return 'none';
+    try {
+      const u = new URL(url);
+      return `${u.protocol}//${u.hostname}...`;
+    } catch {
+      return 'invalid';
+    }
+  };
+  const len = (s?: string) => (s ? s.length : 0);
+
+  console.log('[chat] request:start', {
+    ts: new Date().toISOString(),
+    env: process.env.NODE_ENV,
+    hasDbUrl: !!(process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL),
+    dbUrlLen: len(process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL),
+    supabaseUrlLen: len(process.env.NEXT_PUBLIC_SUPABASE_URL),
+  });
+  // --- DEBUG: end ---
   const { messages, preferredLanguage } = await req.json();
   const encoder = new TextEncoder();
 
@@ -399,12 +419,20 @@ export async function POST(req: Request) {
       },
     });
 
-    console.dir({ resultDebug: result }, { depth: 4 });
-    console.log('🟢 streamText result obtained, converting to DataStreamResponse');
+    const planCountDebug = (result as any)?.tools?.insurance_plans?.plans?.length ?? -1;
+    console.log('[chat] result:tools', {
+      hasTools: !!(result as any)?.tools,
+      planCount: planCountDebug,
+    });
+
+    console.log('🟢 streamText done, returning DataStreamResponse');
     return result.toDataStreamResponse();
 
   } catch (err) {
-    console.error(' streamText failed –', err);
+    console.error('[chat] error', {
+      message: (err as any)?.message,
+      code: (err as any)?.code,
+    });
 
     const errorReply = userLanguage === 'english'
       ? 'Sorry, there was a problem contacting the model. (mock response)'
