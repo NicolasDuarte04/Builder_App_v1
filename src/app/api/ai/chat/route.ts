@@ -15,6 +15,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
+export const preferredRegion = 'iad1';
 
 // Bundle timestamp – helps confirm the deployed code version
 console.log('[chat] bundle-loaded', { build: '2025-08-11T15:05Z' });
@@ -98,7 +99,13 @@ export async function POST(req: Request) {
     supabaseUrlLen: len(process.env.NEXT_PUBLIC_SUPABASE_URL),
   });
   // --- DEBUG: end ---
-  const { messages, preferredLanguage } = await req.json();
+  let bodyJson: any = {};
+  try { bodyJson = await req.json(); } catch { /* ignore */ }
+  if (!bodyJson?.messages) {
+    console.log('[chat] EARLY-EXIT invalid request body');
+    return NextResponse.json({ error: 'invalid body' }, { status: 400 });
+  }
+  const { messages, preferredLanguage } = bodyJson;
   const encoder = new TextEncoder();
 
   console.log('🔵 Chat API called with:', {
