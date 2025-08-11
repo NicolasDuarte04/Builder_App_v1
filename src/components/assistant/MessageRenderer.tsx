@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { useRightPanelTrigger } from '@/contexts/PlanResultsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ComparisonMessage } from './ComparisonMessage';
+import { BrikiEventBus, BrikiEvents } from '@/lib/event-bus';
 
 interface MessageRendererProps {
   content: string;
@@ -11,6 +12,11 @@ interface MessageRendererProps {
   name?: string;
   toolInvocations?: any[];
 }
+
+// Helper to determine if content is a tool invocation result
+const isToolInvocation = (content: any): content is { type: string; plans: any[] } => {
+  return content && typeof content === 'object' && content.type === 'insurance_plans' && Array.isArray(content.plans);
+};
 
 export const MessageRenderer = React.memo(function MessageRenderer({ 
   content, 
@@ -21,8 +27,34 @@ export const MessageRenderer = React.memo(function MessageRenderer({
   const { t } = useTranslation();
   const { showPanelWithPlans, isDualPanelMode } = useRightPanelTrigger();
 
+  // Log when the component renders
+  console.log('[MessageRenderer] Rendering message:', { role, name, hasContent: !!content });
+
   // Effect to detect and emit plan data to the right panel
   useEffect(() => {
+    // Attempt to parse the content as JSON
+    let parsedContent;
+    try {
+      if (typeof content === 'string') {
+        parsedContent = JSON.parse(content);
+      } else if (typeof content === 'object' && content !== null) {
+        parsedContent = content;
+      }
+    } catch (error) {
+      // Not a JSON string, so it's a regular message
+    }
+
+    // If it's a tool result with insurance plans, dispatch an event
+    if (role === 'tool' && name === 'get_insurance_plans' && parsedContent && isToolInvocation(parsedContent)) {
+      console.log('[MessageRenderer] Dispatching INSURANCE_PLANS_RECEIVED event with plans:', parsedContent.plans.length);
+      BrikiEventBus.dispatch(BrikiEvents.INSURANCE_PLANS_RECEIVED, {
+        title: "Planes de Seguro",
+        plans: parsedContent.plans,
+        category: parsedContent.insuranceType,
+        query: '' // We don't have the original query here
+      });
+    }
+
     // Check tool invocations first (priority)
     if (toolInvocations && toolInvocations.length > 0) {
       const insurancePlanTool = toolInvocations.find(

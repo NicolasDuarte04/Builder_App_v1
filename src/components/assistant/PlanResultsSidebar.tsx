@@ -149,6 +149,9 @@ export function PlanResultsSidebar({
   const pinnedPlansList = filteredPlans.filter(plan => pinnedPlans.has(plan.id));
   const unpinnedPlans = filteredPlans.filter(plan => !pinnedPlans.has(plan.id));
 
+  // Log when the component renders
+  console.log('[PlanResultsSidebar] Rendering:', { isOpen, plans: currentResults?.plans?.length });
+
   if (!isOpen) return null;
 
   return (
