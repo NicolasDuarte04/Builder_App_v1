@@ -200,7 +200,7 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
            >
              Ver detalles
            </Button>
-           {safePlan.external_link ? (
+            {safePlan.external_link ? (
              <a
                href={safePlan.external_link}
                target="_blank"
@@ -214,9 +214,9 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
              <Button
                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white shadow-sm hover:shadow-md transition-all"
                onClick={() => onQuote(safePlan.id)}
-               disabled={true}
+                disabled={true}
              >
-               Cotizar ahora
+                Solicitar cotización
              </Button>
            )}
          </div>

@@ -44,6 +44,10 @@ export interface InsurancePlan {
   reviews: number;
   is_external: boolean;
   external_link: string | null;
+  link_status?: 'valid' | 'redirected' | 'broken' | null;
+  final_url?: string | null;
+  last_verified_at?: string | null;
+  provider_official_domain?: string | null;
   brochure_link: string | null;
   created_at: string;
   updated_at: string;
