@@ -1,6 +1,7 @@
 import { streamText, tool } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { searchPlans } from '@/lib/plans-client';
+import { KNOWN_CATEGORIES } from '@/lib/insuranceCategories';
 
 // Temporary: force JSON fallback until streaming SDK versions are aligned.
 export const FORCE_JSON = true; // set to false once streaming fixed
@@ -282,11 +283,57 @@ export async function POST(req: Request) {
 
   if (noStream) {
     console.error('[chat] nostream fallback engaged');
-    // For simplicity use the last user message as category text
-    const catText = messages.filter((m: any) => m.role === 'user').pop()?.content || '';
-    const mapped = await mapUserInputToCategory(catText);
-    const plans = await searchPlans({ category: mapped.category || catText, limit: 4 });
-    return NextResponse.json({ tools: { insurance_plans: { plans, insuranceType: mapped.category || catText } } });
+
+    const lastUser = messages.filter((m: any) => m.role === 'user').pop()?.content?.trim() || '';
+    const lower = lastUser.toLowerCase();
+
+    const greetingRe = /\b(hi|hello|hey|hola|buenas|qué tal|que tal|cómo estás|como estas)\b/i;
+    const insuranceRe = /\b(seguro|insurance|plan(?:es)?|póliza|poliza|cobertura|coberturas)\b/i;
+
+    const isGreeting = greetingRe.test(lower);
+    let isInsuranceIntent = insuranceRe.test(lower);
+
+    let category: string | null = null;
+    for (const cat of KNOWN_CATEGORIES) {
+      if (lower.includes(cat)) {
+        category = cat;
+        isInsuranceIntent = true; // Finding a category implies insurance intent
+        break;
+      }
+    }
+
+    const willSearch = isInsuranceIntent && !!category;
+    const intent = isGreeting ? 'greeting' : isInsuranceIntent ? 'insurance' : 'other';
+
+    console.error('[chat] diag', { intent, category, willSearch });
+
+    // If we're going to search, do it and return the payload.
+    if (willSearch) {
+      const plans = await searchPlans({ category: category!, limit: 4 });
+      console.error('[chat] diag-search', { plans: plans.length });
+      const replyText = plans.length > 0
+        ? `Encontré ${plans.length} planes de ${category}. ¿Quieres que comparemos alguno?`
+        : `Lo siento, no encontré planes de ${category}. ¿Quieres intentar con otra categoría?`;
+
+      return NextResponse.json({
+        assistant: replyText,
+        tools: { insurance_plans: { plans, insuranceType: category } },
+      });
+    }
+
+    // For all other cases (greetings, general insurance questions, small talk),
+    // let the model generate a natural response without tools.
+    const oai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const result = await streamText({
+      model: oai('gpt-3.5-turbo'),
+      system: systemPrompt,
+      messages,
+    });
+
+    // Since this is a nostream path, we consume the stream on the server
+    // and return the complete response as a single JSON object.
+    const assistantResponse = await result.text;
+    return NextResponse.json({ assistant: assistantResponse });
   }
 
   console.error('[chat] passed key guard; building streamText');

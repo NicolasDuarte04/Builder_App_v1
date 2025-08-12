@@ -5,6 +5,7 @@ import { useChat, type Message } from '@ai-sdk/react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { eventBus, BrikiEvents } from '@/lib/event-bus';
 import { usePlanResults } from '@/contexts/PlanResultsContext';
+import { KNOWN_CATEGORIES } from '@/lib/insuranceCategories';
 import { useLanguage } from '@/components/LanguageProvider';
 
 // Chat endpoint (can be overridden via env)
@@ -32,13 +33,14 @@ export function useBrikiChat(initialMessages?: any[]) {
     if (ctype.includes('application/json')) {
       const data = await res.json();
       // Assistant reply text (if provided)
-      if (data.text) {
-        appendAssistantMessage(data.text);
+      if (data.assistant) {
+        appendAssistantMessage(data.assistant);
       }
 
       // Tool payload (plans)
       const payload = data?.tools?.insurance_plans;
-      if (payload?.plans?.length) {
+      const isValid = payload?.plans?.length && payload.insuranceType && KNOWN_CATEGORIES.has(payload.insuranceType);
+      if (isValid) {
         eventBus.emit(BrikiEvents.INSURANCE_PLANS_RECEIVED, {
           plans: payload.plans,
           insuranceType: payload.insuranceType,
@@ -67,23 +69,29 @@ export function useBrikiChat(initialMessages?: any[]) {
     }
   };
 
-  const { messages, input, handleInputChange, handleSubmit: _sdkHandleSubmit, isLoading, error: chatError, setMessages } = useChat({
-    api: CHAT_API, // ensure correct endpoint for SDK internals
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit: _sdkHandleSubmit,
+    isLoading,
+    error: chatError,
+    setMessages,
+    setInput, // <-- Import setInput
+    append, // <-- Import append
+  } = useChat({
+    api: CHAT_API,
     initialMessages: initialMessages || [],
     body: { preferredLanguage: language },
-    // We're overriding the default submission behavior
-    // This is a conceptual change; the actual implementation may need to be more integrated
-    // with the `useChat` state management if we don't handle the stream manually.
-    // For a quick fix, you might need to handle the stream response and update `messages` state yourself.
-    onFinish: (message) => {
-        console.log('🎯 Chat message finished:', message.content?.substring(0, 50) + '...');
-        if (message.toolInvocations && message.toolInvocations.length > 0) {
-            message.toolInvocations.forEach((invocation: any) => {
-                if (invocation.toolName === 'get_insurance_plans' && invocation.result) {
-                    handleStructuredData(invocation.result);
-                }
-            });
-        }
+    onFinish: message => {
+      console.log('🎯 Chat message finished:', message.content?.substring(0, 50) + '...');
+      if (message.toolInvocations && message.toolInvocations.length > 0) {
+        message.toolInvocations.forEach((invocation: any) => {
+          if (invocation.toolName === 'get_insurance_plans' && invocation.result) {
+            handleStructuredData(invocation.result);
+          }
+        });
+      }
     },
     onError: (error) => {
         console.error('❌ Chat error:', error);
@@ -93,20 +101,31 @@ export function useBrikiChat(initialMessages?: any[]) {
             toolName: toolCall.toolName,
             args: toolCall.args
         });
-        setCurrentToolInvocations(prev => [...prev, {
-            toolName: toolCall.toolName,
-            args: toolCall.args
-        }]);
+        setCurrentToolInvocations(prev => [...prev, { toolName: toolCall.toolName, args: toolCall.args }]);
     },
   });
 
-  // The custom handleSubmit would look something like this:
-  const customHandleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const newMessages: Message[] = [...messages, { id: Date.now().toString(), role: 'user', content: input }];
-    setMessages(newMessages);
-    customSubmit(newMessages);
-    // Clear input, etc.
+  // The custom handleSubmit clears the input and calls the nostream endpoint
+  const customHandleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+    const prompt = input.trim();
+    if (!prompt) return;
+
+    // Clear right away for responsive UX
+    setInput('');
+
+    const userMessage: Message = { role: 'user', content: prompt, id: Date.now().toString() };
+    append(userMessage);
+
+    const messagesPayload: Message[] = [...messages, userMessage];
+
+    try {
+      await customSubmit(messagesPayload);
+    } catch (error) {
+      console.error('❌ Fetch error in custom submit:', error);
+      // Optional: Restore input on hard failure
+      setInput(prompt);
+    }
   };
 
   useEffect(() => {

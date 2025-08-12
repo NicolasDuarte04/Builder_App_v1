@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { InsurancePlan } from '@/components/briki-ai-assistant/NewPlanCard';
+import { KNOWN_CATEGORIES } from '@/lib/insuranceCategories';
+import { normalizeCategory } from '@/lib/utils';
 
 interface PlanResultsData {
   title: string;
@@ -58,6 +60,12 @@ export function PlanResultsProvider({
     console.log('🎯 GEMINI-STYLE: Auto-opening right panel with plans:', newResults);
     
     setCurrentResults(newResults);
+
+    const type = normalizeCategory(results.category);
+    if (!type || !KNOWN_CATEGORIES.has(type)) {
+      console.log('🎯 Panel open request ignored: invalid category', { category: results.category, normalized: type });
+      return;
+    }
     
     // AUTO-OPEN the right panel when plans are detected
     if (results.plans.length > 0) {
