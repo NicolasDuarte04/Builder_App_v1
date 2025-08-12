@@ -18,15 +18,13 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useSession, signOut } from "next-auth/react";
 import { ChevronDown, LogOut, User } from "lucide-react";
 import Link from "next/link";
-import { ENABLE_INSURANCE_PORTAL } from "@/lib/featureFlags";
 
 const getNavItems = (t: (key: string) => string, isAuthenticated: boolean) => {
   const items = [
     { name: t("nav.home"), link: "/" },
     { name: t("nav.about"), link: "/about" },
     { name: t("nav.assistant"), link: "/assistant" },
-    // Temporarily hide My Insurance portal in UI for demo
-    ...(ENABLE_INSURANCE_PORTAL ? [{ name: t("nav.myInsurance"), link: "/dashboard/insurance" }] : []),
+    { name: t("nav.myInsurance"), link: "/dashboard/insurance" },
   ];
 
   return items;

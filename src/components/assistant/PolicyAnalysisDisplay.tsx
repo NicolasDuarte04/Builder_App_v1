@@ -5,7 +5,6 @@ import React from 'react';
 import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { SavePolicyButton } from '../dashboard/SavePolicyButton';
-import { ENABLE_SAVE_POLICY } from '@/lib/featureFlags';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'next/navigation';
@@ -342,50 +341,48 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
         </div>
       )}
 
-      {/* Save Policy Section - temporarily hidden by flag */}
-      {ENABLE_SAVE_POLICY && (
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col items-center text-center">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              ¿Te gustaría guardar este análisis en tu Bóveda de Seguros?
-            </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-md">
-              Guarda este análisis para acceder fácilmente a los detalles de tu póliza en cualquier momento.
+      {/* Save Policy Section */}
+      <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col items-center text-center">
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            ¿Te gustaría guardar este análisis en tu Bóveda de Seguros?
+          </h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-md">
+            Guarda este análisis para acceder fácilmente a los detalles de tu póliza en cualquier momento.
+          </p>
+          {meta.uploaderUserId && sessionUserId && meta.uploaderUserId !== sessionUserId && (
+            <p className="text-xs text-yellow-700 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-300 px-3 py-2 rounded mb-3">
+              Este análisis fue generado con otra cuenta.
             </p>
-            {meta.uploaderUserId && sessionUserId && meta.uploaderUserId !== sessionUserId && (
-              <p className="text-xs text-yellow-700 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-300 px-3 py-2 rounded mb-3">
-                Este análisis fue generado con otra cuenta.
-              </p>
-            )}
-            <SavePolicyButton
-              policyData={{
-                custom_name: fileName || `${analysis.policyType} - ${new Date().toLocaleDateString()}`,
-                insurer_name: analysis.insurer?.name || 'Sin Aseguradora',
-                policy_type: analysis.policyType || 'General',
-                priority: analysis.riskScore <= 3 ? 'low' : analysis.riskScore <= 6 ? 'medium' : 'high',
-                pdf_base64: shouldSendBase64 ? pdfUrl : undefined,
-                pdf_url: safePdfUrl,
-                upload_id: meta.uploadId,
-                storage_path: meta.storagePath,
-                uploader_user_id: meta.uploaderUserId,
-                metadata: {
-                  policy_number: analysis.policyDetails.policyNumber,
-                  effective_date: analysis.policyDetails.effectiveDate,
-                  expiration_date: analysis.policyDetails.expirationDate,
-                  premium_amount: analysis.premium.amount,
-                  premium_currency: analysis.premium.currency,
-                  premium_frequency: analysis.premium.frequency,
-                  risk_score: analysis.riskScore,
-                },
-                extracted_data: rawAnalysisData || analysis,
-              }}
-              onSuccess={() => {
-                router.push('/dashboard/insurance');
-              }}
-            />
-          </div>
+          )}
+          <SavePolicyButton
+            policyData={{
+              custom_name: fileName || `${analysis.policyType} - ${new Date().toLocaleDateString()}`,
+              insurer_name: analysis.insurer?.name || 'Sin Aseguradora',
+              policy_type: analysis.policyType || 'General',
+              priority: analysis.riskScore <= 3 ? 'low' : analysis.riskScore <= 6 ? 'medium' : 'high',
+              pdf_base64: shouldSendBase64 ? pdfUrl : undefined,
+              pdf_url: safePdfUrl,
+              upload_id: meta.uploadId,
+              storage_path: meta.storagePath,
+              uploader_user_id: meta.uploaderUserId,
+              metadata: {
+                policy_number: analysis.policyDetails.policyNumber,
+                effective_date: analysis.policyDetails.effectiveDate,
+                expiration_date: analysis.policyDetails.expirationDate,
+                premium_amount: analysis.premium.amount,
+                premium_currency: analysis.premium.currency,
+                premium_frequency: analysis.premium.frequency,
+                risk_score: analysis.riskScore,
+              },
+              extracted_data: rawAnalysisData || analysis,
+            }}
+            onSuccess={() => {
+              router.push('/dashboard/insurance');
+            }}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 } 
