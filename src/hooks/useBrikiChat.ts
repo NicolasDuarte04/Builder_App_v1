@@ -128,39 +128,49 @@ export function useBrikiChat(initialMessages?: any[]) {
       return; // Don't show the panel
     }
 
-    // Validate and filter plans
-    const validPlans = data.plans.filter((plan: any) => 
-      plan && 
-      plan.name && 
-      plan.name !== 'No hay planes disponibles públicamente' &&
-      plan.provider &&
-      plan.base_price > 0
-    );
+    // Build UI plans: allow priced OR quote-only with a valid external link
+    const uiPlans = (data?.plans ?? [])
+      .filter((p: any) =>
+        p &&
+        p.name &&
+        p.provider &&
+        (Number(p.base_price) > 0 || !!p.external_link)
+      )
+      .map((p: any, index: number) => {
+        const basePriceNum =
+          typeof p.base_price === 'string' ? Number(p.base_price) : (p.base_price ?? 0);
+        const isQuote = !basePriceNum || basePriceNum === 0;
 
-    if (validPlans.length === 0) return;
+        return {
+          id: p.id ?? index,
+          name: p.name || 'Plan de Seguro',
+          provider: p.provider || 'Proveedor',
+          basePrice: basePriceNum,
+          currency: p.currency || 'COP',
+          benefits: Array.isArray(p.benefits) ? p.benefits : [],
+          external_link: p.external_link ?? p.brochure_link ?? null,
+          is_external: p.is_external !== undefined ? p.is_external : true,
+          category: p.category || 'seguro',
+          rating: typeof p.rating === 'string' ? parseFloat(p.rating) : (p.rating || 4.0),
+          tags: Array.isArray(p.tags) ? p.tags : [],
+          isQuote,
+          ctaLabel: isQuote ? 'Cotizar ahora' : 'Comprar',
+        };
+      });
 
-    // Map plans to the expected format
-    const mappedPlans = validPlans.map((plan: any, index: number) => ({
-      id: plan.id ?? index,
-      name: plan.name || 'Plan de Seguro',
-      provider: plan.provider || 'Proveedor',
-      basePrice: plan.base_price || 0,
-      currency: plan.currency || 'COP',
-      benefits: Array.isArray(plan.benefits) ? plan.benefits : [],
-      externalLink: plan.external_link,
-      external_link: plan.external_link,
-      is_external: plan.is_external !== undefined ? plan.is_external : true,
-      category: plan.category || 'seguro',
-      rating: parseFloat(plan.rating) || 4.0,
-      tags: Array.isArray(plan.tags) ? plan.tags : [],
-    }));
+    console.log('[plan-cards] mapped', {
+      apiCount: data?.plans?.length ?? 0,
+      uiCount: uiPlans.length,
+    });
+
+    if (uiPlans.length === 0) return;
 
     // Prepare structured data event
     const structuredData = {
       type: 'plans' as const,
       data: {
         title: data.title || 'Planes Recomendados',
-        plans: mappedPlans,
+        plans: uiPlans,
         category: data.insuranceType || data.category,
         hasRealPlans: data.hasRealPlans,
         isExactMatch: data.isExactMatch,
