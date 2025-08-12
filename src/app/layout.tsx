@@ -34,6 +34,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Non-blocking build banner (server-side only)
+  // Logs once on server start to help identify build in prod logs
+  console.log('Briki build', {
+    commit: process.env.VERCEL_GIT_COMMIT_SHA ?? 'local',
+    branch: process.env.VERCEL_GIT_COMMIT_REF ?? 'local'
+  });
   return (
     <html lang="es" suppressHydrationWarning className="scroll-smooth">
       <body className={inter.className}>
