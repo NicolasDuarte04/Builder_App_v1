@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { ExternalLink, Info, Shield } from 'lucide-react';
 import { InsurancePlan } from '@/lib/render-db';
 import { useTranslation } from '@/hooks/useTranslation';
-import { translateIfEnglish } from '@/lib/text-translation';
+import { translateIfEnglish, formatPlanName } from '@/lib/text-translation';
 
 interface InsurancePlanCardProps {
   plan: InsurancePlan;
@@ -70,9 +70,20 @@ export function InsurancePlanCard({ plan, onQuote, onDetails }: InsurancePlanCar
               </div>
               <div>
                 <CardTitle className="text-lg font-semibold text-gray-900">
-                  {translateIfEnglish((plan as any).plan_name ?? plan.plan_name, language)}
+                  {formatPlanName(translateIfEnglish((plan as any).plan_name ?? plan.plan_name, language), language)}
                 </CardTitle>
                 <p className="text-sm text-gray-600">{plan.provider}</p>
+                {((!plan.base_price || plan.base_price === 0) && plan.external_link) && (
+                  <a
+                    href={plan.external_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-0.5 inline-flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 underline-offset-2 hover:underline"
+                  >
+                    {quoteLabel}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
               </div>
             </div>
             <Badge label={plan.category} variant="neutral" className="bg-blue-50 text-blue-700" />
@@ -84,11 +95,11 @@ export function InsurancePlanCard({ plan, onQuote, onDetails }: InsurancePlanCar
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Prima mensual</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {(!plan.base_price || plan.base_price === 0) && plan.external_link
-                  ? quoteLabel
-                  : formatPrice(plan.base_price)}
-              </p>
+              {(!plan.base_price || plan.base_price === 0) && plan.external_link ? (
+                <p className="text-sm text-gray-500">&nbsp;</p>
+              ) : (
+                <p className="text-2xl font-bold text-blue-600">{formatPrice(plan.base_price)}</p>
+              )}
             </div>
             <Shield className="w-8 h-8 text-blue-500" />
           </div>

@@ -3,12 +3,7 @@
 import type React from "react";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import {
-  Mic,
-  ArrowUp,
-  FileText,
-  Shield,
-} from "lucide-react";
+import { ArrowUp, FileText, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBrikiChat } from "@/hooks/useBrikiChat";
@@ -770,11 +765,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                       {t("assistant.restart_chat")}
                     </button>
                   )}
-                  <button 
-                    type="button"
-                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                    <Mic className="w-5 h-5" />
-                  </button>
+                  {/* Microphone removed for a cleaner, intentional UI */}
                   <button
                     type="submit"
                     disabled={!input.trim() || chatLoading}

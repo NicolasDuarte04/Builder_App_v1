@@ -43,6 +43,8 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className="scroll-smooth">
       <body className={inter.className}>
+        {/* Soft console.error interceptor (non-throwing) */}
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `(()=>{try{var o=console.error.bind(console);console.error=function(){try{o.apply(console,arguments)}catch{} } }catch{}})();` }} />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

@@ -7,7 +7,7 @@ import { InsurancePlan } from '../briki-ai-assistant/NewPlanCard';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/Badge';
 import { useTranslation } from '@/hooks/useTranslation';
-import { translateIfEnglish, translateListIfEnglish } from '@/lib/text-translation';
+import { translateIfEnglish, translateListIfEnglish, formatPlanName } from '@/lib/text-translation';
 
 interface PlanDetailsModalProps {
   plan: InsurancePlan | null;
@@ -70,7 +70,7 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
               {/* Plan Header */}
               <div className="text-center">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  {translateIfEnglish(plan.name, language)}
+                  {formatPlanName(translateIfEnglish(plan.name, language), language)}
                 </h3>
                 <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
                   {(!plan.basePrice || plan.basePrice === 0) && plan.external_link

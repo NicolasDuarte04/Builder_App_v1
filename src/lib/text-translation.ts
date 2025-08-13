@@ -160,4 +160,37 @@ export function translateCategoryIfEnglish(category: string | undefined | null, 
   return map[normalized] || translateIfEnglish(category, 'en');
 }
 
+// Title case helper for English with common small words excluded
+export function titleCaseEN(text: string): string {
+  if (!text) return '';
+  const smallWords = new Set([
+    'a','an','and','as','at','but','by','for','from','in','into','nor','of','on','or','over','per','the','to','via','with','without','vs','versus','up'
+  ]);
+  return text
+    .split(/\s+/)
+    .map((word, index, arr) => {
+      const lower = word.toLowerCase();
+      const isFirst = index === 0;
+      const isLast = index === arr.length - 1;
+      const containsLetter = /[a-z]/i.test(word);
+      if (!containsLetter) return word; // leave numbers/symbols
+      if (!isFirst && !isLast && smallWords.has(lower)) return lower;
+      // Handle hyphenated words
+      return lower
+        .split('-')
+        .map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : part)
+        .join('-');
+    })
+    .join(' ');
+}
+
+// Format plan name according to language policy
+export function formatPlanName(name: string, language: Language): string {
+  if (!name) return '';
+  if (language !== 'en') return name; // Keep ES sentence case as provided
+  const hasUppercase = /[A-Z]/.test(name);
+  if (!hasUppercase) return titleCaseEN(name);
+  return name; // Already cased by source, render exactly as given
+}
+
 

@@ -11,7 +11,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { eventBus } from '@/lib/event-bus';
-import { translateIfEnglish, translateListIfEnglish } from '@/lib/text-translation';
+import { translateIfEnglish, translateListIfEnglish, formatPlanName } from '@/lib/text-translation';
 
 
 interface PlanResultsData {
@@ -381,11 +381,21 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-sm text-gray-900 dark:text-white truncate">
-            {translateIfEnglish(plan.name, language)}
+            {formatPlanName(translateIfEnglish(plan.name, language), language)}
           </h4>
           <p className="text-xs text-gray-600 dark:text-gray-400">
             {plan.provider}
           </p>
+          {(!plan.basePrice || plan.basePrice === 0) && plan.external_link && (
+            <a
+              href={plan.external_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-blue-600 underline-offset-2 hover:underline"
+            >
+              {getQuoteLabel(language)}
+            </a>
+          )}
         </div>
         <button
           onClick={() => onPin(plan.id)}
@@ -401,29 +411,21 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
 
       {/* Price */}
       <div className="mb-2">
-        <span className="text-lg font-bold text-gray-900 dark:text-white">
-          {priceInfo.text}
-        </span>
-        {!priceInfo.isQuoteOnly && (
-          <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">/mes</span>
-        )}
+        {!priceInfo.isQuoteOnly ? (
+          <>
+            <span className="text-lg font-bold text-gray-900 dark:text-white">
+              {priceInfo.text}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">/mes</span>
+          </>
+        ) : null}
       </div>
 
       {/* Benefits preview */}
       {plan.benefits && plan.benefits.length > 0 && (
         <div className="mb-3">
           <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-            {translateListIfEnglish(plan.benefits, language).slice(0, 2).map((benefit, index) => (
-              <div key={index} className="flex items-start gap-1">
-                <span className="text-green-500 text-xs">•</span>
-                <span className="line-clamp-1">{benefit}</span>
-              </div>
-            ))}
-            {plan.benefits.length > 2 && (
-              <span className="text-xs text-gray-500">
-                +{plan.benefits.length - 2} {language?.startsWith('es') ? 'más' : 'more'}
-              </span>
-            )}
+            <SidebarExpandableBenefits benefits={translateListIfEnglish(plan.benefits, language)} language={language} />
           </div>
         </div>
       )}
@@ -449,5 +451,39 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
         </div>
       )}
     </motion.div>
+  );
+}
+
+function SidebarExpandableBenefits({ benefits, language }: { benefits: string[]; language: string }) {
+  const [expanded, setExpanded] = React.useState(false);
+  const visible = expanded ? benefits : benefits.slice(0, 2);
+  const remaining = Math.max(benefits.length - 2, 0);
+  return (
+    <div>
+      {visible.map((benefit, index) => (
+        <div key={index} className="flex items-start gap-1">
+          <span className="text-green-500 text-xs">•</span>
+          <span className="line-clamp-1">{benefit}</span>
+        </div>
+      ))}
+      {!expanded && remaining > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="mt-1 inline-flex items-center gap-1 text-[11px] text-gray-600 hover:text-blue-600"
+        >
+          +{remaining} {language?.startsWith('es') ? 'más' : 'more'}
+        </button>
+      )}
+      {expanded && benefits.length > 2 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(false)}
+          className="mt-1 inline-flex items-center gap-1 text-[11px] text-gray-600 hover:text-blue-600"
+        >
+          {language?.startsWith('es') ? 'Mostrar menos' : 'Show less'}
+        </button>
+      )}
+    </div>
   );
 }
