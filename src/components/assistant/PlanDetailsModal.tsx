@@ -6,6 +6,8 @@ import { X, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
 import { InsurancePlan } from '../briki-ai-assistant/NewPlanCard';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/Badge';
+import { useTranslation } from '@/hooks/useTranslation';
+import { translateIfEnglish, translateListIfEnglish } from '@/lib/text-translation';
 
 interface PlanDetailsModalProps {
   plan: InsurancePlan | null;
@@ -24,6 +26,9 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
       minimumFractionDigits: 0,
     }).format(price);
   };
+
+  const { language } = useTranslation();
+  const quoteLabel = language?.startsWith('es') ? 'Ver en el sitio' : 'See on website';
 
   return (
     <AnimatePresence>
@@ -65,11 +70,15 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
               {/* Plan Header */}
               <div className="text-center">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  {plan.name}
+                  {translateIfEnglish(plan.name, language)}
                 </h3>
                 <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
-                  {formatPrice(plan.basePrice, plan.currency)}
-                  <span className="text-sm font-normal text-gray-600 dark:text-gray-400">/mes</span>
+                  {(!plan.basePrice || plan.basePrice === 0) && plan.external_link
+                    ? quoteLabel
+                    : formatPrice(plan.basePrice, plan.currency)}
+                  {!( (!plan.basePrice || plan.basePrice === 0) && plan.external_link ) && (
+                    <span className="text-sm font-normal text-gray-600 dark:text-gray-400">{language?.startsWith('es') ? '/mes' : '/month'}</span>
+                  )}
                 </div>
               </div>
 
@@ -79,7 +88,7 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
                   Beneficios principales
                 </h4>
                 <div className="space-y-2">
-                  {plan.benefits.map((benefit, index) => (
+                  {translateListIfEnglish(plan.benefits, language).map((benefit, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                       <span className="text-gray-700 dark:text-gray-300">{benefit}</span>

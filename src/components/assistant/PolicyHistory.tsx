@@ -115,12 +115,10 @@ export function PolicyHistory({ userId, onViewAnalysis }: PolicyHistoryProps) {
     );
   }
 
+  // Silently suppress history load errors in the PDF modal.
+  // If there's an error, don't render an error banner; simply render nothing here.
   if (error) {
-    return (
-      <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-        <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
-      </div>
-    );
+    return null;
   }
 
   if (uploads.length === 0) {

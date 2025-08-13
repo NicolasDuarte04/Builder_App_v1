@@ -4,7 +4,9 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card
 import { Button } from "../ui/button";
 import { CheckCircle, ArrowRight, ExternalLink, Star, TrendingUp, Check } from "lucide-react";
 import { Separator } from '../ui/separator';
+import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
+import { translateIfEnglish, translateListIfEnglish, translateCategoryIfEnglish } from '@/lib/text-translation';
 
 
 // This interface matches the data coming from the backend AI service
@@ -39,16 +41,29 @@ const formatPrice = (price: number, currency: string) => {
  }).format(price);
 };
 
+const getQuoteLabel = (language: string) =>
+  language?.startsWith('es') ? 'Ver en el sitio' : 'See on website';
 
-const getPriceDisplay = (price: number | null | undefined, currency: string) => {
- if (!price || price === 0) {
-   return { text: "Según cotización", isQuoteOnly: true };
- }
- return { text: formatPrice(price, currency), isQuoteOnly: false };
+const getPriceDisplay = (
+  price: number | null | undefined,
+  currency: string,
+  language: string,
+  hasExternal: boolean
+) => {
+  const isZeroOrNull = !price || price === 0;
+  if (isZeroOrNull && hasExternal) {
+    return { text: getQuoteLabel(language), isQuoteOnly: true };
+  }
+  if (isZeroOrNull) {
+    // Fallback for plans with no price and no external link
+    return { text: getQuoteLabel(language), isQuoteOnly: true };
+  }
+  return { text: formatPrice(price, currency), isQuoteOnly: false };
 };
 
 
 const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote }) => {
+ const { language } = useTranslation();
  const cardVariants = {
    hidden: { opacity: 0, y: 20 },
    visible: { opacity: 1, y: 0 },
@@ -66,14 +81,14 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
  };
 
  // Ensure we have valid data
- const safePlan = {
+  const safePlan = {
    id: plan.id || 0,
-   name: plan.name || 'Plan de Seguro',
+    name: translateIfEnglish(plan.name || 'Plan de Seguro', language),
    provider: plan.provider || 'Proveedor',
-   category: plan.category || 'seguro',
+    category: translateCategoryIfEnglish(plan.category || 'seguro', language),
    basePrice: plan.basePrice || 0,
    currency: plan.currency || 'COP',
-   benefits: Array.isArray(plan.benefits) ? plan.benefits : [],
+    benefits: translateListIfEnglish(Array.isArray(plan.benefits) ? plan.benefits : [], language),
    rating: plan.rating || 4.0,
    tags: Array.isArray(plan.tags) ? plan.tags : [],
    is_external: plan.is_external !== undefined ? plan.is_external : true,
@@ -134,7 +149,12 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
            <div className="flex items-baseline justify-between">
              <div>
                {(() => {
-                 const priceInfo = getPriceDisplay(safePlan.basePrice, safePlan.currency);
+                 const priceInfo = getPriceDisplay(
+                   safePlan.basePrice,
+                   safePlan.currency,
+                   language,
+                   !!safePlan.external_link
+                 );
                  return (
                    <>
                      <span className="text-3xl font-extrabold text-gray-900 dark:text-white">
@@ -182,11 +202,11 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
            )}
           
            {/* Show more benefits indicator */}
-           {safePlan.benefits.length > 3 && (
-             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 pl-7">
-               +{safePlan.benefits.length - 3} beneficios más
-             </p>
-           )}
+            {safePlan.benefits.length > 3 && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 pl-7">
+                +{safePlan.benefits.length - 3} {language?.startsWith('es') ? 'beneficios más' : 'more benefits'}
+              </p>
+            )}
          </div>
        </CardContent>
 

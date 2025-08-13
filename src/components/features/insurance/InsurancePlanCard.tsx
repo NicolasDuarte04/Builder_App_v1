@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/Badge';
 import { ExternalLink, Info, Shield } from 'lucide-react';
 import { InsurancePlan } from '@/lib/render-db';
+import { useTranslation } from '@/hooks/useTranslation';
+import { translateIfEnglish } from '@/lib/text-translation';
 
 interface InsurancePlanCardProps {
   plan: InsurancePlan;
@@ -15,6 +17,7 @@ interface InsurancePlanCardProps {
 }
 
 export function InsurancePlanCard({ plan, onQuote, onDetails }: InsurancePlanCardProps) {
+  const { language } = useTranslation();
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -22,6 +25,7 @@ export function InsurancePlanCard({ plan, onQuote, onDetails }: InsurancePlanCar
       minimumFractionDigits: 0
     }).format(price);
   };
+  const quoteLabel = language?.startsWith('es') ? 'Ver en el sitio' : 'See on website';
 
   const getProviderLogo = (provider: string) => {
     // Map provider names to logo paths
@@ -66,7 +70,7 @@ export function InsurancePlanCard({ plan, onQuote, onDetails }: InsurancePlanCar
               </div>
               <div>
                 <CardTitle className="text-lg font-semibold text-gray-900">
-                  {plan.plan_name}
+                  {translateIfEnglish((plan as any).plan_name ?? plan.plan_name, language)}
                 </CardTitle>
                 <p className="text-sm text-gray-600">{plan.provider}</p>
               </div>
@@ -81,7 +85,9 @@ export function InsurancePlanCard({ plan, onQuote, onDetails }: InsurancePlanCar
             <div>
               <p className="text-sm text-gray-600">Prima mensual</p>
               <p className="text-2xl font-bold text-blue-600">
-                {formatPrice(plan.base_price)}
+                {(!plan.base_price || plan.base_price === 0) && plan.external_link
+                  ? quoteLabel
+                  : formatPrice(plan.base_price)}
               </p>
             </div>
             <Shield className="w-8 h-8 text-blue-500" />

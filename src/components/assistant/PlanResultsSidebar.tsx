@@ -11,6 +11,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { eventBus } from '@/lib/event-bus';
+import { translateIfEnglish, translateListIfEnglish } from '@/lib/text-translation';
 
 
 interface PlanResultsData {
@@ -341,6 +342,8 @@ interface PlanCardProps {
 }
 
 function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = false }: PlanCardProps) {
+  const { language } = useTranslation();
+
   const formatPrice = (price: number, currency: string) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -349,14 +352,24 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
     }).format(price);
   };
 
-  const getPriceDisplay = (price: number | null | undefined, currency: string) => {
-    if (!price || price === 0) {
-      return { text: "Según cotización", isQuoteOnly: true };
+  const getQuoteLabel = (lang: string) => (lang?.startsWith('es') ? 'Ver en el sitio' : 'See on website');
+
+  const getPriceDisplay = (
+    price: number | null | undefined,
+    currency: string,
+    hasExternal: boolean
+  ) => {
+    const isZeroOrNull = !price || price === 0;
+    if (isZeroOrNull && hasExternal) {
+      return { text: getQuoteLabel(language), isQuoteOnly: true };
+    }
+    if (isZeroOrNull) {
+      return { text: getQuoteLabel(language), isQuoteOnly: true };
     }
     return { text: formatPrice(price, currency), isQuoteOnly: false };
   };
 
-  const priceInfo = getPriceDisplay(plan.basePrice, plan.currency);
+  const priceInfo = getPriceDisplay(plan.basePrice, plan.currency, !!plan.external_link);
 
   return (
     <motion.div
@@ -368,7 +381,7 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-sm text-gray-900 dark:text-white truncate">
-            {plan.name}
+            {translateIfEnglish(plan.name, language)}
           </h4>
           <p className="text-xs text-gray-600 dark:text-gray-400">
             {plan.provider}
@@ -400,7 +413,7 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
       {plan.benefits && plan.benefits.length > 0 && (
         <div className="mb-3">
           <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-            {plan.benefits.slice(0, 2).map((benefit, index) => (
+            {translateListIfEnglish(plan.benefits, language).slice(0, 2).map((benefit, index) => (
               <div key={index} className="flex items-start gap-1">
                 <span className="text-green-500 text-xs">•</span>
                 <span className="line-clamp-1">{benefit}</span>
@@ -408,7 +421,7 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
             ))}
             {plan.benefits.length > 2 && (
               <span className="text-xs text-gray-500">
-                +{plan.benefits.length - 2} more
+                +{plan.benefits.length - 2} {language?.startsWith('es') ? 'más' : 'more'}
               </span>
             )}
           </div>
@@ -424,14 +437,14 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
             onClick={() => onViewDetails(plan.id)}
             className="flex-1 h-7 text-xs"
           >
-            Details
+            {language?.startsWith('es') ? 'Detalles' : 'Details'}
           </Button>
           <Button
             size="sm"
             onClick={() => onQuote(plan.id)}
             className="flex-1 h-7 text-xs bg-blue-600 hover:bg-blue-700"
           >
-            Quote
+            {language?.startsWith('es') ? 'Cotizar' : 'Quote'}
           </Button>
         </div>
       )}
