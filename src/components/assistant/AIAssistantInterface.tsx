@@ -892,7 +892,8 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-[1400px] w-[95vw] h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-[1460px] w-[96.5vw] h-[90vh] overflow-y-auto"
+                style={{ scrollbarGutter: 'stable' as any }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6" aria-labelledby="analysis-dialog-title" aria-describedby="analysis-dialog-desc">
