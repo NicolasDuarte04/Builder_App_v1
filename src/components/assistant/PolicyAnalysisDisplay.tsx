@@ -5,7 +5,7 @@ See audit notes in `AIAssistantInterface.tsx` for data source and types context.
 UI-only enhancements below: optional page chips, glossary tooltips, risk flags, subtle list polish, and a disabled Export button placeholder.
 */
 
-import React from 'react';
+import React, { useState } from 'react';
 // motion removed to unblock build
 import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, XCircle } from 'lucide-react';
 import { Badge } from '../ui/Badge';
@@ -160,6 +160,12 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
 
   const hasAnyPageRefs = keyFeaturesBullets.some(b => typeof b.page === 'number') || exclusionsBullets.some(b => typeof b.page === 'number');
 
+  // Collapse/expand controls for long lists
+  const DEFAULT_COLLAPSE_COUNT = 4;
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const visibleFeatures = showAllFeatures ? keyFeaturesBullets : keyFeaturesBullets.slice(0, DEFAULT_COLLAPSE_COUNT);
+  const remainingFeatures = Math.max(keyFeaturesBullets.length - visibleFeatures.length, 0);
+
   return (
     <TooltipProvider>
     <div
@@ -192,7 +198,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       </div>
 
       {/* Premium Section */}
-      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-3 mb-3">
           <DollarSign className="w-5 h-5 text-blue-600" />
           <h4 className="font-semibold text-gray-900 dark:text-white">Prima</h4>
@@ -277,7 +283,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
           <h4 className="font-semibold text-gray-900 dark:text-white">Características Principales</h4>
         </div>
         <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-          {keyFeaturesBullets.map((bullet, index) => (
+          {visibleFeatures.map((bullet, index) => (
             <li key={index} className="flex gap-2 items-start px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-900/40">
               <RiskDot risk={inferRisk(bullet.text)} />
               <CheckCircle className="h-4 w-4 mt-1 text-green-600" aria-hidden />
@@ -288,6 +294,19 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
             </li>
           ))}
         </ul>
+        {keyFeaturesBullets.length > DEFAULT_COLLAPSE_COUNT && (
+          <div className="mt-2">
+            {!showAllFeatures ? (
+              <button type="button" onClick={() => setShowAllFeatures(true)} className="text-sm text-blue-600 hover:underline">
+                + Mostrar más ({remainingFeatures})
+              </button>
+            ) : (
+              <button type="button" onClick={() => setShowAllFeatures(false)} className="text-sm text-blue-600 hover:underline">
+                Mostrar menos
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Exclusions */}
@@ -313,7 +332,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       )}
 
       {/* Risk Assessment */}
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <TrendingUp className="w-5 h-5 text-purple-600" />
@@ -355,7 +374,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       )}
 
       {/* Policy Details */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center gap-3 mb-3">
           <Calendar className="w-5 h-5 text-gray-600" />
           <h4 className="font-semibold text-gray-900 dark:text-white">Detalles de la Póliza</h4>
