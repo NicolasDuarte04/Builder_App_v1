@@ -5,17 +5,18 @@ See audit notes in `AIAssistantInterface.tsx` for data source and types context.
 UI-only enhancements below: optional page chips, glossary tooltips, risk flags, subtle list polish, and a disabled Export button placeholder.
 */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 // motion removed to unblock build
 import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, XCircle } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { SavePolicyButton } from '../dashboard/SavePolicyButton';
-import { ENABLE_SAVE_POLICY } from '@/lib/featureFlags';
+import { ENABLE_SAVE_POLICY, ENABLE_PDF_VERIFY } from '@/lib/featureFlags';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
+import PdfViewerPane, { PdfViewerHandle } from './PdfViewerPane';
 
 interface PolicyAnalysis {
   policyType: string;
@@ -82,23 +83,39 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
   const safePdfUrl = typeof meta.pdfUrl === 'string' && /^https?:\/\//i.test(meta.pdfUrl) ? meta.pdfUrl : undefined;
   const shouldSendBase64 = !meta.uploadId && !safePdfUrl && typeof pdfUrl === 'string' && /^data:application\/pdf;base64,/i.test(pdfUrl);
 
-  // Local render types (front-only)
+  // Local render-only types (backward compatible)
+  type Locator = {
+    page?: number;
+    // stretch: phrase?: string;
+    // stretch: bbox?: [number, number, number, number];
+  };
   type AnalysisBullet = {
     text: string;
-    page?: number; // optional; only render chip when present
+    page?: number; // legacy single-field if ever present
+    locator?: Locator; // richer optional locator
   };
 
-  // Tiny mapper from string[] to bullets for UI rendering
-  const toBullets = (list?: string[]): AnalysisBullet[] => (list ?? []).map((t) => ({ text: t }));
+  // Back-compat mapper: strings → {text}; partials normalized
+  const toBullets = (list?: Array<string | Partial<AnalysisBullet>>): AnalysisBullet[] =>
+    (list ?? []).map((item) => (typeof item === 'string' ? { text: item } : { text: item?.text ?? '', ...item }));
 
-  const keyFeaturesBullets = toBullets(analysis.keyFeatures);
-  const exclusionsBullets = toBullets(analysis.coverage?.exclusions);
+  const keyFeaturesBullets = toBullets(analysis.keyFeatures as any);
+  const exclusionsBullets = toBullets(analysis.coverage?.exclusions as any);
 
-  // Page chip (plain text for now; link TODO once viewer exists)
-  function PageChip({ page, href }: { page?: number; href?: string }) {
+  // PDF viewer ref for scrolling to pages
+  const pdfRef = useRef<PdfViewerHandle>(null);
+  // Page chip that scrolls the viewer when clicked
+  function PageChip({ page }: { page?: number }) {
     if (!page) return null;
     return (
-      <span className="ml-2 text-[11px] text-gray-500 dark:text-gray-400">(Page {page})</span>
+      <button
+        type="button"
+        onClick={() => pdfRef.current?.scrollToPage(page)}
+        className="ml-2 text-[11px] text-gray-500 hover:text-blue-600 focus:underline"
+        aria-label={`Jump to PDF page ${page}`}
+      >
+        ({t('policy.pageAbbr') || 'p.'} {page})
+      </button>
     );
   }
 
@@ -158,7 +175,9 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     return <span aria-label={label} className={`h-2 w-2 rounded-full self-center mt-1 ${cls}`}></span>;
   }
 
-  const hasAnyPageRefs = keyFeaturesBullets.some(b => typeof b.page === 'number') || exclusionsBullets.some(b => typeof b.page === 'number');
+  const hasAnyPageRefs =
+    keyFeaturesBullets.some(b => typeof (b.page ?? b.locator?.page) === 'number') ||
+    exclusionsBullets.some(b => typeof (b.page ?? b.locator?.page) === 'number');
 
   // Collapse/expand controls for long lists
   const DEFAULT_COLLAPSE_COUNT = 4;
@@ -166,11 +185,8 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
   const visibleFeatures = showAllFeatures ? keyFeaturesBullets : keyFeaturesBullets.slice(0, DEFAULT_COLLAPSE_COUNT);
   const remainingFeatures = Math.max(keyFeaturesBullets.length - visibleFeatures.length, 0);
 
-  return (
-    <TooltipProvider>
-    <div
-      className="space-y-6"
-    >
+  const AnalysisBody = (
+    <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -289,7 +305,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
               <CheckCircle className="h-4 w-4 mt-1 text-green-600" aria-hidden />
               <div className="leading-6 text-[13px] text-gray-800 dark:text-gray-200">
                 {withGlossary(bullet.text)}
-                <PageChip page={bullet.page} />
+                <PageChip page={bullet.page ?? bullet.locator?.page} />
               </div>
             </li>
           ))}
@@ -322,8 +338,8 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
                 <RiskDot risk={inferRisk(bullet.text)} />
                 <XCircle className="h-4 w-4 mt-1 text-red-600" aria-hidden />
                 <div className="leading-6 text-[13px] text-gray-800 dark:text-gray-200">
-                  {withGlossary(bullet.text)}
-                  <PageChip page={bullet.page} />
+                {withGlossary(bullet.text)}
+                <PageChip page={bullet.page ?? bullet.locator?.page} />
                 </div>
               </li>
             ))}
@@ -518,6 +534,27 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       {/* TODO(viewer): add /viewer?file=<url>#page=X and wire PageChip */}
 
     </div>
+  );
+
+  if (!ENABLE_PDF_VERIFY) {
+    return (
+      <TooltipProvider>
+        {AnalysisBody}
+      </TooltipProvider>
+    );
+  }
+
+  return (
+    <TooltipProvider>
+      <div className="grid gap-4 md:grid-cols-[1fr_520px]">
+        <div className="min-w-0">
+          {!hasAnyPageRefs && (
+            <div className="mb-2 text-xs text-gray-500">{t('policy.pageLocationsHint') || 'Page locations will appear when available.'}</div>
+          )}
+          {AnalysisBody}
+        </div>
+        <PdfViewerPane ref={pdfRef} url={safePdfUrl || (pdfUrl as string)} />
+      </div>
     </TooltipProvider>
   );
 } 

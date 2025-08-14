@@ -470,5 +470,11 @@
     "emptyTitle": "No hay pólizas subidas",
     "emptyDescription": "Sube tu primera póliza de seguro para comenzar",
     "view": "Ver"
+  },
+  "policy": {
+    "verifyWithPdf": "Verificar con PDF",
+    "pageAbbr": "p.",
+    "noPdf": "No hay PDF disponible para verificación.",
+    "pageLocationsHint": "Las ubicaciones por página aparecerán cuando estén disponibles."
   }
 } 

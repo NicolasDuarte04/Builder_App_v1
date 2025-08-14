@@ -485,5 +485,11 @@
     "emptyTitle": "No policies uploaded",
     "emptyDescription": "Upload your first policy to get started",
     "view": "View"
+  },
+  "policy": {
+    "verifyWithPdf": "Verify with PDF",
+    "pageAbbr": "p.",
+    "noPdf": "No PDF available for verification.",
+    "pageLocationsHint": "Page locations will appear when available."
   }
 } 
