@@ -1,5 +1,46 @@
 "use client";
 
+/*
+Diagnostic notes for Analyze Policy PDF modal (read-only audit):
+
+1) Data source for analysis data (API / hook):
+   - Analysis is produced by the API `POST /api/ai/analyze-policy`.
+   - The `PDFUpload` component posts the selected PDF to that endpoint and calls `onAnalysisComplete(result.analysis)`.
+   - Here, `handleAnalysisComplete` sets `policyAnalysis` state, which opens the analysis modal.
+   - Additionally, `PolicyHistory` can load a saved upload and call `onViewAnalysis` (sets `policyAnalysis`).
+
+2) Current type shape for extracted items:
+   - There is no dedicated per-item interface for bullets. The UI renders arrays of strings from the analysis:
+     - `analysis.keyFeatures: string[]`
+     - `analysis.recommendations: string[]`
+     - `analysis.coverage.exclusions: string[]`
+     - `analysis.coverage.limits: Record<string, number>`
+     - `analysis.coverage.deductibles: Record<string, number>`
+   - Reference interface (from `PolicyAnalysisDisplay.tsx` at time of audit):
+     interface PolicyAnalysis {
+       policyType: string;
+       premium: { amount: number; currency: string; frequency: string };
+       coverage: { limits: Record<string, number>; deductibles: Record<string, number>; exclusions: string[]; geography?: string; claimInstructions?: string[] };
+       policyDetails: { policyNumber?: string; effectiveDate?: string; expirationDate?: string; insured: string[] };
+       insurer?: { name?: string; contact?: string; emergencyLines?: string[] };
+       premiumTable?: { label?: string; year?: string | number; plan?: string; amount?: number | string }[];
+       keyFeatures: string[];
+       recommendations: string[];
+       riskScore: number;
+       riskJustification?: string;
+       sourceQuotes?: Record<string, string>;
+       redFlags?: string[];
+       missingInfo?: string[];
+     }
+
+3) Do items include page numbers today?
+   - No. Bulleted items are plain strings; there is no `page` field in arrays. The backend schema (Zod) also has no per-item page number fields.
+
+4) Existing PDF viewer route that accepts #page=X?
+   - No in-app PDF viewer route/component was found. The UI links to the original PDF URL (`Ver PDF original`).
+   - If the external browser viewer supports `#page=`, anchors may work, but there is no dedicated internal viewer.
+*/
+
 import type React from "react";
 
 import { useState, useRef, useEffect, useMemo } from "react";

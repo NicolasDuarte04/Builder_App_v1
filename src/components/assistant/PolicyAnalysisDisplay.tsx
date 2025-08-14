@@ -1,14 +1,21 @@
 "use client";
 
+/*
+See audit notes in `AIAssistantInterface.tsx` for data source and types context.
+UI-only enhancements below: optional page chips, glossary tooltips, risk flags, subtle list polish, and a disabled Export button placeholder.
+*/
+
 import React from 'react';
 // motion removed to unblock build
-import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar } from 'lucide-react';
+import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, XCircle } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { SavePolicyButton } from '../dashboard/SavePolicyButton';
 import { ENABLE_SAVE_POLICY } from '@/lib/featureFlags';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'next/navigation';
+import { Button } from '../ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
 
 interface PolicyAnalysis {
   policyType: string;
@@ -75,7 +82,86 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
   const safePdfUrl = typeof meta.pdfUrl === 'string' && /^https?:\/\//i.test(meta.pdfUrl) ? meta.pdfUrl : undefined;
   const shouldSendBase64 = !meta.uploadId && !safePdfUrl && typeof pdfUrl === 'string' && /^data:application\/pdf;base64,/i.test(pdfUrl);
 
+  // Local render types (front-only)
+  type AnalysisBullet = {
+    text: string;
+    page?: number; // optional; only render chip when present
+  };
+
+  // Tiny mapper from string[] to bullets for UI rendering
+  const toBullets = (list?: string[]): AnalysisBullet[] => (list ?? []).map((t) => ({ text: t }));
+
+  const keyFeaturesBullets = toBullets(analysis.keyFeatures);
+  const exclusionsBullets = toBullets(analysis.coverage?.exclusions);
+
+  // Page chip (plain text for now; link TODO once viewer exists)
+  function PageChip({ page, href }: { page?: number; href?: string }) {
+    if (!page) return null;
+    return (
+      <span className="ml-2 text-[11px] text-gray-500 dark:text-gray-400">(Page {page})</span>
+    );
+  }
+
+  // Glossary tooltips
+  const GLOSSARY: Record<string, string> = {
+    deductible: 'Amount you pay before the insurer starts covering costs.',
+    copay: 'Fixed amount you pay for a covered service.',
+    exclusion: 'What the policy does not cover.',
+    limit: 'Maximum amount the insurer will pay.',
+  };
+
+  function withGlossary(content: string): React.ReactNode {
+    const terms = Object.keys(GLOSSARY).join('|');
+    if (!terms) return content;
+    const re = new RegExp(`\\b(${terms})\\b`, 'gi');
+    const parts: React.ReactNode[] = [];
+    let last = 0;
+    for (const m of content.matchAll(re)) {
+      const [match] = m;
+      const start = m.index ?? 0;
+      if (start > last) parts.push(content.slice(last, start));
+      const gloss = GLOSSARY[match.toLowerCase()];
+      if (gloss) {
+        parts.push(
+          <Tooltip key={`${start}-${match}`}>
+            <TooltipTrigger asChild>
+              <span className="underline decoration-dotted underline-offset-2 cursor-help">{match}</span>
+            </TooltipTrigger>
+            <TooltipContent>{gloss}</TooltipContent>
+          </Tooltip>
+        );
+      } else {
+        parts.push(match);
+      }
+      last = start + match.length;
+    }
+    if (last < content.length) parts.push(content.slice(last));
+    return parts;
+  }
+
+  // Risk / gap flags (conservative heuristics)
+  type Risk = 'red' | 'yellow' | null;
+  function inferRisk(text: string): Risk {
+    const t = text.toLowerCase();
+    if (/(not\s+included|no\s+incluido|exclusion|does\s+not\s+cover)/.test(t)) return 'red';
+    if (/deductible/i.test(text)) {
+      const numbers = text.match(/\d[\d., ]+/g);
+      const value = numbers ? parseFloat(numbers[0].replace(/[^\d.]/g, '')) : 0;
+      if (value && value >= 1000) return 'yellow';
+    }
+    return null;
+  }
+  function RiskDot({ risk }: { risk: Risk }) {
+    if (!risk) return null;
+    const cls = risk === 'red' ? 'bg-red-500/80' : 'bg-amber-400/80';
+    const label = risk === 'red' ? 'Potential risk: exclusion' : 'Potential risk: high deductible';
+    return <span aria-label={label} className={`h-2 w-2 rounded-full self-center mt-1 ${cls}`}></span>;
+  }
+
+  const hasAnyPageRefs = keyFeaturesBullets.some(b => typeof b.page === 'number') || exclusionsBullets.some(b => typeof b.page === 'number');
+
   return (
+    <TooltipProvider>
     <div
       className="space-y-6"
     >
@@ -87,6 +173,22 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
         <p className="text-sm text-gray-600 dark:text-gray-400">
           {analysis.policyType} • {analysis.policyDetails.policyNumber}
         </p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center justify-end">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>
+              <Button variant="outline" size="sm" disabled={!hasAnyPageRefs}>
+                Export annotated PDF (beta)
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {!hasAnyPageRefs && (
+            <TooltipContent>Annotations need page references</TooltipContent>
+          )}
+        </Tooltip>
       </div>
 
       {/* Premium Section */}
@@ -141,7 +243,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {Object.entries(analysis.coverage.limits).map(([key, value]) => (
             <div key={key} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-400">{key}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{withGlossary(String(key))}</p>
               <p className="font-semibold text-gray-900 dark:text-white">
                 {formatCurrency(value, analysis.premium.currency)}
               </p>
@@ -159,7 +261,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {Object.entries(analysis.coverage.deductibles).map(([key, value]) => (
             <div key={key} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-400">{key}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{withGlossary(String(key))}</p>
               <p className="font-semibold text-gray-900 dark:text-white">
                 {formatCurrency(value, analysis.premium.currency)}
               </p>
@@ -174,31 +276,39 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
           <CheckCircle className="w-5 h-5 text-green-600" />
           <h4 className="font-semibold text-gray-900 dark:text-white">Características Principales</h4>
         </div>
-        <div className="space-y-2">
-          {analysis.keyFeatures.map((feature, index) => (
-            <div key={index} className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-              <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
-            </div>
+        <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+          {keyFeaturesBullets.map((bullet, index) => (
+            <li key={index} className="flex gap-2 items-start px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-900/40">
+              <RiskDot risk={inferRisk(bullet.text)} />
+              <CheckCircle className="h-4 w-4 mt-1 text-green-600" aria-hidden />
+              <div className="leading-6 text-[13px] text-gray-800 dark:text-gray-200">
+                {withGlossary(bullet.text)}
+                <PageChip page={bullet.page} />
+              </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
       {/* Exclusions */}
       {analysis.coverage.exclusions.length > 0 && (
         <div>
           <div className="flex items-center gap-3 mb-3">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
+            <XCircle className="w-5 h-5 text-red-600" />
             <h4 className="font-semibold text-gray-900 dark:text-white">Exclusiones</h4>
           </div>
-          <div className="space-y-2">
-            {analysis.coverage.exclusions.map((exclusion, index) => (
-              <div key={index} className="flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{exclusion}</span>
-              </div>
+          <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+            {exclusionsBullets.map((bullet, index) => (
+              <li key={index} className="flex gap-2 items-start px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-900/40">
+                <RiskDot risk={inferRisk(bullet.text)} />
+                <XCircle className="h-4 w-4 mt-1 text-red-600" aria-hidden />
+                <div className="leading-6 text-[13px] text-gray-800 dark:text-gray-200">
+                  {withGlossary(bullet.text)}
+                  <PageChip page={bullet.page} />
+                </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
 
@@ -385,6 +495,10 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
           </div>
         </div>
       )}
+      {/* TODO(back-end): extend analysis extractor to return { text, page, bbox? } for bullets */}
+      {/* TODO(viewer): add /viewer?file=<url>#page=X and wire PageChip */}
+
     </div>
+    </TooltipProvider>
   );
 } 
