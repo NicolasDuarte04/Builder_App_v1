@@ -67,3 +67,23 @@ src/
 This project is licensed under the MIT License.
 
 <!-- redeploy: 2025-08-08T04:45:19Z -->
+
+## ✅ Deploy checklist (server env only)
+
+Set these env vars in your hosting provider (e.g., Vercel). Do not commit secrets:
+
+Required:
+- `RENDER_POSTGRES_URL` – Render Postgres connection string (briki-db)
+- `DATABASE_URL` – Same Postgres URL as above
+- `OPENAI_API_KEY` – Model key
+- `VALIDATE_OPENAI_RESPONSE` – optional; `true`/`false`
+- `DIAG_TOKEN` – new diagnostic token (strong random)
+
+Post-deploy verification:
+1) Diagnostics endpoint (requires header):
+   - GET `/api/diag` with header `x-diag-token: $DIAG_TOKEN`
+   - Expect `db.connectable=true`, `insurance_plans_count>0`, `educacion_count>0`, and a small `sample` array
+2) Server logs for `/api/ai/chat` should contain:
+   - `🔎 prod-check` showing a non-zero `plansReturned`
+   - `[plans] after filter` with `kept > 0`
+

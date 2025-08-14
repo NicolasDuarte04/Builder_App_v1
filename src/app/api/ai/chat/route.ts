@@ -1,35 +1,16 @@
 import { streamText, tool } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { searchPlans } from '@/lib/plans-client';
-
-// Temporary: force JSON fallback until streaming SDK versions are aligned.
-export const FORCE_JSON = true; // set to false once streaming fixed
-import { hasDatabaseUrl } from '@/lib/render-db';
+import { queryInsurancePlans, hasDatabaseUrl } from '@/lib/render-db';
 import { InsurancePlan } from '@/types/project';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSystemPrompt, logPromptVersion, PROMPT_VERSION } from '@/config/systemPrompt';
 import { franc } from 'franc-min';
 import { logToolError } from '@/lib/ai-error-handler';
-import { mapUserInputToCategory, getCategorySuggestions, getDynamicCategories } from '@/lib/category-mapper';
 
 export const runtime = 'nodejs';
-// Disable caching to ensure fresh execution and visible logs in prod
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-export const fetchCache = 'force-no-store';
-export const preferredRegion = 'iad1';
 
-// Bundle timestamp – helps confirm the deployed code version
-console.error('[chat] bundle-loaded', { build: '2025-08-11T16:30Z' });
-
-const key = process.env.OPENAI_API_KEY || '';
-const hasValidKey = !!key && key.startsWith('sk-');
-console.error('[chat] key check', { keyLen: key.length, startsWithSk: key.startsWith('sk-') });
-
-if (!hasValidKey) {
-  console.error('[chat] EARLY-EXIT: missing/invalid OPENAI_API_KEY');
-}
+const hasValidKey = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-');
 
 // Language detection function
 function detectLanguage(text: string): 'english' | 'spanish' {
@@ -83,38 +64,8 @@ function createMockStream(reply: string) {
 // const getSamplePlans = (category: string) => { ... } - REMOVED
 
 export async function POST(req: Request) {
-  console.error('[chat] boot', { runtimeEnv: process.env.NEXT_RUNTIME || 'node' });
-  // --- DEBUG: begin ---
-  const mask = (url?: string) => {
-    if (!url) return 'none';
-    try {
-      const u = new URL(url);
-      return `${u.protocol}//${u.hostname}...`;
-    } catch {
-      return 'invalid';
-    }
-  };
-  const len = (s?: string) => (s ? s.length : 0);
-
-  console.log('[chat] request:start', {
-    ts: new Date().toISOString(),
-    env: process.env.NODE_ENV,
-    hasDbUrl: !!(process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL),
-    dbUrlLen: len(process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL),
-    supabaseUrlLen: len(process.env.NEXT_PUBLIC_SUPABASE_URL),
-  });
-  // --- DEBUG: end ---
-  let bodyJson: any = {};
-  try { bodyJson = await req.json(); } catch { /* ignore */ }
-  if (!bodyJson?.messages) {
-    console.log('[chat] EARLY-EXIT invalid request body');
-    return NextResponse.json({ error: 'invalid body' }, { status: 400 });
-  }
-  const { messages, preferredLanguage } = bodyJson;
-
-  // Query param parsing
-  const urlParams = new URL(req.url).searchParams;
-  const noStream = FORCE_JSON || urlParams.get('nostream') === '1';
+  const { messages, preferredLanguage } = await req.json();
+  const encoder = new TextEncoder();
 
   console.log('🔵 Chat API called with:', {
     messageCount: messages.length,
@@ -280,25 +231,9 @@ export async function POST(req: Request) {
     });
   }
 
-  if (noStream) {
-    console.error('[chat] nostream fallback engaged');
-    // For simplicity use the last user message as category text
-    const catText = messages.filter((m: any) => m.role === 'user').pop()?.content || '';
-    const mapped = await mapUserInputToCategory(catText);
-    const plans = await searchPlans({ category: mapped.category || catText, limit: 4 });
-    return NextResponse.json({ tools: { insurance_plans: { plans, insuranceType: mapped.category || catText } } });
-  }
-
-  console.error('[chat] passed key guard; building streamText');
-
   // Real OpenAI call ------------------------------------------------------------------
   try {
-    console.log('[chat] about to streamText', { mappedCategoryAttempt: 'will log later' });
     const oai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    
-    // Get dynamic categories for the tool description
-    const availableCategories = await getDynamicCategories();
-    const categoryList = availableCategories.join(', ');
 
     const result = await streamText({
       model: oai('gpt-3.5-turbo'),
@@ -309,7 +244,7 @@ export async function POST(req: Request) {
           description: 'Get a list of insurance plans based on user criteria.',
           parameters: z.object({
             category: z.string().describe(
-              `The category of insurance. Available categories from database: ${categoryList}. Also accepts natural language like "business insurance" which will be mapped to the correct category.`
+              'The category of insurance. Available options are: auto, salud, vida, hogar, viaje, empresarial, mascotas, educacion.'
             ),
             max_price: z
               .number()
@@ -340,46 +275,29 @@ export async function POST(req: Request) {
             benefits_contain,
           }) => {
             try {
-              console.error('[tool] START get_insurance_plans', {
-                cat: category,
+              console.log('✅✅✅ TOOL EXECUTION STARTED ✅✅✅');
+              console.log('Received parameters:', {
+                category,
                 max_price,
                 country,
-                plansApiLen: (process.env.NEXT_PUBLIC_PLANS_API_URL || process.env.PLANS_API_URL || '').length,
-                dbUrlLen: (process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL || '').length,
-              });
-              
-              // Map natural language to actual category
-              const categoryMapping = await mapUserInputToCategory(category);
-              const actualCategory = categoryMapping.category || category;
-              
-              console.log('🗺️ Category mapping:', {
-                userInput: category,
-                mappedCategory: actualCategory,
-                confidence: categoryMapping.confidence,
-                availableCategories: categoryMapping.availableCategories
+                tags,
+                benefits_contain,
               });
 
               console.log('🔍 Database connection status:', {
                 hasDatabaseUrl,
-                envVarSet: !!(process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL),
-                envVarLength: (process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL)?.length || 0,
+                envVarSet: !!process.env.RENDER_POSTGRES_URL,
+                envVarLength: process.env.RENDER_POSTGRES_URL?.length || 0
               });
 
-              const dbUrlLength = (process.env.DATABASE_URL || '').length;
-              const renderUrlLength = (process.env.RENDER_POSTGRES_URL || '').length;
-              console.error('[chat] env lengths:', { dbUrlLength, renderUrlLength });
-              console.error('[chat] filters:', { category: actualCategory, country, max_price });
-              const t0 = Date.now();
-              const plans = await searchPlans({
-                category: actualCategory,
+              const plans = await queryInsurancePlans({
+                category,
                 max_price,
                 country,
                 tags,
                 benefits_contain,
                 limit: 4,
               });
-              const firstPlanInfo = plans.length ? { provider: plans[0].provider, name: plans[0].name } : null;
-              console.error('[chat] query done in', Date.now() - t0, 'ms; planCount =', plans.length, 'first:', firstPlanInfo);
               
               // Check if we got fuzzy matches (different categories)
               const isExactMatch = plans.length > 0 && plans.every(plan => 
@@ -393,15 +311,49 @@ export async function POST(req: Request) {
                 planStructure: plans[0] ? Object.keys(plans[0]) : [],
                 isExactMatch
               });
+
+              console.log('🔎 prod-check', {
+                hasDbUrl: !!process.env.RENDER_POSTGRES_URL,
+                plansReturned: plans?.length ?? 0,
+                firstPlan: plans?.[0]
+                  ? { id: plans[0].id, name: plans[0].name, base_price: plans[0].base_price, hasLink: !!plans[0].external_link }
+                  : null
+              });
+              
+              // STRICT VALIDATION: Allow priced plans OR quote-flow plans with link
+              const validPlans = plans.filter(plan => 
+                plan && 
+                plan.name && 
+                plan.name !== 'No hay planes disponibles públicamente' &&
+                plan.name !== 'Plan de Seguro' &&
+                plan.provider &&
+                plan.provider !== 'Proveedor' &&
+                (
+                  (plan.base_price > 0) || !!plan.external_link
+                )
+              );
+
+              console.log('[plans] after filter', { total: plans.length, kept: validPlans.length });
+              
+              console.log(`🔍 Validation results:`, {
+                totalPlans: plans.length,
+                validPlans: validPlans.length,
+                invalidPlans: plans.length - validPlans.length,
+                reasons: plans.map(plan => ({
+                  name: plan.name,
+                  provider: plan.provider,
+                  base_price: plan.base_price,
+                  external_link: plan.external_link,
+                  isValid: plan.name && 
+                           plan.name !== 'No hay planes disponibles públicamente' &&
+                           plan.provider &&
+                           ( (plan.base_price > 0) || !!plan.external_link )
+                }))
+              });
               
               // Transform plans into the expected UI format
               // The frontend expects these exact fields for validation
-              console.error('[tool] END get_insurance_plans', {
-                planCount: plans.length,
-                first: firstPlanInfo,
-              });
-
-              const finalPlans = plans.map((plan, index) => ({
+              const finalPlans = validPlans.map((plan, index) => ({
                 id: plan.id,
                 name: plan.name,
                 provider: plan.provider,
@@ -418,13 +370,11 @@ export async function POST(req: Request) {
               const toolResult = { 
                 type: "insurance_plans",
                 plans: finalPlans,
-                insuranceType: actualCategory,
-                originalQuery: category,
+                insuranceType: category,
                 hasRealPlans: finalPlans.length > 0,
                 isExactMatch: isExactMatch && finalPlans.length > 0,
                 noExactMatchesFound: !isExactMatch && finalPlans.length > 0,
-                categoriesFound: [...new Set(finalPlans.map(p => p.category))],
-                availableCategories: categoryMapping.availableCategories
+                categoriesFound: [...new Set(finalPlans.map(p => p.category))]
               };
               
               console.log('✅✅✅ TOOL EXECUTION FINISHED ✅✅✅');
@@ -463,48 +413,12 @@ export async function POST(req: Request) {
       },
     });
 
-    const planCountDebug = (result as any)?.tools?.insurance_plans?.plans?.length ?? -1;
-    console.error('[chat] result:tools', {
-      hasTools: !!(result as any)?.tools,
-      planCount: planCountDebug,
-    });
-
-    // ---- Compatibility shim for different AI SDK versions ----
-    let resp: Response;
-    const anyRes: any = result;
-
-    if (typeof anyRes.toAIStreamResponse === 'function') {
-      resp = anyRes.toAIStreamResponse({ headers: { 'x-vercel-ai-data-stream': 'v1' } });
-    } else if (typeof anyRes.toDataStreamResponse === 'function') {
-      resp = anyRes.toDataStreamResponse();
-    } else {
-      const { StreamingTextResponse }: any = await import('ai');
-      const rawStream = typeof anyRes.toAIStream === 'function' ? anyRes.toAIStream() : anyRes.stream;
-      resp = new StreamingTextResponse(rawStream as any);
-    }
-
-    // -------- Peek first SSE chunk for diagnostics ----------
-    const body = resp.body;
-    if (body) {
-      const [b1, b2] = body.tee();
-      const reader = b1.getReader();
-      reader.read().then(({ value }) => {
-        if (value) {
-          console.error('[chat] peek-sse', new TextDecoder().decode(value).slice(0, 400));
-        }
-        reader.cancel();
-      });
-      resp = new NextResponse(b2, resp);
-    }
-
-    console.error('🟢 streamText done, returning SSE response');
-    return resp;
+    console.dir({ resultDebug: result }, { depth: 4 });
+    console.log('🟢 streamText result obtained, converting to DataStreamResponse');
+    return result.toDataStreamResponse();
 
   } catch (err) {
-    console.error('[chat] error', {
-      message: (err as any)?.message,
-      code: (err as any)?.code,
-    });
+    console.error(' streamText failed –', err);
 
     const errorReply = userLanguage === 'english'
       ? 'Sorry, there was a problem contacting the model. (mock response)'

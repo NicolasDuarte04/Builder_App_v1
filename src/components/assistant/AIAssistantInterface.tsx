@@ -1,14 +1,50 @@
 "use client";
 
+/*
+Diagnostic notes for Analyze Policy PDF modal (read-only audit):
+
+1) Data source for analysis data (API / hook):
+   - Analysis is produced by the API `POST /api/ai/analyze-policy`.
+   - The `PDFUpload` component posts the selected PDF to that endpoint and calls `onAnalysisComplete(result.analysis)`.
+   - Here, `handleAnalysisComplete` sets `policyAnalysis` state, which opens the analysis modal.
+   - Additionally, `PolicyHistory` can load a saved upload and call `onViewAnalysis` (sets `policyAnalysis`).
+
+2) Current type shape for extracted items:
+   - There is no dedicated per-item interface for bullets. The UI renders arrays of strings from the analysis:
+     - `analysis.keyFeatures: string[]`
+     - `analysis.recommendations: string[]`
+     - `analysis.coverage.exclusions: string[]`
+     - `analysis.coverage.limits: Record<string, number>`
+     - `analysis.coverage.deductibles: Record<string, number>`
+   - Reference interface (from `PolicyAnalysisDisplay.tsx` at time of audit):
+     interface PolicyAnalysis {
+       policyType: string;
+       premium: { amount: number; currency: string; frequency: string };
+       coverage: { limits: Record<string, number>; deductibles: Record<string, number>; exclusions: string[]; geography?: string; claimInstructions?: string[] };
+       policyDetails: { policyNumber?: string; effectiveDate?: string; expirationDate?: string; insured: string[] };
+       insurer?: { name?: string; contact?: string; emergencyLines?: string[] };
+       premiumTable?: { label?: string; year?: string | number; plan?: string; amount?: number | string }[];
+       keyFeatures: string[];
+       recommendations: string[];
+       riskScore: number;
+       riskJustification?: string;
+       sourceQuotes?: Record<string, string>;
+       redFlags?: string[];
+       missingInfo?: string[];
+     }
+
+3) Do items include page numbers today?
+   - No. Bulleted items are plain strings; there is no `page` field in arrays. The backend schema (Zod) also has no per-item page number fields.
+
+4) Existing PDF viewer route that accepts #page=X?
+   - No in-app PDF viewer route/component was found. The UI links to the original PDF URL (`Ver PDF original`).
+   - If the external browser viewer supports `#page=`, anchors may work, but there is no dedicated internal viewer.
+*/
+
 import type React from "react";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import {
-  Mic,
-  ArrowUp,
-  FileText,
-  Shield,
-} from "lucide-react";
+import { ArrowUp, FileText, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBrikiChat } from "@/hooks/useBrikiChat";
@@ -185,6 +221,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
   >(null);
   const [showPDFUpload, setShowPDFUpload] = useState(false);
   const [policyAnalysis, setPolicyAnalysis] = useState<any>(null);
+  const [isAnalysisDocked, setIsAnalysisDocked] = useState(false);
   const [showPolicyHistory, setShowPolicyHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -770,11 +807,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                       {t("assistant.restart_chat")}
                     </button>
                   )}
-                  <button 
-                    type="button"
-                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                    <Mic className="w-5 h-5" />
-                  </button>
+                  {/* Microphone removed for a cleaner, intentional UI */}
                   <button
                     type="submit"
                     disabled={!input.trim() || chatLoading}
@@ -810,7 +843,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6">
@@ -847,7 +880,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
         </AnimatePresence>
 
         <AnimatePresence>
-          {policyAnalysis && (
+          {policyAnalysis && !isAnalysisDocked && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -859,34 +892,49 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-[1460px] w-[96.5vw] h-[92vh] overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                      {t("assistant.analyze_policy")}
-                    </h2>
-                    <button
-                      onClick={() => setPolicyAnalysis(null)}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
+                <div className="h-full overflow-y-auto" style={{ scrollbarGutter: 'stable' as any }}>
+                  <div className="p-6" aria-labelledby="analysis-dialog-title" aria-describedby="analysis-dialog-desc">
+                    <div id="analysis-dialog-title" className="sr-only">Analyze Policy PDF</div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                        {t("assistant.analyze_policy")}
+                      </h2>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setIsAnalysisDocked(true)} className="px-2 py-1 text-xs border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-800">Minimize</button>
+                        <button
+                          onClick={() => setPolicyAnalysis(null)}
+                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <PolicyAnalysisDisplay 
+                      analysis={policyAnalysis} 
+                      pdfUrl={policyAnalysis._pdfData?.pdfUrl}
+                      fileName={policyAnalysis._pdfData?.fileName}
+                      rawAnalysisData={policyAnalysis._pdfData?.rawAnalysisData}
+                    />
                   </div>
-                  
-                  <PolicyAnalysisDisplay 
-                    analysis={policyAnalysis} 
-                    pdfUrl={policyAnalysis._pdfData?.pdfUrl}
-                    fileName={policyAnalysis._pdfData?.fileName}
-                    rawAnalysisData={policyAnalysis._pdfData?.rawAnalysisData}
-                    uploaderUserId={policyAnalysis.uploaderUserId}
-                  />
                 </div>
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {policyAnalysis && isAnalysisDocked && (
+          <div className="fixed bottom-4 right-4 z-50">
+            <div className="flex items-center gap-3 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2">
+              <span className="text-sm text-gray-700 dark:text-gray-200">{t('assistant.analyze_policy')}</span>
+              <button onClick={() => setIsAnalysisDocked(false)} className="text-xs px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700">Reopen</button>
+              <button onClick={() => { setIsAnalysisDocked(false); setPolicyAnalysis(null); }} className="text-xs px-2 py-1 rounded-full border hover:bg-gray-50 dark:hover:bg-neutral-800 text-gray-600 dark:text-gray-300">Close</button>
+            </div>
+          </div>
+        )}
         </div>
 
         {/* RIGHT PANEL: Insurance Results (Gemini-style) */}

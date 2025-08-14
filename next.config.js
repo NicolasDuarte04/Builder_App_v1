@@ -24,6 +24,13 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
+  webpack: (config) => {
+    config.resolve = config.resolve || {};
+    // Prevent accidental resolution of node "canvas" in server builds
+    config.resolve.fallback = { ...(config.resolve.fallback || {}), canvas: false };
+
+    return config;
+  },
 };
 
 module.exports = nextConfig;

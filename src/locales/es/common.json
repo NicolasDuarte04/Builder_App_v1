@@ -447,5 +447,59 @@
       "recommendations": "Recibir recomendaciones personalizadas",
       "findInsurance": "¡Encontrar mi seguro! 🚀"
     }
+  },
+  "upload": {
+    "authTitle": "Inicia sesión para analizar pólizas",
+    "authDescription": "Esta función está disponible solo para usuarios registrados. Crea una cuenta gratis para empezar a analizar tus documentos.",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear cuenta",
+    "ctaTitle": "Subir póliza de seguro",
+    "dropInstruction": "Arrastra tu archivo PDF aquí o haz clic para seleccionar",
+    "fileRequirements": "Máximo 10MB • Solo archivos PDF",
+    "scannedToggle": "Este es un PDF escaneado (forzar OCR)",
+    "analyzing": "Analizando póliza...",
+    "analyzeButton": "Analizar póliza",
+    "errors": {
+      "pdfOnly": "Solo se permiten archivos PDF",
+      "tooLarge": "El archivo es demasiado grande. Máximo 10MB",
+      "unknown": "Error desconocido"
+    }
+  },
+  "history": {
+    "title": "Historial de Pólizas",
+    "emptyTitle": "No hay pólizas subidas",
+    "emptyDescription": "Sube tu primera póliza de seguro para comenzar",
+    "view": "Ver"
+  },
+  "policy": {
+    "verifyWithPdf": "Verificar con PDF",
+    "pageAbbr": "p.",
+    "noPdf": "No hay PDF disponible para verificación.",
+    "pageLocationsHint": "Las ubicaciones por página aparecerán cuando estén disponibles."
+  }
+  ,
+  "pdf": {
+    "header": "PDF",
+    "page": "Página",
+    "jumpHere": "Ir aquí",
+    "viewOriginal": "Ver PDF original",
+    "backToTop": "Volver arriba",
+    "announcedJump": "Saltaste a la página {{page}}"
+  },
+  "analysis": {
+    "premium": "Prima",
+    "limits": "Límites de Cobertura",
+    "deductibles": "Deducibles",
+    "features": "Características Principales",
+    "exclusions": "Exclusiones",
+    "risk": "Evaluación de Riesgo",
+    "recommendations": "Recomendaciones",
+    "details": "Detalles de la Póliza",
+    "alerts": "Señales de Alerta",
+    "summary": "Resumen",
+    "full": "Completo",
+    "exportAnnotated": "Exportar PDF anotado (beta)",
+    "copyLink": "Copiar enlace",
+    "share": "Compartir"
   }
 } 

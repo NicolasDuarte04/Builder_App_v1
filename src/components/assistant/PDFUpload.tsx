@@ -6,6 +6,7 @@ import { Upload, FileText, X, AlertCircle, CheckCircle, Lock } from 'lucide-reac
 import { Button } from '../ui/button';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface PDFUploadProps {
   onAnalysisComplete: (analysis: any) => void;
@@ -15,6 +16,7 @@ interface PDFUploadProps {
 
 export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProps) {
   const { data: session, status } = useSession();
+  const { t } = useTranslation();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -44,23 +46,22 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
           </div>
           
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Inicia sesión para analizar pólizas
+            {t('upload.authTitle')}
           </h3>
           
           <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-sm mx-auto">
-            Esta función está disponible solo para usuarios registrados. 
-            Crea una cuenta gratis para empezar a analizar tus documentos.
+            {t('upload.authDescription')}
           </p>
           
           <div className="flex gap-3 justify-center">
             <Link href="/login">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
-                Iniciar sesión
+                {t('upload.signIn')}
               </Button>
             </Link>
             <Link href="/register">
               <Button variant="outline" className="border-blue-200 hover:border-blue-300 dark:border-blue-800 dark:hover:border-blue-700">
-                Crear cuenta
+                {t('upload.createAccount')}
               </Button>
             </Link>
           </div>
@@ -73,12 +74,12 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
     const file = event.target.files?.[0];
     if (file) {
       if (file.type !== 'application/pdf') {
-        onError('Solo se permiten archivos PDF');
+        onError(t('upload.errors.pdfOnly'));
         return;
       }
       
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        onError('El archivo es demasiado grande. Máximo 10MB');
+        onError(t('upload.errors.tooLarge'));
         return;
       }
       
@@ -121,7 +122,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al analizar el PDF');
+        throw new Error(errorData.error || t('common.error'));
       }
 
       const result = await response.json();
@@ -159,7 +160,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
 
     } catch (error) {
       console.error('Upload error:', error);
-      onError(error instanceof Error ? error.message : 'Error desconocido');
+      onError(error instanceof Error ? error.message : t('upload.errors.unknown'));
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -210,13 +211,13 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
 
             <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Subir póliza de seguro
+              {t('upload.ctaTitle')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Arrastra tu archivo PDF aquí o haz clic para seleccionar
+              {t('upload.dropInstruction')}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-500">
-              Máximo 10MB • Solo archivos PDF
+              {t('upload.fileRequirements')}
             </p>
           </motion.div>
         ) : (
@@ -256,7 +257,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
                 onChange={(e) => setIsScannedPDF(e.target.checked)}
               />
               <label htmlFor="scannedPdfToggle" className="text-sm text-gray-700 dark:text-gray-300">
-                Este es un PDF escaneado (forzar OCR)
+                {t('upload.scannedToggle')}
               </label>
             </div>
 
@@ -271,7 +272,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
                   />
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                  Analizando póliza... {uploadProgress}%
+                  {t('upload.analyzing')} {uploadProgress}%
                 </p>
               </div>
             ) : (
@@ -281,7 +282,7 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
                 disabled={isUploading}
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
-                Analizar póliza
+                {t('upload.analyzeButton')}
               </Button>
             )}
           </motion.div>
