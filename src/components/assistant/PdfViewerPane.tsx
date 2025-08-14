@@ -34,26 +34,8 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 		let cancelled = false;
 
         async function resolveWorker(): Promise<{ url: string; type: 'module' | 'classic' } | null> {
-            const specs: Array<{ spec: string; type: 'module' | 'classic' }> = [
-                { spec: 'pdfjs-dist/build/pdf.worker.mjs', type: 'module' },
-                { spec: 'pdfjs-dist/build/pdf.worker.js', type: 'classic' },
-                { spec: 'pdfjs-dist/legacy/build/pdf.worker.mjs', type: 'module' },
-                { spec: 'pdfjs-dist/legacy/build/pdf.worker.js', type: 'classic' },
-            ];
-            for (const s of specs) {
-                try {
-                    const mod: any = await import(s.spec as any);
-                    const url = (mod && (mod.default || mod)) as string;
-                    if (typeof url === 'string') return { url, type: s.type };
-                } catch {}
-            }
-            try {
-                const pkg: any = await import('pdfjs-dist/package.json');
-                const ver = pkg?.version || '3.11.174';
-                return { url: `https://unpkg.com/pdfjs-dist@${ver}/build/pdf.worker.min.js`, type: 'classic' };
-            } catch {
-                return { url: 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js', type: 'classic' };
-            }
+            // Ship classic worker from /public for maximum compatibility
+            return { url: '/pdf.worker.js', type: 'classic' };
         }
 
 		async function renderPdf() {
@@ -63,32 +45,20 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 
             try {
                 if (typeof window === 'undefined') return;
-                // Robust browser import with fallbacks
-                let pdfjs: any;
-                const libSpecs = [
-                    'pdfjs-dist/build/pdf.mjs',
-                    'pdfjs-dist/build/pdf.js',
-                    'pdfjs-dist/legacy/build/pdf.mjs',
-                    'pdfjs-dist/legacy/build/pdf.js',
-                ];
-                for (const spec of libSpecs) {
-                    try {
-                        const mod: any = await import(spec as any);
-                        pdfjs = mod?.default ?? mod;
-                        if (pdfjs?.getDocument) break;
-                    } catch {}
-                }
+                // Import browser ESM build directly (pinned version in package.json)
+                const mod: any = await import('pdfjs-dist/build/pdf.js');
+                const pdfjs = mod?.default ?? mod;
                 if (!pdfjs || !pdfjs.getDocument) throw new Error('Unable to load pdf.js browser build');
 				const worker = await resolveWorker();
 				if (!worker) throw new Error('Unable to resolve pdf.js worker');
                 const pdfjsLib: any = pdfjs;
 				try {
 					if (pdfjsLib.GlobalWorkerOptions) {
-						if ('workerPort' in pdfjsLib.GlobalWorkerOptions && worker.type === 'module') {
-							pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(worker.url, { type: 'module' } as any);
-						} else {
-							pdfjsLib.GlobalWorkerOptions.workerSrc = worker.url;
-						}
+                        if (worker.type === 'module') {
+                            pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(worker.url, { type: 'module' } as any);
+                        } else {
+                            pdfjsLib.GlobalWorkerOptions.workerSrc = worker.url;
+                        }
 					}
 				} catch {}
 

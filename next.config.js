@@ -25,18 +25,8 @@ const nextConfig = {
   compress: true,
   webpack: (config) => {
     config.resolve = config.resolve || {};
-    // Keep aliases minimal; let runtime choose pdf.js build via robust probing
-    config.resolve.alias = {
-      ...(config.resolve.alias || {}),
-      // Prevent accidental server bundling of node-canvas
-      canvas: false,
-    };
-
-    // Keep worker rule if bundler needs to treat worker paths as assets
-    config.module.rules.push({
-      test: /pdf\.worker\.(min\.)?m?js$/,
-      type: 'asset/resource',
-    });
+    // Prevent accidental resolution of node "canvas" in server builds
+    config.resolve.fallback = { ...(config.resolve.fallback || {}), canvas: false };
 
     return config;
   },
