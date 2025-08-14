@@ -572,11 +572,15 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
 
           {/* Right: sticky PDF viewer (6/12) independent scroll */}
           <div className="col-span-12 md:col-span-6 min-w-[430px]">
-            <div className="sticky top-20 h-[calc(100vh-120px)] overflow-auto rounded-xl border bg-white dark:bg-neutral-950 p-3 shadow-sm">
-              <PdfViewerPane ref={pdfRef} url={safePdfUrl || (pdfUrl as string)} onVisiblePageChange={(p)=>setActivePage(p)} labels={{ pdf: L.pdf, page: L.page }} />
-              {mappingStatus !== 'complete' && (
-                <div className="mt-2 text-[11px] text-gray-500">Sincronización con el PDF: {mappingStatus === 'none' ? 'no disponible' : mappingStatus}</div>
-              )}
+            <div className="sticky top-20">
+              <div className="h-[calc(100vh-120px)] rounded-xl border bg-white dark:bg-neutral-950 shadow-sm overflow-hidden">
+                <div className="h-full overflow-auto p-3" style={{ scrollbarGutter: 'stable' as any }}>
+                  <PdfViewerPane ref={pdfRef} url={safePdfUrl || (pdfUrl as string)} onVisiblePageChange={(p)=>setActivePage(p)} labels={{ pdf: L.pdf, page: L.page }} />
+                  {mappingStatus !== 'complete' && (
+                    <div className="mt-2 text-[11px] text-gray-500">Sincronización con el PDF: {mappingStatus === 'none' ? 'no disponible' : mappingStatus}</div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

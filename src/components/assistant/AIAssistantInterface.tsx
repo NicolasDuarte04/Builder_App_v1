@@ -221,6 +221,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
   >(null);
   const [showPDFUpload, setShowPDFUpload] = useState(false);
   const [policyAnalysis, setPolicyAnalysis] = useState<any>(null);
+  const [isAnalysisDocked, setIsAnalysisDocked] = useState(false);
   const [showPolicyHistory, setShowPolicyHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -879,7 +880,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
         </AnimatePresence>
 
         <AnimatePresence>
-          {policyAnalysis && (
+          {policyAnalysis && !isAnalysisDocked && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -900,12 +901,15 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                       {t("assistant.analyze_policy")}
                     </h2>
-                    <button
-                      onClick={() => setPolicyAnalysis(null)}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setIsAnalysisDocked(true)} className="px-2 py-1 text-xs border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-800">Minimize</button>
+                      <button
+                        onClick={() => setPolicyAnalysis(null)}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                   
                   <PolicyAnalysisDisplay 
@@ -919,6 +923,16 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
             </motion.div>
           )}
         </AnimatePresence>
+
+        {policyAnalysis && isAnalysisDocked && (
+          <div className="fixed bottom-4 right-4 z-50">
+            <div className="flex items-center gap-3 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2">
+              <span className="text-sm text-gray-700 dark:text-gray-200">{t('assistant.analyze_policy')}</span>
+              <button onClick={() => setIsAnalysisDocked(false)} className="text-xs px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700">Reopen</button>
+              <button onClick={() => { setIsAnalysisDocked(false); setPolicyAnalysis(null); }} className="text-xs px-2 py-1 rounded-full border hover:bg-gray-50 dark:hover:bg-neutral-800 text-gray-600 dark:text-gray-300">Close</button>
+            </div>
+          </div>
+        )}
         </div>
 
         {/* RIGHT PANEL: Insurance Results (Gemini-style) */}
