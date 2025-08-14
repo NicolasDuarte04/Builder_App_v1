@@ -3,6 +3,7 @@
 import React from 'react';
 import { InsurancePlan } from '@/components/briki-ai-assistant/NewPlanCard';
 import { useTranslation } from '@/hooks/useTranslation';
+import { translateIfEnglish } from '@/lib/text-translation';
 import { Check, X, AlertCircle, DollarSign, Building2, Star, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -20,7 +21,7 @@ export function PinnedPlansComparison({
   onQuote,
   onUnpin 
 }: PinnedPlansComparisonProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   
   if (plans.length === 0) return null;
   
@@ -51,6 +52,7 @@ export function PinnedPlansComparison({
       maximumFractionDigits: 0,
     }).format(numericPrice);
   };
+  const quoteLabel = language?.startsWith('es') ? 'Ver en el sitio' : 'See on website';
   
   const getBenefitsList = (benefits: string | string[] | undefined | null) => {
     // Handle different types of benefits data
@@ -108,13 +110,13 @@ export function PinnedPlansComparison({
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700">
               <th className="text-left p-4 font-medium text-gray-600 dark:text-gray-400 w-32">
-                Feature
+                {language?.startsWith('es') ? 'Característica' : 'Feature'}
               </th>
               {plans.map((plan) => (
                 <th key={plan.id} className="p-4 text-left">
                   <div className="space-y-2">
-                    <div className="font-semibold text-gray-900 dark:text-white">
-                      {plan.name}
+                     <div className="font-semibold text-gray-900 dark:text-white">
+                       {translateIfEnglish(plan.name, language)}
                     </div>
                     <button
                       onClick={() => onUnpin(plan.id)}
@@ -133,7 +135,7 @@ export function PinnedPlansComparison({
               <td className="p-4">
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Price</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">{language?.startsWith('es') ? 'Precio' : 'Price'}</span>
                 </div>
               </td>
               {plans.map((plan) => {
@@ -153,7 +155,9 @@ export function PinnedPlansComparison({
                         isHighest && "text-orange-600 dark:text-orange-400",
                         !isLowest && !isHighest && "text-gray-900 dark:text-white"
                       )}>
-                        ${formatPrice(plan.basePrice || (plan as any).price)} {plan.currency || 'COP'}
+                        {(!price || price === 0) && (plan as any).external_link
+                          ? quoteLabel
+                          : `$${formatPrice(plan.basePrice || (plan as any).price)} ${plan.currency || 'COP'}`}
                       </div>
                       {isLowest && (
                         <span className="text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-md font-medium">
@@ -176,7 +180,7 @@ export function PinnedPlansComparison({
               <td className="p-4">
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Provider</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">{language?.startsWith('es') ? 'Proveedor' : 'Provider'}</span>
                 </div>
               </td>
               {plans.map((plan) => (
@@ -193,7 +197,7 @@ export function PinnedPlansComparison({
               <td className="p-4">
                 <div className="flex items-center gap-2">
                   <Star className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Rating</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">{language?.startsWith('es') ? 'Calificación' : 'Rating'}</span>
                 </div>
               </td>
               {plans.map((plan) => {
@@ -230,7 +234,7 @@ export function PinnedPlansComparison({
               <td className="p-4 align-top">
                 <div className="flex items-start gap-2 pt-1">
                   <Shield className="h-4 w-4 text-gray-500 dark:text-gray-400 mt-0.5" />
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Benefits</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">{language?.startsWith('es') ? 'Beneficios' : 'Benefits'}</span>
                 </div>
               </td>
               {plans.map((plan) => {
@@ -265,14 +269,14 @@ export function PinnedPlansComparison({
                 onClick={() => onViewDetails(plan)}
                 className="flex-1"
               >
-                Details
+                {language?.startsWith('es') ? 'Detalles' : 'Details'}
               </Button>
               <Button
                 size="sm"
                 onClick={() => onQuote(plan)}
                 className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white"
               >
-                Quote
+                {language?.startsWith('es') ? 'Cotizar' : 'Quote'}
               </Button>
             </div>
           ))}

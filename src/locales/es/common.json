@@ -447,5 +447,28 @@
       "recommendations": "Recibir recomendaciones personalizadas",
       "findInsurance": "¡Encontrar mi seguro! 🚀"
     }
+  },
+  "upload": {
+    "authTitle": "Inicia sesión para analizar pólizas",
+    "authDescription": "Esta función está disponible solo para usuarios registrados. Crea una cuenta gratis para empezar a analizar tus documentos.",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear cuenta",
+    "ctaTitle": "Subir póliza de seguro",
+    "dropInstruction": "Arrastra tu archivo PDF aquí o haz clic para seleccionar",
+    "fileRequirements": "Máximo 10MB • Solo archivos PDF",
+    "scannedToggle": "Este es un PDF escaneado (forzar OCR)",
+    "analyzing": "Analizando póliza...",
+    "analyzeButton": "Analizar póliza",
+    "errors": {
+      "pdfOnly": "Solo se permiten archivos PDF",
+      "tooLarge": "El archivo es demasiado grande. Máximo 10MB",
+      "unknown": "Error desconocido"
+    }
+  },
+  "history": {
+    "title": "Historial de Pólizas",
+    "emptyTitle": "No hay pólizas subidas",
+    "emptyDescription": "Sube tu primera póliza de seguro para comenzar",
+    "view": "Ver"
   }
 } 

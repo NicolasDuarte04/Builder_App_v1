@@ -1,14 +1,50 @@
 "use client";
 
+/*
+Diagnostic notes for Analyze Policy PDF modal (read-only audit):
+
+1) Data source for analysis data (API / hook):
+   - Analysis is produced by the API `POST /api/ai/analyze-policy`.
+   - The `PDFUpload` component posts the selected PDF to that endpoint and calls `onAnalysisComplete(result.analysis)`.
+   - Here, `handleAnalysisComplete` sets `policyAnalysis` state, which opens the analysis modal.
+   - Additionally, `PolicyHistory` can load a saved upload and call `onViewAnalysis` (sets `policyAnalysis`).
+
+2) Current type shape for extracted items:
+   - There is no dedicated per-item interface for bullets. The UI renders arrays of strings from the analysis:
+     - `analysis.keyFeatures: string[]`
+     - `analysis.recommendations: string[]`
+     - `analysis.coverage.exclusions: string[]`
+     - `analysis.coverage.limits: Record<string, number>`
+     - `analysis.coverage.deductibles: Record<string, number>`
+   - Reference interface (from `PolicyAnalysisDisplay.tsx` at time of audit):
+     interface PolicyAnalysis {
+       policyType: string;
+       premium: { amount: number; currency: string; frequency: string };
+       coverage: { limits: Record<string, number>; deductibles: Record<string, number>; exclusions: string[]; geography?: string; claimInstructions?: string[] };
+       policyDetails: { policyNumber?: string; effectiveDate?: string; expirationDate?: string; insured: string[] };
+       insurer?: { name?: string; contact?: string; emergencyLines?: string[] };
+       premiumTable?: { label?: string; year?: string | number; plan?: string; amount?: number | string }[];
+       keyFeatures: string[];
+       recommendations: string[];
+       riskScore: number;
+       riskJustification?: string;
+       sourceQuotes?: Record<string, string>;
+       redFlags?: string[];
+       missingInfo?: string[];
+     }
+
+3) Do items include page numbers today?
+   - No. Bulleted items are plain strings; there is no `page` field in arrays. The backend schema (Zod) also has no per-item page number fields.
+
+4) Existing PDF viewer route that accepts #page=X?
+   - No in-app PDF viewer route/component was found. The UI links to the original PDF URL (`Ver PDF original`).
+   - If the external browser viewer supports `#page=`, anchors may work, but there is no dedicated internal viewer.
+*/
+
 import type React from "react";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import {
-  Mic,
-  ArrowUp,
-  FileText,
-  Shield,
-} from "lucide-react";
+import { ArrowUp, FileText, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBrikiChat } from "@/hooks/useBrikiChat";
@@ -770,11 +806,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                       {t("assistant.restart_chat")}
                     </button>
                   )}
-                  <button 
-                    type="button"
-                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                    <Mic className="w-5 h-5" />
-                  </button>
+                  {/* Microphone removed for a cleaner, intentional UI */}
                   <button
                     type="submit"
                     disabled={!input.trim() || chatLoading}
@@ -810,7 +842,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6">
@@ -859,7 +891,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6">

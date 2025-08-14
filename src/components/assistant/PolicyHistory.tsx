@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Clock, CheckCircle, AlertCircle, Trash2, Eye } from 'lucide-react';
 import { PolicyUpload, getPolicyUploadsByUser, deletePolicyUpload } from '@/lib/supabase-policy';
 import { Button } from '../ui/button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface PolicyHistoryProps {
   userId: string;
@@ -12,6 +13,7 @@ interface PolicyHistoryProps {
 }
 
 export function PolicyHistory({ userId, onViewAnalysis }: PolicyHistoryProps) {
+  const { t } = useTranslation();
   const [uploads, setUploads] = useState<PolicyUpload[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,12 +117,10 @@ export function PolicyHistory({ userId, onViewAnalysis }: PolicyHistoryProps) {
     );
   }
 
+  // Silently suppress history load errors in the PDF modal.
+  // If there's an error, don't render an error banner; simply render nothing here.
   if (error) {
-    return (
-      <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-        <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
-      </div>
-    );
+    return null;
   }
 
   if (uploads.length === 0) {
@@ -128,10 +128,10 @@ export function PolicyHistory({ userId, onViewAnalysis }: PolicyHistoryProps) {
       <div className="text-center p-8">
         <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          No hay pólizas subidas
+          {t('history.emptyTitle')}
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Sube tu primera póliza de seguro para comenzar
+          {t('history.emptyDescription')}
         </p>
       </div>
     );
@@ -140,7 +140,7 @@ export function PolicyHistory({ userId, onViewAnalysis }: PolicyHistoryProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-        Historial de Pólizas
+        {t('history.title')}
       </h3>
       
       <div className="space-y-3">
@@ -159,19 +159,19 @@ export function PolicyHistory({ userId, onViewAnalysis }: PolicyHistoryProps) {
                   <FileText className="w-5 h-5 text-blue-600" />
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-gray-900 dark:text-white truncate">
-                      {upload.file_name}
+                      {upload.file_name ?? ''}
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {formatDate(upload.upload_time)}
+                      {upload.upload_time ? formatDate(upload.upload_time) : ''}
                     </p>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
-                    {getStatusIcon(upload.status)}
+                    {getStatusIcon(upload.status || '')}
                     <span className="text-xs text-gray-600 dark:text-gray-400">
-                      {getStatusText(upload.status)}
+                      {getStatusText(upload.status || '')}
                     </span>
                   </div>
                   
@@ -183,7 +183,7 @@ export function PolicyHistory({ userId, onViewAnalysis }: PolicyHistoryProps) {
                       className="h-8 px-2"
                     >
                       <Eye className="w-3 h-3 mr-1" />
-                      Ver
+                      {t('history.view')}
                     </Button>
                   )}
                   

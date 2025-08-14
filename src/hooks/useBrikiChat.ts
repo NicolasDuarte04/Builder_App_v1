@@ -54,7 +54,19 @@ export function useBrikiChat(initialMessages?: any[]) {
         }
     },
     onError: (error) => {
-        console.error('❌ Chat error:', error);
+        try {
+          console.error('❌ Chat error:', error);
+          setError(error?.message || 'Something went wrong. Please try again.');
+          // Optionally append a friendly assistant message
+          setMessages((prev) => ([
+            ...prev,
+            {
+              id: `assistant-error-${Date.now()}`,
+              role: 'assistant' as const,
+              content: 'I ran into an issue while responding. Please try again.',
+            },
+          ]));
+        } catch {}
     },
     onToolCall: ({ toolCall }) => {
         console.log('🛠️ Tool call detected:', {
@@ -92,11 +104,13 @@ export function useBrikiChat(initialMessages?: any[]) {
     }
   }, [messages, setChatHistory, appendChatHistory]);
 
-  // Handle chat errors
+  // Handle chat errors (non-fatal)
   useEffect(() => {
     if (chatError) {
-      console.error('🚨 Chat error detected:', chatError);
-      setError(chatError.message);
+      try {
+        console.error('🚨 Chat error detected:', chatError);
+        setError(chatError.message || 'Something went wrong. Please try again.');
+      } catch {}
     }
   }, [chatError, setError]);
   

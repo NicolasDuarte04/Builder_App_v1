@@ -311,8 +311,16 @@ export async function POST(req: Request) {
                 planStructure: plans[0] ? Object.keys(plans[0]) : [],
                 isExactMatch
               });
+
+              console.log('🔎 prod-check', {
+                hasDbUrl: !!process.env.RENDER_POSTGRES_URL,
+                plansReturned: plans?.length ?? 0,
+                firstPlan: plans?.[0]
+                  ? { id: plans[0].id, name: plans[0].name, base_price: plans[0].base_price, hasLink: !!plans[0].external_link }
+                  : null
+              });
               
-              // STRICT VALIDATION: Only return plans that are real and complete
+              // STRICT VALIDATION: Allow priced plans OR quote-flow plans with link
               const validPlans = plans.filter(plan => 
                 plan && 
                 plan.name && 
@@ -320,9 +328,12 @@ export async function POST(req: Request) {
                 plan.name !== 'Plan de Seguro' &&
                 plan.provider &&
                 plan.provider !== 'Proveedor' &&
-                plan.base_price > 0 && // Must have a real price
-                plan.external_link // Must have an external link for quotes
+                (
+                  (plan.base_price > 0) || !!plan.external_link
+                )
               );
+
+              console.log('[plans] after filter', { total: plans.length, kept: validPlans.length });
               
               console.log(`🔍 Validation results:`, {
                 totalPlans: plans.length,
@@ -336,8 +347,7 @@ export async function POST(req: Request) {
                   isValid: plan.name && 
                            plan.name !== 'No hay planes disponibles públicamente' &&
                            plan.provider &&
-                           plan.base_price > 0 &&
-                           plan.external_link
+                           ( (plan.base_price > 0) || !!plan.external_link )
                 }))
               });
               
