@@ -1,54 +1,119 @@
 "use client";
 
-import React, { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import dynamic from "next/dynamic";
-import { pdfjs } from "react-pdf";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 
-// Configure PDF.js worker from a CDN (avoids SSR issues)
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-
-const Document = dynamic(() => import("react-pdf").then((m) => m.Document), { ssr: false });
-const Page = dynamic(() => import("react-pdf").then((m) => m.Page), { ssr: false });
+// Types for dynamic pdfjs imports
+type PdfJsModule = typeof import("pdfjs-dist");
+type GetDocumentParams = Parameters<PdfJsModule["getDocument"]>[0];
 
 export type PdfViewerHandle = { scrollToPage: (page: number) => void };
 
-type Props = { url?: string };
+type Props = {
+	url?: string;
+	height?: number; // container height
+	pageWidth?: number; // canvas width in px
+	className?: string;
+};
 
-const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(({ url }, ref) => {
-	const containerRef = useRef<HTMLDivElement>(null);
+const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
+	{ url, height = 560, pageWidth = 520, className },
+	ref
+) {
+	const hostRef = useRef<HTMLDivElement>(null);
 	const [numPages, setNumPages] = useState<number>(0);
+	const [loading, setLoading] = useState<boolean>(false);
+	const [error, setError] = useState<string | null>(null);
 
 	useImperativeHandle(ref, () => ({
-		scrollToPage: (page: number) => {
-			const node = containerRef.current?.querySelector(`[data-pdf-page="${page}"]`);
+		scrollToPage(page: number) {
+			const node = hostRef.current?.querySelector(`[data-pdf-page="${page}"]`);
 			(node as HTMLElement | null)?.scrollIntoView({ behavior: "smooth", block: "center" });
 		},
 	}));
 
-	if (!url) {
-		return (
-			<div className="h-[70vh] rounded-xl border border-gray-200 dark:border-gray-800 p-4 text-sm text-gray-500">
-				No PDF available for verification.
-			</div>
-		);
-	}
+	useEffect(() => {
+		let cancelled = false;
+
+		async function renderPdf() {
+			if (!url || !hostRef.current) return;
+			setLoading(true);
+			setError(null);
+
+    try {
+                const pdfjs: PdfJsModule = await import("pdfjs-dist");
+                // Prefer module worker constructed from resolved URL (no CDN/CORS)
+                // @ts-ignore - workerPort is available at runtime
+                pdfjs.GlobalWorkerOptions.workerPort = new Worker(
+                    // @ts-ignore - bundler resolves the URL at build time
+                    new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url),
+                    { type: 'module' } as any
+                );
+
+				const container = hostRef.current!;
+				container.innerHTML = "";
+
+				const loadingTask = pdfjs.getDocument({ url } as GetDocumentParams);
+				const pdf = await loadingTask.promise;
+				if (cancelled) return;
+				setNumPages(pdf.numPages);
+
+				for (let i = 1; i <= pdf.numPages; i++) {
+					const page = await pdf.getPage(i);
+					if (cancelled) return;
+
+					const viewport = page.getViewport({ scale: 1 });
+					const scale = pageWidth / viewport.width;
+					const scaledViewport = page.getViewport({ scale });
+
+					const wrap = document.createElement("div");
+					wrap.dataset.pdfPage = String(i);
+					wrap.className = "mb-2 border-b border-gray-100 dark:border-gray-800 pb-2";
+					container.appendChild(wrap);
+
+					const header = document.createElement("div");
+					header.className = "text-[11px] text-gray-500 mb-1";
+					header.textContent = `PDF • Page ${i}`;
+					wrap.appendChild(header);
+
+					const canvas = document.createElement("canvas");
+					const ctx = canvas.getContext("2d")!;
+					canvas.width = Math.floor(scaledViewport.width);
+					canvas.height = Math.floor(scaledViewport.height);
+					canvas.style.width = `${Math.floor(scaledViewport.width)}px`;
+					canvas.style.height = `${Math.floor(scaledViewport.height)}px`;
+					wrap.appendChild(canvas);
+
+					await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+				}
+			} catch (e: any) {
+				if (!cancelled) setError(e?.message ?? "Failed to render PDF");
+			} finally {
+				if (!cancelled) setLoading(false);
+			}
+		}
+
+		renderPdf();
+		return () => {
+			cancelled = true;
+		};
+	}, [url, pageWidth]);
 
 	return (
-		<div
-			ref={containerRef}
-			className="h-[70vh] overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
-		>
-			<Document file={url} onLoadSuccess={({ numPages }) => setNumPages(numPages)}>
-				{Array.from({ length: numPages }, (_, i) => (
-					<div key={i} data-pdf-page={i + 1} className="p-2 border-b border-gray-100 dark:border-gray-800">
-						<div className="mb-1 text-[11px] text-gray-500">PDF • Page {i + 1}</div>
-						<Page pageNumber={i + 1} width={500} renderTextLayer renderAnnotationLayer />
-					</div>
-				))}
-			</Document>
+		<div className={className}>
+			<div
+				ref={hostRef}
+				className="overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-neutral-950"
+				style={{ height }}
+				aria-label="PDF viewer"
+			/>
+			{loading && <div className="mt-2 text-xs text-gray-500">Loading PDF…</div>}
+			{error && <div className="mt-2 text-xs text-red-600">{error}</div>}
+			{!url && <div className="p-3 text-xs text-gray-500">No PDF available.</div>}
+			{numPages === 0 && url && !loading && !error && (
+				<div className="p-3 text-xs text-gray-500">No pages found.</div>
+			)}
 		</div>
 	);
 });
 
-PdfViewerPane.displayName = "PdfViewerPane";
 export default PdfViewerPane;
