@@ -268,36 +268,6 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
           </div>
         )}
       </section>
-        {/* Optional: Show how we calculated */}
-        {Array.isArray(analysis.premiumTable) && analysis.premiumTable.length > 0 && (
-          <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-            <details>
-              <summary className="cursor-pointer">Cómo lo calculamos</summary>
-              <div className="mt-2">
-                <p className="mb-2">Valores detectados en tablas:</p>
-                <ul className="list-disc ml-5">
-                  {analysis.premiumTable.slice(0, 6).map((row, idx) => (
-                    <li key={idx}>{[row.year, row.plan, row.label].filter(Boolean).join(' • ')}: {typeof row.amount === 'number' ? formatCurrency(row.amount, analysis.premium.currency) : row.amount}</li>
-                  ))}
-                </ul>
-              </div>
-            </details>
-          </div>
-        )}
-        {/* View original PDF button if available */}
-        {(pdfUrl as string) && (
-          <div className="mt-3">
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Ver PDF original
-            </a>
-          </div>
-        )}
-      </div>
 
       {/* Coverage Limits */}
       <section id="sec-limits" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
