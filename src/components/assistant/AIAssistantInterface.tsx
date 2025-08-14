@@ -892,33 +892,34 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-[1460px] w-[96.5vw] h-[90vh] overflow-y-auto"
-                style={{ scrollbarGutter: 'stable' as any }}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-[1460px] w-[96.5vw] h-[92vh] overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="p-6" aria-labelledby="analysis-dialog-title" aria-describedby="analysis-dialog-desc">
-                  <div id="analysis-dialog-title" className="sr-only">Analyze Policy PDF</div>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                      {t("assistant.analyze_policy")}
-                    </h2>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setIsAnalysisDocked(true)} className="px-2 py-1 text-xs border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-800">Minimize</button>
-                      <button
-                        onClick={() => setPolicyAnalysis(null)}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
+                <div className="h-full overflow-y-auto" style={{ scrollbarGutter: 'stable' as any }}>
+                  <div className="p-6" aria-labelledby="analysis-dialog-title" aria-describedby="analysis-dialog-desc">
+                    <div id="analysis-dialog-title" className="sr-only">Analyze Policy PDF</div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                        {t("assistant.analyze_policy")}
+                      </h2>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setIsAnalysisDocked(true)} className="px-2 py-1 text-xs border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-800">Minimize</button>
+                        <button
+                          onClick={() => setPolicyAnalysis(null)}
+                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
+                    
+                    <PolicyAnalysisDisplay 
+                      analysis={policyAnalysis} 
+                      pdfUrl={policyAnalysis._pdfData?.pdfUrl}
+                      fileName={policyAnalysis._pdfData?.fileName}
+                      rawAnalysisData={policyAnalysis._pdfData?.rawAnalysisData}
+                    />
                   </div>
-                  
-                  <PolicyAnalysisDisplay 
-                    analysis={policyAnalysis} 
-                    pdfUrl={policyAnalysis._pdfData?.pdfUrl}
-                    fileName={policyAnalysis._pdfData?.fileName}
-                    rawAnalysisData={policyAnalysis._pdfData?.rawAnalysisData}
-                  />
                 </div>
               </motion.div>
             </motion.div>
