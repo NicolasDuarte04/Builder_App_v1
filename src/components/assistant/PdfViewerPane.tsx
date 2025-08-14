@@ -12,10 +12,12 @@ type Props = {
     url?: string;
     height?: number; // optional container height; if omitted, rely on CSS classes
     className?: string;
+    onVisiblePageChange?: (page: number) => void;
+    labels?: { pdf: string; page: string };
 };
 
 const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
-    { url, height, className },
+    { url, height, className, onVisiblePageChange, labels },
 	ref
 ) {
 	const hostRef = useRef<HTMLDivElement>(null);
@@ -70,15 +72,23 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 				} catch {}
 
                 console.info('[pdf-viewer] pdfjs+worker selected', { workerType: worker.type, workerUrl: worker.url });
-				const container = hostRef.current!;
-				container.innerHTML = "";
+                const container = hostRef.current!;
+                container.innerHTML = "";
+
+                // Sticky header inside viewer
+                const stickyHeader = document.createElement('div');
+                stickyHeader.className = 'sticky top-0 z-10 bg-white dark:bg-neutral-950 text-xs text-gray-600 px-2 py-1 border-b border-gray-100 dark:border-gray-800';
+                stickyHeader.dataset.viewerHeader = 'true';
+                stickyHeader.textContent = `${labels?.pdf ?? 'PDF'} • ${labels?.page ?? 'Page'} 1`;
+                container.appendChild(stickyHeader);
 
 				const loadingTask = (pdfjsLib as any).getDocument({ url } as GetDocumentParams);
 				const pdf = await loadingTask.promise;
 				if (cancelled) return;
 				setNumPages(pdf.numPages);
 
-				for (let i = 1; i <= pdf.numPages; i++) {
+                const pageWraps: HTMLElement[] = [];
+                for (let i = 1; i <= pdf.numPages; i++) {
 					const page = await pdf.getPage(i);
 					if (cancelled) return;
 
@@ -88,14 +98,11 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 					const scaledViewport = page.getViewport({ scale });
 
 					const wrap = document.createElement("div");
-					wrap.dataset.pdfPage = String(i);
+                    wrap.dataset.pdfPage = String(i);
+                    wrap.id = `pdf-page-${i}`;
                     wrap.className = "mb-2 border-b border-gray-100 dark:border-gray-800 pb-2 transition-shadow";
 					container.appendChild(wrap);
-
-					const header = document.createElement("div");
-					header.className = "text-[11px] text-gray-500 mb-1";
-					header.textContent = `PDF • Page ${i}`;
-					wrap.appendChild(header);
+                    pageWraps.push(wrap);
 
 					const canvas = document.createElement("canvas");
 					const ctx = canvas.getContext("2d")!;
@@ -107,6 +114,25 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 
 					await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
 				}
+
+                // Observe visible page to update header and notify parent
+                try {
+                    const rootEl = container;
+                    const io = new IntersectionObserver((entries) => {
+                        let top: { page: number; ratio: number } | null = null;
+                        for (const e of entries) {
+                            if (!e.isIntersecting) continue;
+                            const page = parseInt((e.target as HTMLElement).dataset.pdfPage || '0', 10);
+                            const ratio = e.intersectionRatio;
+                            if (!top || ratio > top.ratio) top = { page, ratio };
+                        }
+                        if (top && Number.isFinite(top.page)) {
+                            stickyHeader.textContent = `${labels?.pdf ?? 'PDF'} • ${labels?.page ?? 'Page'} ${top.page}`;
+                            onVisiblePageChange?.(top.page);
+                        }
+                    }, { root: rootEl, threshold: [0.6] });
+                    pageWraps.forEach(w => io.observe(w));
+                } catch {}
 			} catch (e: any) {
 				if (!cancelled) setError(e?.message ?? "Failed to render PDF");
 			} finally {

@@ -491,5 +491,29 @@
     "pageAbbr": "p.",
     "noPdf": "No PDF available for verification.",
     "pageLocationsHint": "Page locations will appear when available."
+  },
+  "pdf": {
+    "header": "PDF",
+    "page": "Page",
+    "jumpHere": "Jump here",
+    "viewOriginal": "View original PDF",
+    "backToTop": "Back to top",
+    "announcedJump": "Jumped to page {{page}}"
+  },
+  "analysis": {
+    "premium": "Premium",
+    "limits": "Coverage Limits",
+    "deductibles": "Deductibles",
+    "features": "Main Features",
+    "exclusions": "Exclusions",
+    "risk": "Risk Assessment",
+    "recommendations": "Recommendations",
+    "details": "Details",
+    "alerts": "Alerts",
+    "summary": "Summary",
+    "full": "Full",
+    "exportAnnotated": "Export annotated PDF (beta)",
+    "copyLink": "Copy link",
+    "share": "Share"
   }
 } 

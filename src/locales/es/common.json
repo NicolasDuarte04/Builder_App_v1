@@ -477,4 +477,29 @@
     "noPdf": "No hay PDF disponible para verificación.",
     "pageLocationsHint": "Las ubicaciones por página aparecerán cuando estén disponibles."
   }
+  ,
+  "pdf": {
+    "header": "PDF",
+    "page": "Página",
+    "jumpHere": "Ir aquí",
+    "viewOriginal": "Ver PDF original",
+    "backToTop": "Volver arriba",
+    "announcedJump": "Saltaste a la página {{page}}"
+  },
+  "analysis": {
+    "premium": "Prima",
+    "limits": "Límites de Cobertura",
+    "deductibles": "Deducibles",
+    "features": "Características Principales",
+    "exclusions": "Exclusiones",
+    "risk": "Evaluación de Riesgo",
+    "recommendations": "Recomendaciones",
+    "details": "Detalles de la Póliza",
+    "alerts": "Señales de Alerta",
+    "summary": "Resumen",
+    "full": "Completo",
+    "exportAnnotated": "Exportar PDF anotado (beta)",
+    "copyLink": "Copiar enlace",
+    "share": "Compartir"
+  }
 } 
