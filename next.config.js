@@ -23,7 +23,25 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
-  // No transpile needed for pdfjs-dist
+  webpack: (config) => {
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      // Force browser/legacy ESM entry for pdf.js
+      'pdfjs-dist/build/pdf.js': 'pdfjs-dist/legacy/build/pdf.mjs',
+      'pdfjs-dist': 'pdfjs-dist/legacy/build/pdf.mjs',
+      // Prevent accidental server bundling of node-canvas
+      canvas: false,
+    };
+
+    // Allow pdf worker files to be emitted as static assets if needed
+    config.module.rules.push({
+      test: /pdf\.worker\.(min\.)?m?js$/,
+      type: 'asset/resource',
+    });
+
+    return config;
+  },
 };
 
 module.exports = nextConfig;

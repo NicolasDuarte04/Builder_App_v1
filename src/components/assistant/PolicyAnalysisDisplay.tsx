@@ -16,7 +16,9 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
-import PdfViewerPane, { PdfViewerHandle } from './PdfViewerPane';
+import dynamic from 'next/dynamic';
+import type { PdfViewerHandle } from './PdfViewerPane';
+const PdfViewerPane = dynamic(() => import('./PdfViewerPane'), { ssr: false });
 
 interface PolicyAnalysis {
   policyType: string;

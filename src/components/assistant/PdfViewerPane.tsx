@@ -34,25 +34,16 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 	useEffect(() => {
 		let cancelled = false;
 
-		async function resolveWorker(pdfjsLib: any): Promise<{ url: string; type: 'module' | 'classic' } | null> {
-			// Try modern ESM worker first
-			const tryPaths: Array<{ spec: string; type: 'module' | 'classic' }> = [
-				{ spec: 'pdfjs-dist/build/pdf.worker.min.mjs?url', type: 'module' },
-				{ spec: 'pdfjs-dist/build/pdf.worker.mjs?url', type: 'module' },
-				{ spec: 'pdfjs-dist/legacy/build/pdf.worker.min.js?url', type: 'classic' },
-				{ spec: 'pdfjs-dist/legacy/build/pdf.worker.js?url', type: 'classic' },
-			];
-			for (const p of tryPaths) {
-				try {
-					const mod: any = await import(/* @vite-ignore */ p.spec);
-					const url: string = (mod && (mod.default || mod)) as string;
-					if (typeof url === 'string') return { url, type: p.type };
-				} catch {}
-			}
-			// Fallback: inline CDN worker as last resort (keeps feature working during bundler quirks)
+		async function resolveWorker(): Promise<{ url: string; type: 'module' | 'classic' } | null> {
+			// Prefer legacy ESM worker for browser
 			try {
-				const cdn = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-				return { url: cdn, type: 'classic' };
+				const url = new URL('pdfjs-dist/legacy/build/pdf.worker.min.mjs', import.meta.url).toString();
+				return { url, type: 'module' };
+			} catch {}
+			// Fallback to classic legacy worker
+			try {
+				const url = new URL('pdfjs-dist/legacy/build/pdf.worker.js', import.meta.url).toString();
+				return { url, type: 'classic' };
 			} catch {}
 			return null;
 		}
@@ -63,22 +54,27 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 			setError(null);
 
 			try {
-				const pdfjs: PdfJsModule = await import('pdfjs-dist');
-				const worker = await resolveWorker((pdfjs as any));
+				// Import browser-friendly legacy ESM entry only on client
+				const pdfjsModule: any = await import('pdfjs-dist/legacy/build/pdf.mjs');
+				const pdfjs: PdfJsModule = (pdfjsModule?.default ?? pdfjsModule) as PdfJsModule;
+				const worker = await resolveWorker();
 				if (!worker) throw new Error('Unable to resolve pdf.js worker');
-				const pdfjsLib: any = (pdfjs as any).default ?? (pdfjs as any);
-				if (pdfjsLib.GlobalWorkerOptions) {
-					if ('workerPort' in pdfjsLib.GlobalWorkerOptions && worker.type === 'module') {
-						pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(worker.url, { type: 'module' } as any);
-					} else {
-						pdfjsLib.GlobalWorkerOptions.workerSrc = worker.url;
+				const pdfjsLib: any = (pdfjs as any);
+				if (typeof window === 'undefined') return; // Hard SSR guard
+				try {
+					if (pdfjsLib.GlobalWorkerOptions) {
+						if ('workerPort' in pdfjsLib.GlobalWorkerOptions && worker.type === 'module') {
+							pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(worker.url, { type: 'module' } as any);
+						} else {
+							pdfjsLib.GlobalWorkerOptions.workerSrc = worker.url;
+						}
 					}
-				}
+				} catch {}
 
 				const container = hostRef.current!;
 				container.innerHTML = "";
 
-				const loadingTask = (pdfjs as any).getDocument({ url } as GetDocumentParams);
+				const loadingTask = (pdfjsLib as any).getDocument({ url } as GetDocumentParams);
 				const pdf = await loadingTask.promise;
 				if (cancelled) return;
 				setNumPages(pdf.numPages);
