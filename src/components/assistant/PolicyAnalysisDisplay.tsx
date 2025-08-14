@@ -205,27 +205,33 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     keyFeaturesBullets.some(b => typeof (b.page ?? b.locator?.page) === 'number') ||
     exclusionsBullets.some(b => typeof (b.page ?? b.locator?.page) === 'number');
 
-  // Collapse/expand controls for long lists
-  const DEFAULT_COLLAPSE_COUNT = 6;
-  const [showAllFeatures, setShowAllFeatures] = useState(false);
-  const visibleFeatures = showAllFeatures ? keyFeaturesBullets : keyFeaturesBullets.slice(0, DEFAULT_COLLAPSE_COUNT);
-  const remainingFeatures = Math.max(keyFeaturesBullets.length - visibleFeatures.length, 0);
+  // Collapse defaults: premium open (not collapsible). Others: collapsed if >=10 items, else open. Risk/Recommendations collapsed.
+  const limitsCount = Object.keys(analysis.coverage?.limits || {}).length;
+  const deductiblesCount = Object.keys(analysis.coverage?.deductibles || {}).length;
+  const featuresCount = keyFeaturesBullets.length;
+  const exclusionsCount = exclusionsBullets.length;
+  const alertsCount = Array.isArray(analysis.redFlags) ? analysis.redFlags.length : 0;
+  const detailsCount = (
+    (analysis.policyDetails.effectiveDate ? 1 : 0) +
+    (analysis.policyDetails.expirationDate ? 1 : 0) +
+    (analysis.policyDetails.policyNumber ? 1 : 0) +
+    ((analysis.policyDetails.insured || []).length > 0 ? 1 : 0) +
+    (analysis.insurer?.contact ? 1 : 0) +
+    ((analysis.insurer?.emergencyLines || []).length > 0 ? 1 : 0) +
+    (analysis.coverage?.geography ? 1 : 0) +
+    ((analysis.coverage?.claimInstructions || []).length > 0 ? 1 : 0)
+  );
 
-  // View toggle
-  const [viewMode, setViewMode] = useState<'summary' | 'full'>('summary');
-  const isSummary = viewMode === 'summary';
-
-  // Collapsible state per section (all collapsed by default)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-    premium: true,
-    limits: true,
-    deductibles: true,
-    features: true,
-    exclusions: true,
+    premium: false, // always open
+    limits: limitsCount >= 10,
+    deductibles: deductiblesCount >= 10,
+    features: featuresCount >= 10,
+    exclusions: exclusionsCount >= 10,
     risk: true,
     recommendations: true,
-    details: true,
-    alerts: true,
+    details: detailsCount >= 10,
+    alerts: alertsCount >= 10,
   });
   const toggle = (k: keyof typeof collapsed) => setCollapsed((s) => ({ ...s, [k]: !s[k] }));
 
@@ -236,23 +242,8 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
   const liveRef = useRef<HTMLDivElement>(null);
   const AnalysisBody = (
     <div className="space-y-4">
-      {/* Top controls and summary chips */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-neutral-800">{L.limits}: {Object.keys(analysis.coverage?.limits || {}).length}</span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-neutral-800">{L.exclusions}: {exclusionsBullets.length}</span>
-          {Array.isArray(analysis.redFlags) && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-neutral-800">{L.alerts}: {analysis.redFlags.length}</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant={isSummary ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('summary')}>{L.summary}</Button>
-          <Button variant={!isSummary ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('full')}>{L.full}</Button>
-        </div>
-      </div>
-
       {/* Primary actions */}
-      <div className="flex items-center gap-2">
+      <div className="inline-flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
@@ -274,25 +265,20 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
         ))}
       </nav>
 
-      {/* Premium Section */}
+      {/* Premium Section (always open, not collapsible) */}
       <section id="sec-premium" className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-3 shadow-sm border border-gray-200 dark:border-gray-800">
-        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('premium')}>
-          <div className="flex items-center gap-2"><DollarSign className="w-5 h-5 text-blue-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{L.premium}</h4></div>
-          {collapsed.premium ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
-        </button>
-        {!collapsed.premium && (
-          <div className="mt-2 text-gray-900 dark:text-white">
-            <div className="text-xl font-bold">
-              {typeof analysis?.premium?.amount === 'number' ? formatCurrency(analysis.premium.amount, analysis.premium.currency) : `${L.premium}: No especificada`}
-              {analysis?.premium?.frequency && (
-                <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">/{analysis.premium.frequency === 'monthly' ? 'mensual' : analysis.premium.frequency === 'yearly' ? 'anual' : analysis.premium.frequency}</span>
-              )}
-            </div>
-            {(pdfUrl as string) && (
-              <div className="mt-2 text-sm"><a href={pdfUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">{L.viewOriginal}</a></div>
+        <div className="flex items-center gap-2 mb-1"><DollarSign className="w-5 h-5 text-blue-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{language === 'es' ? 'Prima' : L.premium}</h4></div>
+        <div className="text-gray-900 dark:text-white">
+          <div className="text-xl font-bold">
+            {typeof analysis?.premium?.amount === 'number' ? formatCurrency(analysis.premium.amount, analysis.premium.currency) : `${language === 'es' ? 'Prima' : L.premium}: No especificada`}
+            {analysis?.premium?.frequency && (
+              <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">/{analysis.premium.frequency === 'monthly' ? 'mensual' : analysis.premium.frequency === 'yearly' ? 'anual' : analysis.premium.frequency}</span>
             )}
           </div>
-        )}
+          {(pdfUrl as string) && (
+            <div className="mt-2 text-sm"><a href={pdfUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">{L.viewOriginal}</a></div>
+          )}
+        </div>
       </section>
 
       {/* Coverage Limits */}
@@ -337,8 +323,8 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
           <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{L.features} ({keyFeaturesBullets.length})</h4></div>
           {collapsed.features ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
         </button>
-        {!collapsed.features && <ul className="mt-2 divide-y divide-gray-100 dark:divide-gray-800">
-          {visibleFeatures.map((bullet, index) => (
+         {!collapsed.features && <ul className="mt-2 divide-y divide-gray-100 dark:divide-gray-800">
+          {keyFeaturesBullets.map((bullet, index) => (
             <li key={index} className="flex gap-2 items-start px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-900/40">
               <RiskDot risk={inferRisk(bullet.text)} />
               <div className="leading-6 text-[13px] text-gray-800 dark:text-gray-200">
@@ -348,19 +334,6 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
             </li>
           ))}
         </ul>}
-        {keyFeaturesBullets.length > DEFAULT_COLLAPSE_COUNT && (
-          <div className="mt-2">
-            {!showAllFeatures ? (
-              <button type="button" onClick={() => setShowAllFeatures(true)} className="text-sm text-blue-600 hover:underline">
-                + Mostrar más ({remainingFeatures})
-              </button>
-            ) : (
-              <button type="button" onClick={() => setShowAllFeatures(false)} className="text-sm text-blue-600 hover:underline">
-                Mostrar menos
-              </button>
-            )}
-          </div>
-        )}
       </section>
 
       {/* Exclusions */}
@@ -586,8 +559,8 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       <div className="max-w-[1400px] w-[95vw] h-[90vh]">
         <div className="sr-only" aria-live="polite" ref={liveRef}></div>
         <div className="grid grid-cols-12 gap-6 h-full">
-          {/* Left: analysis column (7/12) independent scroll */}
-          <div className="col-span-12 md:col-span-7 min-w-0 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+          {/* Left: analysis column (6/12) independent scroll */}
+          <div className="col-span-12 md:col-span-6 min-w-0 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 120px)' }}>
           {!hasAnyPageRefs && (
             <div className="mb-2 text-xs text-gray-500">{t('policy.pageLocationsHint') || 'Page locations will appear when available.'}</div>
           )}
@@ -597,8 +570,8 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
             </div>
           </div>
 
-          {/* Right: sticky PDF viewer (5/12) independent scroll */}
-          <div className="col-span-12 md:col-span-5 min-w-[430px] md:w-[42%]">
+          {/* Right: sticky PDF viewer (6/12) independent scroll */}
+          <div className="col-span-12 md:col-span-6 min-w-[430px]">
             <div className="sticky top-20 h-[calc(100vh-120px)] overflow-auto rounded-xl border bg-white dark:bg-neutral-950 p-3 shadow-sm">
               <PdfViewerPane ref={pdfRef} url={safePdfUrl || (pdfUrl as string)} onVisiblePageChange={(p)=>setActivePage(p)} labels={{ pdf: L.pdf, page: L.page }} />
               {mappingStatus !== 'complete' && (
