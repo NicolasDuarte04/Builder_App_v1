@@ -35,15 +35,16 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 		let cancelled = false;
 
 		async function resolveWorker(): Promise<{ url: string; type: 'module' | 'classic' } | null> {
-			// Prefer browser ESM worker that exists in pdfjs-dist v3.11.x
+			// Let Webpack asset rule emit URLs for the worker files
 			try {
-				const url = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
-				return { url, type: 'module' };
+				const mod: any = await import('pdfjs-dist/build/pdf.worker.mjs');
+				const url = (mod && (mod.default || mod)) as string;
+				if (typeof url === 'string') return { url, type: 'module' };
 			} catch {}
-			// Fallback to classic js worker
 			try {
-				const url = new URL('pdfjs-dist/build/pdf.worker.js', import.meta.url).toString();
-				return { url, type: 'classic' };
+				const mod: any = await import('pdfjs-dist/build/pdf.worker.js');
+				const url = (mod && (mod.default || mod)) as string;
+				if (typeof url === 'string') return { url, type: 'classic' };
 			} catch {}
 			return null;
 		}
