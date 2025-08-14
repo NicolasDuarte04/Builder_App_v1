@@ -462,5 +462,28 @@
       "recommendations": "Receive personalized recommendations",
       "findInsurance": "Find my insurance! 🚀"
     }
+  },
+  "upload": {
+    "authTitle": "Sign in to analyze policies",
+    "authDescription": "This feature is available only for registered users. Create a free account to start analyzing your documents.",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "ctaTitle": "Upload insurance policy",
+    "dropInstruction": "Drag your PDF here or click to select",
+    "fileRequirements": "Maximum 10MB • PDF files only",
+    "scannedToggle": "This is a scanned PDF (force OCR)",
+    "analyzing": "Analyzing policy...",
+    "analyzeButton": "Analyze policy",
+    "errors": {
+      "pdfOnly": "Only PDF files are allowed",
+      "tooLarge": "File is too large. Maximum 10MB",
+      "unknown": "Unknown error"
+    }
+  },
+  "history": {
+    "title": "Policy History",
+    "emptyTitle": "No policies uploaded",
+    "emptyDescription": "Upload your first policy to get started",
+    "view": "View"
   }
 } 
