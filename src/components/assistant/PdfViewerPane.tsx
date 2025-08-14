@@ -35,14 +35,14 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 		let cancelled = false;
 
 		async function resolveWorker(): Promise<{ url: string; type: 'module' | 'classic' } | null> {
-			// Prefer browser ESM worker for pdfjs v3
+			// Prefer browser ESM worker that exists in pdfjs-dist v3.11.x
 			try {
-				const url = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+				const url = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
 				return { url, type: 'module' };
 			} catch {}
-			// Fallback to classic js worker if needed
+			// Fallback to classic js worker
 			try {
-				const url = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url).toString();
+				const url = new URL('pdfjs-dist/build/pdf.worker.js', import.meta.url).toString();
 				return { url, type: 'classic' };
 			} catch {}
 			return null;
