@@ -6,7 +6,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } f
 type PdfJsModule = typeof import("pdfjs-dist");
 type GetDocumentParams = Parameters<PdfJsModule["getDocument"]>[0];
 
-export type PdfViewerHandle = { scrollToPage: (page: number) => void };
+export type PdfViewerHandle = { scrollToPage: (page: number, highlight?: boolean) => void };
 
 type Props = {
     url?: string;
@@ -23,12 +23,19 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 
-	useImperativeHandle(ref, () => ({
-		scrollToPage(page: number) {
-			const node = hostRef.current?.querySelector(`[data-pdf-page="${page}"]`);
-			(node as HTMLElement | null)?.scrollIntoView({ behavior: "smooth", block: "center" });
-		},
-	}));
+    useImperativeHandle(ref, () => ({
+        scrollToPage(page: number, highlight?: boolean) {
+            const node = hostRef.current?.querySelector(`[data-pdf-page="${page}"]`);
+            const el = node as HTMLElement | null;
+            el?.scrollIntoView({ behavior: "smooth", block: "center" });
+            if (highlight && el) {
+                el.classList.add('ring-2','ring-blue-400');
+                setTimeout(() => {
+                    el.classList.remove('ring-2','ring-blue-400');
+                }, 900);
+            }
+        },
+    }));
 
 	useEffect(() => {
 		let cancelled = false;
@@ -82,7 +89,7 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 
 					const wrap = document.createElement("div");
 					wrap.dataset.pdfPage = String(i);
-					wrap.className = "mb-2 border-b border-gray-100 dark:border-gray-800 pb-2";
+                    wrap.className = "mb-2 border-b border-gray-100 dark:border-gray-800 pb-2 transition-shadow";
 					container.appendChild(wrap);
 
 					const header = document.createElement("div");

@@ -7,7 +7,7 @@ UI-only enhancements below: optional page chips, glossary tooltips, risk flags, 
 
 import React, { useRef, useState } from 'react';
 // motion removed to unblock build
-import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, XCircle } from 'lucide-react';
+import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, XCircle, ChevronDown, ChevronUp, Share2, Link as LinkIcon } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { SavePolicyButton } from '../dashboard/SavePolicyButton';
 import { ENABLE_SAVE_POLICY, ENABLE_PDF_VERIFY } from '@/lib/featureFlags';
@@ -182,51 +182,92 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     exclusionsBullets.some(b => typeof (b.page ?? b.locator?.page) === 'number');
 
   // Collapse/expand controls for long lists
-  const DEFAULT_COLLAPSE_COUNT = 4;
+  const DEFAULT_COLLAPSE_COUNT = 6;
   const [showAllFeatures, setShowAllFeatures] = useState(false);
   const visibleFeatures = showAllFeatures ? keyFeaturesBullets : keyFeaturesBullets.slice(0, DEFAULT_COLLAPSE_COUNT);
   const remainingFeatures = Math.max(keyFeaturesBullets.length - visibleFeatures.length, 0);
 
+  // View toggle
+  const [viewMode, setViewMode] = useState<'summary' | 'full'>('summary');
+  const isSummary = viewMode === 'summary';
+
+  // Collapsible state per section
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+    premium: false,
+    limits: false,
+    deductibles: false,
+    features: false,
+    exclusions: false,
+    risk: true, // collapsed by default
+    recommendations: true, // collapsed by default
+    details: false,
+    alerts: false,
+  });
+  const toggle = (k: keyof typeof collapsed) => setCollapsed((s) => ({ ...s, [k]: !s[k] }));
+
+  // Mapping / sync status for locating bullets in PDF
+  const [mappingStatus] = useState<'loading' | 'none' | 'partial' | 'complete'>(() => (hasAnyPageRefs ? 'partial' : 'none'));
+
   const AnalysisBody = (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          Análisis de Póliza
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {analysis.policyType} • {analysis.policyDetails.policyNumber}
-        </p>
+    <div className="space-y-4">
+      {/* Top controls and summary chips */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-neutral-800">Coberturas: {Object.keys(analysis.coverage?.limits || {}).length}</span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-neutral-800">Exclusiones: {exclusionsBullets.length}</span>
+          {Array.isArray(analysis.redFlags) && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-neutral-800">Alertas: {analysis.redFlags.length}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant={isSummary ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('summary')}>Resumen</Button>
+          <Button variant={!isSummary ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('full')}>Completo</Button>
+        </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-end">
+      {/* Primary actions */}
+      <div className="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
-              <Button variant="outline" size="sm" disabled={!hasAnyPageRefs}>
-                Export annotated PDF (beta)
-              </Button>
+              <Button size="sm" disabled={!hasAnyPageRefs}>Exportar PDF anotado (beta)</Button>
             </span>
           </TooltipTrigger>
-          {!hasAnyPageRefs && (
-            <TooltipContent>Annotations need page references</TooltipContent>
-          )}
+          {!hasAnyPageRefs && <TooltipContent>Las anotaciones requieren referencias de página</TooltipContent>}
         </Tooltip>
+        <Button variant="outline" size="sm" onClick={() => navigator.share?.({ title: 'Análisis de Póliza', url: location.href }).catch(() => {})}><Share2 className="h-4 w-4 mr-1"/>Compartir</Button>
+        <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(location.href); }}><LinkIcon className="h-4 w-4 mr-1"/>Copiar enlace</Button>
       </div>
 
+      {/* Table of contents */}
+      <nav className="text-sm text-gray-600 dark:text-gray-400 space-x-3 overflow-x-auto py-1" aria-label="Contenido">
+        {[
+          ['premium','Prima'],['limits','Límites de Cobertura'],['deductibles','Deducibles'],['features','Características'],['exclusions','Exclusiones'],['risk','Evaluación de Riesgo'],['recommendations','Recomendaciones'],['details','Detalles'],['alerts','Señales de Alerta']
+        ].map(([k,label]) => (
+          <a key={k} href={`#sec-${k}`} className="hover:underline">{label}</a>
+        ))}
+      </nav>
+
       {/* Premium Section */}
-      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-800">
-        <div className="flex items-center gap-3 mb-3">
-          <DollarSign className="w-5 h-5 text-blue-600" />
-          <h4 className="font-semibold text-gray-900 dark:text-white">Prima</h4>
-        </div>
-        <div className="text-2xl font-bold text-gray-900 dark:text-white">
-          {formatCurrency(analysis.premium.amount, analysis.premium.currency)}
-          <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
-            /{analysis.premium.frequency}
-          </span>
-        </div>
+      <section id="sec-premium" className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-3 shadow-sm border border-gray-200 dark:border-gray-800">
+        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('premium')}>
+          <div className="flex items-center gap-2"><DollarSign className="w-5 h-5 text-blue-600" /><h4 className="font-semibold text-gray-900 dark:text-white">Prima</h4></div>
+          {collapsed.premium ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+        </button>
+        {!collapsed.premium && (
+          <div className="mt-2 text-gray-900 dark:text-white">
+            <div className="text-xl font-bold">
+              {typeof analysis?.premium?.amount === 'number' ? formatCurrency(analysis.premium.amount, analysis.premium.currency) : 'Prima: No especificada'}
+              {analysis?.premium?.frequency && (
+                <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">/{analysis.premium.frequency === 'monthly' ? 'mensual' : analysis.premium.frequency === 'yearly' ? 'anual' : analysis.premium.frequency}</span>
+              )}
+            </div>
+            {(pdfUrl as string) && (
+              <div className="mt-2 text-sm"><a href={pdfUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Ver PDF original</a></div>
+            )}
+          </div>
+        )}
+      </section>
         {/* Optional: Show how we calculated */}
         {Array.isArray(analysis.premiumTable) && analysis.premiumTable.length > 0 && (
           <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
@@ -259,12 +300,12 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       </div>
 
       {/* Coverage Limits */}
-      <div>
-        <div className="flex items-center gap-3 mb-3">
-          <Shield className="w-5 h-5 text-green-600" />
-          <h4 className="font-semibold text-gray-900 dark:text-white">Límites de Cobertura</h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <section id="sec-limits" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
+        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('limits')}>
+          <div className="flex items-center gap-2"><Shield className="w-5 h-5 text-green-600" /><h4 className="font-semibold text-gray-900 dark:text-white">Límites de Cobertura ({Object.keys(analysis.coverage.limits).length})</h4></div>
+          {collapsed.limits ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+        </button>
+        {!collapsed.limits && <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
           {Object.entries(analysis.coverage.limits).map(([key, value]) => (
             <div key={key} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-400">{withGlossary(String(key))}</p>
@@ -273,16 +314,16 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
               </p>
             </div>
           ))}
-        </div>
-      </div>
+        </div>}
+      </section>
 
       {/* Deductibles */}
-      <div>
-        <div className="flex items-center gap-3 mb-3">
-          <AlertTriangle className="w-5 h-5 text-yellow-600" />
-          <h4 className="font-semibold text-gray-900 dark:text-white">Deductibles</h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <section id="sec-deductibles" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
+        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('deductibles')}>
+          <div className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-yellow-600" /><h4 className="font-semibold text-gray-900 dark:text-white">Deducibles ({Object.keys(analysis.coverage.deductibles).length})</h4></div>
+          {collapsed.deductibles ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+        </button>
+        {!collapsed.deductibles && <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
           {Object.entries(analysis.coverage.deductibles).map(([key, value]) => (
             <div key={key} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-400">{withGlossary(String(key))}</p>
@@ -291,16 +332,16 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
               </p>
             </div>
           ))}
-        </div>
-      </div>
+        </div>}
+      </section>
 
       {/* Key Features */}
-      <div>
-        <div className="flex items-center gap-3 mb-3">
-          <CheckCircle className="w-5 h-5 text-green-600" />
-          <h4 className="font-semibold text-gray-900 dark:text-white">Características Principales</h4>
-        </div>
-        <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+      <section id="sec-features" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
+        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('features')}>
+          <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-600" /><h4 className="font-semibold text-gray-900 dark:text-white">Características Principales ({keyFeaturesBullets.length})</h4></div>
+          {collapsed.features ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+        </button>
+        {!collapsed.features && <ul className="mt-2 divide-y divide-gray-100 dark:divide-gray-800">
           {visibleFeatures.map((bullet, index) => (
             <li key={index} className="flex gap-2 items-start px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-900/40">
               <RiskDot risk={inferRisk(bullet.text)} />
@@ -311,7 +352,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
               </div>
             </li>
           ))}
-        </ul>
+        </ul>}
         {keyFeaturesBullets.length > DEFAULT_COLLAPSE_COUNT && (
           <div className="mt-2">
             {!showAllFeatures ? (
@@ -325,16 +366,16 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
             )}
           </div>
         )}
-      </div>
+      </section>
 
       {/* Exclusions */}
       {analysis.coverage.exclusions.length > 0 && (
-        <div>
-          <div className="flex items-center gap-3 mb-3">
-            <XCircle className="w-5 h-5 text-red-600" />
-            <h4 className="font-semibold text-gray-900 dark:text-white">Exclusiones</h4>
-          </div>
-          <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+        <section id="sec-exclusions" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
+          <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('exclusions')}>
+            <div className="flex items-center gap-2"><XCircle className="w-5 h-5 text-red-600" /><h4 className="font-semibold text-gray-900 dark:text-white">Exclusiones ({exclusionsBullets.length})</h4></div>
+            {collapsed.exclusions ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+          </button>
+          {!collapsed.exclusions && <ul className="mt-2 divide-y divide-gray-100 dark:divide-gray-800">
             {exclusionsBullets.map((bullet, index) => (
               <li key={index} className="flex gap-2 items-start px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-900/40">
                 <RiskDot risk={inferRisk(bullet.text)} />
@@ -345,59 +386,54 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
                 </div>
               </li>
             ))}
-          </ul>
-        </div>
+          </ul>}
+        </section>
       )}
 
       {/* Risk Assessment */}
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-800">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="w-5 h-5 text-purple-600" />
-            <h4 className="font-semibold text-gray-900 dark:text-white">Evaluación de Riesgo</h4>
+      <section id="sec-risk" className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-3 shadow-sm border border-gray-200 dark:border-gray-800">
+        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('risk')}>
+          <div className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-purple-600" /><h4 className="font-semibold text-gray-900 dark:text-white">Evaluación de Riesgo</h4></div>
+          <Badge label={`${analysis.riskScore}/10`} variant="neutral" className={getRiskColor(analysis.riskScore)} />
+          {collapsed.risk ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+        </button>
+        {!collapsed.risk && (
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            <p>
+              {analysis.riskScore <= 3 ? 'Riesgo bajo' : analysis.riskScore <= 6 ? 'Riesgo moderado' : 'Riesgo alto'}
+            </p>
+            {analysis.riskJustification && <p className="mt-2 text-gray-700 dark:text-gray-300">{analysis.riskJustification}</p>}
           </div>
-          <Badge 
-            label={`${analysis.riskScore}/10`} 
-            variant="neutral" 
-            className={getRiskColor(analysis.riskScore)}
-          />
-        </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {analysis.riskScore <= 3 ? 'Riesgo bajo' : 
-           analysis.riskScore <= 6 ? 'Riesgo moderado' : 'Riesgo alto'}
-        </p>
-        {analysis.riskJustification && (
-          <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-            {analysis.riskJustification}
-          </p>
         )}
-      </div>
+      </section>
 
       {/* Recommendations */}
       {analysis.recommendations.length > 0 && (
-        <div>
-          <div className="flex items-center gap-3 mb-3">
-            <TrendingUp className="w-5 h-5 text-blue-600" />
-            <h4 className="font-semibold text-gray-900 dark:text-white">Recomendaciones</h4>
-          </div>
-          <div className="space-y-2">
-            {analysis.recommendations.map((recommendation, index) => (
-              <div key={index} className="flex items-start gap-2">
-                <TrendingUp className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{recommendation}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <section id="sec-recommendations" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
+          <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('recommendations')}>
+            <div className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-blue-600" /><h4 className="font-semibold text-gray-900 dark:text-white">Recomendaciones ({analysis.recommendations.length})</h4></div>
+            {collapsed.recommendations ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+          </button>
+          {!collapsed.recommendations && (
+            <div className="mt-2 space-y-2">
+              {analysis.recommendations.map((recommendation, index) => (
+                <div key={index} className="flex items-start gap-2">
+                  <TrendingUp className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{recommendation}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       )}
 
       {/* Policy Details */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="flex items-center gap-3 mb-3">
-          <Calendar className="w-5 h-5 text-gray-600" />
-          <h4 className="font-semibold text-gray-900 dark:text-white">Detalles de la Póliza</h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+      <section id="sec-details" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('details')}>
+          <div className="flex items-center gap-2"><Calendar className="w-5 h-5 text-gray-600" /><h4 className="font-semibold text-gray-900 dark:text-white">Detalles de la Póliza</h4></div>
+          {collapsed.details ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+        </button>
+        {!collapsed.details && <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           {analysis.policyDetails.effectiveDate && (
             <div>
               <p className="text-gray-600 dark:text-gray-400">Fecha de inicio</p>
@@ -446,8 +482,8 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
               </ul>
             </div>
           )}
-        </div>
-      </div>
+        </div>}
+      </section>
 
       {/* Traceability: Source quotes, red flags, missing info */}
       {(analysis.sourceQuotes && Object.keys(analysis.sourceQuotes).length > 0) && (
@@ -467,14 +503,19 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       )}
 
       {(analysis.redFlags && analysis.redFlags.length > 0) && (
-        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
-          <h4 className="font-semibold text-red-800 dark:text-red-200 mb-2">Señales de alerta</h4>
-          <ul className="list-disc ml-5 text-sm text-red-900 dark:text-red-100">
-            {analysis.redFlags.map((f, i) => (
-              <li key={i}>{f}</li>
-            ))}
-          </ul>
-        </div>
+        <section id="sec-alerts" className="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 border border-red-200 dark:border-red-800">
+          <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('alerts')}>
+            <h4 className="font-semibold text-red-800 dark:text-red-200">Señales de alerta ({analysis.redFlags.length})</h4>
+            {collapsed.alerts ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+          </button>
+          {!collapsed.alerts && (
+            <ul className="mt-2 list-disc ml-5 text-sm text-red-900 dark:text-red-100">
+              {analysis.redFlags.map((f, i) => (
+                <li key={i}>{f}</li>
+              ))}
+            </ul>
+          )}
+        </section>
       )}
 
       {(analysis.missingInfo && analysis.missingInfo.length > 0) && (
@@ -549,15 +590,26 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
   return (
     <TooltipProvider>
       <div className="max-w-[1400px] w-[95vw] h-[90vh]">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="min-w-0">
+        <div className="grid grid-cols-12 gap-6 h-full">
+          {/* Left: analysis column (7/12) independent scroll */}
+          <div className="col-span-12 md:col-span-7 min-w-0 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 120px)' }}>
           {!hasAnyPageRefs && (
             <div className="mb-2 text-xs text-gray-500">{t('policy.pageLocationsHint') || 'Page locations will appear when available.'}</div>
           )}
           {AnalysisBody}
+            <div className="sticky bottom-4 flex justify-end pointer-events-none">
+              <button type="button" onClick={() => { document.querySelector('nav[aria-label="Contenido"]')?.scrollIntoView({ behavior: 'smooth' }); }} className="pointer-events-auto px-3 py-1.5 text-xs rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 shadow">Volver arriba</button>
+            </div>
           </div>
-          <div className="h-[78vh] min-h-[560px] overflow-auto rounded-lg border bg-white dark:bg-neutral-950 p-3">
-            <PdfViewerPane ref={pdfRef} url={safePdfUrl || (pdfUrl as string)} />
+
+          {/* Right: sticky PDF viewer (5/12) independent scroll */}
+          <div className="col-span-12 md:col-span-5">
+            <div className="sticky top-20 h-[calc(100vh-120px)] overflow-auto rounded-lg border bg-white dark:bg-neutral-950 p-3">
+              <PdfViewerPane ref={pdfRef} url={safePdfUrl || (pdfUrl as string)} />
+              {mappingStatus !== 'complete' && (
+                <div className="mt-2 text-[11px] text-gray-500">Sincronización con el PDF: {mappingStatus === 'none' ? 'no disponible' : mappingStatus}</div>
+              )}
+            </div>
           </div>
         </div>
       </div>
