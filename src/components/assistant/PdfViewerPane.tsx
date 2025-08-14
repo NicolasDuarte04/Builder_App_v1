@@ -34,25 +34,51 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 	useEffect(() => {
 		let cancelled = false;
 
+		async function resolveWorker(pdfjsLib: any): Promise<{ url: string; type: 'module' | 'classic' } | null> {
+			// Try modern ESM worker first
+			const tryPaths: Array<{ spec: string; type: 'module' | 'classic' }> = [
+				{ spec: 'pdfjs-dist/build/pdf.worker.min.mjs?url', type: 'module' },
+				{ spec: 'pdfjs-dist/build/pdf.worker.mjs?url', type: 'module' },
+				{ spec: 'pdfjs-dist/legacy/build/pdf.worker.min.js?url', type: 'classic' },
+				{ spec: 'pdfjs-dist/legacy/build/pdf.worker.js?url', type: 'classic' },
+			];
+			for (const p of tryPaths) {
+				try {
+					const mod: any = await import(/* @vite-ignore */ p.spec);
+					const url: string = (mod && (mod.default || mod)) as string;
+					if (typeof url === 'string') return { url, type: p.type };
+				} catch {}
+			}
+			// Fallback: inline CDN worker as last resort (keeps feature working during bundler quirks)
+			try {
+				const cdn = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+				return { url: cdn, type: 'classic' };
+			} catch {}
+			return null;
+		}
+
 		async function renderPdf() {
 			if (!url || !hostRef.current) return;
 			setLoading(true);
 			setError(null);
 
-    try {
-                const pdfjs: PdfJsModule = await import("pdfjs-dist");
-                // Prefer module worker constructed from resolved URL (no CDN/CORS)
-                // @ts-ignore - workerPort is available at runtime
-                pdfjs.GlobalWorkerOptions.workerPort = new Worker(
-                    // @ts-ignore - bundler resolves the URL at build time
-                    new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url),
-                    { type: 'module' } as any
-                );
+			try {
+				const pdfjs: PdfJsModule = await import('pdfjs-dist');
+				const worker = await resolveWorker((pdfjs as any));
+				if (!worker) throw new Error('Unable to resolve pdf.js worker');
+				const pdfjsLib: any = (pdfjs as any).default ?? (pdfjs as any);
+				if (pdfjsLib.GlobalWorkerOptions) {
+					if ('workerPort' in pdfjsLib.GlobalWorkerOptions && worker.type === 'module') {
+						pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(worker.url, { type: 'module' } as any);
+					} else {
+						pdfjsLib.GlobalWorkerOptions.workerSrc = worker.url;
+					}
+				}
 
 				const container = hostRef.current!;
 				container.innerHTML = "";
 
-				const loadingTask = pdfjs.getDocument({ url } as GetDocumentParams);
+				const loadingTask = (pdfjs as any).getDocument({ url } as GetDocumentParams);
 				const pdf = await loadingTask.promise;
 				if (cancelled) return;
 				setNumPages(pdf.numPages);
