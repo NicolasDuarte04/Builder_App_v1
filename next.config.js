@@ -27,9 +27,9 @@ const nextConfig = {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
-      // Force browser/legacy ESM entry for pdf.js
-      'pdfjs-dist/build/pdf.js': 'pdfjs-dist/legacy/build/pdf.mjs',
-      'pdfjs-dist': 'pdfjs-dist/legacy/build/pdf.mjs',
+      // Force browser ESM entry for pdf.js (non-legacy)
+      'pdfjs-dist/build/pdf.js': 'pdfjs-dist/build/pdf.mjs',
+      'pdfjs-dist': 'pdfjs-dist/build/pdf.mjs',
       // Prevent accidental server bundling of node-canvas
       canvas: false,
     };

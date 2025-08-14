@@ -35,14 +35,14 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 		let cancelled = false;
 
 		async function resolveWorker(): Promise<{ url: string; type: 'module' | 'classic' } | null> {
-			// Prefer legacy ESM worker for browser
+			// Prefer browser ESM worker for pdfjs v3
 			try {
-				const url = new URL('pdfjs-dist/legacy/build/pdf.worker.min.mjs', import.meta.url).toString();
+				const url = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 				return { url, type: 'module' };
 			} catch {}
-			// Fallback to classic legacy worker
+			// Fallback to classic js worker if needed
 			try {
-				const url = new URL('pdfjs-dist/legacy/build/pdf.worker.js', import.meta.url).toString();
+				const url = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url).toString();
 				return { url, type: 'classic' };
 			} catch {}
 			return null;
@@ -54,8 +54,8 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 			setError(null);
 
 			try {
-				// Import browser-friendly legacy ESM entry only on client
-				const pdfjsModule: any = await import('pdfjs-dist/legacy/build/pdf.mjs');
+				// Import browser-friendly ESM entry only on client (non-legacy)
+				const pdfjsModule: any = await import('pdfjs-dist/build/pdf.mjs');
 				const pdfjs: PdfJsModule = (pdfjsModule?.default ?? pdfjsModule) as PdfJsModule;
 				const worker = await resolveWorker();
 				if (!worker) throw new Error('Unable to resolve pdf.js worker');
