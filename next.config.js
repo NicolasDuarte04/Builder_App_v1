@@ -23,6 +23,7 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
+  // No transpile needed for pdfjs-dist
 };
 
 module.exports = nextConfig;
