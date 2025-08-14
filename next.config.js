@@ -25,17 +25,14 @@ const nextConfig = {
   compress: true,
   webpack: (config) => {
     config.resolve = config.resolve || {};
+    // Keep aliases minimal; let runtime choose pdf.js build via robust probing
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
-      // Force browser ESM entry for pdf.js (non-legacy)
-      'pdfjs-dist/build/pdf.js': 'pdfjs-dist/build/pdf.mjs',
-      // Only alias the bare specifier (exact) to the ESM build; don't break subpath imports
-      'pdfjs-dist$': 'pdfjs-dist/build/pdf.mjs',
       // Prevent accidental server bundling of node-canvas
       canvas: false,
     };
 
-    // Allow pdf worker files to be emitted as static assets if needed
+    // Keep worker rule if bundler needs to treat worker paths as assets
     config.module.rules.push({
       test: /pdf\.worker\.(min\.)?m?js$/,
       type: 'asset/resource',

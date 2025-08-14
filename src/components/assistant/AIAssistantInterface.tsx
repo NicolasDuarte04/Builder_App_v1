@@ -891,10 +891,11 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-[1400px] w-[95vw] h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="p-6">
+                <div className="p-6" aria-labelledby="analysis-dialog-title" aria-describedby="analysis-dialog-desc">
+                  <div id="analysis-dialog-title" className="sr-only">Analyze Policy PDF</div>
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                       {t("assistant.analyze_policy")}

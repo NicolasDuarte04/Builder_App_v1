@@ -548,14 +548,18 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
 
   return (
     <TooltipProvider>
-      <div className="grid gap-4 md:grid-cols-[1fr_520px]">
-        <div className="min-w-0">
+      <div className="max-w-[1400px] w-[95vw] h-[90vh]">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="min-w-0">
           {!hasAnyPageRefs && (
             <div className="mb-2 text-xs text-gray-500">{t('policy.pageLocationsHint') || 'Page locations will appear when available.'}</div>
           )}
           {AnalysisBody}
+          </div>
+          <div className="h-[78vh] min-h-[560px] overflow-auto rounded-lg border bg-white dark:bg-neutral-950 p-3">
+            <PdfViewerPane ref={pdfRef} url={safePdfUrl || (pdfUrl as string)} />
+          </div>
         </div>
-        <PdfViewerPane ref={pdfRef} url={safePdfUrl || (pdfUrl as string)} />
       </div>
     </TooltipProvider>
   );

@@ -9,14 +9,13 @@ type GetDocumentParams = Parameters<PdfJsModule["getDocument"]>[0];
 export type PdfViewerHandle = { scrollToPage: (page: number) => void };
 
 type Props = {
-	url?: string;
-	height?: number; // container height
-	pageWidth?: number; // canvas width in px
-	className?: string;
+    url?: string;
+    height?: number; // optional container height; if omitted, rely on CSS classes
+    className?: string;
 };
 
 const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
-	{ url, height = 560, pageWidth = 520, className },
+    { url, height, className },
 	ref
 ) {
 	const hostRef = useRef<HTMLDivElement>(null);
@@ -34,34 +33,55 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 	useEffect(() => {
 		let cancelled = false;
 
-		async function resolveWorker(): Promise<{ url: string; type: 'module' | 'classic' } | null> {
-			// Let Webpack asset rule emit URLs for the worker files
-			try {
-				const mod: any = await import('pdfjs-dist/build/pdf.worker.mjs');
-				const url = (mod && (mod.default || mod)) as string;
-				if (typeof url === 'string') return { url, type: 'module' };
-			} catch {}
-			try {
-				const mod: any = await import('pdfjs-dist/build/pdf.worker.js');
-				const url = (mod && (mod.default || mod)) as string;
-				if (typeof url === 'string') return { url, type: 'classic' };
-			} catch {}
-			return null;
-		}
+        async function resolveWorker(): Promise<{ url: string; type: 'module' | 'classic' } | null> {
+            const specs: Array<{ spec: string; type: 'module' | 'classic' }> = [
+                { spec: 'pdfjs-dist/build/pdf.worker.mjs', type: 'module' },
+                { spec: 'pdfjs-dist/build/pdf.worker.js', type: 'classic' },
+                { spec: 'pdfjs-dist/legacy/build/pdf.worker.mjs', type: 'module' },
+                { spec: 'pdfjs-dist/legacy/build/pdf.worker.js', type: 'classic' },
+            ];
+            for (const s of specs) {
+                try {
+                    const mod: any = await import(s.spec as any);
+                    const url = (mod && (mod.default || mod)) as string;
+                    if (typeof url === 'string') return { url, type: s.type };
+                } catch {}
+            }
+            try {
+                const pkg: any = await import('pdfjs-dist/package.json');
+                const ver = pkg?.version || '3.11.174';
+                return { url: `https://unpkg.com/pdfjs-dist@${ver}/build/pdf.worker.min.js`, type: 'classic' };
+            } catch {
+                return { url: 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js', type: 'classic' };
+            }
+        }
 
 		async function renderPdf() {
 			if (!url || !hostRef.current) return;
 			setLoading(true);
 			setError(null);
 
-			try {
-				// Import browser-friendly ESM entry only on client (non-legacy)
-				const pdfjsModule: any = await import('pdfjs-dist/build/pdf.mjs');
-				const pdfjs: PdfJsModule = (pdfjsModule?.default ?? pdfjsModule) as PdfJsModule;
+            try {
+                if (typeof window === 'undefined') return;
+                // Robust browser import with fallbacks
+                let pdfjs: any;
+                const libSpecs = [
+                    'pdfjs-dist/build/pdf.mjs',
+                    'pdfjs-dist/build/pdf.js',
+                    'pdfjs-dist/legacy/build/pdf.mjs',
+                    'pdfjs-dist/legacy/build/pdf.js',
+                ];
+                for (const spec of libSpecs) {
+                    try {
+                        const mod: any = await import(spec as any);
+                        pdfjs = mod?.default ?? mod;
+                        if (pdfjs?.getDocument) break;
+                    } catch {}
+                }
+                if (!pdfjs || !pdfjs.getDocument) throw new Error('Unable to load pdf.js browser build');
 				const worker = await resolveWorker();
 				if (!worker) throw new Error('Unable to resolve pdf.js worker');
-				const pdfjsLib: any = (pdfjs as any);
-				if (typeof window === 'undefined') return; // Hard SSR guard
+                const pdfjsLib: any = pdfjs;
 				try {
 					if (pdfjsLib.GlobalWorkerOptions) {
 						if ('workerPort' in pdfjsLib.GlobalWorkerOptions && worker.type === 'module') {
@@ -72,6 +92,7 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 					}
 				} catch {}
 
+                console.info('[pdf-viewer] pdfjs+worker selected', { workerType: worker.type, workerUrl: worker.url });
 				const container = hostRef.current!;
 				container.innerHTML = "";
 
@@ -84,8 +105,9 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 					const page = await pdf.getPage(i);
 					if (cancelled) return;
 
-					const viewport = page.getViewport({ scale: 1 });
-					const scale = pageWidth / viewport.width;
+                    const viewport = page.getViewport({ scale: 1 });
+                    const containerWidth = Math.max(520, container.clientWidth || 520);
+                    const scale = Math.max(0.3, Math.min(3, (containerWidth - 16) / viewport.width));
 					const scaledViewport = page.getViewport({ scale });
 
 					const wrap = document.createElement("div");
@@ -115,20 +137,20 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
 			}
 		}
 
-		renderPdf();
+        renderPdf();
 		return () => {
 			cancelled = true;
 		};
-	}, [url, pageWidth]);
+    }, [url]);
 
 	return (
 		<div className={className}>
-			<div
-				ref={hostRef}
-				className="overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-neutral-950"
-				style={{ height }}
-				aria-label="PDF viewer"
-			/>
+            <div
+                ref={hostRef}
+                className="overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-neutral-950"
+                style={typeof height === 'number' ? { height } : undefined}
+                aria-label="PDF viewer"
+            />
 			{loading && <div className="mt-2 text-xs text-gray-500">Loading PDF…</div>}
 			{error && <div className="mt-2 text-xs text-red-600">{error}</div>}
 			{!url && <div className="p-3 text-xs text-gray-500">No PDF available.</div>}
