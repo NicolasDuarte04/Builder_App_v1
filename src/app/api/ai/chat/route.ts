@@ -411,6 +411,7 @@ export async function POST(req: Request) {
                 filters: { includeCategories, excludeCategories },
                 dataSource: process.env.BRIKI_DATA_SOURCE || 'legacy'
               };
+              console.log('[plans] datasource used', { datasource: process.env.BRIKI_DATA_SOURCE ?? 'legacy/fallback-logic' });
               
               console.log('✅✅✅ TOOL EXECUTION FINISHED ✅✅✅');
               console.log('Returning to AI:', {

@@ -1,12 +1,12 @@
 {
   "countsByCountry": {
     "MX": 29,
-    "CO": 41
+    "CO": 44
   },
   "countsByCategory": {
     "vida": 10,
     "otros": 3,
-    "salud": 21,
+    "salud": 24,
     "viaje": 27,
     "mascotas": 4,
     "hogar": 4,
@@ -17,7 +17,7 @@
     "Bmi Cos.": 14,
     "Chubb": 12,
     "Colsanitas": 5,
-    "Seguros SURA": 8,
+    "Seguros SURA": 11,
     "Hdi Seguros": 2,
     "Allianz": 16,
     "AXA Colpatria": 4,
@@ -35,23 +35,25 @@
     "CO": {
       "min": 18.25,
       "max": 601726,
-      "avg": 149425.58,
-      "median": 100000,
-      "count": 41
+      "avg": 173206.85,
+      "median": 138283.5,
+      "count": 44
     }
   },
   "usdRows": [],
   "linkQuality": {
-    "missingWebsite": 3,
-    "pdfDetected": 3
+    "missingWebsite": 0,
+    "pdfDetected": 0,
+    "brochure_pdf": 0,
+    "brochure_page": 1
   },
   "benefitLengthDistribution": {
     "3": 4,
-    "4": 6,
+    "4": 7,
     "5": 9,
     "6": 3,
     "7": 6,
-    "8": 42
+    "8": 44
   },
   "coercions": [
     "Coerced USD→MXN (unjustified) for MX",

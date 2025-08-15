@@ -55,6 +55,8 @@ export default function RootLayout({
           disableTransitionOnChange
           storageKey="briki-theme"
         >
+          {/* Stale chunk auto-reload safety */}
+          <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `(()=>{try{if(typeof window!=='undefined'){window.addEventListener('error',function(e){try{var m=String(e&&e.message||'');if(m.includes('Loading chunk')&&m.includes('failed')){location.reload();}}catch{}});}}catch{}})();` }} />
           <LanguageProvider>
             <AuthProvider>
               <OnboardingProvider>

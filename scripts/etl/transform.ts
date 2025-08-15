@@ -7,6 +7,7 @@ import { PlanV2, PlanV2Type, WebHoundRowLoose, Country, Currency, WebHoundRowLoo
 import { normalizeCategory, normalizeProvider, inferTags } from './mappings';
 import {
   classifyAndAssignLinks,
+  classifyBrochureUrl,
   convertToMonthly,
   dedupNormalized,
   enforceCountryCurrency,
@@ -25,7 +26,7 @@ type Report = {
   countsByProvider: Record<string, number>;
   priceStatsByCountry: Record<string, { min: number; max: number; avg: number; median: number; count: number }>;
   usdRows: Array<{ id?: string; provider?: string; country?: string; reason?: string }>;
-  linkQuality: { missingWebsite: number; pdfDetected: number };
+  linkQuality: { missingWebsite: number; pdfDetected: number; brochure_pdf: number; brochure_page: number };
   benefitLengthDistribution: Record<string, number>;
   coercions: string[];
 };
@@ -191,7 +192,7 @@ function main() {
     countsByProvider: {},
     priceStatsByCountry: {},
     usdRows: [],
-    linkQuality: { missingWebsite: 0, pdfDetected: 0 },
+    linkQuality: { missingWebsite: 0, pdfDetected: 0, brochure_pdf: 0, brochure_page: 0 },
     benefitLengthDistribution: {},
     coercions: [],
   };
@@ -281,13 +282,40 @@ function main() {
       r.quote_url,
       r.pdf_url,
       r.brochure_url,
+      (r as any).brochure_link,
       r.links?.brochure,
     ]);
     if (warnings.some((w) => /PDF detected/.test(w))) report.linkQuality.pdfDetected++;
     if (!external_link) {
       report.linkQuality.missingWebsite++;
-      rejects.push({ row, reasons: [rejectReason || 'Missing external_link'] });
-      continue;
+      // Allow rows that only have a brochure link by treating it as product page as a last resort
+      if (brochure_link) {
+        // accept brochure as external_link
+        // Note: still counted as missingWebsite for reporting visibility
+      } else {
+        rejects.push({ row, reasons: [rejectReason || 'Missing external_link'] });
+        continue;
+      }
+    }
+    // Brochure enrichment: prefer r.brochure_url if classify accepts it
+    const brochureCandidates = [brochure_link, r.brochure_url, (r as any).brochure_link, r.links?.brochure].filter(Boolean) as string[];
+    let finalBrochure: string | undefined = brochure_link;
+    for (const cand of brochureCandidates) {
+      const classified = classifyBrochureUrl(cand, external_link || brochure_link);
+      if (classified) {
+        finalBrochure = classified.url;
+        if (classified.kind === 'brochure_pdf') report.linkQuality.brochure_pdf++;
+        else report.linkQuality.brochure_page++;
+        break;
+      }
+    }
+    // Fallback: accept raw attribute brochure_link when valid http(s) and distinct
+    if (!finalBrochure && (r as any).brochure_link && /^https?:\/\//i.test((r as any).brochure_link)) {
+      const b = String((r as any).brochure_link).trim();
+      if (!external_link || b.replace(/\/+$/, '') !== external_link.replace(/\/+$/, '')) {
+        finalBrochure = b;
+        if (/\.pdf(\?|$)/i.test(b)) report.linkQuality.brochure_pdf++; else report.linkQuality.brochure_page++;
+      }
     }
 
     // Pricing
@@ -368,8 +396,8 @@ function main() {
       country,
       base_price: monthly,
       currency: currency as Currency,
-      external_link,
-      brochure_link: brochure_link,
+      external_link: external_link || (finalBrochure as string),
+      brochure_link: finalBrochure,
       benefits,
       benefits_en,
       min_age,

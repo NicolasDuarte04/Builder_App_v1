@@ -108,11 +108,48 @@ export function isLikelyPdf(url: string): boolean {
   try {
     const u = new URL(url);
     if (/\.pdf(\?|$)/i.test(u.pathname)) return true;
-    if (/brochure|folleto|condiciones|pdf|policy|poliza/i.test(u.pathname)) return true;
     return false;
   } catch {
     return /\.pdf(\?|$)/i.test(url);
   }
+}
+
+function normalizeHttpUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+    // normalize trailing slash and lowercase host
+    u.hash = '';
+    u.search = u.search; // keep query
+    const host = u.hostname.toLowerCase();
+    const pathname = u.pathname.replace(/\/+$/, '');
+    return `${u.protocol}//${host}${pathname}${u.search}`;
+  } catch {
+    return null;
+  }
+}
+
+export function classifyBrochureUrl(
+  url: string,
+  productUrl?: string
+): null | { url: string; kind: 'brochure_pdf' | 'brochure_page' } {
+  const norm = normalizeHttpUrl(url);
+  const normProduct = productUrl ? normalizeHttpUrl(productUrl) : null;
+  if (!norm) return null; // must be http(s)
+  if (normProduct && norm.replace(/\/+$/, '') === normProduct.replace(/\/+$/, '')) return null; // same as product
+
+  // Prefer explicit PDFs
+  if (/\.pdf(\?|$)/i.test(norm)) return { url: norm, kind: 'brochure_pdf' };
+
+  // Heuristics for brochure-like HTML pages
+  try {
+    const u = new URL(norm);
+    const path = `${u.hostname}${u.pathname}`.toLowerCase();
+    if (/brochure|folleto|condiciones|policy|poliza|document|docs|resources|\/pdf\//i.test(path)) {
+      return { url: norm, kind: 'brochure_page' };
+    }
+  } catch {}
+  return null;
 }
 
 export function classifyAndAssignLinks(

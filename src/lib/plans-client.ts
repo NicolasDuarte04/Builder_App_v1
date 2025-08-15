@@ -94,33 +94,68 @@ export async function searchPlans(filters: PlanFilters): Promise<AnyPlan[]> {
     });
   }
 
-  // Legacy path
+  // Legacy path with safe fallback to v2 shadow if empty or error
   if (!EXTERNAL_URL) {
-    const rows = await localQuery({
-      category: filters.category,
-      max_price: filters.max_price,
-      country: filters.country,
-      tags: filters.tags,
-      benefits_contain: filters.benefits_contain,
-      limit: filters.limit,
+    try {
+      const rows = await localQuery({
+        category: filters.category,
+        max_price: filters.max_price,
+        country: filters.country,
+        tags: filters.tags,
+        benefits_contain: filters.benefits_contain,
+        limit: filters.limit,
+      });
+      const mapped: PlanLegacy[] = rows.map((p) => ({
+        id: String(p.id),
+        name: p.name,
+        name_en: (p as any).plan_name_en ?? null,
+        provider: p.provider,
+        category: p.category,
+        country: (p.country as 'CO' | 'MX') ?? 'CO',
+        base_price: typeof p.base_price === 'number' ? p.base_price : Number(p.base_price) || null,
+        currency: (p.currency as any) ?? 'COP',
+        website: p.external_link ?? null,
+        brochure: p.brochure_link ?? null,
+        benefits: p.benefits ?? [],
+        benefits_en: (p as any).benefits_en ?? [],
+        tags: p.tags ?? [],
+        _schema: 'legacy',
+      }));
+      if (mapped.length) return mapped;
+      console.warn('[plans] legacy returned 0, falling back to v2 shadow');
+    } catch (e) {
+      console.error('[plans] legacy error, falling back to v2 shadow', e);
+    }
+    // Read from local ETL output (shadow)
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const root = process.cwd();
+    const jsonPath = path.join(root, 'scripts', 'etl', 'dist', 'plans_v2.json');
+    const raw = fs.readFileSync(jsonPath, 'utf8');
+    const data = JSON.parse(raw);
+    const filtered = (Array.isArray(data) ? data : []).filter((r: any) => {
+      const cat = String(r.category || '').toLowerCase();
+      if (filters.includeCategories?.length && !filters.includeCategories.map((c) => c.toLowerCase()).includes(cat)) return false;
+      if (filters.excludeCategories?.length && filters.excludeCategories.map((c) => c.toLowerCase()).includes(cat)) return false;
+      return true;
     });
-    const mapped: PlanLegacy[] = rows.map((p) => ({
-      id: String(p.id),
-      name: p.name,
-      name_en: (p as any).plan_name_en ?? null,
-      provider: p.provider,
-      category: p.category,
-      country: (p.country as 'CO' | 'MX') ?? 'CO',
-      base_price: typeof p.base_price === 'number' ? p.base_price : Number(p.base_price) || null,
-      currency: (p.currency as any) ?? 'COP',
-      website: p.external_link ?? null,
-      brochure: p.brochure_link ?? null,
-      benefits: p.benefits ?? [],
-      benefits_en: (p as any).benefits_en ?? [],
-      tags: p.tags ?? [],
-      _schema: 'legacy',
+    console.log('[plans] datasource used', { datasource: process.env.BRIKI_DATA_SOURCE ?? 'legacy/fallback-logic' });
+    return filtered.map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      name_en: r.name_en ?? r.name,
+      provider: r.provider,
+      category: r.category,
+      country: r.country,
+      base_price: r.base_price ?? null,
+      currency: r.currency,
+      website: r.external_link,
+      brochure: r.brochure_link ?? null,
+      benefits: r.benefits ?? [],
+      benefits_en: r.benefits_en ?? [],
+      tags: r.tags ?? [],
+      _schema: 'v2',
     }));
-    return mapped;
   }
 
   const res = await fetch(`${EXTERNAL_URL.replace(/\/$/, '')}/plans/search`, {

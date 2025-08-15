@@ -1,6 +1,24 @@
 import { Pool } from 'pg';
 import { InsurancePlan, InsurancePlanFromDB } from '@/types/project';
 
+// Category normalization map
+const CATEGORY_MAP: Record<string, string> = {
+  salud: 'salud',
+  dental: 'dental',
+  vida: 'vida',
+  viaje: 'viaje',
+  hogar: 'hogar',
+  auto: 'auto',
+  mascotas: 'mascotas',
+  otros: 'otros',
+};
+
+export function normalizeCategory(input?: string) {
+  if (!input) return undefined;
+  const k = input.trim().toLowerCase();
+  return CATEGORY_MAP[k] ?? k;
+}
+
 // Unified database URL resolution
 const DB_URL_CANDIDATE = process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL || '';
 
@@ -158,10 +176,10 @@ export async function queryInsurancePlans(filters: {
     }
 
     if (filters.category) {
-      const normalizedCategory = filters.category.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+      const normalizedCategory = normalizeCategory(filters.category);
       console.log(`🔍 Normalized category: ${filters.category} -> ${normalizedCategory}`);
-      query += ` AND category ILIKE $${paramIndex++}`;
-      params.push(`%${normalizedCategory}%`);
+      query += ` AND category = $${paramIndex++}`;
+      params.push(normalizedCategory);
     }
     if (filters.country) {
       query += ` AND country = $${paramIndex++}`;
@@ -172,7 +190,8 @@ export async function queryInsurancePlans(filters: {
       params.push(filters.max_price);
     }
     if (filters.tags && filters.tags.length > 0) {
-      query += ` AND tags @> $${paramIndex++}::text[]`;
+      // Any-of match for tags using array existence operator
+      query += ` AND (tags ?| $${paramIndex++})`;
       params.push(filters.tags);
     }
     if (filters.benefits_contain) {
@@ -201,6 +220,11 @@ export async function queryInsurancePlans(filters: {
     if (error.message.includes('column "link_status" does not exist')) {
       console.warn('⚠️ Fallback to compatibility query due to missing "link_status" column.');
       const { query, params } = buildQuery(true);
+      console.log('[db] compat query built', {
+        category: filters.category,
+        hasTags: !!filters.tags?.length,
+        hasBenefits: !!filters.benefits_contain?.length,
+      });
       const result = await pool.query(query, params);
       console.log(`[db] used compat query; rows: ${result.rows.length}`);
 

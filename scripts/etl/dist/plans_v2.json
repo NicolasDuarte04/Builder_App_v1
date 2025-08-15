@@ -1918,6 +1918,114 @@
     ]
   },
   {
+    "id": "plan_10f933a75e9e06ce",
+    "provider": "Seguros SURA",
+    "name": "Salud Evoluciona",
+    "name_en": "Health Evoluciona Policy",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 389572,
+    "currency": "COP",
+    "external_link": "https://www.sura.co/seguros/personas/salud/poliza/evoluciona",
+    "benefits": [
+      "Gastos hospitalarios y quirúrgicos para tu tratamiento",
+      "Honorarios del personal de salud",
+      "Tratamientos por",
+      "Otros",
+      "Cirugías ambulatorias programadas",
+      "Atención médica hospitalaria domiciliaria",
+      "Consulta externa ambulatoria ilimitada con copago",
+      "Urgencias por enfermedad ilimitadas con copago"
+    ],
+    "benefits_en": [
+      "Hospital and surgical expenses for your treatment",
+      "Health personnel fees",
+      "Treatments for",
+      "Others",
+      "Scheduled outpatient surgeries",
+      "Home hospital medical care",
+      "Unlimited outpatient external consultation with copayment",
+      "Unlimited emergency care for illness with copayment"
+    ],
+    "min_age": 0,
+    "max_age": 0,
+    "tags": [
+      "National coverage",
+      "comprehensive",
+      "family"
+    ]
+  },
+  {
+    "id": "plan_6e58fdb56ea0f622",
+    "provider": "Seguros SURA",
+    "name": "Salud Clásico",
+    "name_en": "Classic Health Policy",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 503355,
+    "currency": "COP",
+    "external_link": "https://www.sura.co/seguros/personas/salud/poliza/clasica",
+    "benefits": [
+      "Acceder a coberturas hospitalarias y ambulatorias.",
+      "Solicitar el servicio de emergencias o urgencias domiciliarias.",
+      "Programar tus citas directamente con nuestros especialistas, ahorrando tiempo y tratando tus condiciones de salud al instante.",
+      "Habitación individual con cama de acompañante, en caso de hospitalización.",
+      "Acceso ilimitado a la Unidad de Cuidados Intensivos.",
+      "Trasplante y donación de órganos.",
+      "Maternidad, complicaciones y atención del parto.",
+      "Medicamentos y exámenes prehospitalarios y poshospitalarios, o prequirúrgicos y posquirúrgicos."
+    ],
+    "benefits_en": [
+      "Access to hospital and outpatient coverage.",
+      "Request home emergency or urgent care services.",
+      "Schedule your appointments directly with our specialists, saving time and treating your health conditions instantly.",
+      "Individual room with a companion bed, in case of hospitalization.",
+      "Unlimited access to the Intensive Care Unit.",
+      "Organ transplant and donation.",
+      "Maternity, complications, and childbirth care.",
+      "Pre-hospital and post-hospital, or pre-surgical and post-surgical medications and exams."
+    ],
+    "min_age": 0,
+    "max_age": 0,
+    "tags": [
+      "National coverage",
+      "comprehensive",
+      "family"
+    ]
+  },
+  {
+    "id": "plan_c2c201059b9d99b4",
+    "provider": "Seguros SURA",
+    "name": "Salud Global",
+    "name_en": "Global Health Policy",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 601726,
+    "currency": "COP",
+    "external_link": "https://www.sura.co/seguros/personas/salud/poliza/global",
+    "brochure_link": "https://suseguro.co/brochure-poliza-de-salud-plan-global",
+    "benefits": [
+      "Cobertura integral: protege tanto en Colombia como en el extranjero.",
+      "Atención de calidad: acceso a una amplia red de profesionales y servicios médicos.",
+      "Flexibilidad y comodidad: facilidades para programar tratamientos y gestionar tu salud desde cualquier lugar a través de la app.",
+      "Tranquilidad y seguridad: asegura atención oportuna en emergencias y tratamientos complejos, brindando paz mental a ti y a tu familia."
+    ],
+    "benefits_en": [
+      "Comprehensive coverage: protects both in Colombia and abroad.",
+      "Quality care: access to a wide network of medical professionals and services.",
+      "Flexibility and convenience: easy scheduling of treatments and health management from anywhere through the app.",
+      "Peace of mind and security: ensures timely attention in emergencies and complex treatments, providing peace of mind for you and your family."
+    ],
+    "min_age": 0,
+    "max_age": 0,
+    "tags": [
+      "International coverage",
+      "comprehensive",
+      "family",
+      "travelers"
+    ]
+  },
+  {
     "id": "plan_56847ba01a59cfc9",
     "provider": "Chubb",
     "name": "Home Insurance Básico",
