@@ -183,10 +183,10 @@ export function PlanResultsSidebar({
               </Button>
             </div>
 
-            {process.env.NODE_ENV === 'development' && (
+            {(process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_BRIKI_DATA_SOURCE) && (
               <div className="mb-2 text-[11px] text-gray-500">
                 <span>
-                  Filtered by: include=[{activeResults?.filters?.includeCategories?.join(', ') || ''}] exclude=[{activeResults?.filters?.excludeCategories?.join(', ') || ''}] • datasource={activeResults?.dataSource || (process.env.BRIKI_DATA_SOURCE || 'legacy')}
+                  Filtered by: include=[{activeResults?.filters?.includeCategories?.join(', ') || ''}] exclude=[{activeResults?.filters?.excludeCategories?.join(', ') || ''}] • datasource={activeResults?.dataSource || (process.env.NEXT_PUBLIC_BRIKI_DATA_SOURCE || 'legacy')}
                 </span>
               </div>
             )}
