@@ -1,0 +1,2255 @@
+[
+  {
+    "id": "plan_606e433afca8264f",
+    "provider": "AXA",
+    "name": "Vida Plata",
+    "name_en": "Life Silver",
+    "category": "vida",
+    "country": "MX",
+    "base_price": 388,
+    "currency": "MXN",
+    "external_link": "https://www.seguroaxa.com.mx/oferta-pyme/",
+    "benefits": [
+      "Fallecimiento",
+      "Anticipo por fallecimiento",
+      "Enfermedades terminales",
+      "Muerte accidental (DI)",
+      "Pérdidas orgánicas por accidente (PO)",
+      "Invalidez Total y Permanente (BITP)",
+      "Servicio de asistencia funeraria",
+      "Tu médico 24 horas®"
+    ],
+    "benefits_en": [
+      "Death",
+      "Advance for death",
+      "Terminal illnesses",
+      "Accidental death (DI)",
+      "Organic losses due to accident (PO)",
+      "Total and Permanent Disability (BITP)",
+      "Funeral assistance service",
+      "Your 24-hour doctor®"
+    ],
+    "tags": [
+      "odontologia"
+    ]
+  },
+  {
+    "id": "plan_af1dc361fb6364ea",
+    "provider": "AXA",
+    "name": "Daños Plata",
+    "name_en": "Damages Silver",
+    "category": "otros",
+    "country": "MX",
+    "base_price": 599,
+    "currency": "MXN",
+    "external_link": "https://www.seguroaxa.com.mx/oferta-pyme/",
+    "benefits": [
+      "Daños materiales a tus pertenencias",
+      "Robo de tus pertenencias",
+      "Robo a clientes",
+      "Robo de dinero en tu negocio",
+      "Daños a terceras personas, animales o cosas"
+    ],
+    "benefits_en": [
+      "Material damages to your belongings",
+      "Theft of your belongings",
+      "Theft from clients",
+      "Theft of money in your business",
+      "Damages to third parties, animals, or things"
+    ]
+  },
+  {
+    "id": "plan_64cae2d84338033e",
+    "provider": "AXA",
+    "name": "Salud Plata",
+    "name_en": "Health Silver",
+    "category": "salud",
+    "country": "MX",
+    "base_price": 8940,
+    "currency": "MXN",
+    "external_link": "https://www.seguroaxa.com.mx/oferta-pyme/",
+    "benefits": [
+      "Maternidad",
+      "+Care",
+      "Deducible 0 por accidente",
+      "Plan dental",
+      "Plan Visión",
+      "Urgencias médicas en el extranjero",
+      "Cobertura nacional",
+      "Preexistencia"
+    ],
+    "benefits_en": [
+      "Maternity",
+      "+Care",
+      "Zero deductible for accidents",
+      "Dental plan",
+      "Vision plan",
+      "Medical emergencies abroad",
+      "National coverage",
+      "Pre-existing conditions"
+    ],
+    "tags": [
+      "odontologia",
+      "auto"
+    ]
+  },
+  {
+    "id": "plan_d039354cc678972e",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Student Plan",
+    "name_en": "BMI Travel Assist - Student Plan",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 230,
+    "currency": "MXN",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=4",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Gastos de Hotel por Convalescencia",
+      "Asistencia por Documentos y Efectos Personales Perdidos",
+      "Asistencia Legal por Accidente de Tráfico"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Hotel Expenses for Convalescence",
+      "Lost Documents and Personal Effects Assistance",
+      "Legal Assistance for Traffic Accident"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_1fd00d6665844865",
+    "provider": "AXA",
+    "name": "AXA Healthy Pet",
+    "name_en": "AXA Healthy Pet",
+    "category": "mascotas",
+    "country": "MX",
+    "base_price": 300,
+    "currency": "MXN",
+    "external_link": "https://queseguro.mx/axa/mascotas",
+    "benefits": [
+      "Veterinario",
+      "Veterinario telefónico",
+      "Responsabilidad Civil",
+      "Fallecimiento mascotas",
+      "Accidentes",
+      "Robo con violencia",
+      "Vacuna antirrábica"
+    ],
+    "benefits_en": [
+      "Veterinary Service",
+      "Telephone Veterinary Service",
+      "Civil Liability",
+      "Pet Fatality",
+      "Accidents",
+      "Theft with violence",
+      "Rabies vaccine"
+    ],
+    "tags": [
+      "mascotas"
+    ]
+  },
+  {
+    "id": "plan_6b01ef0147b2797c",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Daily Plan",
+    "name_en": "BMI Travel Assist - Daily Plan",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 18.25,
+    "currency": "MXN",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=0",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Gastos de Hotel por Convalecencia",
+      "Asistencia por Documentos y Efectos Personales Perdidos",
+      "Asistencia Legal por Accidente de Tráfico"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Hotel Expenses for Convalescence",
+      "Lost Documents and Personal Effects Assistance",
+      "Legal Assistance for Traffic Accident"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_3d05a445bdfa0f2b",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Family Plan",
+    "name_en": "BMI Travel Assist - Family Plan",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 53.84,
+    "currency": "MXN",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=3",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Gastos de Hotel por Convalescencia",
+      "Asistencia por Documentos y Efectos Personales Perdidos",
+      "Asistencia Legal por Accidente de Tráfico"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Hotel Expenses for Convalescence",
+      "Lost Documents and Personal Effects Assistance",
+      "Legal Assistance for Traffic Accident"
+    ],
+    "tags": [
+      "odontologia",
+      "familiar",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_1f983de45ffe2102",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Corporate Plan",
+    "name_en": "BMI Travel Assist - Corporate Plan",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 714.73,
+    "currency": "MXN",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=5",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Gastos de Hotel por Convalescencia",
+      "Asistencia por Documentos y Efectos Personales Perdidos",
+      "Asistencia Legal por Accidente de Tráfico"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Hotel Expenses for Convalescence",
+      "Lost Documents and Personal Effects Assistance",
+      "Legal Assistance for Traffic Accident"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_6ec50250f4cdf7f7",
+    "provider": "Chubb",
+    "name": "Chubb Hogar Seguro",
+    "name_en": "Chubb Home Insurance",
+    "category": "hogar",
+    "country": "MX",
+    "base_price": 125,
+    "currency": "MXN",
+    "external_link": "https://www.chubb.com/mx-es/personas-y-familias/hogar.html",
+    "benefits": [
+      "Responsabilidad civil familiar",
+      "Asistencia de emergencia en el hogar",
+      "Asistencia para mascotas",
+      "Asistencia técnico especialista",
+      "Cristales",
+      "Robo de contenidos",
+      "Gastos Extras",
+      "Remonición de escombros"
+    ],
+    "benefits_en": [
+      "Family civil liability",
+      "Home emergency assistance",
+      "Pet assistance",
+      "Specialist technical assistance",
+      "Glass breakage",
+      "Contents theft",
+      "Extra expenses",
+      "Debris removal"
+    ],
+    "tags": [
+      "familiar",
+      "mascotas",
+      "hogar"
+    ]
+  },
+  {
+    "id": "plan_ff1ee6bd7f7d8421",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Corporate Plan",
+    "name_en": "BMI Travel Assist - Corporate Plan",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 714.73,
+    "currency": "COP",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=5",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Asistencia Médica por Condición Preexistente",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Repatriación de Restos Mortales",
+      "Muerte Accidental (Hasta 84 años)"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Medical Assistance in Case of Pre-Existing Medical Condition",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Repatriation of Mortal Remains",
+      "Accidental Death (Up to 84 years old)"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_3477dbb03923eba9",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Student Plan",
+    "name_en": "BMI Travel Assist - Student Plan",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 230,
+    "currency": "COP",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=4",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Asistencia Médica por Condición Preexistente",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Repatriación de Restos Mortales",
+      "Muerte Accidental (Hasta 84 años)"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Medical Assistance in Case of Pre-Existing Medical Condition",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Repatriation of Mortal Remains",
+      "Accidental Death (Up to 84 years old)"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_9ccd590088846c30",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Family Plan",
+    "name_en": "BMI Travel Assist - Family Plan",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 53.84,
+    "currency": "COP",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=3",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Asistencia Médica por Condición Preexistente",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Repatriación de Restos Mortales",
+      "Muerte Accidental (Hasta 84 años)"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Medical Assistance in Case of Pre-Existing Medical Condition",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Repatriation of Mortal Remains",
+      "Accidental Death (Up to 84 years old)"
+    ],
+    "tags": [
+      "odontologia",
+      "familiar",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_be7cbc0e2e991c7c",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Extended Stay Plan",
+    "name_en": "BMI Travel Assist - Extended Stay Plan",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 151.53,
+    "currency": "COP",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=2",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Asistencia Médica por Condición Preexistente",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Repatriación de Restos Mortales",
+      "Muerte Accidental (Hasta 84 años)"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Medical Assistance in Case of Pre-Existing Medical Condition",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Repatriation of Mortal Remains",
+      "Accidental Death (Up to 84 years old)"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_f5ecb863c43d2edd",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Multi-Trip Annual Plan",
+    "name_en": "BMI Travel Assist - Multi-Trip Annual Plan",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 148,
+    "currency": "COP",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=1",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia M��dica por Enfermedad",
+      "Asistencia Médica por Condición Preexistente",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Repatriación de Restos Mortales",
+      "Muerte Accidental (Hasta 84 años)"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Medical Assistance in Case of Pre-Existing Medical Condition",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Repatriation of Mortal Remains",
+      "Accidental Death (Up to 84 years old)"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_0f414ec1da9e8f71",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Daily Plan",
+    "name_en": "BMI Travel Assist - Daily Plan",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 18.25,
+    "currency": "COP",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=0",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Repatriación de Restos Mortales",
+      "Muerte Accidental (hasta 84 años)",
+      "Traslado de Familiar por Hospitalización"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Repatriation of Mortal Remains",
+      "Accidental Death (Up to 84 years old)",
+      "Transportation of Family Member due to Hospitalization"
+    ],
+    "tags": [
+      "odontologia",
+      "familiar",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_057a0921ff3e46d5",
+    "provider": "Colsanitas",
+    "name": "Medisanitas Plan",
+    "name_en": "Medisanitas Plan",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 250000,
+    "currency": "COP",
+    "external_link": "https://www.colsanitasagencia.com/medisanitas-integral.php",
+    "benefits": [
+      "Acceso directo a 18 especialidades.",
+      "Atención médica domiciliaria.",
+      "Terapias sin límites.",
+      "Hospitalización y cirugía."
+    ],
+    "benefits_en": [
+      "Direct access to 18 specialties.",
+      "Home medical care.",
+      "Unlimited therapies.",
+      "Hospitalization and surgery."
+    ]
+  },
+  {
+    "id": "plan_813c69c212baba3e",
+    "provider": "Colsanitas",
+    "name": "Colsanitas Plan Integral",
+    "name_en": "Colsanitas Integral Plan",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 320000,
+    "currency": "COP",
+    "external_link": "https://www.colsanitas.com/plan-integral-colsanitas",
+    "benefits": [
+      "Cobertura en más de 90 municipios a nivel nacional.",
+      "Acceso directo a todas especialidades médicas del directorio médico.",
+      "Acceso a Psicología sin tope para el número de veces que requieras asistir.",
+      "Atención médica domiciliaria.",
+      "Seguro de viaje para atención de urgencias y asistencia en el exterior.",
+      "Hospitalización y cirugía."
+    ],
+    "benefits_en": [
+      "Coverage in more than 90 municipalities nationwide.",
+      "Direct access to all medical specialties in the medical directory.",
+      "Access to Psychology without limit on the number of times you need to attend.",
+      "Home medical care.",
+      "Travel insurance for emergency care and assistance abroad.",
+      "Hospitalization and surgery."
+    ],
+    "tags": [
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_d50616ee595773c2",
+    "provider": "Chubb",
+    "name": "Chubb Viaje Elite",
+    "name_en": "Chubb Travel Elite",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 30000,
+    "currency": "COP",
+    "external_link": "https://copa.chubbtravelinsurance.com/copa/co-es/home/summary-of-benefits/what-do-we-cover.html",
+    "benefits": [
+      "Muerte Accidental",
+      "Pérdida de Equipaje",
+      "Interrupción o Cancelación de Viaje",
+      "Repatriación de Restos Mortales",
+      "Emergencia Médica en Viaje / Gastos Médicos por Acc. o Enfermedad",
+      "Retraso de Equipaje",
+      "Emergencia Odontológia",
+      "Gastos Médicos por Covid"
+    ],
+    "benefits_en": [
+      "Accidental Death",
+      "Lost Baggage",
+      "Trip Interruption or Cancellation",
+      "Repatriation of Mortal Remains",
+      "Medical Emergency during Travel / Medical Expenses for Accident or Illness",
+      "Baggage Delay",
+      "Dental Emergency",
+      "Medical Expenses for Covid"
+    ],
+    "tags": [
+      "odontologia",
+      "covid",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_daf855d99f03a06a",
+    "provider": "Chubb",
+    "name": "Chubb Viaje Básico",
+    "name_en": "Chubb Travel Basic",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 5000,
+    "currency": "COP",
+    "external_link": "https://copa.chubbtravelinsurance.com/copa/co-es/home/summary-of-benefits/what-do-we-cover.html",
+    "benefits": [
+      "Muerte Accidental",
+      "Pérdida de Equipaje",
+      "Interrupción o Cancelación de Viaje",
+      "Repatriación de Restos Mortales",
+      "Emergencia Médica en Viaje / Gastos Médicos por Acc. o Enfermedad",
+      "Retraso de Equipaje",
+      "Emergencia Odontológia",
+      "Gastos Médicos por Covid"
+    ],
+    "benefits_en": [
+      "Accidental Death",
+      "Lost Baggage",
+      "Trip Interruption or Cancellation",
+      "Repatriation of Mortal Remains",
+      "Medical Emergency during Travel / Medical Expenses for Accident or Illness",
+      "Baggage Delay",
+      "Dental Emergency",
+      "Medical Expenses for Covid"
+    ],
+    "tags": [
+      "odontologia",
+      "covid",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_0ec3901a16633d21",
+    "provider": "Chubb",
+    "name": "Chubb Viaje Premium",
+    "name_en": "Chubb Travel Premium",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 15000,
+    "currency": "COP",
+    "external_link": "https://copa.chubbtravelinsurance.com/copa/co-es/home/summary-of-benefits/what-do-we-cover.html",
+    "benefits": [
+      "Muerte Accidental",
+      "Pérdida de Equipaje",
+      "Interrupción o Cancelación de Viaje",
+      "Repatriación de Restos Mortales",
+      "Emergencia Médica en Viaje / Gastos Médicos por Acc. o Enfermedad",
+      "Retraso de Equipaje",
+      "Emergencia Odontológia",
+      "Gastos Médicos por Covid"
+    ],
+    "benefits_en": [
+      "Accidental Death",
+      "Lost Baggage",
+      "Trip Interruption or Cancellation",
+      "Repatriation of Mortal Remains",
+      "Medical Emergency during Travel / Medical Expenses for Accident or Illness",
+      "Baggage Delay",
+      "Dental Emergency",
+      "Medical Expenses for Covid"
+    ],
+    "tags": [
+      "odontologia",
+      "covid",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_12b8cc5df5a99079",
+    "provider": "Seguros SURA",
+    "name": "Plan Empresario SURA",
+    "name_en": "SURA Entrepreneur Plan",
+    "category": "otros",
+    "country": "MX",
+    "base_price": 250,
+    "currency": "MXN",
+    "external_link": "https://www.segurossura.com.mx/plan-empresario-sura/",
+    "benefits": [
+      "Protección integral para tu empresa",
+      "Te cubrimos el viaje de regreso",
+      "Protección de pertenencias, sin importar si rentas o eres dueño.",
+      "Protección ante desastres naturales",
+      "Protección de equipo de trabajo contra daños y robo",
+      "Servicios de asistencia (plomería, electricidad, cerrajería, etc.) para emergencias empresariales",
+      "Eliminación del coaseguro para cobertura de Terremoto y Fenómenos Hidrometeorológicos",
+      "Deducible del 3% para desastres naturales y 10% para otras coberturas"
+    ],
+    "benefits_en": [
+      "Comprehensive protection for your company",
+      "We cover your return trip in case of emergency",
+      "Protection of belongings, regardless of whether you rent or own.",
+      "Protection against natural disasters",
+      "Protection of work equipment against damage and theft",
+      "Assistance services (plomería, electricidad, cerrajería, etc.) para emergencias empresariales",
+      "Elimination of co-insurance for Earthquake and Hydrometeorological Phenomena coverage",
+      "3% deductible for natural disasters and 10% for other coverages"
+    ],
+    "tags": [
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_39d0c31422deda3e",
+    "provider": "Colsanitas",
+    "name": "Planmed® Vital",
+    "name_en": "Planmed® Vital",
+    "category": "salud",
+    "country": "MX",
+    "base_price": 4199,
+    "currency": "MXN",
+    "external_link": "https://axakeralty.mx/",
+    "benefits": [
+      "Check up anual: Consulta de valoración, estudios de laboratorio (perfil de lípidos, creatinina en suero, glicemia en ayunas y examen general de orina).",
+      "Consultas de medicina general (ilimitada)",
+      "6 Consultas de psicología y 6 nutrición",
+      "Orientación médica telefónica 24/7 (ilimitada)",
+      "Cuidado dental: 2 limpiezas dentales anuales para adultos."
+    ],
+    "benefits_en": [
+      "Annual check-up: Evaluation consultation, laboratory studies (lipid profile, serum creatinine, fasting glycemia, and general urine test).",
+      "General medical consultations (unlimited)",
+      "6 Psychology consultations and 6 Nutrition consultations",
+      "24/7 Medical telephone orientation (unlimited)",
+      "Dental care: 2 annual dental cleanings for adults."
+    ],
+    "tags": [
+      "odontologia"
+    ]
+  },
+  {
+    "id": "plan_6576c1ef8fc4d82f",
+    "provider": "Colsanitas",
+    "name": "Planmed® Estándar",
+    "name_en": "Planmed® Standard",
+    "category": "salud",
+    "country": "MX",
+    "base_price": 1999,
+    "currency": "MXN",
+    "external_link": "https://axakeralty.mx/",
+    "benefits": [
+      "Check up anual: Consulta de valoración, estudios de laboratorio (perfil de lípidos, creatinina en suero, glicemia en ayunas y examen general de orina).",
+      "Consultas de medicina general (ilimitada)",
+      "6 Consultas de psicología y 6 nutrición",
+      "Orientación médica telefónica 24/7 (ilimitada)",
+      "Cuidado dental: 2 limpiezas dentales anuales para adultos."
+    ],
+    "benefits_en": [
+      "Annual check-up: Evaluation consultation, laboratory studies (lipid profile, serum creatinine, fasting glycemia, and general urine test).",
+      "General medical consultations (unlimited)",
+      "6 Psychology consultations and 6 Nutrition consultations",
+      "24/7 Medical telephone orientation (unlimited)",
+      "Dental care: 2 annual dental cleanings for adults."
+    ],
+    "tags": [
+      "odontologia"
+    ]
+  },
+  {
+    "id": "plan_2cfd315850632bdf",
+    "provider": "Colsanitas",
+    "name": "Colsanitas Plan Esencial",
+    "name_en": "Colsanitas Essential Plan",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 39500,
+    "currency": "COP",
+    "external_link": "https://www.policia.gov.co/bienestar/alianzas-bienestar/colsanitas-plan-esencial",
+    "benefits": [
+      "Servicio médico domiciliario ilimitado.",
+      "Traslado terrestre de urgencia en ambulancia.",
+      "Consultas odontológicas no programadas.",
+      "Orientación telefónica en síntomas de salud.",
+      "Acceso directo a 15 especialidades médicas en Centros Médicos Colsanitas y red adscrita (vale electrónico de 24,500 para consultas de especialista)."
+    ],
+    "benefits_en": [
+      "Unlimited home medical service.",
+      "Emergency ground ambulance transportation.",
+      "Unscheduled dental consultations.",
+      "Telephone guidance on health symptoms.",
+      "Direct access to 15 medical specialties at Colsanitas Medical Centers and affiliated networks (an electronic voucher of 24,500 applies to specialist consultations)."
+    ],
+    "tags": [
+      "odontologia"
+    ]
+  },
+  {
+    "id": "plan_fd7489170b788161",
+    "provider": "Hdi Seguros",
+    "name": "Seguro de Vida Básico",
+    "name_en": "Basic Life Insurance",
+    "category": "vida",
+    "country": "CO",
+    "base_price": 2300,
+    "currency": "COP",
+    "external_link": "https://www.larepublica.co/finanzas/hdi-seguros-tiene-ofertas-de-cobertura-de-10-millones-con-seguros-desde-los-2-300-4159949",
+    "benefits": [
+      "Fallecimiento",
+      "Incapacidad total y permanente",
+      "Incapacidad temporal",
+      "Enfermedades graves",
+      "Renta diaria por hospitalización por accidente o enfermedad"
+    ],
+    "benefits_en": [
+      "Death",
+      "Total and permanent disability",
+      "Temporary disability",
+      "Serious illnesses",
+      "Daily income for hospitalization due to accident or illness"
+    ]
+  },
+  {
+    "id": "plan_601ce55c4ea85c83",
+    "provider": "Seguros SURA",
+    "name": "SALUD PARA TODOS CLÁSICO",
+    "name_en": "HEALTH FOR ALL CLASSIC",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 141567,
+    "currency": "COP",
+    "external_link": "https://queseguro.co/Seguros/Sura/Plan-Salud-Para-todos-Clasico",
+    "benefits": [
+      "Atención Ambulatoria",
+      "Atención Hospitalaria",
+      "Maternidad y Recién Nacido",
+      "Servicios a Domicilio o Telemedicina",
+      "Tratamiento contra el Cáncer",
+      "Tratamiento contra el VIH",
+      "Urgencias Odontológica",
+      "Exámenes de Diagnóstico"
+    ],
+    "benefits_en": [
+      "Ambulatory Care",
+      "Hospital Care",
+      "Maternity and Newborn",
+      "Home Services or Telemedicine",
+      "Cancer Treatment",
+      "HIV Treatment",
+      "Dental Emergencies",
+      "Diagnostic Tests"
+    ],
+    "tags": [
+      "odontologia"
+    ]
+  },
+  {
+    "id": "plan_77dbbad1e0734261",
+    "provider": "Seguros SURA",
+    "name": "SALUD PARA TODOS PREFERENCIAL",
+    "name_en": "HEALTH FOR ALL PREFERENTIAL",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 160811,
+    "currency": "COP",
+    "external_link": "https://queseguro.co/Seguros/Sura/Plan-Salud-Para-todos-Preferente",
+    "benefits": [
+      "Atención Ambulatoria",
+      "Atención Hospitalaria",
+      "Maternidad y Recién Nacido",
+      "Servicios a Domicilio o Telemedicina",
+      "Tratamiento contra el Cáncer",
+      "Tratamiento contra el VIH",
+      "Urgencias Odontológica",
+      "Exámenes de Diagnóstico"
+    ],
+    "benefits_en": [
+      "Ambulatory Care",
+      "Hospital Care",
+      "Maternity and Newborn",
+      "Home Services or Telemedicine",
+      "Cancer Treatment",
+      "HIV Treatment",
+      "Dental Emergencies",
+      "Diagnostic Tests"
+    ],
+    "tags": [
+      "odontologia"
+    ]
+  },
+  {
+    "id": "plan_1c9451c46f6b6a7b",
+    "provider": "Seguros SURA",
+    "name": "PLAN SALUD CLASICO",
+    "name_en": "CLASSIC HEALTH PLAN",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 503355,
+    "currency": "COP",
+    "external_link": "https://queseguro.co/Seguros/Sura/Plan-Salud-Clasico",
+    "benefits": [
+      "Atención Ambulatoria",
+      "Atención Hospitalaria",
+      "Servicios en Urgencia",
+      "Examenes de Diagnóstico",
+      "Maternidad y Recién Nacido",
+      "Servicios a Domicilio o Telemedicina",
+      "Prótesis",
+      "Tratamiento contra el Cáncer"
+    ],
+    "benefits_en": [
+      "Outpatient Care",
+      "Hospital Care",
+      "Emergency Services",
+      "Diagnostic Tests",
+      "Maternity and Newborn Care",
+      "Home Services or Telemedicine",
+      "Prosthetics",
+      "Cancer Treatment"
+    ]
+  },
+  {
+    "id": "plan_1fc5e784d3150450",
+    "provider": "Seguros SURA",
+    "name": "PLAN SALUD GLOBAL",
+    "name_en": "GLOBAL HEALTH PLAN",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 601726,
+    "currency": "COP",
+    "external_link": "https://queseguro.co/Seguros/Sura/Plan-Salud-Global",
+    "benefits": [
+      "Atención Ambulatoria",
+      "Atención Hospitalaria",
+      "Maternidad y Recién Nacido",
+      "Servicios a Domicilio o Telemedicina",
+      "Tratamiento contra el Cáncer",
+      "Tratamiento contra el VIH",
+      "Urgencias Odontológica",
+      "Exámenes de Diagnóstico"
+    ],
+    "benefits_en": [
+      "Ambulatory Care",
+      "Hospital Care",
+      "Maternity and Newborn",
+      "Home Services or Telemedicine",
+      "Cancer Treatment",
+      "HIV Treatment",
+      "Dental Emergencies",
+      "Diagnostic Tests"
+    ],
+    "tags": [
+      "odontologia"
+    ]
+  },
+  {
+    "id": "plan_e67084a3fb2931da",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Extended Stay Plan",
+    "name_en": "BMI Travel Assist - Extended Stay Plan",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 151.53,
+    "currency": "MXN",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=2",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriaci��n o Traslado Sanitario",
+      "Gastos de Hotel por Convalescencia",
+      "Asistencia por Documentos y Efectos Personales Perdidos",
+      "Asistencia Legal por Accidente de Tráfico"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Hotel Expenses for Convalescence",
+      "Lost Documents and Personal Effects Assistance",
+      "Legal Assistance for Traffic Accident"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_6b01ef0147b2797c",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Daily Plan",
+    "name_en": "BMI Travel Assist - Daily Plan",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 18.25,
+    "currency": "MXN",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=0",
+    "benefits": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Medical Assistance in Case of Pre-Existing Medical Condition",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Repatriation of Mortal Remains",
+      "Accidental Death"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Medical Assistance in Case of Pre-Existing Medical Condition",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Repatriation of Mortal Remains",
+      "Accidental Death"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_c30ceb2a1823c25a",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Multi-Trip Annual Plan",
+    "name_en": "BMI Travel Assist - Multi-Trip Annual Plan",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 148,
+    "currency": "MXN",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=1",
+    "benefits": [
+      "Asistencia Médica por Accidente",
+      "Asistencia Médica por Enfermedad",
+      "Medicamentos Recetados",
+      "Emergencia Dental",
+      "Repatriación o Traslado Sanitario",
+      "Gastos de Hotel por Convalecencia",
+      "Asistencia por Documentos y Efectos Personales Perdidos",
+      "Asistencia Legal por Accidente de Tráfico"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Hotel Expenses for Convalescence",
+      "Lost Documents and Personal Effects Assistance",
+      "Legal Assistance for Traffic Accident"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_981aef6f71ff136d",
+    "provider": "Chubb",
+    "name": "Chubb Auto Insurance",
+    "name_en": "Chubb Auto Insurance",
+    "category": "auto",
+    "country": "MX",
+    "base_price": 4800,
+    "currency": "MXN",
+    "external_link": "https://seguro.mx/chubb/seguro-de-auto-chubb/",
+    "benefits": [
+      "Robo Total",
+      "Daños Materiales",
+      "Responsabilidad Civil por Daños a Terceros",
+      "Gastos Médicos",
+      "Asistencia Legal Plus",
+      "RC en USA y Canadá",
+      "Asistencia en Viajes IKE",
+      "Auto Relevo Plus"
+    ],
+    "benefits_en": [
+      "Total Theft",
+      "Material Damages",
+      "Civil Liability for Damages to Third Parties",
+      "Medical Expenses",
+      "Legal Assistance Plus",
+      "Civil Liability in USA and Canada",
+      "Travel Assistance IKE",
+      "Relief Car Plus"
+    ],
+    "tags": [
+      "auto",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_2ad7a90c373f0022",
+    "provider": "Allianz",
+    "name": "Asistencia de Viaje Anual",
+    "name_en": "Annual Travel Assistance",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 3646,
+    "currency": "MXN",
+    "external_link": "https://www.allianztravel.com.mx/asistencia-de-viaje/planes/asistencia-de-viaje-anual.html",
+    "benefits": [
+      "Transporte de Urgencia: 250.000 US$",
+      "Urgencias Médicas: 75.000 US$",
+      "Cancelación de viaje: 3.000 US$",
+      "Interrupción de viaje: 3.000 US$",
+      "Equipaje: 1.000 US$"
+    ],
+    "benefits_en": [
+      "Emergency Transportation: 250.000 US$",
+      "Medical Emergencies: 75.000 US$",
+      "Trip Cancellation: 3.000 US$",
+      "Trip Interruption: 3.000 US$",
+      "Baggage: 1.000 US$"
+    ],
+    "tags": [
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_9ee379b989d33c7a",
+    "provider": "Allianz",
+    "name": "Asistencia de Viaje Básico",
+    "name_en": "Basic Travel Assistance",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 691,
+    "currency": "MXN",
+    "external_link": "https://www.allianztravel.com.mx/asistencia-de-viaje/planes/asistencia-de-viaje-basico.html",
+    "benefits": [
+      "Transporte de Urgencia: 50.000 US$",
+      "Urgencias Médicas: 10.000 US$",
+      "Cancelación de viaje: 500 US$",
+      "Interrupción de Viaje: 10.000 US$",
+      "Equipaje: 500 US$"
+    ],
+    "benefits_en": [
+      "Emergency Transportation: 50.000 US$",
+      "Medical Emergencies: 10.000 US$",
+      "Trip Cancellation: 500 US$",
+      "Trip Interruption: 10.000 US$",
+      "Baggage: 500 US$"
+    ],
+    "tags": [
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_12616556b4adbc2a",
+    "provider": "Allianz",
+    "name": "Cancelación de Viaje",
+    "name_en": "Trip Cancellation",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 405,
+    "currency": "MXN",
+    "external_link": "https://www.allianztravel.com.mx/asistencia-de-viaje/planes/cancelacion-de-viaje.html",
+    "benefits": [
+      "Interrupción de viaje: 5.000 US$",
+      "Cancelación de Viaje: 5.000 US$",
+      "Demora de Viaje: 150 US$"
+    ],
+    "benefits_en": [
+      "Trip Interruption: 5.000 US$",
+      "Trip Cancellation: 5.000 US$",
+      "Travel Delay: 150 US$"
+    ],
+    "tags": [
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_b38c842891624ad6",
+    "provider": "Allianz",
+    "name": "Asistencia de Viaje Premium",
+    "name_en": "Premium Travel Assistance",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 3626,
+    "currency": "MXN",
+    "external_link": "https://www.allianztravel.com.mx/asistencia-de-viaje/planes/asistencia-de-viaje-premium.html",
+    "benefits": [
+      "Transporte de Urgencia: 1.000.000 US$",
+      "Urgencias Médicas: 75.000 US$",
+      "Cancelación de viaje: 20.000 US$",
+      "Interrupción de viaje: 20.000 US$",
+      "Equipaje: 2.000 US$"
+    ],
+    "benefits_en": [
+      "Emergency Transportation: 1.000.000 US$",
+      "Medical Emergencies: 75.000 US$",
+      "Trip Cancellation: 20.000 US$",
+      "Trip Interruption: 20.000 US$",
+      "Baggage: 2.000 US$"
+    ],
+    "tags": [
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_a7d09eabfdfc3c2d",
+    "provider": "Allianz",
+    "name": "Asistencia de Viaje Intermedio",
+    "name_en": "Intermediate Travel Assistance",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 1762,
+    "currency": "MXN",
+    "external_link": "https://www.allianztravel.com.mx/asistencia-de-viaje/planes/asistencia-de-viaje-intermedio.html",
+    "benefits": [
+      "Transporte de Urgencia: 500.000 US$",
+      "Urgencias Médicas: 60.000 US$",
+      "Cancelación de viaje: 2.000 US$",
+      "Interrupción de Viaje: 10.000 US$",
+      "Equipaje: 1.000 US$"
+    ],
+    "benefits_en": [
+      "Emergency Transportation: 500.000 US$",
+      "Medical Emergencies: 60.000 US$",
+      "Trip Cancellation: 2.000 US$",
+      "Trip Interruption: 10.000 US$",
+      "Baggage: 1.000 US$"
+    ],
+    "tags": [
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_b6dace239fcb71fb",
+    "provider": "Allianz",
+    "name": "Asistencia Médica Durante el Viaje",
+    "name_en": "Medical Assistance During Travel",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 831,
+    "currency": "MXN",
+    "external_link": "https://www.allianztravel.com.mx/asistencia-de-viaje/planes/assistencia-medica-durante-el-viaje.html",
+    "benefits": [
+      "Transporte de Urgencia: 250.000 US$",
+      "Urgencias Médicas: 60.000 US$",
+      "Equipaje: 2.000 US$"
+    ],
+    "benefits_en": [
+      "Emergency Transportation: 250.000 US$",
+      "Medical Emergencies: 60.000 US$",
+      "Baggage: 2.000 US$"
+    ],
+    "tags": [
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_4b81cf562de2fb07",
+    "provider": "Allianz",
+    "name": "Gold Plus",
+    "name_en": "Gold Plus Health Insurance",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 150000,
+    "currency": "COP",
+    "external_link": "https://www.allianz.co/seguros/personas/salud/gold.html",
+    "benefits": [
+      "Habitación individual. Cama de acompañante. Enfermera especial. Cuidados intensivos. Servicios hospitalarios. Honorarios médicos. Gastos pre y post hospitalarios.",
+      "Urgencias",
+      "Atención embarazo, parto o cesárea",
+      "Enfermedades congénitas para bebe nacido en la cobertura.",
+      "Terapia",
+      "Exámenes especiales de diagnóstico",
+      "Consultas medicina general y especializada.",
+      "Consultas telemedicina y bienestar virtual"
+    ],
+    "benefits_en": [
+      "Individual room. Companion bed. Special nurse. Intensive care. Hospital services. Medical fees. Pre and post-hospital expenses.",
+      "Emergencies",
+      "Pregnancy, delivery or C-section care",
+      "Congenital diseases for babies born under coverage.",
+      "Therapy",
+      "Special diagnostic exams",
+      "General and specialized medical consultations.",
+      "Telemedicine and virtual wellness consultations"
+    ]
+  },
+  {
+    "id": "plan_0057f38f103e3115",
+    "provider": "Allianz",
+    "name": "Care",
+    "name_en": "Care Health Insurance",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 200000,
+    "currency": "COP",
+    "external_link": "https://www.allianz.co/seguros/personas/salud/care.html",
+    "benefits": [
+      "Habitación individual. Cama de acompañante. Enfermera especial. Cuidados intensivos. Servicios hospitalarios. Honorarios médicos. Gastos pre y post hospitalarios.",
+      "Urgencias",
+      "Atención embarazo, parto o cesárea",
+      "Enfermedades congénitas para bebe nacido en la cobertura.",
+      "Terapia",
+      "Exámenes especiales de diagnóstico",
+      "Consultas medicina general y especializada.",
+      "Consultas telemedicina y bienestar virtual"
+    ],
+    "benefits_en": [
+      "Individual room. Companion bed. Special nurse. Intensive care. Hospital services. Medical fees. Pre and post-hospital expenses.",
+      "Emergencies",
+      "Pregnancy, delivery or C-section care",
+      "Congenital diseases for babies born under coverage.",
+      "Therapy",
+      "Special diagnostic exams",
+      "General and specialized medical consultations.",
+      "Telemedicine and virtual wellness consultations"
+    ],
+    "tags": [
+      "auto"
+    ]
+  },
+  {
+    "id": "plan_509d8ade260914d5",
+    "provider": "Allianz",
+    "name": "Plus",
+    "name_en": "Plus Health Insurance",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 100000,
+    "currency": "COP",
+    "external_link": "https://www.allianz.co/seguros/personas/salud/plus.html",
+    "benefits": [
+      "Habitación individual. Cama de acompañante. Enfermera especial. Cuidados intensivos. Servicios hospitalarios. Honorarios médicos. Gastos pre y post hospitalarios.",
+      "Urgencias",
+      "Atención embarazo, parto o cesárea",
+      "Enfermedades congénitas para bebe nacido en la cobertura.",
+      "Terapia",
+      "Exámenes especiales de diagnóstico",
+      "Consultas medicina general y especializada.",
+      "Consultas telemedicina y bienestar virtual"
+    ],
+    "benefits_en": [
+      "Individual room. Companion bed. Special nurse. Intensive care. Hospital services. Medical fees. Pre and post-hospital expenses.",
+      "Emergencies",
+      "Pregnancy, delivery or C-section care",
+      "Congenital diseases for babies born under coverage.",
+      "Therapy",
+      "Special diagnostic exams",
+      "General and specialized medical consultations.",
+      "Telemedicine and virtual wellness consultations"
+    ]
+  },
+  {
+    "id": "plan_7ea862e5eb35106d",
+    "provider": "AXA Colpatria",
+    "name": "Plan Fesalud",
+    "name_en": "Fesalud Plan",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 350000,
+    "currency": "COP",
+    "external_link": "https://www.axacolpatria.co/nuestra-oferta-planes-de-salud",
+    "benefits": [
+      "Acceso directo e ilimitado a todas las especialidades médicas",
+      "Atención de médico domiciliario (5 consultas por vigencia sin cobro)",
+      "Exámenes de diagnóstico simple y especializado ilimitados",
+      "Terapias",
+      "Acceso a procedimientos de hospitalización y cirugía ilimitados",
+      "Habitación individual en caso de hospitalización",
+      "Urgencias odontológicas",
+      "Asistencia de urgencias internacionales"
+    ],
+    "benefits_en": [
+      "Direct and unlimited access to all medical specialties",
+      "Home doctor care (5 consultations per validity period without charge)",
+      "Unlimited simple and specialized diagnostic tests",
+      "Therapies",
+      "Unlimited access to hospitalization and surgical procedures",
+      "Private room in case of hospitalization",
+      "Dental emergencies",
+      "International emergency assistance"
+    ],
+    "tags": [
+      "odontologia",
+      "internacional"
+    ]
+  },
+  {
+    "id": "plan_1b0a42e44618ad12",
+    "provider": "AXA Colpatria",
+    "name": "Plan Alterno",
+    "name_en": "Alternate Plan",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 170000,
+    "currency": "COP",
+    "external_link": "https://www.axacolpatria.co/nuestra-oferta-planes-de-salud",
+    "benefits": [
+      "Acceso directo e ilimitado a todas las especialidades médicas",
+      "Atención de médico domiciliario (5 consultas por vigencia sin cobro)",
+      "Exámenes de diagnóstico simple y especializado ilimitados",
+      "Terapias",
+      "Acceso a procedimientos de hospitalización y cirugía ilimitados",
+      "Habitación individual en caso de hospitalización",
+      "Urgencias odontológicas",
+      "Asistencia de urgencias internacionales"
+    ],
+    "benefits_en": [
+      "Direct and unlimited access to all medical specialties",
+      "Home doctor care (5 consultations per validity period without charge)",
+      "Unlimited simple and specialized diagnostic tests",
+      "Therapies",
+      "Unlimited access to hospitalization and surgical procedures",
+      "Private room in case of hospitalization",
+      "Dental emergencies",
+      "International emergency assistance"
+    ],
+    "tags": [
+      "odontologia",
+      "internacional"
+    ]
+  },
+  {
+    "id": "plan_7353f5ddf5e6074b",
+    "provider": "AXA Colpatria",
+    "name": "Plan Original",
+    "name_en": "Original Plan",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 240000,
+    "currency": "COP",
+    "external_link": "https://www.axacolpatria.co/nuestra-oferta-planes-de-salud",
+    "benefits": [
+      "Acceso directo e ilimitado a todas las especialidades médicas",
+      "Atención de médico domiciliario (5 consultas por vigencia sin cobro)",
+      "Exámenes de diagnóstico simple y especializado ilimitados",
+      "Terapias",
+      "Acceso a procedimientos de hospitalización y cirugía ilimitados",
+      "Habitación individual en caso de hospitalización",
+      "Urgencias odontológicas",
+      "Asistencia de urgencias internacionales"
+    ],
+    "benefits_en": [
+      "Direct and unlimited access to all medical specialties",
+      "Home doctor care (5 consultations per validity period without charge)",
+      "Unlimited simple and specialized diagnostic tests",
+      "Therapies",
+      "Unlimited access to hospitalization and surgical procedures",
+      "Private room in case of hospitalization",
+      "Dental emergencies",
+      "International emergency assistance"
+    ],
+    "tags": [
+      "odontologia",
+      "internacional"
+    ]
+  },
+  {
+    "id": "plan_c64aadcdb9e45262",
+    "provider": "Bmi Cos.",
+    "name": "BMI Travel Assist - Clásico",
+    "name_en": "BMI Travel Assist - Classic",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 18.25,
+    "currency": "COP",
+    "external_link": "https://www.bmitravelassist.com/Plans?plan=0",
+    "benefits": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Medical Assistance in Case of Pre-Existing Medical Condition",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Repatriation of Mortal Remains",
+      "Accidental Death"
+    ],
+    "benefits_en": [
+      "Medical Assistance for Accident",
+      "Medical Assistance for Illness",
+      "Medical Assistance in Case of Pre-Existing Medical Condition",
+      "Prescription Drugs",
+      "Dental Emergency",
+      "Repatriation or Sanitary Transfer",
+      "Repatriation of Mortal Remains",
+      "Accidental Death"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_7d8e60c414a0bf45",
+    "provider": "Colmena Seguros",
+    "name": "Seguro de Vida con Devolución de Prima Banco Caja Social (Plan D)",
+    "name_en": "Life Insurance with Premium Refund Banco Caja Social (Plan D)",
+    "category": "vida",
+    "country": "CO",
+    "base_price": 600000,
+    "currency": "COP",
+    "external_link": "https://www.colmenaseguros.com/soluciones-para-personas/protege-tu-vida/seguro-de-vida-con-devolucion-de-prima-banco-caja-social",
+    "benefits": [
+      "Muerte por cualquier causa: Protección en caso de tu fallecimiento por cualquier motivo a excepción de muerte por guerra civil y/o internacional, tus beneficiarios recibirán la suma estipulada en tu póliza.",
+      "Sobrevivencia: Si gozas de la vida al finalizar la vigencia de tu “Seguro de Vida con Devolución de Prima Banco Caja Social”, recibirás el 50% del valor de la prima de tu plan.",
+      "Enfermedades graves (Cáncer): Al ser diagnosticado por primera vez, durante la vigencia de tu seguro, te entregaremos un porcentaje de la suma asegurada que corresponda a tu póliza. Se cubren los siguientes tipos de cáncer: Cáncer Invasivo, Cáncer Metastásico, Cáncer de Mama, Próstata y Cérvix, Cáncer de piel, Cáncer In Situ.",
+      "Incapacidad total temporal: En caso de que tengas una enfermedad o accidente que resulte en una incapacidad total temporal, recibirás un monto asegurado proporcional al tiempo que tengas en tu incapacidad médica."
+    ],
+    "benefits_en": [
+      "Death for any cause: Protection in case of your death for any reason (except civil and/or international war), your beneficiaries will receive the agreed-upon sum.",
+      "Survival: If you are alive at the end of the policy term of your \"Life Insurance with Premium Refund Banco Caja Social\", you will receive 50% of the premium value of your plan.",
+      "Critical Illnesses (Cancer): If diagnosed for the first time during the validity of your insurance, we will deliver a percentage of the insured sum corresponding to your policy. The following types of cancer are covered: Invasive Cancer, Metastatic Cancer, Breast, Prostate and Cervical Cancer, Skin Cancer, In Situ Cancer.",
+      "Temporary Total Disability: In case of an illness or accident resulting in temporary total disability, you will receive an insured amount proportional to the time you are on medical leave."
+    ],
+    "tags": [
+      "internacional"
+    ]
+  },
+  {
+    "id": "plan_7fb60edcb816f5ff",
+    "provider": "Colmena Seguros",
+    "name": "Seguro de Vida con Devolución de Prima Banco Caja Social (Plan C)",
+    "name_en": "Life Insurance with Premium Refund Banco Caja Social (Plan C)",
+    "category": "vida",
+    "country": "CO",
+    "base_price": 450000,
+    "currency": "COP",
+    "external_link": "https://www.colmenaseguros.com/soluciones-para-personas/protege-tu-vida/seguro-de-vida-con-devolucion-de-prima-banco-caja-social",
+    "benefits": [
+      "Muerte por cualquier causa: Protección en caso de tu fallecimiento por cualquier motivo a excepción de muerte por guerra civil y/o internacional, tus beneficiarios recibirán la suma estipulada en tu póliza.",
+      "Sobrevivencia: Si gozas de la vida al finalizar la vigencia de tu “Seguro de Vida con Devolución de Prima Banco Caja Social”, recibirás el 50% del valor de la prima de tu plan.",
+      "Enfermedades graves (Cáncer): Al ser diagnosticado por primera vez, durante la vigencia de tu seguro, te entregaremos un porcentaje de la suma asegurada que corresponda a tu póliza. Se cubren los siguientes tipos de cáncer: Cáncer Invasivo, Cáncer Metastásico, Cáncer de Mama, Próstata y Cérvix, Cáncer de piel, Cáncer In Situ.",
+      "Incapacidad total temporal: En caso de que tengas una enfermedad o accidente que resulte en una incapacidad total temporal, recibirás un monto asegurado proporcional al tiempo que tengas en tu incapacidad médica."
+    ],
+    "benefits_en": [
+      "Death for any cause: Protection in case of your death for any reason (except civil and/or international war), your beneficiaries will receive the agreed-upon sum.",
+      "Survival: If you are alive at the end of the policy term of your \"Life Insurance with Premium Refund Banco Caja Social\", you will receive 50% of the premium value of your plan.",
+      "Critical Illnesses (Cancer): If diagnosed for the first time during the validity of your insurance, we will deliver a percentage of the insured sum corresponding to your policy. The following types of cancer are covered: Invasive Cancer, Metastatic Cancer, Breast, Prostate and Cervical Cancer, Skin Cancer, In Situ Cancer.",
+      "Temporary Total Disability: In case of an illness or accident resulting in temporary total disability, you will receive an insured amount proportional to the time you are on medical leave."
+    ],
+    "tags": [
+      "internacional"
+    ]
+  },
+  {
+    "id": "plan_5ff6915c888e5a18",
+    "provider": "Colmena Seguros",
+    "name": "Seguro de Vida con Devolución de Prima Banco Caja Social (Plan A)",
+    "name_en": "Life Insurance with Premium Refund Banco Caja Social (Plan A)",
+    "category": "vida",
+    "country": "CO",
+    "base_price": 150000,
+    "currency": "COP",
+    "external_link": "https://www.colmenaseguros.com/soluciones-para-personas/protege-tu-vida/seguro-de-vida-con-devolucion-de-prima-banco-caja-social",
+    "benefits": [
+      "Muerte por cualquier causa: Protección en caso de tu fallecimiento por cualquier motivo a excepción de muerte por guerra civil y/o internacional, tus beneficiarios recibirán la suma estipulada en tu póliza.",
+      "Sobrevivencia: Si gozas de la vida al finalizar la vigencia de tu “Seguro de Vida con Devolución de Prima Banco Caja Social”, recibirás el 50% del valor de la prima de tu plan.",
+      "Enfermedades graves (Cáncer): Al ser diagnosticado por primera vez, durante la vigencia de tu seguro, te entregaremos un porcentaje de la suma asegurada que corresponda a tu póliza. Se cubren los siguientes tipos de cáncer: Cáncer Invasivo, Cáncer Metastásico, Cáncer de Mama, Próstata y Cérvix, Cáncer de piel, Cáncer In Situ.",
+      "Incapacidad total temporal: En caso de que tengas una enfermedad o accidente que resulte en una incapacidad total temporal, recibirás un monto asegurado proporcional al tiempo que tengas en tu incapacidad médica."
+    ],
+    "benefits_en": [
+      "Death for any cause: Protection in case of your death for any reason (except civil and/or international war), your beneficiaries will receive the agreed-upon sum.",
+      "Survival: If you are alive at the end of the policy term of your \"Life Insurance with Premium Refund Banco Caja Social\", you will receive 50% of the premium value of your plan.",
+      "Critical Illnesses (Cancer): If diagnosed for the first time during the validity of your insurance, we will deliver a percentage of the insured sum corresponding to your policy. The following types of cancer are covered: Invasive Cancer, Metastatic Cancer, Breast, Prostate and Cervical Cancer, Skin Cancer, In Situ Cancer.",
+      "Temporary Total Disability: In case of an illness or accident resulting in temporary total disability, you will receive an insured amount proportional to the time you have on medical leave."
+    ],
+    "tags": [
+      "internacional"
+    ]
+  },
+  {
+    "id": "plan_07113a5a44650034",
+    "provider": "Colmena Seguros",
+    "name": "Seguro de Vida con Devolución de Prima Banco Caja Social (Plan B)",
+    "name_en": "Life Insurance with Premium Refund Banco Caja Social (Plan B)",
+    "category": "vida",
+    "country": "CO",
+    "base_price": 300000,
+    "currency": "COP",
+    "external_link": "https://www.colmenaseguros.com/soluciones-para-personas/protege-tu-vida/seguro-de-vida-con-devolucion-de-prima-banco-caja-social",
+    "benefits": [
+      "Muerte por cualquier causa: Protección en caso de tu fallecimiento por cualquier motivo a excepción de muerte por guerra civil y/o internacional, tus beneficiarios recibirán la suma estipulada en tu póliza.",
+      "Sobrevivencia: Si gozas de la vida al finalizar la vigencia de tu “Seguro de Vida con Devolución de Prima Banco Caja Social”, recibirás el 50% del valor de la prima de tu plan.",
+      "Enfermedades graves (Cáncer): Al ser diagnosticado por primera vez, durante la vigencia de tu seguro, te entregaremos un porcentaje de la suma asegurada que corresponda a tu póliza. Se cubren los siguientes tipos de cáncer: Cáncer Invasivo, Cáncer Metastásico, Cáncer de Mama, Próstata y Cérvix, Cáncer de piel, Cáncer In Situ.",
+      "Incapacidad total temporal: En caso de que tengas una enfermedad o accidente que resulte en una incapacidad total temporal, recibirás un monto asegurado proporcional al tiempo que tengas en tu incapacidad médica."
+    ],
+    "benefits_en": [
+      "Death for any cause: Protection in case of your death for any reason (except civil and/or international war), your beneficiaries will receive the agreed-upon sum.",
+      "Survival: If you are alive at the end of the policy term of your \"Life Insurance with Premium Refund Banco Caja Social\", you will receive 50% of the premium value of your plan.",
+      "Critical Illnesses (Cancer): If diagnosed for the first time during the validity of your insurance, we will deliver a percentage of the insured sum corresponding to your policy. The following types of cancer are covered: Invasive Cancer, Metastatic Cancer, Breast, Prostate and Cervical Cancer, Skin Cancer, In Situ Cancer.",
+      "Temporary Total Disability: In case of an illness or accident resulting in temporary total disability, you will receive an insured amount proportional to the time you are on medical leave."
+    ],
+    "tags": [
+      "internacional"
+    ]
+  },
+  {
+    "id": "plan_726ba1c7b51b13fd",
+    "provider": "Chubb",
+    "name": "AP+Mascotas",
+    "name_en": "AP+Pets",
+    "category": "mascotas",
+    "country": "CO",
+    "base_price": 28000,
+    "currency": "COP",
+    "external_link": "https://www.segurosfalabella.com.co/seguro-de-mascotas/mascotas",
+    "benefits": [
+      "Gastos veterinarios por lesiones o enfermedades",
+      "Esterilización",
+      "Vacunación",
+      "Responsabilidad civil",
+      "Controles médicos a domicilio",
+      "Medicamentos a domicilio",
+      "Servicios exequiales",
+      "Traslado de Emergencia"
+    ],
+    "benefits_en": [
+      "Veterinary medical expenses",
+      "Sterilization",
+      "Vaccination",
+      "Civil liability",
+      "Home medical check-ups",
+      "Medication delivery",
+      "Funeral services",
+      "Emergency Transfer"
+    ],
+    "tags": [
+      "mascotas"
+    ]
+  },
+  {
+    "id": "plan_c072906a28194d6a",
+    "provider": "Chubb",
+    "name": "Hogar Protegido Chubb",
+    "name_en": "Chubb Protected Home",
+    "category": "hogar",
+    "country": "CO",
+    "base_price": 150000,
+    "currency": "COP",
+    "external_link": "https://www.chubb.com/co-es/hogar-protegido-chubb.html",
+    "benefits": [
+      "Este producto aplica para propietarios o arrendatarios.",
+      "Cuentas con cobertura de incendio y terremoto para tu vivienda o los contenidos de tu casa.",
+      "Puedes cubrir las mejoras locativas de tu casa.",
+      "No se necesitan relación de bienes para asegurar los contenidos de tu hogar.",
+      "En caso de siniestro, la indemnización es a valor comercial.",
+      "Contamos con cobertura de hurto de contenidos en caso de eventos como la llamada millonaria.",
+      "Los daños ocasionados por tu mascota pueden contar con cobertura a través de la responsabilidad civil familiar."
+    ],
+    "benefits_en": [
+      "This product applies to owners or tenants.",
+      "You have fire and earthquake coverage for your home or its contents.",
+      "You can cover the structural improvements to your house.",
+      "No list of assets is needed to insure the contents of your home.",
+      "In case of a claim, compensation is at commercial value.",
+      "We have coverage for theft of contents in events such as the 'million-dollar call' (phone scam).",
+      "Damages caused by your pet may be covered through family civil liability."
+    ],
+    "tags": [
+      "familiar",
+      "hogar"
+    ]
+  },
+  {
+    "id": "plan_1f3f668ebde0bd7b",
+    "provider": "Allianz",
+    "name": "Travel Light",
+    "name_en": "Travel Light",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 30000,
+    "currency": "COP",
+    "external_link": "https://www.allianz.co/seguros/personas/asistencia-internacional.html",
+    "benefits": [
+      "Asistencia médica por accidente o enfermedad",
+      "Medicamentos",
+      "Traslado médico de emergencia",
+      "Repatriación médica",
+      "Repatriación de restos mortales",
+      "Urgencia Odontológica",
+      "Transporte de acompañante",
+      "Regreso de dependientes"
+    ],
+    "benefits_en": [
+      "Medical assistance due to accident or illness",
+      "Medications",
+      "Emergency medical transfer",
+      "Medical repatriation",
+      "Repatriation of mortal remains",
+      "Dental emergency",
+      "Companion transport",
+      "Return of dependents"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_40df6618df0f5868",
+    "provider": "Allianz",
+    "name": "Travel Premium",
+    "name_en": "Travel Premium",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 75000,
+    "currency": "COP",
+    "external_link": "https://www.allianz.co/seguros/personas/asistencia-internacional.html",
+    "benefits": [
+      "Asistencia médica por accidente o enfermedad",
+      "Medicamentos",
+      "Traslado médico de emergencia",
+      "Repatriación médica",
+      "Repatriación de restos mortales",
+      "Urgencia Odontológica",
+      "Transporte de acompañante",
+      "Regreso de dependientes"
+    ],
+    "benefits_en": [
+      "Medical assistance due to accident or illness",
+      "Medications",
+      "Emergency medical transfer",
+      "Medical repatriation",
+      "Repatriation of mortal remains",
+      "Dental emergency",
+      "Companion transport",
+      "Return of dependents"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_8110023df2b0803e",
+    "provider": "Allianz",
+    "name": "Travel Estandar",
+    "name_en": "Travel Standard",
+    "category": "viaje",
+    "country": "CO",
+    "base_price": 50000,
+    "currency": "COP",
+    "external_link": "https://www.allianz.co/seguros/personas/asistencia-internacional.html",
+    "benefits": [
+      "Asistencia médica por accidente o enfermedad",
+      "Medicamentos",
+      "Traslado médico de emergencia",
+      "Repatriación médica",
+      "Repatriación de restos mortales",
+      "Urgencia Odontológica",
+      "Transporte de acompañante",
+      "Regreso de dependientes"
+    ],
+    "benefits_en": [
+      "Medical assistance due to accident or illness",
+      "Medications",
+      "Emergency medical transfer",
+      "Medical repatriation",
+      "Repatriation of mortal remains",
+      "Dental emergency",
+      "Companion transport",
+      "Return of dependents"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_07d70dec3c63833e",
+    "provider": "Allianz",
+    "name": "EsenciAll 2",
+    "name_en": "Essential 2",
+    "category": "vida",
+    "country": "CO",
+    "base_price": 199000,
+    "currency": "COP",
+    "external_link": "https://www.allianz.co/seguros/personas/vida/esencial.html",
+    "benefits": [
+      "Garantiza el bienestar de quienes amas.",
+      "Asegúrate rápidamente, con una solicitud sencilla y sin exámenes médicos.",
+      "Cobertura en todo el país y sin límites a tu actividad económica."
+    ],
+    "benefits_en": [
+      "Guarantees the well-being of those you love.",
+      "Get insured quickly, with a simple application and no medical exams.",
+      "Coverage throughout the country and without limits to your economic activity."
+    ]
+  },
+  {
+    "id": "plan_9b9d39d70eced811",
+    "provider": "Seguros Bolívar",
+    "name": "SEGURO DE SALUD INTEGRAL",
+    "name_en": "COMPREHENSIVE HEALTH INSURANCE",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 374000,
+    "currency": "COP",
+    "external_link": "https://queseguro.co/Seguros/Bolivar/Seguro-De-Salud-Integral",
+    "benefits": [
+      "Atención Ambulatoria",
+      "Atención Hospitalaria",
+      "Servicios en Urgencia",
+      "Examenes de Diagnóstico",
+      "Maternidad y Recién Nacido",
+      "Servicios a Domicilio o Telemedicina",
+      "Prótesis",
+      "Tratamiento contra el Cáncer"
+    ],
+    "benefits_en": [
+      "Outpatient Care",
+      "Hospitalization Care",
+      "Emergency Services",
+      "Diagnostic Exams",
+      "Maternity and Newborn",
+      "Home Services or Telemedicine",
+      "Prosthetics",
+      "Cancer Treatment"
+    ]
+  },
+  {
+    "id": "plan_8122260c98709695",
+    "provider": "Seguros SURA",
+    "name": "Ala Azul",
+    "name_en": "Blue Wing (Seguro Ala Azul)",
+    "category": "salud",
+    "country": "MX",
+    "base_price": 676.8,
+    "currency": "MXN",
+    "external_link": "https://tuseguro.segurossura.com.mx/ala-azul/",
+    "benefits": [
+      "Cotización y contratación 100% digital.",
+      "Deducible de $4,000 atendiéndote dentro de la red médica Ala Azul y $8,000 fuera de la red.",
+      "En caso de acceder a la red se elimina el coaseguro, salvo para enfermedad por reembolso en que aplicará un coaseguro del 10%.",
+      "Suma asegurada hasta $1,200,000 M.N. por padecimiento, incluyendo fracturas por accidente.",
+      "Maternidad y sus complicaciones.",
+      "Puedes aumentar tu protección con una indemnización por diagnóstico de enfermedades graves (hasta $100 mil pesos).",
+      "Tratamiento médico o quirúrgico de afecciones de la próstata.",
+      "Infección por Virus de Inmunodeficiencia Humana (VIH), Síndrome de Inmunodeficiencia Adquirida (SIDA) y sus complicaciones, siempre y cuando los anticuerpos sean detectados después del periodo de espera con los estudios serelógicos: ELISA y Western Blot."
+    ],
+    "benefits_en": [
+      "100% digital quotation and contracting.",
+      "Deductible of $4,000 when attended within the Ala Azul medical network and $8,000 outside the network.",
+      "If you access the network, the co-insurance is eliminated, except for reimbursement for illness where a 10% co-insurance will apply.",
+      "Insured sum up to $1,200,000 M.N. per ailment, including fractures due to accident.",
+      "Maternity and its complications.",
+      "You can increase your protection with compensation for diagnosis of serious illnesses (up to $100 thousand pesos).",
+      "Medical or surgical treatment for prostate conditions.",
+      "Human Immunodeficiency Virus (HIV) infection, Acquired Immunodeficiency Syndrome (AIDS) and its complications, provided that antibodies are detected after the waiting period with serological studies: ELISA and Western Blot."
+    ],
+    "max_age": 36,
+    "tags": [
+      "auto"
+    ]
+  },
+  {
+    "id": "plan_d0cc128fe0591a4e",
+    "provider": "Seguros SURA",
+    "name": "Seguro de Vida Práctico",
+    "name_en": "Practical Life Insurance",
+    "category": "vida",
+    "country": "MX",
+    "base_price": 66.67,
+    "currency": "MXN",
+    "external_link": "https://www.segurossura.com.mx/personas/vida-y-ahorro/vida-practico/",
+    "benefits": [
+      "Fácil contratación y renovación automática. ¡Acepta múltiples métodos de pago.",
+      "No requieres examen médico para contratar.",
+      "Plazo de protección a 1 año.",
+      "Fallecimiento accidental o pérdida de miembros: en caso de fallecer o perder alguna parte de tu cuerpo en un accidente, tú o tus beneficiarios recibirán la suma asegurada para este beneficio por $90 mil pesos."
+    ],
+    "benefits_en": [
+      "Easy contracting and automatic renewal. Accepts multiple payment methods.",
+      "No medical examination required for contracting.",
+      "1-year protection term.",
+      "Accidental death or loss of members: in case of death or loss of any part of your body in an accident, you or your beneficiaries will receive the insured sum for this benefit of $90,000 pesos."
+    ],
+    "min_age": 18,
+    "max_age": 70,
+    "tags": [
+      "Life Insurance",
+      "Accidental Death",
+      "Easy Contracting",
+      "odontologia",
+      "auto"
+    ]
+  },
+  {
+    "id": "plan_2f234283be429fcf",
+    "provider": "Seguros SURA",
+    "name": "Seguro de Protección Cibernética",
+    "name_en": "Cyber Protection Insurance",
+    "category": "otros",
+    "country": "MX",
+    "base_price": 10000,
+    "currency": "MXN",
+    "external_link": "https://www.segurossura.com.mx/pymes/seguro-de-proteccion-cibernetica/",
+    "benefits": [
+      "Protección ante daños a terceros",
+      "Recuperación de información digital",
+      "Interrupción de la actividad empresarial",
+      "Extorsión cibernética",
+      "Transacciones bancarias fraudulentas",
+      "Acompañamiento en el manejo de crisis"
+    ],
+    "benefits_en": [
+      "Protection against damages to third parties",
+      "Digital information recovery",
+      "Business interruption",
+      "Cyber extortion",
+      "Fraudulent banking transactions",
+      "Accompaniment in crisis management"
+    ],
+    "tags": [
+      "Cyber",
+      "Business",
+      "Digital Protection",
+      "SMEs",
+      "Mexico",
+      "auto"
+    ]
+  },
+  {
+    "id": "plan_56847ba01a59cfc9",
+    "provider": "Chubb",
+    "name": "Home Insurance Básico",
+    "name_en": "Household Insurances (Basic)",
+    "category": "hogar",
+    "country": "MX",
+    "base_price": 125,
+    "currency": "MXN",
+    "external_link": "https://www.chubb.com/mx-es/personas-y-familias/hogar.html",
+    "benefits": [
+      "Incendio Edificio",
+      "Resto de los riesgos edificio",
+      "Gastos Extras",
+      "Remonición de escombros",
+      "Incendio de contenidos",
+      "Resto de riesgos contenidos",
+      "Mascotas",
+      "Cristales"
+    ],
+    "benefits_en": [
+      "Building Fire",
+      "Other building risks",
+      "Extra Expenses",
+      "Debris Removal",
+      "Contents Fire",
+      "Other contents risks",
+      "Pets",
+      "Glass"
+    ],
+    "tags": [
+      "mascotas",
+      "hogar"
+    ]
+  },
+  {
+    "id": "plan_729db9b365455d92",
+    "provider": "Allianz",
+    "name": "Travel Insurance",
+    "name_en": "Travel Insurance",
+    "category": "viaje",
+    "country": "MX",
+    "base_price": 691,
+    "currency": "MXN",
+    "external_link": "https://booking.allianztravel.com.mx/B2C/TRAVEL/MX/step-1",
+    "benefits": [
+      "Urgencias Médicas 10.000US$",
+      "Servicio de cancelación de viajes 500US$",
+      "Servicio de interrupción de viaje 10.000US$",
+      "Servicio de demora de viaje 300US$",
+      "Sublímite dental 750US$",
+      "Transporte de urgencia 50.000 US$",
+      "Pérdida/daño de equipaje 500US$",
+      "Retraso del equipage 200US$"
+    ],
+    "benefits_en": [
+      "Emergency Medical Expenses 10,000US$",
+      "Trip Cancellation Service 500US$",
+      "Trip Interruption Service 10,000US$",
+      "Travel Delay Service 300US$",
+      "Dental Sublimit 750US$",
+      "Emergency Transportation 50,000 US$",
+      "Lost/Damaged Luggage 500US$",
+      "Luggage Delay 200US$"
+    ],
+    "tags": [
+      "odontologia",
+      "viaje"
+    ]
+  },
+  {
+    "id": "plan_f57afa02127cb742",
+    "provider": "Hdi Seguros",
+    "name": "Pet Insurance",
+    "name_en": "HDI Seguros Pet Insurance",
+    "category": "mascotas",
+    "country": "CO",
+    "base_price": 23455,
+    "currency": "COP",
+    "external_link": "https://hdiseguro.mx/blog/seguro-para-mascotas-hdi/",
+    "benefits": [
+      "Cobertura integral",
+      "Asistencia veterinaria 24/7",
+      "Flexibilidad",
+      "Beneficios adicionales",
+      "Responsabilidad civil",
+      "Gastos veterinarios",
+      "Accidentes",
+      "Enfermedades"
+    ],
+    "benefits_en": [
+      "Comprehensive coverage",
+      "24/7 veterinary assistance",
+      "Flexibility",
+      "Additional benefits",
+      "Civil liability",
+      "Veterinary expenses",
+      "Accidents",
+      "Illnesses"
+    ],
+    "min_age": 0.25,
+    "max_age": 12.99,
+    "tags": [
+      "Responsabilidad Civil Extracontractual",
+      "Asistencia Mascotas",
+      "Perros y Gatos",
+      "Veterinary Assistance",
+      "Emergency",
+      "mascotas"
+    ]
+  },
+  {
+    "id": "plan_c4ea438e41fb372c",
+    "provider": "AXA Colpatria",
+    "name": "Asistencia de Mascotas",
+    "name_en": "AXA Colpatria Pet Assistance Plus",
+    "category": "mascotas",
+    "country": "CO",
+    "base_price": 28000,
+    "currency": "COP",
+    "external_link": "https://www.scotiabankcolpatria.com/personas/seguros/asistencias/mascotas",
+    "benefits": [
+      "Consulta médica por emergencia",
+      "Orientación médica veterinaria telefónica",
+      "Medicamentos a domicilio",
+      "Vacunación a domicilio",
+      "Traslado de mascota por accidente o necesidad del afiliado",
+      "Eutanasia por enfermedad o accidente",
+      "Cremación por enfermedad o accidente",
+      "Referencia y coordinación de cementerios de mascotas"
+    ],
+    "benefits_en": [
+      "Emergency medical consultation",
+      "Telephone veterinary medical orientation",
+      "Medication home delivery",
+      "Vacunación a domicilio",
+      "Pet transfer due to accident or affiliate's need",
+      "Euthanasia due to illness or accident",
+      "Cremation due to illness or accident",
+      "Reference and coordination of pet cemeteries"
+    ],
+    "tags": [
+      "mascotas"
+    ]
+  },
+  {
+    "id": "plan_c072906a28194d6a",
+    "provider": "Chubb",
+    "name": "Hogar Protegido Chubb",
+    "name_en": "Chubb Protected Home",
+    "category": "hogar",
+    "country": "CO",
+    "base_price": 150000,
+    "currency": "COP",
+    "external_link": "https://www.chubb.com/co-es/hogar-protegido-chubb.html",
+    "benefits": [
+      "Este producto aplica para propietarios o arrendatarios.",
+      "Cuentas con cobertura de incendio y terremoto para tu vivienda o los contenidos de tu casa.",
+      "Puedes cubrir las mejoras locativas de tu casa.",
+      "No se necesitan relación de bienes para asegurar los contenidos de tu hogar.",
+      "En caso de siniestro, la indemnización es a valor comercial.",
+      "Contamos con cobertura de hurto de contenidos en caso de eventos como la llamada millonaria.",
+      "Los daños ocasionados por tu mascota pueden contar con cobertura a través de la responsabilidad civil familiar."
+    ],
+    "benefits_en": [
+      "This product applies to owners or tenants.",
+      "You have fire and earthquake coverage for your home or its contents.",
+      "You can cover the structural improvements to your house.",
+      "No list of assets is needed to insure the contents of your home.",
+      "In case of a claim, compensation is at commercial value.",
+      "We have coverage for theft of contents in events such as the 'million-dollar call' (phone scam).",
+      "Damages caused by your pet may be covered through family civil liability."
+    ],
+    "tags": [
+      "familiar",
+      "hogar"
+    ]
+  },
+  {
+    "id": "plan_6e7dc13c55ed8223",
+    "provider": "Chubb",
+    "name": "Seguro de Hospitalización + Dr. Kura (Plan Familiar)",
+    "name_en": "Hospitalization Insurance + Dr. Kura (Family Plan)",
+    "category": "salud",
+    "country": "MX",
+    "base_price": 325,
+    "currency": "MXN",
+    "external_link": "https://www.chubb.com/mx-es/personas-y-familias/hospitalizacion.html",
+    "benefits": [
+      "Nuestro seguro te otorga $2,000 pesos por cada día de hospitalización*, en Hospitales Públicos o Privados, en caso de enfermedad o accidente.",
+      "Al ser un seguro indemnizatorio, no tienes que justificar en qué gastas el dinero recibido.",
+      "Para contratar nuestro seguro de hospitalización no requieres presentar exámenes ni cuestionarios médicos.",
+      "Solo considera un periodo de espera de 30 días a partir de la fecha de contratación.",
+      "Después de transcurrir las primeras 24 horas de hospitalización recibe una suma por cada día que permanezcas hospitalizado Hasta por 15 días.*",
+      "Podrás usar el dinero de tu indemnización diaria en lo que tú y tu familia necesiten, sin tener que comprobar los gastos.",
+      "Recibe orientación de médicos calificados por videollamada o Chat, las 24 horas, los 365 días del año, esta asistencia se incluye en nuestro Seguro de Hospitalización."
+    ],
+    "benefits_en": [
+      "Our insurance grants you $2,000 pesos for each day of hospitalization*, in Public or Private Hospitals, in case of illness or accident.",
+      "Being an indemnity insurance, you don't have to justify what you spend the received money on.",
+      "To contract our hospitalization insurance, you do not need to present medical exams or questionnaires.",
+      "Only consider a waiting period of 30 days from the contracting date.",
+      "After the first 24 hours of hospitalization, receive a sum for each day you remain hospitalized for up to 15 days.*",
+      "You can use the money from your daily indemnity for what you and your family need, without having to prove expenses.",
+      "Receive guidance from qualified doctors via video call or Chat, 24 hours a day, 365 days a year, this assistance is included in our Hospitalization Insurance."
+    ],
+    "min_age": 18,
+    "max_age": 69,
+    "tags": [
+      "familiar",
+      "auto"
+    ]
+  },
+  {
+    "id": "plan_d9c840a6daa708c1",
+    "provider": "Chubb",
+    "name": "Seguro de Hospitalización + Dr. Kura (Plan Individual)",
+    "name_en": "Hospitalization Insurance + Dr. Kura (Individual Plan)",
+    "category": "salud",
+    "country": "MX",
+    "base_price": 225,
+    "currency": "MXN",
+    "external_link": "https://www.chubb.com/mx-es/personas-y-familias/hospitalizacion.html",
+    "benefits": [
+      "Nuestro seguro te otorga $2,000 pesos por cada día de hospitalización*, en Hospitales Públicos o Privados, en caso de enfermedad o accidente.",
+      "Al ser un seguro indemnizatorio, no tienes que justificar en qué gastas el dinero recibido.",
+      "Para contratar nuestro seguro de hospitalización no requieres presentar exámenes ni cuestionarios médicos.",
+      "Solo considera un periodo de espera de 30 días a partir de la fecha de contratación.",
+      "Después de transcurrir las primeras 24 horas de hospitalización recibe una suma por cada día que permanezcas hospitalizado Hasta por 15 días.*",
+      "Podrás usar el dinero de tu indemnización diaria en lo que tú y tu familia necesiten, sin tener que comprobar los gastos.",
+      "Recibe orientación de médicos calificados por videollamada o Chat, las 24 horas, los 365 días del año, esta asistencia se incluye en nuestro Seguro de Hospitalización."
+    ],
+    "benefits_en": [
+      "Our insurance grants you $2,000 pesos for each day of hospitalization*, in Public or Private Hospitals, in case of illness or accident.",
+      "Being an indemnity insurance, you don't have to justify what you spend the received money on.",
+      "To contract our hospitalization insurance, you do not need to present medical exams or questionnaires.",
+      "Only consider a waiting period of 30 days from the contracting date.",
+      "After the first 24 hours of hospitalization, receive a sum for each day you remain hospitalized for up to 15 days.*",
+      "You can use the money from your daily indemnity for what you and your family need, without having to prove expenses.",
+      "Receive guidance from qualified doctors via video call or Chat, 24 hours a day, 365 days a year, this assistance is included in our Hospitalization Insurance."
+    ],
+    "min_age": 18,
+    "max_age": 69,
+    "tags": [
+      "auto"
+    ]
+  },
+  {
+    "id": "plan_fe3a79f1caebd0f6",
+    "provider": "Chubb",
+    "name": "Accidentes Personales",
+    "name_en": "Personal Accident Insurance",
+    "category": "vida",
+    "country": "CO",
+    "base_price": 11600,
+    "currency": "COP",
+    "external_link": "https://www.chubb.com/co-es/personas-y-familias/accidentes-personales-beneficios.html",
+    "benefits": [
+      "Incapacidad Total y Permanente por Accidente",
+      "Reembolso de Gastos Médicos por Accidente",
+      "Fractura de Huesos",
+      "Hospitalización en Unidad de Cuidados Intensivos",
+      "Desmembración por Accidente",
+      "Renta Diaria Hospitalización por Accidente"
+    ],
+    "benefits_en": [
+      "Total and Permanent Disability due to Accident",
+      "Reimbursement of Medical Expenses due to Accident",
+      "Bone Fracture",
+      "Hospitalization in Intensive Care Unit",
+      "Dismemberment due to Accident",
+      "Daily Hospitalization Income due to Accident"
+    ],
+    "min_age": 18,
+    "max_age": 64.997
+  },
+  {
+    "id": "plan_4ee2fc871d304642",
+    "provider": "Allianz",
+    "name": "VitAllianz",
+    "name_en": "VitAllianz",
+    "category": "salud",
+    "country": "CO",
+    "base_price": 91800,
+    "currency": "COP",
+    "external_link": "https://www.allianz.co/seguros/personas/salud/vitallianz.html",
+    "benefits": [
+      "Consultas médicas generales y especializadas",
+      "Exámenes diagnósticos y procedimientos ambulatorios",
+      "Terapias físicas y de rehabilitación",
+      "Telemedicina ilimitada para atención desde casa",
+      "Urgencias odontológicas domiciliarias",
+      "Programas de bienestar físico y emocional",
+      "Atención veterinaria general y conductual para mascotas (presencial y virtual)"
+    ],
+    "benefits_en": [
+      "General and specialized medical consultations",
+      "Diagnostic exams and outpatient procedures",
+      "Physical and rehabilitation therapies",
+      "Unlimited telemedicine for at-home care",
+      "In-home dental emergencies",
+      "Physical and emotional well-being programs",
+      "General and behavioral veterinary care for pets (in-person and virtual)"
+    ],
+    "tags": [
+      "odontologia",
+      "mascotas"
+    ]
+  },
+  {
+    "id": "plan_bcd040001eeb8a49",
+    "provider": "Allianz",
+    "name": "EsenciAll",
+    "name_en": "Essential",
+    "category": "vida",
+    "country": "CO",
+    "base_price": 135000,
+    "currency": "COP",
+    "external_link": "https://www.allianz.co/seguros/personas/vida/esencial.html",
+    "benefits": [
+      "Garantiza el bienestar de quienes amas.",
+      "Asegúrate rápidamente, con una solicitud sencilla y sin exámenes médicos.",
+      "Cobertura en todo el país y sin límites a tu actividad económica."
+    ],
+    "benefits_en": [
+      "Guarantees the well-being of those you love.",
+      "Get insured quickly, with a simple application and no medical exams.",
+      "Coverage throughout the country and without limits to your economic activity."
+    ],
+    "min_age": 18,
+    "max_age": 54,
+    "tags": [
+      "Vida (Life Insurance)"
+    ]
+  }
+]

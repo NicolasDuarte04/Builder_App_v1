@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useCallback } from 'react';
 
 interface Toast {
@@ -10,10 +12,7 @@ export function useToast() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const toast = useCallback((newToast: Toast) => {
-    // For now, just log to console
-    console.log('🔔 Toast:', newToast);
-    
-    // In a real implementation, this would show a toast notification
+    // In a real implementation, wire to your UI bus or shadcn Toaster
     setToasts(prev => [...prev, newToast]);
     
     // Auto-remove after 3 seconds
@@ -24,3 +23,14 @@ export function useToast() {
 
   return { toast, toasts };
 } 
+
+// Lightweight client-only function (no hooks required)
+export function toast(t: Toast) {
+  if (typeof window !== 'undefined') {
+    // Temporary console fallback until a global Toaster is wired
+    console.info('[toast]', t.title, t.description ?? '');
+    try {
+      // Example: window.dispatchEvent(new CustomEvent('briki:toast', { detail: t }));
+    } catch {}
+  }
+}

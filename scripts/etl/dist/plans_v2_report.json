@@ -1,0 +1,79 @@
+{
+  "countsByCountry": {
+    "MX": 29,
+    "CO": 41
+  },
+  "countsByCategory": {
+    "vida": 10,
+    "otros": 3,
+    "salud": 21,
+    "viaje": 27,
+    "mascotas": 4,
+    "hogar": 4,
+    "auto": 1
+  },
+  "countsByProvider": {
+    "AXA": 4,
+    "Bmi Cos.": 14,
+    "Chubb": 12,
+    "Colsanitas": 5,
+    "Seguros SURA": 8,
+    "Hdi Seguros": 2,
+    "Allianz": 16,
+    "AXA Colpatria": 4,
+    "Colmena Seguros": 4,
+    "Seguros Bolívar": 1
+  },
+  "priceStatsByCountry": {
+    "MX": {
+      "min": 18.25,
+      "max": 10000,
+      "avg": 1586.38,
+      "median": 405,
+      "count": 29
+    },
+    "CO": {
+      "min": 18.25,
+      "max": 601726,
+      "avg": 149425.58,
+      "median": 100000,
+      "count": 41
+    }
+  },
+  "usdRows": [],
+  "linkQuality": {
+    "missingWebsite": 3,
+    "pdfDetected": 3
+  },
+  "benefitLengthDistribution": {
+    "3": 4,
+    "4": 6,
+    "5": 9,
+    "6": 3,
+    "7": 6,
+    "8": 42
+  },
+  "coercions": [
+    "Coerced USD→MXN (unjustified) for MX",
+    "Coerced USD→MXN (unjustified) for MX",
+    "Coerced USD→MXN (unjustified) for MX",
+    "Coerced USD→MXN (unjustified) for MX",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→MXN (unjustified) for MX",
+    "Coerced USD→MXN (unjustified) for MX",
+    "Coerced USD→MXN (unjustified) for MX",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→COP (unjustified) for CO",
+    "Coerced USD→MXN (unjustified) for MX"
+  ]
+}

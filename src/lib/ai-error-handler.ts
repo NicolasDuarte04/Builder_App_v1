@@ -1,4 +1,4 @@
-import { toast } from "@/hooks/use-toast";
+import { notify } from '@/lib/notify';
 
 interface ToolError {
   toolName: string;
@@ -57,8 +57,6 @@ export async function executeTool<T>(
     return result;
   } catch (error) {
     logToolError({ toolName, error, context });
-    
-    // Throw AIToolError for upstream handling
     throw new AIToolError(toolName, error, context);
   }
 }
@@ -87,14 +85,12 @@ export function handleAIError(error: any, showToast: boolean = true) {
     technicalDetails = error.message;
   }
 
-  if (showToast && typeof window !== 'undefined') {
-    // This will only run on the client side
+  if (showToast) {
     const toastMessage = process.env.NODE_ENV === 'development' && technicalDetails
       ? `${userMessage}\n\nDetalles: ${technicalDetails}`
       : userMessage;
-
-    // Note: This assumes toast is available in the component context
-    console.error('Toast message:', toastMessage);
+    // server-safe notify: logs on server, uses client toast on browser
+    notify({ title: 'Aviso', description: toastMessage });
   }
 
   return {

@@ -20,6 +20,8 @@ interface PlanResultsData {
   category?: string;
   query?: string;
   timestamp?: Date;
+  filters?: { includeCategories?: string[]; excludeCategories?: string[] };
+  dataSource?: string;
 }
 
 interface PlanResultsSidebarProps {
@@ -180,6 +182,14 @@ export function PlanResultsSidebar({
                 <X className="h-4 w-4" />
               </Button>
             </div>
+
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mb-2 text-[11px] text-gray-500">
+                <span>
+                  Filtered by: include=[{activeResults?.filters?.includeCategories?.join(', ') || ''}] exclude=[{activeResults?.filters?.excludeCategories?.join(', ') || ''}] • datasource={activeResults?.dataSource || (process.env.BRIKI_DATA_SOURCE || 'legacy')}
+                </span>
+              </div>
+            )}
 
             {/* Result History Tabs */}
             {resultHistory.length > 1 && (
@@ -348,11 +358,15 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
   const { language } = useTranslation();
 
   const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: currency || 'COP',
-      minimumFractionDigits: 0,
-    }).format(price);
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: (currency as any) || 'COP',
+        maximumFractionDigits: 2,
+      }).format(price);
+    } catch {
+      return `${price.toFixed(2)} ${currency || 'COP'}`;
+    }
   };
 
   const getQuoteLabel = (lang: string) => (lang?.startsWith('es') ? 'Ver en el sitio' : 'See on website');
@@ -389,9 +403,9 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
           <p className="text-xs text-gray-600 dark:text-gray-400">
             {plan.provider}
           </p>
-          {(!plan.basePrice || plan.basePrice === 0) && plan.external_link && (
+          {(!plan.basePrice || plan.basePrice === 0) && (plan.external_link || (plan as any).website) && (
             <a
-              href={plan.external_link}
+              href={plan.external_link || (plan as any).website}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-blue-600 underline-offset-2 hover:underline"
@@ -451,6 +465,18 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
           >
             {language?.startsWith('es') ? 'Cotizar' : 'Quote'}
           </Button>
+          {((plan as any).brochure_link || (plan as any).brochure) && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 h-7 text-xs"
+              asChild
+            >
+              <a href={(plan as any).brochure_link || (plan as any).brochure} target="_blank" rel="noopener noreferrer">
+                {language?.startsWith('es') ? 'Folleto' : 'Brochure'}
+              </a>
+            </Button>
+          )}
         </div>
       )}
     </motion.div>

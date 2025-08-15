@@ -7,7 +7,7 @@ import { InsurancePlan } from '../briki-ai-assistant/NewPlanCard';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/Badge';
 import { useTranslation } from '@/hooks/useTranslation';
-import { translateIfEnglish, translateListIfEnglish, formatPlanName } from '@/lib/text-translation';
+import { formatPrice as fmt, localizedBenefits, localizedName } from '@/lib/formatters';
 
 interface PlanDetailsModalProps {
   plan: InsurancePlan | null;
@@ -19,16 +19,13 @@ interface PlanDetailsModalProps {
 export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsModalProps) {
   if (!plan) return null;
 
-  const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: currency || 'COP',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
   const { language } = useTranslation();
-  const quoteLabel = language?.startsWith('es') ? 'Ver en el sitio' : 'See on website';
+  const isEN = language === 'en';
+  const t = (k: string) => {
+    const EN = { quote: 'Quote', viewPolicy: 'View Policy (PDF)', website: 'See Website', benefits: 'Benefits', policy: 'Policy/Brochure' } as const;
+    const ES = { quote: 'Cotizar', viewPolicy: 'Ver Póliza (PDF)', website: 'Ver sitio', benefits: 'Beneficios', policy: 'Póliza/Folleto' } as const;
+    return (isEN ? EN : ES)[k as keyof typeof EN];
+  };
 
   return (
     <AnimatePresence>
@@ -70,25 +67,23 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
               {/* Plan Header */}
               <div className="text-center">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  {formatPlanName(translateIfEnglish(plan.name, language), language)}
+                  {localizedName((plan as any).name, (plan as any).name_en, isEN)}
                 </h3>
-                <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
-                  {(!plan.basePrice || plan.basePrice === 0) && plan.external_link
-                    ? quoteLabel
-                    : formatPrice(plan.basePrice, plan.currency)}
-                  {!( (!plan.basePrice || plan.basePrice === 0) && plan.external_link ) && (
-                    <span className="text-sm font-normal text-gray-600 dark:text-gray-400">{language?.startsWith('es') ? '/mes' : '/month'}</span>
-                  )}
-                </div>
+                {fmt((plan as any).basePrice ?? (plan as any).base_price, (plan as any).currency) && (
+                  <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
+                    {fmt((plan as any).basePrice ?? (plan as any).base_price, (plan as any).currency)}
+                    <span className="text-sm font-normal text-gray-600 dark:text-gray-400"> {isEN ? '/month' : '/mes'}</span>
+                  </div>
+                )}
               </div>
 
               {/* Benefits */}
               <div>
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                  Beneficios principales
+                  {t('benefits')}
                 </h4>
-                <div className="space-y-2">
-                  {translateListIfEnglish(plan.benefits, language).map((benefit, index) => (
+                <div className="space-y-2 max-h-64 overflow-auto pr-1">
+                  {localizedBenefits((plan as any).benefits, (plan as any).benefits_en, isEN).map((benefit: string, index: number) => (
                     <div key={index} className="flex items-start gap-3">
                       <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                       <span className="text-gray-700 dark:text-gray-300">{benefit}</span>
@@ -111,37 +106,31 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
                 </div>
               )}
 
-              {/* Quote Form or External Link */}
-              {mode === 'quote' && (
+              {/* Policy/Brochure */}
+              {(((plan as any).brochure_link || (plan as any).brochure) || ((plan as any).external_link || (plan as any).website)) && (
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                  {plan.is_external && plan.external_link && plan.link_status !== 'broken' ? (
-                    <div className="text-center space-y-4">
-                      <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
-                        <ExternalLink className="w-5 h-5" />
-                        <span className="font-medium">Cotización externa</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Serás redirigido al sitio oficial de {plan.provider} para completar tu cotización.
-                      </p>
-                      <Button
-                        onClick={() => window.open(plan.external_link!, '_blank', 'noopener,noreferrer')}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  <div className="flex flex-col sm:flex-row gap-2 sm:justify-center">
+                    {((plan as any).external_link || (plan as any).website) && (
+                      <a
+                        href={(plan as any).external_link || (plan as any).website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2"
                       >
-                        Ir a {plan.provider}
-                        <ExternalLink className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="text-center space-y-4">
-                      <div className="flex items-center justify-center gap-2 text-yellow-600 dark:text-yellow-400">
-                        <AlertCircle className="w-5 h-5" />
-                        <span className="font-medium">Cotización no disponible</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Este plan no tiene cotización disponible en línea. Contacta directamente con {plan.provider}.
-                      </p>
-                    </div>
-                  )}
+                        <ExternalLink className="w-4 h-4 mr-2" /> {t('quote')}
+                      </a>
+                    )}
+                    {((plan as any).brochure_link || (plan as any).brochure) && (
+                      <a
+                        href={(plan as any).brochure_link || (plan as any).brochure}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-md border border-gray-300 hover:border-blue-300 text-sm px-4 py-2"
+                      >
+                        {t('viewPolicy')}
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

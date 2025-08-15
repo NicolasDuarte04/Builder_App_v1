@@ -189,6 +189,8 @@ export function useBrikiChat(initialMessages?: any[]) {
         hasRealPlans: data.hasRealPlans,
         isExactMatch: data.isExactMatch,
         noExactMatchesFound: data.noExactMatchesFound,
+        filters: data.filters,
+        dataSource: data.dataSource,
       },
       metadata: {
         timestamp: new Date(),

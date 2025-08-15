@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "node scripts/copy-pdf-worker.mjs",
+    "etl:transform": "pnpm tsx scripts/etl/transform.ts",
+    "etl:check": "pnpm tsx scripts/etl/check.ts",
     "webhound:transform": "node scripts/webhound-data-transformer.js",
     "webhound:refresh": "node scripts/webhound-refresh.js",
     "webhound:dry-run": "node scripts/webhound-refresh.js --dry-run",
@@ -81,6 +83,7 @@
     "ignore-loader": "^0.1.2",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "tsx": "^4.19.2"
   }
 }

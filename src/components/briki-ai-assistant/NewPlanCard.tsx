@@ -34,11 +34,15 @@ interface NewPlanCardProps {
 
 
 const formatPrice = (price: number, currency: string) => {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: currency || 'COP',
-    minimumFractionDigits: 0,
-  }).format(price);
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: (currency as any) || 'COP',
+      maximumFractionDigits: 2,
+    }).format(price);
+  } catch {
+    return `${price.toFixed(2)} ${currency || 'COP'}`;
+  }
 };
 
 const getQuoteLabel = (language: string) =>
@@ -81,14 +85,26 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
   };
 
   // Ensure we have valid data
+  const nameForLang = language?.startsWith('en')
+    ? ((plan as any).name_en || (plan as any).plan_name_en || plan.name || 'Insurance Plan')
+    : (plan.name || 'Plan de Seguro');
+  const benefitsForLang = (() => {
+    const base = Array.isArray(plan.benefits) ? plan.benefits : [];
+    if (language?.startsWith('en')) {
+      const en = (plan as any).benefits_en;
+      if (Array.isArray(en) && en.length > 0) return en;
+    }
+    return base;
+  })();
+
   const safePlan = {
     id: plan.id || 0,
-    name: formatPlanName(translateIfEnglish(plan.name || 'Plan de Seguro', language), language),
+    name: formatPlanName(nameForLang, language),
     provider: plan.provider || 'Proveedor',
     category: translateCategoryIfEnglish(plan.category || 'seguro', language),
     basePrice: plan.basePrice || 0,
     currency: plan.currency || 'COP',
-    benefits: translateListIfEnglish(Array.isArray(plan.benefits) ? plan.benefits : [], language),
+    benefits: benefitsForLang,
     rating: plan.rating || 4.0,
     tags: Array.isArray(plan.tags) ? plan.tags : [],
     is_external: plan.is_external !== undefined ? plan.is_external : true,
@@ -220,6 +236,16 @@ const NewPlanCard: React.FC<NewPlanCardProps> = ({ plan, onViewDetails, onQuote 
             >
               Cotizar ahora
             </Button>
+            {/* Brochure secondary button if available on legacy type via project types */}
+            {(plan as any).brochure_link && (
+              <Button
+                variant="outline"
+                className="flex-1"
+                asChild
+              >
+                <a href={(plan as any).brochure_link} target="_blank" rel="noopener noreferrer">{language?.startsWith('es') ? 'Folleto' : 'Brochure'}</a>
+              </Button>
+            )}
           </div>
         </CardFooter>
       </Card>

@@ -1,6 +1,7 @@
 import { streamText, tool } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { queryInsurancePlans, hasDatabaseUrl } from '@/lib/render-db';
+import { searchPlans } from '@/lib/plans-client';
 import { InsurancePlan } from '@/types/project';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -290,14 +291,45 @@ export async function POST(req: Request) {
                 envVarLength: process.env.RENDER_POSTGRES_URL?.length || 0
               });
 
-              const plans = await queryInsurancePlans({
+              // Infer include/exclude categories from latest user messages
+              const userText = messages
+                .filter((m) => m.role === 'user')
+                .slice(-3)
+                .map((m: any) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)))
+                .join(' \n ')
+                .toLowerCase();
+              const includeCategories: string[] = [];
+              const excludeCategories: string[] = [];
+              if (/\b(salud|health)\b/.test(userText)) includeCategories.push('salud');
+              if (/(no\s+dental|sin\s+dental|\bno\s+odont|\bsin\s+odont)/.test(userText)) excludeCategories.push('dental');
+
+              // Feature-flag aware search path
+              const anyPlans = await searchPlans({
                 category,
                 max_price,
                 country,
                 tags,
                 benefits_contain,
                 limit: 4,
+                includeCategories: includeCategories.length ? includeCategories : undefined,
+                excludeCategories: excludeCategories.length ? excludeCategories : undefined,
               });
+
+              // Normalize to legacy-like shape expected below
+              const plans = anyPlans.map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                provider: p.provider,
+                base_price: p.base_price ?? p.basePrice ?? 0,
+                base_price_formatted: p.base_price_formatted ?? null,
+                currency: p.currency ?? 'COP',
+                benefits: Array.isArray(p.benefits) ? p.benefits : [],
+                category: p.category,
+                rating: p.rating ?? null,
+                external_link: p.external_link ?? p.website ?? null,
+                brochure_link: p.brochure_link ?? p.brochure ?? null,
+                is_external: p._schema === 'v2' ? true : (p.is_external ?? true),
+              }));
               
               // Check if we got fuzzy matches (different categories)
               const isExactMatch = plans.length > 0 && plans.every(plan => 
@@ -364,6 +396,7 @@ export async function POST(req: Request) {
                 category: plan.category,
                 rating: plan.rating,
                 external_link: plan.external_link,
+                brochure_link: (plan as any).brochure_link ?? null,
                 is_external: plan.is_external
               }));
               
@@ -374,7 +407,9 @@ export async function POST(req: Request) {
                 hasRealPlans: finalPlans.length > 0,
                 isExactMatch: isExactMatch && finalPlans.length > 0,
                 noExactMatchesFound: !isExactMatch && finalPlans.length > 0,
-                categoriesFound: [...new Set(finalPlans.map(p => p.category))]
+                categoriesFound: [...new Set(finalPlans.map(p => p.category))],
+                filters: { includeCategories, excludeCategories },
+                dataSource: process.env.BRIKI_DATA_SOURCE || 'legacy'
               };
               
               console.log('✅✅✅ TOOL EXECUTION FINISHED ✅✅✅');

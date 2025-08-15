@@ -1,4 +1,7 @@
 import type { Config } from 'tailwindcss';
+// Guard plugin loading to avoid crashes if dependency is missing in ephemeral envs
+const plugins: any[] = [];
+try { plugins.push(require('tailwindcss-animate')); } catch (_) {}
 
 const config: Config = {
   darkMode: ['class', 'class'],
@@ -109,7 +112,7 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins,
 };
 
 export default config; 

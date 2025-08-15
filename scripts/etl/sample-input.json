@@ -1,0 +1,74 @@
+[
+  {
+    "provider_name": "Bancolombia Seguros S.A.",
+    "title": "Plan Salud Familiar Plus",
+    "title_en": "Family Health Plus",
+    "country": "CO",
+    "category_raw": "Health",
+    "price": { "amount": "120000", "period": "month", "currency": "COP" },
+    "links": {
+      "product": "https://seguros.banco.com/salud/familiar-plus",
+      "brochure": "https://seguros.banco.com/files/familiar-plus.pdf"
+    },
+    "benefits": ["Urgencias 24/7", "Red nacional", "Cobertura internacional"],
+    "benefits_en": ["24/7 emergency care", "Nationwide network", "International coverage"],
+    "tags": ["family"]
+  },
+  {
+    "provider": "AXA Colpatria",
+    "name": "Vida Protegida",
+    "country_code": "CO",
+    "category": "vida",
+    "price": { "amount": 2400000, "period": "year", "currency": "COP" },
+    "product_url": "https://www.axacolpatria.co/seguros/personas/vida-protegida",
+    "pdf_url": "https://www.axacolpatria.co/brochures/vida-protegida.pdf",
+    "features": ["Amparo por invalidez", "Indemnización por muerte accidental", "Asistencia funeral"],
+    "min_age": 18,
+    "max_age": 65
+  },
+  {
+    "company": "SURA",
+    "plan_name": "SOAT Motos",
+    "country": "CO",
+    "product_type": "soat",
+    "monthly_price": "95,000",
+    "website": "https://www.segurossura.com.co/soat",
+    "benefits": ["Cobertura de accidentes", "Atención inmediata", "Amplia red"],
+    "notes": "Precio mensual aproximado"
+  },
+  {
+    "provider_name": "Mapfre Seguros",
+    "title": "Auto Esencial",
+    "country": "MX",
+    "category": "auto",
+    "price": { "amount": "15000", "period": "year", "currency": "MXN" },
+    "links": {
+      "product": "https://www.mapfre.com.mx/seguros/auto-esencial",
+      "brochure": "https://www.mapfre.com.mx/archivos/auto-esencial.pdf"
+    },
+    "benefits": ["Responsabilidad civil", "Asistencia vial 24/7", "Cobertura de robo parcial y total"],
+    "keywords": ["auto", "esencial"]
+  },
+  {
+    "provider": "BUPA",
+    "name": "Travel Global",
+    "country": "MX",
+    "category": "travel",
+    "price": { "amount": "12", "period": "day", "currency": "USD" },
+    "links": { "product": "https://www.bupa.com/travel/global" },
+    "benefits": ["Cobertura internacional", "Asistencia médica", "Repatriación"],
+    "description": "Plan internacional con cobertura en USD por día"
+  },
+  {
+    "provider": "DentalCare Co.",
+    "plan_name": "Plan Sonrisas",
+    "country": "MX",
+    "type": "odontologico",
+    "price": { "amount": "0", "period": "month", "currency": "MXN" },
+    "links": { "brochure": "https://dentalcare.mx/planes/sonrisas.pdf" },
+    "bulletPoints": ["Limpiezas", "Ortodoncia", "Estética"],
+    "notes": "Solo PDF disponible"
+  }
+]
+
+

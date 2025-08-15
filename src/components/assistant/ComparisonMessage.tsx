@@ -506,9 +506,9 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
                 <td className={`${CELL_PX} ${LABEL_TEXT}`}>{language === 'es' ? 'Cotización' : 'Quote'}</td>
               {plans.map((plan) => (
                 <td key={plan.id} className={`${CELL_PX} text-left`}>
-                  {plan.external_link ? (
+                  {((plan as any).external_link || (plan as any).website) ? (
                     <a
-                      href={plan.external_link}
+                      href={(plan as any).external_link || (plan as any).website}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`inline-flex items-center gap-1 align-middle text-[11px] text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300`}
@@ -517,6 +517,27 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
                     </a>
                   ) : (
                      <span className={`text-[11px] text-gray-500`}>{language === 'es' ? 'No disponible' : 'Not available'}</span>
+                  )}
+                </td>
+              ))}
+            </tr>
+
+            {/* Brochure */}
+            <tr className="border-b border-gray-100 dark:border-gray-800">
+              <td className={`${CELL_PX} ${LABEL_TEXT}`}>{language === 'es' ? 'Folleto' : 'Brochure'}</td>
+              {plans.map((plan) => (
+                <td key={plan.id} className={`${CELL_PX} text-left`}>
+                  {((plan as any).brochure_link || (plan as any).brochure) ? (
+                    <a
+                      href={(plan as any).brochure_link || (plan as any).brochure}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`inline-flex items-center gap-1 align-middle text-[11px] text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300`}
+                    >
+                      {language === 'es' ? 'Ver folleto' : 'View brochure'}
+                    </a>
+                  ) : (
+                    <span className={`text-[11px] text-gray-500`}>—</span>
                   )}
                 </td>
               ))}
