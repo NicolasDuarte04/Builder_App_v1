@@ -23,38 +23,41 @@ export async function searchPlans(filters: PlanFilters): Promise<AnyPlan[]> {
   // New v2 source path (shadow or primary)
   if (ds === 'plans_v2' || ds === 'plans_v2_shadow') {
     // Fetch from the new table via existing API if present, or fall back to local DB query with SQL targeting plans_v2
-    if (EXTERNAL_URL) {
-      const body = {
-        ...filters,
-        includeCategories: filters.includeCategories,
-        excludeCategories: filters.excludeCategories,
-        dataSource: ds,
-      };
-      const res = await fetch(`${EXTERNAL_URL.replace(/\/$/, '')}/plans_v2/search`, {
+    try {
+      const body = { ...filters } as any;
+      const res = await fetch(`/api/plans_v2/search`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error(`plans_v2 api ${res.status}`);
-      const json = await res.json();
-      const rows: any[] = json.plans ?? [];
-      const mapped: PlanV2[] = rows.map((r) => ({
-        id: String(r.id),
-        name: r.name,
-        name_en: r.name_en ?? r.name,
-        provider: r.provider,
-        category: r.category,
-        country: r.country,
-        base_price: Number(r.base_price),
-        currency: r.currency,
-        external_link: r.external_link,
-        brochure_link: r.brochure_link ?? null,
-        benefits: Array.isArray(r.benefits) ? r.benefits : [],
-        benefits_en: Array.isArray(r.benefits_en) ? r.benefits_en : [],
-        tags: Array.isArray(r.tags) ? r.tags : [],
-        _schema: 'v2',
-      }));
-      return mapped;
+      if (res.ok) {
+        const rows: any[] = await res.json();
+        if (Array.isArray(rows) && rows.length > 0) {
+          const mapped: PlanV2[] = rows.map((r) => ({
+            id: String(r.id),
+            name: r.name,
+            name_en: r.name_en ?? r.name,
+            provider: r.provider,
+            category: r.category,
+            country: r.country,
+            base_price: Number(r.base_price),
+            currency: r.currency,
+            external_link: r.external_link,
+            brochure_link: r.brochure_link ?? null,
+            benefits: Array.isArray(r.benefits) ? r.benefits : [],
+            benefits_en: Array.isArray(r.benefits_en) ? r.benefits_en : [],
+            tags: Array.isArray(r.tags) ? r.tags : [],
+            _schema: 'v2',
+          }));
+          if (process.env.NODE_ENV !== 'production') {
+            console.info('[plans] datasource:', ds, { includeCategories: filters.includeCategories, excludeCategories: filters.excludeCategories, count: mapped.length });
+          }
+          return mapped;
+        }
+      }
+    } catch (e) {
+      if (ds === 'plans_v2') throw e;
+      // else shadow falls through
     }
     // If no external API, we can still use the legacy query for UI fallback; return legacy until API exists
     const legacy = await localQuery({

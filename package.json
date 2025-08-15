@@ -14,7 +14,10 @@
     "webhound:refresh": "node scripts/webhound-refresh.js",
     "webhound:dry-run": "node scripts/webhound-refresh.js --dry-run",
     "webhound:backup": "node scripts/webhound-refresh.js --backup-only",
-    "webhound:rollback": "node scripts/webhound-refresh.js --rollback"
+    "webhound:rollback": "node scripts/webhound-refresh.js --rollback",
+    "db:v2:create": "psql \"$DATABASE_URL\" -f migrations/001_create_plans_v2.sql",
+    "db:v2:load": "psql \"$DATABASE_URL\" -f scripts/etl/dist/plans_v2.sql",
+    "db:v2:verify": "node scripts/db/verify-plans-v2.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
