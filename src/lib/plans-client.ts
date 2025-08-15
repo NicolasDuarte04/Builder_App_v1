@@ -133,7 +133,11 @@ export async function searchPlans(filters: PlanFilters): Promise<AnyPlan[]> {
     const fs = await import('node:fs');
     const path = await import('node:path');
     const root = process.cwd();
-    const jsonPath = path.join(root, 'scripts', 'etl', 'dist', 'plans_v2.json');
+    let jsonPath = path.join(root, 'scripts', 'etl', 'dist', 'plans_v2.json');
+    if (!fs.existsSync(jsonPath)) {
+      // Fallback path checked into repo for local dev
+      jsonPath = path.join(root, 'data', 'plans_v2.json');
+    }
     const raw = fs.readFileSync(jsonPath, 'utf8');
     const data = JSON.parse(raw);
     const filtered = (Array.isArray(data) ? data : []).filter((r: any) => {

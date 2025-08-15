@@ -22,7 +22,7 @@ async function main() {
     const { rows: badCurrency } = await client.query("SELECT COUNT(*)::int AS c FROM public.plans_v2 WHERE currency NOT IN ('COP','MXN','EUR','USD')");
     if (badCurrency[0]?.c > 0) throw new Error('Invalid currency values present');
 
-    const { rows: nullLinks } = await client.query('SELECT COUNT(*)::int AS c FROM public.plans_v2 WHERE external_link IS NULL OR external_link = ''''');
+    const { rows: nullLinks } = await client.query("SELECT COUNT(*)::int AS c FROM public.plans_v2 WHERE external_link IS NULL OR external_link = ''");
     if (nullLinks[0]?.c > 0) throw new Error('Null/empty external_link present');
 
     const { rows: badBenefits } = await client.query("SELECT COUNT(*)::int AS c FROM public.plans_v2 WHERE jsonb_typeof(benefits) <> 'array' OR jsonb_typeof(benefits_en) <> 'array'");

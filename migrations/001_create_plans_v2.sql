@@ -15,6 +15,10 @@ CREATE TABLE IF NOT EXISTS public.plans_v2 (
   tags JSONB NOT NULL DEFAULT '[]'::jsonb
 );
 
+-- Ensure optional numeric age columns exist for ETL compatibility
+ALTER TABLE IF EXISTS public.plans_v2 ADD COLUMN IF NOT EXISTS min_age NUMERIC;
+ALTER TABLE IF EXISTS public.plans_v2 ADD COLUMN IF NOT EXISTS max_age NUMERIC;
+
 CREATE INDEX IF NOT EXISTS plans_v2_cat_idx      ON public.plans_v2 (category);
 CREATE INDEX IF NOT EXISTS plans_v2_country_idx  ON public.plans_v2 (country);
 CREATE INDEX IF NOT EXISTS plans_v2_tags_gin     ON public.plans_v2 USING GIN (tags);
