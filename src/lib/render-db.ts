@@ -176,14 +176,15 @@ export async function queryInsurancePlans(filters: {
     }
 
     if (filters.category) {
-      const normalizedCategory = normalizeCategory(filters.category);
-      console.log(`🔍 Normalized category: ${filters.category} -> ${normalizedCategory}`);
-      if (Array.isArray(filters.category)) {
+      // Support multiple categories provided as a comma-separated list
+      const raw = String(filters.category);
+      const parts = raw.split(',').map((s) => normalizeCategory(s)).filter(Boolean) as string[];
+      if (parts.length > 1) {
         query += ` AND category = ANY($${paramIndex++}::text[])`;
-        // normalize each if array
-        const cats = (filters.category as any[]).map((c) => normalizeCategory(String(c)));
-        params.push(cats);
+        params.push(parts);
       } else {
+        const normalizedCategory = normalizeCategory(parts[0] || raw);
+        console.log(`🔍 Normalized category: ${filters.category} -> ${normalizedCategory}`);
         query += ` AND category = $${paramIndex++}`;
         params.push(normalizedCategory);
       }
@@ -197,25 +198,13 @@ export async function queryInsurancePlans(filters: {
       params.push(filters.max_price);
     }
     if (filters.tags && filters.tags.length > 0) {
-      // Tags filtering differs between schemas:
-      // - compat (legacy): tags is text[] → use array overlap '&&'
-      // - rich (v2/modern): tags is jsonb → use '?| text[]'
-      if (isCompat) {
-        query += ` AND (tags && $${paramIndex++}::text[])`;
-      } else {
-        query += ` AND (tags ?| $${paramIndex++}::text[])`;
-      }
+      // Legacy compat: tags is text[] → use array overlap (&&) with text[] cast
+      query += ` AND (tags && $${paramIndex++}::text[])`;
       params.push(filters.tags);
     }
     if (filters.benefits_contain) {
-      // Benefits textual search per schema type
-      if (isCompat) {
-        // compat: benefits is text[] → unnest + ILIKE
-        query += ` AND EXISTS (SELECT 1 FROM unnest(benefits) AS b WHERE b ILIKE $${paramIndex++})`;
-      } else {
-        // rich: benefits is jsonb → jsonb_array_elements_text + ILIKE
-        query += ` AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(benefits) AS b WHERE b ILIKE $${paramIndex++})`;
-      }
+      // Legacy compat: benefits is text[] → search any element via unnest + ILIKE
+      query += ` AND EXISTS (SELECT 1 FROM unnest(benefits) AS b WHERE b ILIKE $${paramIndex++})`;
       params.push(`%${filters.benefits_contain}%`);
     }
 
