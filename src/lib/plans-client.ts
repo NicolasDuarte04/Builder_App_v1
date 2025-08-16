@@ -32,10 +32,12 @@ export async function searchPlans(filters: PlanFilters): Promise<AnyPlan[]> {
           const { getServerOrigin } = await import('./get-origin');
           const origin = getServerOrigin();
           endpoint = new URL('/api/plans_v2/search', origin).toString();
+          console.log('[plans] v2 endpoint (server)', { endpoint, datasource: ds });
         } catch (e) {
           // Fallback to env or localhost
-          const origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+          const origin = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || process.env.VERCEL_URL || 'http://localhost:3000';
           endpoint = origin.startsWith('http') ? `${origin.replace(/\/$/, '')}/api/plans_v2/search` : `https://${origin}/api/plans_v2/search`;
+          console.log('[plans] v2 endpoint (fallback)', { endpoint, datasource: ds });
         }
       }
       const res = await fetch(endpoint, {
