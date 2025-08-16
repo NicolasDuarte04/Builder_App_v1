@@ -12,7 +12,6 @@ import {
   NavbarLogo,
   NavbarButton,
 } from "@/components/ui/resizable-navbar";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LanguageToggle } from "@/components/ui/LanguageToggle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSession, signOut } from "next-auth/react";
@@ -102,7 +101,6 @@ export function MainNavbar() {
           <NavItems items={navItems} />
           <div className="relative z-20 flex items-center space-x-2">
             <LanguageToggle />
-            <ThemeToggle />
             {status === "loading" ? (
               <div className="px-4 py-2 text-sm text-gray-500">Loading...</div>
             ) : session ? (
@@ -121,7 +119,6 @@ export function MainNavbar() {
           <NavbarLogo />
           <div className="flex items-center space-x-2">
             <LanguageToggle />
-            <ThemeToggle />
             <MobileNavToggle isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
           </div>
         </MobileNavHeader>
