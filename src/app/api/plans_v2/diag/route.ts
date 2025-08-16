@@ -23,6 +23,7 @@ export async function GET() {
     ok: false,
     hasDatabaseUrl,
     db_url_masked: maskedUrl,
+    datasourceDetected: process.env.BRIKI_DATA_SOURCE || null,
   };
 
   if (!pool || !hasDatabaseUrl) {

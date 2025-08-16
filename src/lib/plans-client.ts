@@ -22,7 +22,7 @@ export async function searchPlans(filters: PlanFilters): Promise<AnyPlan[]> {
   const ds = process.env.BRIKI_DATA_SOURCE;
   // New v2 source path (shadow or primary)
   if (ds === 'plans_v2' || ds === 'plans_v2_shadow') {
-    // Fetch from the new table via existing API if present, or fall back to local DB query with SQL targeting plans_v2
+    // Strict v2 mode: use v2 API; do NOT silently fall back to legacy when v2 is enabled
     try {
       const body = { ...filters } as any;
       const res = await fetch(`/api/plans_v2/search`, {
@@ -30,71 +30,36 @@ export async function searchPlans(filters: PlanFilters): Promise<AnyPlan[]> {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (res.ok) {
-        const rows: any[] = await res.json();
-        if (Array.isArray(rows) && rows.length > 0) {
-          const mapped: PlanV2[] = rows.map((r) => ({
-            id: String(r.id),
-            name: r.name,
-            name_en: r.name_en ?? r.name,
-            provider: r.provider,
-            category: r.category,
-            country: r.country,
-            base_price: Number(r.base_price),
-            currency: r.currency,
-            external_link: r.external_link,
-            brochure_link: r.brochure_link ?? null,
-            benefits: Array.isArray(r.benefits) ? r.benefits : [],
-            benefits_en: Array.isArray(r.benefits_en) ? r.benefits_en : [],
-            tags: Array.isArray(r.tags) ? r.tags : [],
-            _schema: 'v2',
-          }));
-          if (process.env.NODE_ENV !== 'production') {
-            console.info('[plans] datasource:', ds, { includeCategories: filters.includeCategories, excludeCategories: filters.excludeCategories, count: mapped.length });
-          }
-          return mapped;
-        }
+      if (!res.ok) {
+        const msg = `[plans] v2 search failed: ${res.status}`;
+        console.error(msg);
+        if (ds === 'plans_v2') throw new Error(msg);
+        return [];
       }
+      const rows: any[] = await res.json();
+      const mapped: PlanV2[] = (Array.isArray(rows) ? rows : []).map((r) => ({
+        id: String(r.id),
+        name: r.name,
+        name_en: r.name_en ?? r.name,
+        provider: r.provider,
+        category: r.category,
+        country: r.country,
+        base_price: Number(r.base_price),
+        currency: r.currency,
+        external_link: r.external_link,
+        brochure_link: r.brochure_link ?? null,
+        benefits: Array.isArray(r.benefits) ? r.benefits : [],
+        benefits_en: Array.isArray(r.benefits_en) ? r.benefits_en : [],
+        tags: Array.isArray(r.tags) ? r.tags : [],
+        _schema: 'v2',
+      }));
+      console.log('[plans] datasource used', { datasource: ds, used: 'plans_v2', count: mapped.length });
+      return mapped;
     } catch (e) {
       if (ds === 'plans_v2') throw e;
-      // else shadow falls through
+      console.error('[plans] v2_shadow request error; returning empty array', e);
+      return [];
     }
-    // If no external API, we can still use the legacy query for UI fallback; return legacy until API exists
-    const legacy = await localQuery({
-      category: filters.category,
-      max_price: filters.max_price,
-      country: filters.country,
-      tags: filters.tags,
-      benefits_contain: filters.benefits_contain,
-      limit: filters.limit,
-    });
-    const asLegacy: PlanLegacy[] = legacy.map((p) => ({
-      id: String(p.id),
-      name: p.name,
-      name_en: (p as any).plan_name_en ?? null,
-      provider: p.provider,
-      category: p.category,
-      country: (p.country as 'CO' | 'MX') ?? 'CO',
-      base_price: typeof p.base_price === 'number' ? p.base_price : Number(p.base_price) || null,
-      currency: (p.currency as any) ?? 'COP',
-      website: p.external_link ?? null,
-      brochure: p.brochure_link ?? null,
-      benefits: p.benefits ?? [],
-      benefits_en: (p as any).benefits_en ?? [],
-      tags: p.tags ?? [],
-      _schema: 'legacy',
-    }));
-    // Apply category include/exclude client-side as a fallback
-    return asLegacy.filter((row) => {
-      const cat = String(row.category || '').toLowerCase();
-      if (filters.includeCategories && filters.includeCategories.length > 0) {
-        if (!filters.includeCategories.map((c) => c.toLowerCase()).includes(cat)) return false;
-      }
-      if (filters.excludeCategories && filters.excludeCategories.length > 0) {
-        if (filters.excludeCategories.map((c) => c.toLowerCase()).includes(cat)) return false;
-      }
-      return true;
-    });
   }
 
   // Legacy path with safe fallback to v2 shadow if empty or error
