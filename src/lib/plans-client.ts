@@ -25,7 +25,20 @@ export async function searchPlans(filters: PlanFilters): Promise<AnyPlan[]> {
     // Strict v2 mode: use v2 API; do NOT silently fall back to legacy when v2 is enabled
     try {
       const body = { ...filters } as any;
-      const res = await fetch(`/api/plans_v2/search`, {
+      // Use absolute URL on the server to avoid "Invalid URL" in Node fetch
+      let endpoint = '/api/plans_v2/search';
+      if (typeof window === 'undefined') {
+        try {
+          const { getServerOrigin } = await import('./get-origin');
+          const origin = getServerOrigin();
+          endpoint = new URL('/api/plans_v2/search', origin).toString();
+        } catch (e) {
+          // Fallback to env or localhost
+          const origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+          endpoint = origin.startsWith('http') ? `${origin.replace(/\/$/, '')}/api/plans_v2/search` : `https://${origin}/api/plans_v2/search`;
+        }
+      }
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(body),
