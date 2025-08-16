@@ -8,6 +8,7 @@ import { MainNavbar } from "@/components/layout/Navbar"
 import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar"
 import AuthProvider from "@/components/AuthProvider"
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider"
+import ChunkRecovery from "./_components/ChunkRecovery"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -56,7 +57,7 @@ export default function RootLayout({
           storageKey="briki-theme"
         >
           {/* Stale chunk auto-reload safety */}
-          <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `(()=>{try{if(typeof window!=='undefined'){window.addEventListener('error',function(e){try{var m=String(e&&e.message||'');if(m.includes('Loading chunk')&&m.includes('failed')){location.reload();}}catch{}});}}catch{}})();` }} />
+          <ChunkRecovery />
           <LanguageProvider>
             <AuthProvider>
               <OnboardingProvider>

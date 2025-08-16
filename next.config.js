@@ -24,6 +24,16 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
+  async headers() {
+    return [
+      {
+        source: "/_next/static/chunks/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=60, s-maxage=60, stale-while-revalidate=59" },
+        ],
+      },
+    ];
+  },
   webpack: (config) => {
     config.resolve = config.resolve || {};
     // Prevent accidental resolution of node "canvas" in server builds
