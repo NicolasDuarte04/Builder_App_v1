@@ -178,8 +178,15 @@ export async function queryInsurancePlans(filters: {
     if (filters.category) {
       const normalizedCategory = normalizeCategory(filters.category);
       console.log(`🔍 Normalized category: ${filters.category} -> ${normalizedCategory}`);
-      query += ` AND category = $${paramIndex++}`;
-      params.push(normalizedCategory);
+      if (Array.isArray(filters.category)) {
+        query += ` AND category = ANY($${paramIndex++}::text[])`;
+        // normalize each if array
+        const cats = (filters.category as any[]).map((c) => normalizeCategory(String(c)));
+        params.push(cats);
+      } else {
+        query += ` AND category = $${paramIndex++}`;
+        params.push(normalizedCategory);
+      }
     }
     if (filters.country) {
       query += ` AND country = $${paramIndex++}`;
@@ -190,12 +197,25 @@ export async function queryInsurancePlans(filters: {
       params.push(filters.max_price);
     }
     if (filters.tags && filters.tags.length > 0) {
-      // Any-of match for tags using array existence operator
-      query += ` AND (tags ?| $${paramIndex++})`;
+      // Tags filtering differs between schemas:
+      // - compat (legacy): tags is text[] → use array overlap '&&'
+      // - rich (v2/modern): tags is jsonb → use '?| text[]'
+      if (isCompat) {
+        query += ` AND (tags && $${paramIndex++}::text[])`;
+      } else {
+        query += ` AND (tags ?| $${paramIndex++}::text[])`;
+      }
       params.push(filters.tags);
     }
     if (filters.benefits_contain) {
-      query += ` AND benefits::text ILIKE $${paramIndex++}`;
+      // Benefits textual search per schema type
+      if (isCompat) {
+        // compat: benefits is text[] → unnest + ILIKE
+        query += ` AND EXISTS (SELECT 1 FROM unnest(benefits) AS b WHERE b ILIKE $${paramIndex++})`;
+      } else {
+        // rich: benefits is jsonb → jsonb_array_elements_text + ILIKE
+        query += ` AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(benefits) AS b WHERE b ILIKE $${paramIndex++})`;
+      }
       params.push(`%${filters.benefits_contain}%`);
     }
 
