@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { eventBus } from '@/lib/event-bus';
 import { translateIfEnglish, translateListIfEnglish, formatPlanName } from '@/lib/text-translation';
+import { useUIOverlay } from '@/state/uiOverlay';
 
 
 interface PlanResultsData {
@@ -155,6 +156,8 @@ export function PlanResultsSidebar({
   // Log when the component renders
   console.log('[PlanResultsSidebar] Rendering:', { isOpen, plans: currentResults?.plans?.length });
 
+  const overlay = useUIOverlay();
+
   if (!isOpen) return null;
 
   return (
@@ -165,7 +168,7 @@ export function PlanResultsSidebar({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 24, stiffness: 220 }}
-          className={`fixed right-0 top-0 h-full w-96 lg:w-[28rem] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl z-50 flex flex-col ${className}`}
+          className={`fixed right-0 top-0 h-full w-96 lg:w-[28rem] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl z-[80] flex flex-col ${className}`}
         >
           {/* Header */}
           <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
@@ -173,17 +176,35 @@ export function PlanResultsSidebar({
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Insurance Results
               </h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                {/* Minimize to floating chip */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { overlay.minimizeResults(); onClose(); }}
+                  className="h-8 w-8 p-0"
+                  aria-label="Minimize results panel"
+                  title="Minimize"
+                >
+                  {/* simple minus icon via svg to avoid importing extra */}
+                  <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><rect x="4" y="9" width="12" height="2" rx="1"/></svg>
+                </Button>
+                {/* Close (hide) */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-8 w-8 p-0"
+                  aria-label="Close results panel"
+                  title="Close"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
-            {(process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_BRIKI_DATA_SOURCE) && (
+            {/* Hide filter debug for end users; can be re-enabled via explicit flag only */}
+            {process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_SHOW_FILTER_DEBUG === 'true' && (
               <div className="mb-2 text-[11px] text-gray-500">
                 <span>
                   Filtered by: include=[{activeResults?.filters?.includeCategories?.join(', ') || ''}] exclude=[{activeResults?.filters?.excludeCategories?.join(', ') || ''}] • datasource={activeResults?.dataSource || (process.env.NEXT_PUBLIC_BRIKI_DATA_SOURCE || 'legacy')}

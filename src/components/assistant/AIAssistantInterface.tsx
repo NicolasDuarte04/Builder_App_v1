@@ -62,6 +62,8 @@ import { PlanResultsObserver } from "./PlanResultsObserver";
 import { PlanPinObserver } from "./PlanPinObserver";
 import { CategoryFallbackObserver } from "./CategoryFallbackObserver";
 import { ComparisonObserver } from "./ComparisonObserver";
+import { useUIOverlay } from '@/state/uiOverlay';
+import { ResultsToggle } from './ResultsToggle';
 
 interface AIAssistantInterfaceProps {
   isLoading?: boolean;
@@ -225,25 +227,22 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
   const [isAnalysisDocked, setIsAnalysisDocked] = useState(false);
   const [showPolicyHistory, setShowPolicyHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  
-  // Track and restore right panel visibility around analyzer modals
-  const [shouldRestoreRightPanel, setShouldRestoreRightPanel] = useState(false);
-  useEffect(() => {
-    const analyzerActive = showPDFUpload || (!!policyAnalysis && !isAnalysisDocked);
-    if (analyzerActive) {
-      // Remember if the panel was open and hide it for focused experience
-      if (isRightPanelOpen) {
-        setShouldRestoreRightPanel(true);
-        hideRightPanel();
-      }
-    } else {
-      // Restore only if we hid it due to analyzer
-      if (shouldRestoreRightPanel) {
-        setSidebarOpen(true);
-        setShouldRestoreRightPanel(false);
-      }
-    }
-  }, [showPDFUpload, policyAnalysis, isAnalysisDocked]);
+
+  // Global overlay coordination
+  const overlay = useUIOverlay();
+
+  // Open/minimize logic when user triggers analyzer from button
+  const handleUploadFile = () => {
+    setShowPDFUpload(true);
+    overlay.openAnalyzeModal();
+  };
+
+  // Close modal paths should restore previous results state
+  const closeAnalyzer = () => {
+    setShowPDFUpload(false);
+    setPolicyAnalysis(null);
+    overlay.closeAnalyzeModal();
+  };
 
   // Set userId from session when available
   useEffect(() => {
@@ -516,18 +515,18 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     analyze: t("assistant.suggestions.analyze") as string[],
   };
 
-  const handleUploadFile = () => {
-    setShowPDFUpload(true);
-  };
+  // keep reference; replaced above to coordinate overlay
 
   const handleAnalysisComplete = (analysis: any) => {
     setPolicyAnalysis(analysis);
     setShowPDFUpload(false);
+    // keep modal context open while analysis dialog is open
   };
 
   const handleAnalysisError = (error: string) => {
     console.error('PDF analysis error:', error);
     setShowPDFUpload(false);
+    overlay.closeAnalyzeModal();
   };
 
   const handleCommandSelect = (command: string) => {
@@ -856,8 +855,8 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              onClick={() => setShowPDFUpload(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[90] flex items-center justify-center p-4"
+              onClick={closeAnalyzer}
             >
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
@@ -872,7 +871,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                       {t("assistant.analyze_policy")}
                     </h2>
                     <button
-                      onClick={() => setShowPDFUpload(false)}
+                      onClick={closeAnalyzer}
                       className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
                       <X className="w-5 h-5" />
@@ -905,8 +904,8 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              onClick={() => setPolicyAnalysis(null)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+              onClick={() => { setPolicyAnalysis(null); overlay.closeAnalyzeModal(); }}
             >
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
@@ -923,9 +922,9 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                         {t("assistant.analyze_policy")}
                       </h2>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => setIsAnalysisDocked(true)} className="px-2 py-1 text-xs border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-800">Minimize</button>
+                        <button onClick={() => { setIsAnalysisDocked(true); overlay.closeAnalyzeModal(); }} className="px-2 py-1 text-xs border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-800">Minimize</button>
                         <button
-                          onClick={() => setPolicyAnalysis(null)}
+                          onClick={() => { setPolicyAnalysis(null); overlay.closeAnalyzeModal(); }}
                           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                         >
                           <X className="w-5 h-5" />
@@ -947,14 +946,17 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
         </AnimatePresence>
 
         {policyAnalysis && isAnalysisDocked && (
-          <div className="fixed bottom-4 right-4 z-50">
+          <div className="fixed bottom-4 right-4 z-[95]">
             <div className="flex items-center gap-3 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2">
               <span className="text-sm text-gray-700 dark:text-gray-200">{t('assistant.analyze_policy')}</span>
-              <button onClick={() => setIsAnalysisDocked(false)} className="text-xs px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700">Reopen</button>
-              <button onClick={() => { setIsAnalysisDocked(false); setPolicyAnalysis(null); }} className="text-xs px-2 py-1 rounded-full border hover:bg-gray-50 dark:hover:bg-neutral-800 text-gray-600 dark:text-gray-300">Close</button>
+              <button onClick={() => { setIsAnalysisDocked(false); overlay.openAnalyzeModal(); }} className="text-xs px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700">Reopen</button>
+              <button onClick={() => { setIsAnalysisDocked(false); setPolicyAnalysis(null); overlay.closeAnalyzeModal(); }} className="text-xs px-2 py-1 rounded-full border hover:bg-gray-50 dark:hover:bg-neutral-800 text-gray-600 dark:text-gray-300">Close</button>
             </div>
           </div>
         )}
+
+        {/* Floating handle to restore results when minimized (hidden while modal open) */}
+        <ResultsToggle />
         </div>
 
         {/* RIGHT PANEL: Insurance Results (Gemini-style) */}
