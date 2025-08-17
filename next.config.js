@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === 'production';
 const nextConfig = {
   reactStrictMode: true,
   eslint: {
@@ -11,7 +12,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
-    optimizeCss: true,
+    // Only enable CSS optimization in production; keep dev fast and stable
+    optimizeCss: isProd,
   },
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -25,6 +27,9 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
   async headers() {
+    // Avoid caching dev chunks (paths like /_next/static/chunks/app/layout.js are not hashed in dev)
+    // This prevents browsers from caching truncated scripts when the dev server restarts mid-stream.
+    if (!isProd) return [];
     return [
       {
         source: "/_next/static/chunks/:path*",
