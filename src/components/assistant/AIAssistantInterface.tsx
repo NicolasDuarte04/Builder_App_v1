@@ -89,7 +89,8 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     isRightPanelOpen, 
     hideRightPanel, 
     isDualPanelMode, 
-    setDualPanelMode 
+    setDualPanelMode,
+    setSidebarOpen,
   } = usePlanResults();
 
   // Helper function to create context message from onboarding data
@@ -224,6 +225,25 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
   const [isAnalysisDocked, setIsAnalysisDocked] = useState(false);
   const [showPolicyHistory, setShowPolicyHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Track and restore right panel visibility around analyzer modals
+  const [shouldRestoreRightPanel, setShouldRestoreRightPanel] = useState(false);
+  useEffect(() => {
+    const analyzerActive = showPDFUpload || (!!policyAnalysis && !isAnalysisDocked);
+    if (analyzerActive) {
+      // Remember if the panel was open and hide it for focused experience
+      if (isRightPanelOpen) {
+        setShouldRestoreRightPanel(true);
+        hideRightPanel();
+      }
+    } else {
+      // Restore only if we hid it due to analyzer
+      if (shouldRestoreRightPanel) {
+        setSidebarOpen(true);
+        setShouldRestoreRightPanel(false);
+      }
+    }
+  }, [showPDFUpload, policyAnalysis, isAnalysisDocked]);
 
   // Set userId from session when available
   useEffect(() => {
