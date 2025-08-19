@@ -94,6 +94,46 @@ export async function POST(req: Request) {
     }
   }
 
+  // Fallback: if DB returned no rows, try packaged ETL dataset (shadow)
+  if (!Array.isArray(rows) || rows.length === 0) {
+    try {
+      const fs = await import('node:fs');
+      const path = await import('node:path');
+      const root = process.cwd();
+      const jsonPath = path.join(root, 'scripts', 'etl', 'dist', 'plans_v2.json');
+      const raw = fs.readFileSync(jsonPath, 'utf8');
+      const data = JSON.parse(raw);
+      const lc = (s: any) => String(s || '').toLowerCase();
+      const includeSet = new Set((includeNorm || []).map((c: string) => lc(c)));
+      const excludeSet = new Set((excludeNorm || []).map((c: string) => lc(c)));
+      let filtered = (Array.isArray(data) ? data : []);
+      if (includeSet.size > 0) {
+        filtered = filtered.filter((r: any) => includeSet.has(lc(r.category)));
+      }
+      if (excludeSet.size > 0) {
+        filtered = filtered.filter((r: any) => !excludeSet.has(lc(r.category)));
+      }
+      if (country) {
+        filtered = filtered.filter((r: any) => lc(r.country) === lc(country));
+      }
+      if (Array.isArray(tags) && tags.length > 0) {
+        const tagSet = new Set(tags.map((t: any) => lc(t)));
+        filtered = filtered.filter((r: any) => Array.isArray(r.tags) && r.tags.some((t: any) => tagSet.has(lc(t))));
+      }
+      if (q && typeof q === 'string' && q.trim()) {
+        const needle = lc(q);
+        filtered = filtered.filter((r: any) => lc(r.name).includes(needle) || lc(r.name_en || '').includes(needle) || lc(r.provider).includes(needle));
+      }
+      const limited = filtered.slice(0, Math.min(Number(limit) || 20, 100));
+      try {
+        console.info('[plans_v2/search:fallback]', { includeCategories: includeNorm, country: country || null, count: limited.length });
+      } catch {}
+      return NextResponse.json(limited, { status: 200 });
+    } catch (e) {
+      try { console.error('[plans_v2/search:fallback] failed', e); } catch {}
+    }
+  }
+
   return NextResponse.json(rows, { status: 200 });
 }
 
