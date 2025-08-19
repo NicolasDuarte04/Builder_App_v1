@@ -28,6 +28,7 @@ export async function GET() {
     categoryAliases: {
       educacion: 'educativa',
     },
+    runtime: process.env.NEXT_RUNTIME || 'nodejs',
   };
 
   if (!pool || !hasDatabaseUrl) {
@@ -55,10 +56,12 @@ export async function GET() {
        GROUP BY country, category
        ORDER BY country, category`
     );
+    const cats = await pool.query('SELECT DISTINCT category FROM public.plans_v2 ORDER BY category');
     info.ok = true;
     info.counts = counts.rows[0]?.c || 0;
     info.sample = sample.rows;
     info.countsByCountryCategory = byCatCountry.rows;
+    info.categories = cats.rows.map((r:any)=>r.category);
     return NextResponse.json(info, { status: 200 });
   } catch (err: any) {
     info.reason = 'query-error';

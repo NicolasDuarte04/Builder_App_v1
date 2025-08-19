@@ -97,12 +97,9 @@ export async function POST(req: Request) {
   // Fallback: if DB returned no rows, try packaged ETL dataset (shadow)
   if (!Array.isArray(rows) || rows.length === 0) {
     try {
-      const fs = await import('node:fs');
-      const path = await import('node:path');
-      const root = process.cwd();
-      const jsonPath = path.join(root, 'scripts', 'etl', 'dist', 'plans_v2.json');
-      const raw = fs.readFileSync(jsonPath, 'utf8');
-      const data = JSON.parse(raw);
+      // Use a bundled import so the dataset is packaged with the serverless function
+      const dataModule: any = await import('../../../../../scripts/etl/dist/plans_v2.json');
+      const data = dataModule?.default || dataModule;
       const lc = (s: any) => String(s || '').toLowerCase();
       const includeSet = new Set((includeNorm || []).map((c: string) => lc(c)));
       const excludeSet = new Set((excludeNorm || []).map((c: string) => lc(c)));
