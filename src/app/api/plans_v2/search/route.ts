@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { pool, hasDatabaseUrl } from '@/lib/render-db';
+import { normalizeIncludeExclude } from '@/lib/category-alias';
+import { getDomainFromRequest } from '@/lib/server/base-url';
+import { writeReport } from '@/lib/observability/reports';
 
 export const runtime = 'nodejs';
 
@@ -7,6 +10,8 @@ export async function POST(req: Request) {
   if (!pool || !hasDatabaseUrl) {
     return NextResponse.json([], { status: 200 });
   }
+  const start = Date.now();
+  const requestId = Math.random().toString(36).slice(2, 7);
   const body = await req.json().catch(() => ({}));
   const {
     country,
@@ -17,6 +22,9 @@ export async function POST(req: Request) {
     limit = 20,
   } = body || {};
 
+  const includeNorm = normalizeIncludeExclude(includeCategories);
+  const excludeNorm = normalizeIncludeExclude(excludeCategories);
+
   const where: string[] = ['1=1'];
   const params: any[] = [];
   let i = 1;
@@ -25,13 +33,13 @@ export async function POST(req: Request) {
     where.push(`country = $${i++}`);
     params.push(country);
   }
-  if (Array.isArray(includeCategories) && includeCategories.length > 0) {
+  if (Array.isArray(includeNorm) && includeNorm.length > 0) {
     where.push(`category = ANY($${i++}::text[])`);
-    params.push(includeCategories);
+    params.push(includeNorm);
   }
-  if (Array.isArray(excludeCategories) && excludeCategories.length > 0) {
+  if (Array.isArray(excludeNorm) && excludeNorm.length > 0) {
     where.push(`NOT (category = ANY($${i++}::text[]))`);
-    params.push(excludeCategories);
+    params.push(excludeNorm);
   }
   if (Array.isArray(tags) && tags.length > 0) {
     where.push(`tags @> $${i++}::jsonb`);
@@ -52,7 +60,48 @@ export async function POST(req: Request) {
   params.push(Math.min(Number(limit) || 20, 100));
 
   const res = await pool.query(sql, params);
-  return NextResponse.json(res.rows, { status: 200 });
+  const rows = res.rows;
+
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      console.log('[plans_v2/search]', {
+        requestId,
+        includeCategories: includeNorm,
+        excludeCategories: excludeNorm,
+        country: country || null,
+        count: Array.isArray(rows) ? rows.length : 0,
+      });
+    } catch {}
+  }
+
+  if (process.env.LOG_THIN_RESULTS === 'true') {
+    try {
+      const durationMs = Date.now() - start;
+      const domain = getDomainFromRequest(req);
+      const datasource = process.env.BRIKI_DATA_SOURCE || null;
+      const event = {
+        timestamp: new Date(start).toISOString(),
+        domain,
+        datasource,
+        country,
+        includeCategories: Array.isArray(includeCategories) ? includeCategories : [],
+        excludeCategories: Array.isArray(excludeCategories) ? excludeCategories : [],
+        tags: Array.isArray(tags) ? tags : [],
+        benefitsContain: typeof (body?.benefitsContain) === 'string' ? body.benefitsContain : undefined,
+        count: Array.isArray(rows) ? rows.length : 0,
+        durationMs,
+        requestId,
+      };
+      if (event.count === 0 || event.count < 3) {
+        await writeReport(event as any);
+      }
+    } catch (e) {
+      // Swallow errors; observability must not affect runtime
+      console.error('[thin-results] write failed', e);
+    }
+  }
+
+  return NextResponse.json(rows, { status: 200 });
 }
 
 export async function GET(req: Request) {

@@ -21,7 +21,8 @@ export const PlanV2 = z.object({
   country: z.enum(['CO', 'MX']),
 
   // pricing (monthly)
-  base_price: z.number().positive(), // > 0, at most 2 decimals
+  // Allow 0 for quote-only flows; search API filters out base_price = 0
+  base_price: z.number().nonnegative(),
   currency: z.enum(['COP', 'MXN', 'USD', 'EUR']),
 
   // links

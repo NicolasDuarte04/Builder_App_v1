@@ -86,6 +86,9 @@ export function PlanResultsSidebar({
     if (plan) {
       setSelectedPlan(plan);
       setModalMode('details');
+      // remember and minimize drawer so it doesn't collide
+      prevResultsStateRef.current = overlay.resultsState;
+      overlay.minimizeResults();
       setIsModalOpen(true);
     }
   };
@@ -95,6 +98,8 @@ export function PlanResultsSidebar({
     if (plan) {
       setSelectedPlan(plan);
       setModalMode('quote');
+      prevResultsStateRef.current = overlay.resultsState;
+      overlay.minimizeResults();
       setIsModalOpen(true);
     }
   };
@@ -157,6 +162,18 @@ export function PlanResultsSidebar({
   console.log('[PlanResultsSidebar] Rendering:', { isOpen, plans: currentResults?.plans?.length });
 
   const overlay = useUIOverlay();
+  const prevResultsStateRef = React.useRef<typeof overlay.resultsState | null>(null);
+
+  // Restore drawer state when modal closes
+  useEffect(() => {
+    if (!isModalOpen && prevResultsStateRef.current) {
+      const prev = prevResultsStateRef.current;
+      if (prev === 'open') overlay.openResults();
+      if (prev === 'minimized') overlay.minimizeResults();
+      if (prev === 'hidden') overlay.hideResults();
+      prevResultsStateRef.current = null;
+    }
+  }, [isModalOpen, overlay]);
 
   if (!isOpen) return null;
 
@@ -168,7 +185,7 @@ export function PlanResultsSidebar({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 24, stiffness: 220 }}
-          className={`fixed right-0 top-0 h-full w-96 lg:w-[28rem] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl z-[80] flex flex-col ${className}`}
+          className={`fixed right-0 top-0 h-full w-96 lg:w-[28rem] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl z-[70] flex flex-col ${className}`}
         >
           {/* Header */}
           <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">

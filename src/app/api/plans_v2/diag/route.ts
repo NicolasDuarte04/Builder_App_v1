@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { pool, hasDatabaseUrl } from '@/lib/render-db';
+import { normalizeIncludeExclude } from '@/lib/category-alias';
 
 export const runtime = 'nodejs';
 
@@ -24,6 +25,9 @@ export async function GET() {
     hasDatabaseUrl,
     db_url_masked: maskedUrl,
     datasourceDetected: process.env.BRIKI_DATA_SOURCE || null,
+    categoryAliases: {
+      educacion: 'educativa',
+    },
   };
 
   if (!pool || !hasDatabaseUrl) {
@@ -45,9 +49,16 @@ export async function GET() {
     const sample = await pool.query(
       'SELECT id, provider, name, category, country, brochure_link FROM public.plans_v2 ORDER BY RANDOM() LIMIT 3'
     );
+    const byCatCountry = await pool.query(
+      `SELECT country, category, COUNT(*)::int AS c
+       FROM public.plans_v2
+       GROUP BY country, category
+       ORDER BY country, category`
+    );
     info.ok = true;
     info.counts = counts.rows[0]?.c || 0;
     info.sample = sample.rows;
+    info.countsByCountryCategory = byCatCountry.rows;
     return NextResponse.json(info, { status: 200 });
   } catch (err: any) {
     info.reason = 'query-error';

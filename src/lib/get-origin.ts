@@ -1,8 +1,8 @@
 import { headers } from 'next/headers';
 
-export function getServerOrigin(): string {
+export async function getServerOrigin(): Promise<string> {
   try {
-    const h = headers();
+    const h = await headers();
     const proto = h.get('x-forwarded-proto') ?? 'https';
     const host = h.get('x-forwarded-host') ?? h.get('host');
     if (host) return `${proto}://${host}`;

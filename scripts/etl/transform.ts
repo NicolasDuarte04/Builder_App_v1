@@ -142,7 +142,25 @@ function toSqlInsert(plan: PlanV2Type): string {
     if (typeof v === 'number') return v.toString();
     return `'${String(v).replace(/'/g, "''")}'`;
   });
-  return `INSERT INTO plans_v2 (${cols.join(', ')}) VALUES (${escaped.join(', ')});`;
+  const insert = `INSERT INTO plans_v2 (${cols.join(', ')}) VALUES (${escaped.join(', ')})`;
+  const updateCols = [
+    'provider',
+    'name',
+    'name_en',
+    'category',
+    'country',
+    'base_price',
+    'currency',
+    'external_link',
+    'brochure_link',
+    'benefits',
+    'benefits_en',
+    'min_age',
+    'max_age',
+    'tags',
+  ];
+  const setters = updateCols.map((c) => `${c} = EXCLUDED.${c}`).join(', ');
+  return `${insert} ON CONFLICT (id) DO UPDATE SET ${setters};`;
 }
 
 function printOnePageSummary(report: Report, validCount: number, rejectedCount: number, outDir: string) {
@@ -202,7 +220,8 @@ function main() {
       return row as WebHoundRowLooseType;
     }
     const a = row.attributes as Record<string, { value: unknown }>;
-    const val = (k: string): any => (a[k] ? (a[k].value as any) : undefined);
+    const rawVal = (k: string): any => (a[k] ? (a[k].value as any) : undefined);
+    const val = (k: string): any => rawVal(k) ?? rawVal(k.toUpperCase());
     const strOrUndef = (v: any): string | undefined => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
     const urlOrUndef = (v: any): string | undefined => {
       const s = strOrUndef(v);
@@ -211,13 +230,19 @@ function main() {
       return undefined;
     };
     const toArray = (v: any): string[] => (Array.isArray(v) ? v.map((x) => String(x)) : typeof v === 'string' && v.trim() ? [v] : []);
-    const price = typeof val('base_price') === 'number' ? (val('base_price') as number) : undefined;
-    const currency = strOrUndef(val('currency'));
+    const price =
+      typeof val('base_price') === 'number'
+        ? (val('base_price') as number)
+        : typeof val('price_amount') === 'number'
+        ? (val('price_amount') as number)
+        : undefined;
+    const currency = strOrUndef(val('currency')) || strOrUndef(val('price_currency'));
 
     const links: any = {};
-    const product = urlOrUndef(val('external_link')) || urlOrUndef(val('source_url'));
+    const product = urlOrUndef(val('external_link')) || urlOrUndef(val('product_url')) || urlOrUndef(val('source_url'));
     if (product) links.product = product;
-    const brochure = urlOrUndef(val('brochure_link'));
+    const rawBrochure = strOrUndef(val('brochure_link')) || strOrUndef(val('brochure_url'));
+    const brochure = rawBrochure && rawBrochure !== '—' && rawBrochure !== '-' ? urlOrUndef(rawBrochure) : undefined;
     if (brochure) links.brochure = brochure;
 
     const flat: any = {
@@ -225,8 +250,9 @@ function main() {
       name: strOrUndef(val('name')),
       title: strOrUndef(val('name')),
       title_en: strOrUndef(val('name_en')),
-      category: strOrUndef(val('category')),
-      country: strOrUndef(val('country')),
+      // Force defaults for this ingestion if absent
+      category: strOrUndef(val('category')) || 'educacion',
+      country: (strOrUndef(val('country')) || 'CO').toUpperCase(),
       benefits: toArray(val('benefits')),
       benefits_en: toArray(val('benefits_en')),
       tags: toArray(val('tags')),
@@ -236,14 +262,15 @@ function main() {
         : undefined,
     };
 
-    const minAgeRaw = val('min_age');
-    const maxAgeRaw = val('max_age');
+    const minAgeRaw = val('min_age') ?? val('MIN_AGE');
+    const maxAgeRaw = val('max_age') ?? val('MAX_AGE');
     if (minAgeRaw !== null && minAgeRaw !== undefined) flat.min_age = minAgeRaw;
     if (maxAgeRaw !== null && maxAgeRaw !== undefined) flat.max_age = maxAgeRaw;
 
     return flat as WebHoundRowLooseType;
   }
 
+  const seen = new Set<string>();
   for (const rawRow of rows) {
     const row = flattenAttributesIfPresent(rawRow);
     const parsed = WebHoundRowLoose.safeParse(row);
@@ -265,6 +292,12 @@ function main() {
     const country = countryStr === 'CO' ? 'CO' : countryStr === 'MX' ? 'MX' : (null as unknown as Country);
     if (!provider || !name || !country) {
       rejects.push({ row, reasons: ['Missing provider/name/country'] });
+      continue;
+    }
+
+    // De-duplicate by (provider, country, name)
+    const dedupeKey = `${provider}|${country}|${name}`.toLowerCase();
+    if (seen.has(dedupeKey)) {
       continue;
     }
 
@@ -318,8 +351,8 @@ function main() {
       }
     }
 
-    // Pricing
-    const periodic = r.price?.amount ?? r.monthly_price ?? r.base_price ?? r.price;
+    // Pricing (allow 0 for quote-only flows)
+    const periodic = r.price?.amount ?? r.monthly_price ?? r.base_price ?? (r as any).price_amount ?? r.price;
     let amount = parseMaybeNumber(
       typeof periodic === 'object' && periodic && 'amount' in (periodic as any)
         ? (periodic as any).amount
@@ -327,11 +360,7 @@ function main() {
     );
     if (amount === null) amount = null;
     const period = r.price?.period ?? 'month';
-    let monthly = amount !== null ? convertToMonthly(amount, period) : null;
-    if (monthly === null || monthly === 0) {
-      rejects.push({ row, reasons: ['Missing or zero price'] });
-      continue;
-    }
+    let monthly = amount !== null ? convertToMonthly(amount, period) : 0;
     monthly = roundToTwoDecimals(monthly);
     if (!hasAtMostTwoDecimals(monthly)) {
       monthly = roundToTwoDecimals(monthly);
@@ -344,16 +373,22 @@ function main() {
       description: r.description,
       notes: r.notes,
     });
-    const { currency, coerced, reason, usdJustified } = enforceCountryCurrency(country, r.price?.currency || r.currency, explicitUSD);
+    const { currency, coerced, reason, usdJustified } = enforceCountryCurrency(
+      country,
+      (r.price?.currency as string | undefined) || (r as any).price_currency || r.currency,
+      explicitUSD
+    );
     if (coerced && reason) report.coercions.push(reason);
     if (currency === 'USD') {
       report.usdRows.push({ provider, country, reason });
     }
 
-    const range = enforcePriceRanges(country, monthly);
-    if (!range.ok) {
-      rejects.push({ row, reasons: [range.reason || 'Price out of range'] });
-      continue;
+    if (monthly > 0) {
+      const range = enforcePriceRanges(country, monthly);
+      if (!range.ok) {
+        rejects.push({ row, reasons: [range.reason || 'Price out of range'] });
+        continue;
+      }
     }
 
     // Benefits
@@ -370,8 +405,9 @@ function main() {
         benefits = ensureBenefitCount(dedupNormalized([...benefits, ...sentences.slice(0, 6)]));
       }
     }
-    if (benefits.length < 3) {
-      rejects.push({ row, reasons: ['Insufficient benefits (<3)'] });
+    // Final validator: require at least 5 benefits
+    if (benefits.length < 5) {
+      rejects.push({ row, reasons: ['Insufficient benefits (<5)'] });
       continue;
     }
     if (benefits_en.length < 3) {
@@ -379,11 +415,17 @@ function main() {
     }
 
     // Optional ages
-    const min_age = parseMaybeNumber(r.min_age ?? undefined) ?? undefined;
-    const max_age = parseMaybeNumber(r.max_age ?? undefined) ?? undefined;
+    let min_age = parseMaybeNumber(r.min_age ?? undefined) ?? undefined;
+    let max_age = parseMaybeNumber(r.max_age ?? undefined) ?? undefined;
+    if (min_age === 0) min_age = undefined;
+    if (max_age === 0) max_age = undefined;
 
     // Tags
     const tags = Array.from(new Set([...(r.tags || []), ...(r.keywords || []), ...inferTags(name, benefits)]));
+    if ((tags || []).length < 2) {
+      rejects.push({ row, reasons: ['Insufficient tags (<2)'] });
+      continue;
+    }
 
     // Final assembly
     const id = stableId(provider, country, name);
@@ -411,6 +453,7 @@ function main() {
       continue;
     }
     valid.push(candidate);
+    seen.add(dedupeKey);
 
     // Reporting
     report.countsByCountry[country] = (report.countsByCountry[country] || 0) + 1;
@@ -442,6 +485,9 @@ function main() {
   const sqlPath = path.join(outDir, 'plans_v2.sql');
   const rejectedPath = path.join(outDir, 'plans_v2_rejected.json');
   const reportPath = path.join(outDir, 'plans_v2_report.json');
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const rejectsCsvPath = path.join(root, 'reports', `etl_rejects_${dateStr}.csv`);
+  ensureDir(path.dirname(rejectsCsvPath));
 
   fs.writeFileSync(jsonPath, JSON.stringify(valid, null, 2));
   const header = [
@@ -465,6 +511,20 @@ function main() {
   fs.writeFileSync(sqlPath, valid.map((v) => toSqlInsert(v)).join('\n') + '\n');
   fs.writeFileSync(rejectedPath, JSON.stringify(rejects, null, 2));
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+  // Write rejects CSV (provider,name,reason)
+  const rejectCsvHeader = 'provider,name,reason';
+  const rejectCsvRows = rejects.map((r) => {
+    const rr = r.reasons.join(' | ');
+    const prov = (r.row as any)?.provider || (r.row as any)?.provider_name || '';
+    const nm = (r.row as any)?.name || (r.row as any)?.title || '';
+    return [prov, nm, rr]
+      .map((c) => {
+        const s = String(c ?? '');
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      })
+      .join(',');
+  });
+  fs.writeFileSync(rejectsCsvPath, [rejectCsvHeader, ...rejectCsvRows].join('\n'));
 
   printOnePageSummary(report, valid.length, rejects.length, outDir);
 }

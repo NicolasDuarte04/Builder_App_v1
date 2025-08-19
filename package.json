@@ -18,7 +18,8 @@
     "db:v2:create": "psql \"$DATABASE_URL\" -f migrations/001_create_plans_v2.sql",
     "db:v2:load": "psql \"$DATABASE_URL\" -f scripts/etl/dist/plans_v2.sql",
     "db:v2:verify": "node scripts/db/verify-plans-v2.js",
-    "publish:v2": "npm run db:v2:create && npm run db:v2:load && npm run db:v2:verify"
+    "publish:v2": "npm run db:v2:create && npm run db:v2:load && npm run db:v2:verify",
+    "diagnostics:coverage": "tsx scripts/diagnostics/coverage.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",

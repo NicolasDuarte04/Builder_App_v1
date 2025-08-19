@@ -1,6 +1,8 @@
 "use client";
 
 import React from 'react';
+import { useEffect, useRef, useMemo } from 'react';
+import { useUIOverlay } from '@/state/uiOverlay';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
 import { InsurancePlan } from '../briki-ai-assistant/NewPlanCard';
@@ -27,6 +29,77 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
     return (isEN ? EN : ES)[k as keyof typeof EN];
   };
 
+  // Body scroll lock and optional drawer minimization
+  const overlay = useUIOverlay();
+  const prevResultsStateRef = useRef<typeof overlay.resultsState | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      // lock body scroll
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      // minimize drawer but remember previous state
+      prevResultsStateRef.current = overlay.resultsState;
+      // Optional auto-minimize; comment out if you prefer full overlay only
+      overlay.minimizeResults();
+      return () => {
+        document.body.style.overflow = prev;
+        // restore previous drawer state exactly
+        const prevState = prevResultsStateRef.current;
+        if (prevState === 'open') overlay.openResults();
+        if (prevState === 'minimized') overlay.minimizeResults();
+        if (prevState === 'hidden') overlay.hideResults();
+        prevResultsStateRef.current = null;
+      };
+    }
+  }, [isOpen, overlay]);
+
+  // Focus trap
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const focusableSelectors = useMemo(
+    () => [
+      'a[href]','button:not([disabled])','textarea:not([disabled])','input:not([disabled])','select:not([disabled])','[tabindex]:not([tabindex="-1"])'
+    ].join(','),
+    []
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+    // initial focus
+    const toFocus = closeButtonRef.current || dialogRef.current;
+    toFocus?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const root = dialogRef.current;
+        if (!root) return;
+        const focusables = Array.from(root.querySelectorAll<HTMLElement>(focusableSelectors)).filter(el => el.offsetParent !== null);
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (e.shiftKey) {
+          if (active === first || !root.contains(active)) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (active === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose, focusableSelectors]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -34,20 +107,25 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4"
+          data-z="modal-backdrop"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-[720px] w-full max-h-[90vh] overflow-y-auto z-[100]"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="plan-details-title"
+            ref={dialogRef}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h2 id="plan-details-title" className="text-xl font-bold text-gray-900 dark:text-white">
                   {mode === 'details' ? 'Detalles del Plan' : 'Cotizar Plan'}
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -57,13 +135,14 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                ref={closeButtonRef}
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-6">
+            <div className="p-6 pb-24 space-y-6">
               {/* Plan Header */}
               <div className="text-center">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">

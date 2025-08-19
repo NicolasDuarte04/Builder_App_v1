@@ -1,6 +1,8 @@
 import { InsurancePlan } from '@/types/project';
 import { queryInsurancePlans as localQuery } from './render-db';
 import type { AnyPlan, PlanLegacy, PlanV2 } from '@/types/plan';
+import { fetchSelf } from '@/lib/server/fetch-self';
+import { normalizeIncludeExclude, toStoredCategory } from '@/lib/category-alias';
 
 export interface PlanFilters {
   category?: string;
@@ -19,32 +21,40 @@ export interface PlanFilters {
 const EXTERNAL_URL = process.env.PLANS_API_URL || process.env.NEXT_PUBLIC_PLANS_API_URL;
 
 export async function searchPlans(filters: PlanFilters): Promise<AnyPlan[]> {
+  // Normalize category aliases and ensure country is set when not provided
+  const includeNorm = normalizeIncludeExclude(filters.includeCategories);
+  const excludeNorm = normalizeIncludeExclude(filters.excludeCategories);
+  const country = filters.country || 'CO';
+  const normalizedFilters: PlanFilters = {
+    ...filters,
+    country,
+    category: toStoredCategory(filters.category) || filters.category,
+    includeCategories: includeNorm.length ? includeNorm : undefined,
+    excludeCategories: excludeNorm.length ? excludeNorm : undefined,
+  };
   const ds = process.env.BRIKI_DATA_SOURCE;
   // New v2 source path (shadow or primary)
   if (ds === 'plans_v2' || ds === 'plans_v2_shadow') {
     // Strict v2 mode: use v2 API; do NOT silently fall back to legacy when v2 is enabled
     try {
-      const body = { ...filters } as any;
+      const body = { ...normalizedFilters } as any;
       // Use absolute URL on the server to avoid "Invalid URL" in Node fetch
-      let endpoint = '/api/plans_v2/search';
-      if (typeof window === 'undefined') {
-        try {
-          const { getServerOrigin } = await import('./get-origin');
-          const origin = getServerOrigin();
-          endpoint = new URL('/api/plans_v2/search', origin).toString();
-          console.log('[plans] v2 endpoint (server)', { endpoint, datasource: ds });
-        } catch (e) {
-          // Fallback to env or localhost
-          const origin = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || process.env.VERCEL_URL || 'http://localhost:3000';
-          endpoint = origin.startsWith('http') ? `${origin.replace(/\/$/, '')}/api/plans_v2/search` : `https://${origin}/api/plans_v2/search`;
-          console.log('[plans] v2 endpoint (fallback)', { endpoint, datasource: ds });
+      const isServer = typeof window === 'undefined';
+      const doFetch = async () => {
+        if (isServer) {
+          return fetchSelf('/api/plans_v2/search', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(body),
+          });
         }
-      }
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+        return fetch('/api/plans_v2/search', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+      };
+      const res = await doFetch();
       if (!res.ok) {
         const msg = `[plans] v2 search failed: ${res.status}`;
         console.error(msg);

@@ -93,7 +93,7 @@ export async function POST(req: Request) {
   
   // Only treat as ambiguous if it's not a greeting, help request, or insurance-related
   const isAmbiguous = userContent.trim().length < 15 && 
-                      !userContent.match(/(auto|salud|vida|hogar|viaje|empresarial|mascotas|educacion)/i) &&
+                      !userContent.match(/(auto|salud|vida|hogar|viaje|empresarial|mascotas|educacion|educativa|educativo|estudios|universidad|colegio|education|tuition|school)/i) &&
                       !isGreeting && 
                       !isHelpRequest;
 
@@ -293,7 +293,7 @@ export async function POST(req: Request) {
 
               // Infer include/exclude categories from latest user messages
               const userText = messages
-                .filter((m) => m.role === 'user')
+                .filter((m: any) => m.role === 'user')
                 .slice(-3)
                 .map((m: any) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)))
                 .join(' \n ')
@@ -302,12 +302,26 @@ export async function POST(req: Request) {
               const excludeCategories: string[] = [];
               if (/\b(salud|health)\b/.test(userText)) includeCategories.push('salud');
               if (/(no\s+dental|sin\s+dental|\bno\s+odont|\bsin\s+odont)/.test(userText)) excludeCategories.push('dental');
+              // Education detection → canonical input key 'educacion'
+              if (/(educacion|educativa|educativo|estudios|universidad|colegio|education|tuition|school)/.test(userText)) {
+                includeCategories.push('educacion');
+              }
+
+              // Normalize category: map education synonyms to 'educacion' input key
+              const categoryInput =
+                category && /(educacion|educativa|educativo|estudios|universidad|colegio|education|tuition|school)/i.test(category)
+                  ? 'educacion'
+                  : category;
+
+              // Normalize to stored category and ensure country default
+              const normalizedCategory = categoryInput === 'educacion' ? 'educativa' : categoryInput;
+              const normalizedCountry = country || 'CO';
 
               // Feature-flag aware search path
               const anyPlans = await searchPlans({
-                category,
+                category: normalizedCategory,
                 max_price,
-                country,
+                country: normalizedCountry,
                 tags,
                 benefits_contain,
                 limit: 4,
@@ -333,24 +347,8 @@ export async function POST(req: Request) {
               
               // Check if we got fuzzy matches (different categories)
               const isExactMatch = plans.length > 0 && plans.every(plan => 
-                plan.category.toLowerCase() === category.toLowerCase()
+                plan.category.toLowerCase() === (normalizedCategory || '').toLowerCase()
               );
-              
-              console.log(`✅ Raw database response:`, {
-                planCount: plans.length,
-                rawPlans: plans,
-                firstPlan: plans[0] || null,
-                planStructure: plans[0] ? Object.keys(plans[0]) : [],
-                isExactMatch
-              });
-
-              console.log('🔎 prod-check', {
-                hasDbUrl: !!process.env.RENDER_POSTGRES_URL,
-                plansReturned: plans?.length ?? 0,
-                firstPlan: plans?.[0]
-                  ? { id: plans[0].id, name: plans[0].name, base_price: plans[0].base_price, hasLink: !!plans[0].external_link }
-                  : null
-              });
               
               // STRICT VALIDATION: Allow priced plans OR quote-flow plans with link
               const validPlans = plans.filter(plan => 
@@ -365,31 +363,12 @@ export async function POST(req: Request) {
                 )
               );
 
-              console.log('[plans] after filter', { total: plans.length, kept: validPlans.length });
-              
-              console.log(`🔍 Validation results:`, {
-                totalPlans: plans.length,
-                validPlans: validPlans.length,
-                invalidPlans: plans.length - validPlans.length,
-                reasons: plans.map(plan => ({
-                  name: plan.name,
-                  provider: plan.provider,
-                  base_price: plan.base_price,
-                  external_link: plan.external_link,
-                  isValid: plan.name && 
-                           plan.name !== 'No hay planes disponibles públicamente' &&
-                           plan.provider &&
-                           ( (plan.base_price > 0) || !!plan.external_link )
-                }))
-              });
-              
-              // Transform plans into the expected UI format
-              // The frontend expects these exact fields for validation
+              // Transform for UI
               const finalPlans = validPlans.map((plan, index) => ({
                 id: plan.id,
                 name: plan.name,
                 provider: plan.provider,
-                base_price: plan.base_price, // numeric value required
+                base_price: plan.base_price,
                 base_price_formatted: plan.base_price_formatted,
                 currency: plan.currency,
                 benefits: Array.isArray(plan.benefits) ? plan.benefits : [],
@@ -403,12 +382,12 @@ export async function POST(req: Request) {
               const toolResult = { 
                 type: "insurance_plans",
                 plans: finalPlans,
-                insuranceType: category,
+                insuranceType: normalizedCategory,
                 hasRealPlans: finalPlans.length > 0,
                 isExactMatch: isExactMatch && finalPlans.length > 0,
                 noExactMatchesFound: !isExactMatch && finalPlans.length > 0,
                 categoriesFound: [...new Set(finalPlans.map(p => p.category))],
-                filters: { includeCategories, excludeCategories },
+                filters: { includeCategories, excludeCategories, country: normalizedCountry },
                 dataSource: process.env.BRIKI_DATA_SOURCE || 'legacy'
               };
               console.log('[plans] datasource used', { datasource: process.env.BRIKI_DATA_SOURCE ?? 'legacy/fallback-logic' });
@@ -417,7 +396,7 @@ export async function POST(req: Request) {
               console.log('Returning to AI:', {
                 planCount: finalPlans.length,
                 hasRealPlans: finalPlans.length > 0,
-                insuranceType: category,
+                insuranceType: normalizedCategory,
                 isExactMatch: toolResult.isExactMatch,
                 noExactMatchesFound: toolResult.noExactMatchesFound,
                 categoriesFound: toolResult.categoriesFound,
