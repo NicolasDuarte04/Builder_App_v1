@@ -25,6 +25,7 @@ export async function searchPlans(filters: PlanFilters): Promise<AnyPlan[]> {
   const includeNorm = normalizeIncludeExclude(filters.includeCategories);
   const excludeNorm = normalizeIncludeExclude(filters.excludeCategories);
   const country = filters.country || 'CO';
+  try { console.info('[plans-client] request', { include: includeNorm, exclude: excludeNorm, country, limit: filters.limit || 4, category: filters.category }); } catch {}
   const normalizedFilters: PlanFilters = {
     ...filters,
     country,
@@ -42,21 +43,28 @@ export async function searchPlans(filters: PlanFilters): Promise<AnyPlan[]> {
       const isServer = typeof window === 'undefined';
       const doFetch = async () => {
         if (isServer) {
-          return fetchSelf('/api/plans_v2/search', {
+          const req = await fetchSelf('/api/plans_v2/search', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify(body),
           });
+          try { console.info('[plans-client] resolved fetch URL (server)', (req as any).url || 'opaque'); } catch {}
+          return req;
         }
-        return fetch('/api/plans_v2/search', {
+        const url = '/api/plans_v2/search';
+        try { console.info('[plans-client] resolved fetch URL (client)', url); } catch {}
+        return fetch(url, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify(body),
         });
       };
       const res = await doFetch();
+      try { console.info('[plans-client] response status', (res as any)?.status); } catch {}
       if (!res.ok) {
+        const text = await res.text().catch(() => '');
         const msg = `[plans] v2 search failed: ${res.status}`;
+        try { console.error('[plans-client] error body', text); } catch {}
         console.error(msg);
         if (ds === 'plans_v2') throw new Error(msg);
         return [];

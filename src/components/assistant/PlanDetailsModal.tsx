@@ -141,9 +141,12 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <div>
-                <h2 id="plan-details-title" className="text-xl font-bold text-gray-900 dark:text-white">
+                <h2 id="plan-details-title" className="sr-only">
                   {mode === 'details' ? 'Detalles del Plan' : 'Cotizar Plan'}
                 </h2>
+                <span aria-hidden className="text-xl font-bold text-gray-900 dark:text-white">
+                  {mode === 'details' ? 'Detalles del Plan' : 'Cotizar Plan'}
+                </span>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {plan.provider} • {plan.category}
                 </p>

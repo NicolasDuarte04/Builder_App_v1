@@ -67,6 +67,7 @@ export async function POST(req: Request) {
       includeCategories: includeNorm,
       country: country || null,
       count: Array.isArray(rows) ? rows.length : 0,
+      runtime: process.env.NEXT_RUNTIME || 'nodejs',
     });
   } catch {}
 

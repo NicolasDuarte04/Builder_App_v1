@@ -20,6 +20,7 @@ export async function makeSelfRequest(path: string, init: RequestInit = {}) {
   // Next.js 15 requires awaiting headers() in the request context
   const h = await headers();
   const base = getBaseUrlFromHeaders(h as any);
+  try { console.info('[fetch-self] base', { base, xfProto: h.get('x-forwarded-proto'), xfHost: h.get('x-forwarded-host') }); } catch {}
 
   const forwarded = new Headers(init.headers || {});
   // Forward protection + auth context if present
@@ -40,6 +41,7 @@ export async function makeSelfRequest(path: string, init: RequestInit = {}) {
   if (!forwarded.has('accept')) forwarded.set('accept', 'application/json');
 
   const url = path.startsWith('http') ? path : `${base}${path}`;
+  try { console.info('[fetch-self] url', url); } catch {}
   const reqInit: RequestInit = {
     cache: 'no-store',
     ...init,
