@@ -5,7 +5,7 @@ import { useTools } from '@/hooks/useTools';
 import { TOOL_CATEGORIES, ToolCategory } from '@/lib/supabase';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { textStyles } from '@/lib/styles';
 import { cn } from '@/lib/utils';
 

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
 import { InsurancePlan } from '../briki-ai-assistant/NewPlanCard';
 import { Button } from '../ui/button';
-import { Badge } from '../ui/Badge';
+import { Badge } from '../ui/badge';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatPrice as fmt, localizedBenefits, localizedName } from '@/lib/formatters';
 
@@ -19,7 +19,8 @@ interface PlanDetailsModalProps {
 }
 
 export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsModalProps) {
-  if (!plan) return null;
+  // Do not early-return before hooks; React hooks must run consistently across renders.
+  // We'll render null at the bottom if there's no plan or the modal is closed.
 
   const { language } = useTranslation();
   const isEN = language === 'en';
@@ -30,29 +31,44 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
   };
 
   // Body scroll lock and optional drawer minimization
-  const overlay = useUIOverlay();
-  const prevResultsStateRef = useRef<typeof overlay.resultsState | null>(null);
+  // Select from store with stable references to avoid re-running effects on every store change
+  const resultsState = useUIOverlay((s) => s.resultsState);
+  const openResults = useUIOverlay((s) => s.openResults);
+  const minimizeResults = useUIOverlay((s) => s.minimizeResults);
+  const hideResults = useUIOverlay((s) => s.hideResults);
+  const prevResultsStateRef = useRef<typeof resultsState | null>(null);
+  const initializedRef = useRef(false);
 
+  // Guarded side-effect: run once per open. Intentionally depend ONLY on `isOpen` and `plan?.id`
+  // to avoid re-running when store state changes (which this effect itself mutates), which can
+  // otherwise create an update loop (minimize -> effect rerun -> restore -> rerun ...).
   useEffect(() => {
-    if (isOpen) {
-      // lock body scroll
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      // minimize drawer but remember previous state
-      prevResultsStateRef.current = overlay.resultsState;
-      // Optional auto-minimize; comment out if you prefer full overlay only
-      overlay.minimizeResults();
-      return () => {
-        document.body.style.overflow = prev;
-        // restore previous drawer state exactly
-        const prevState = prevResultsStateRef.current;
-        if (prevState === 'open') overlay.openResults();
-        if (prevState === 'minimized') overlay.minimizeResults();
-        if (prevState === 'hidden') overlay.hideResults();
-        prevResultsStateRef.current = null;
-      };
+    if (!isOpen) { initializedRef.current = false; return; }
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    if (process.env.NODE_ENV !== 'production') {
+      try { console.info('[PlanDetailsModal] open', (plan as any)?.id); } catch {}
     }
-  }, [isOpen, overlay]);
+
+    // lock body scroll
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    // read store snapshot at open time; do not subscribe
+    const snapshot = useUIOverlay.getState();
+    prevResultsStateRef.current = snapshot.resultsState;
+    snapshot.minimizeResults();
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      const { openResults, minimizeResults, hideResults } = useUIOverlay.getState();
+      const prevState = prevResultsStateRef.current;
+      if (prevState === 'open') openResults();
+      else if (prevState === 'minimized') minimizeResults();
+      else if (prevState === 'hidden') hideResults();
+      prevResultsStateRef.current = null;
+    };
+  }, [isOpen, (plan as any)?.id]);
 
   // Focus trap
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -102,7 +118,7 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen && !!plan && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

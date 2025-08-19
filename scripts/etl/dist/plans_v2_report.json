@@ -1,81 +1,46 @@
 {
   "countsByCountry": {
-    "MX": 29,
-    "CO": 44
+    "CO": 11
   },
   "countsByCategory": {
-    "vida": 10,
-    "otros": 3,
-    "salud": 24,
-    "viaje": 27,
-    "mascotas": 4,
-    "hogar": 4,
-    "auto": 1
+    "educativa": 11
   },
   "countsByProvider": {
-    "AXA": 4,
-    "Bmi Cos.": 14,
-    "Chubb": 12,
-    "Colsanitas": 5,
-    "Seguros SURA": 11,
-    "Hdi Seguros": 2,
-    "Allianz": 16,
-    "AXA Colpatria": 4,
-    "Colmena Seguros": 4,
-    "Seguros Bolívar": 1
+    "Coopemsura": 1,
+    "Cootracerrejón": 1,
+    "Microempresas de Colombia": 1,
+    "Fondesa": 1,
+    "Protección de Riesgos": 1,
+    "Actinver": 1,
+    "Fec": 1,
+    "Banco Caja Social": 1,
+    "Skandia": 1,
+    "Sufi - Grupo Bancolombia": 1,
+    "SURA": 1
   },
   "priceStatsByCountry": {
-    "MX": {
-      "min": 18.25,
-      "max": 10000,
-      "avg": 1586.38,
-      "median": 405,
-      "count": 29
-    },
     "CO": {
-      "min": 18.25,
-      "max": 601726,
-      "avg": 173206.85,
-      "median": 138283.5,
-      "count": 44
+      "min": 10000,
+      "max": 300000,
+      "avg": 84168.18,
+      "median": 30000,
+      "count": 11
     }
   },
   "usdRows": [],
   "linkQuality": {
-    "missingWebsite": 0,
-    "pdfDetected": 0,
-    "brochure_pdf": 0,
-    "brochure_page": 1
+    "missingWebsite": 1,
+    "pdfDetected": 1,
+    "brochure_pdf": 1,
+    "brochure_page": 0
   },
   "benefitLengthDistribution": {
-    "3": 4,
-    "4": 7,
-    "5": 9,
+    "5": 2,
     "6": 3,
-    "7": 6,
-    "8": 44
+    "7": 1,
+    "8": 1,
+    "10": 3,
+    "11": 1
   },
-  "coercions": [
-    "Coerced USD→MXN (unjustified) for MX",
-    "Coerced USD→MXN (unjustified) for MX",
-    "Coerced USD→MXN (unjustified) for MX",
-    "Coerced USD→MXN (unjustified) for MX",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→MXN (unjustified) for MX",
-    "Coerced USD→MXN (unjustified) for MX",
-    "Coerced USD→MXN (unjustified) for MX",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→COP (unjustified) for CO",
-    "Coerced USD→MXN (unjustified) for MX"
-  ]
+  "coercions": []
 }

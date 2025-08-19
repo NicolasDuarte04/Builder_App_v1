@@ -62,42 +62,34 @@ export async function POST(req: Request) {
   const res = await pool.query(sql, params);
   const rows = res.rows;
 
-  if (process.env.NODE_ENV !== 'production') {
-    try {
-      console.log('[plans_v2/search]', {
-        requestId,
-        includeCategories: includeNorm,
-        excludeCategories: excludeNorm,
-        country: country || null,
-        count: Array.isArray(rows) ? rows.length : 0,
-      });
-    } catch {}
-  }
+  try {
+    console.info('[plans_v2/search]', {
+      includeCategories: includeNorm,
+      country: country || null,
+      count: Array.isArray(rows) ? rows.length : 0,
+    });
+  } catch {}
 
   if (process.env.LOG_THIN_RESULTS === 'true') {
-    try {
-      const durationMs = Date.now() - start;
-      const domain = getDomainFromRequest(req);
-      const datasource = process.env.BRIKI_DATA_SOURCE || null;
-      const event = {
-        timestamp: new Date(start).toISOString(),
-        domain,
-        datasource,
-        country,
-        includeCategories: Array.isArray(includeCategories) ? includeCategories : [],
-        excludeCategories: Array.isArray(excludeCategories) ? excludeCategories : [],
-        tags: Array.isArray(tags) ? tags : [],
-        benefitsContain: typeof (body?.benefitsContain) === 'string' ? body.benefitsContain : undefined,
-        count: Array.isArray(rows) ? rows.length : 0,
-        durationMs,
-        requestId,
-      };
-      if (event.count === 0 || event.count < 3) {
-        await writeReport(event as any);
-      }
-    } catch (e) {
-      // Swallow errors; observability must not affect runtime
-      console.error('[thin-results] write failed', e);
+    const durationMs = Date.now() - start;
+    const domain = getDomainFromRequest(req);
+    const datasource = process.env.BRIKI_DATA_SOURCE || null;
+    const event = {
+      timestamp: new Date(start).toISOString(),
+      domain,
+      datasource,
+      country,
+      includeCategories: Array.isArray(includeCategories) ? includeCategories : [],
+      excludeCategories: Array.isArray(excludeCategories) ? excludeCategories : [],
+      tags: Array.isArray(tags) ? tags : [],
+      benefitsContain: typeof (body?.benefitsContain) === 'string' ? body.benefitsContain : undefined,
+      count: Array.isArray(rows) ? rows.length : 0,
+      durationMs,
+      requestId,
+    };
+    if (event.count === 0 || event.count < 3) {
+      // fire-and-forget, swallow errors
+      Promise.resolve(writeReport(event as any)).catch(() => {});
     }
   }
 

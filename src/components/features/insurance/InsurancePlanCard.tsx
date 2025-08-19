@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Info, Shield } from 'lucide-react';
 import type { AnyPlan, PlanV2 } from '@/types/plan';
 import { useTranslation } from '@/hooks/useTranslation';

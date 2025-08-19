@@ -8,7 +8,7 @@ UI-only enhancements below: optional page chips, glossary tooltips, risk flags, 
 import React, { useRef, useState } from 'react';
 // motion removed to unblock build
 import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, XCircle, ChevronDown, ChevronUp, Share2, Link as LinkIcon } from 'lucide-react';
-import { Badge } from '../ui/Badge';
+import { Badge } from '../ui/badge';
 import { SavePolicyButton } from '../dashboard/SavePolicyButton';
 import { ENABLE_SAVE_POLICY, ENABLE_PDF_VERIFY } from '@/lib/featureFlags';
 import { useSession } from 'next-auth/react';

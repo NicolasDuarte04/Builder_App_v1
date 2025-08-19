@@ -1,0 +1,85 @@
+id,name,provider,category,base_price,currency,country,has_external_link,has_brochure_link,tags_count,benefits_count
+plan_1fd00d6665844865,"AXA Healthy Pet","AXA",mascotas,300.00,MXN,MX,1,1,1,7
+plan_7d6d0f8c11816f3a,"Auto Esencial AXA","AXA",auto,650.00,MXN,MX,1,1,3,3
+plan_af1dc361fb6364ea,"Daños Plata","AXA",otros,599.00,MXN,MX,1,1,3,5
+plan_4c67a1753cd8c90d,"Hogar AXA","AXA",hogar,150.00,MXN,MX,1,1,3,3
+plan_7471df5afdd63ce1,"Negocio Protegido AXA","AXA",otros,500.00,MXN,MX,1,1,3,3
+plan_64cae2d84338033e,"Salud Plata","AXA",salud,8940.00,MXN,MX,1,1,2,8
+plan_606e433afca8264f,"Vida Plata","AXA",vida,388.00,MXN,MX,1,1,1,8
+plan_c4ea438e41fb372c,"Asistencia de Mascotas","AXA Colpatria",mascotas,28000.00,COP,CO,1,1,1,8
+plan_1b0a42e44618ad12,"Plan Alterno","AXA Colpatria",salud,170000.00,COP,CO,1,1,2,8
+plan_7ea862e5eb35106d,"Plan Fesalud","AXA Colpatria",salud,350000.00,COP,CO,1,1,2,8
+plan_7353f5ddf5e6074b,"Plan Original","AXA Colpatria",salud,240000.00,COP,CO,1,1,2,8
+plan_5e0166709f70e6ff,"Allianz Hogar","Allianz",hogar,80000.00,COP,CO,1,1,2,3
+plan_b6dace239fcb71fb,"Asistencia Médica Durante el Viaje","Allianz",viaje,831.00,MXN,MX,1,1,1,3
+plan_2ad7a90c373f0022,"Asistencia de Viaje Anual","Allianz",viaje,3646.00,MXN,MX,1,1,1,5
+plan_9ee379b989d33c7a,"Asistencia de Viaje Básico","Allianz",viaje,691.00,MXN,MX,1,1,1,5
+plan_a7d09eabfdfc3c2d,"Asistencia de Viaje Intermedio","Allianz",viaje,1762.00,MXN,MX,1,1,1,5
+plan_b38c842891624ad6,"Asistencia de Viaje Premium","Allianz",viaje,3626.00,MXN,MX,1,1,1,5
+plan_12616556b4adbc2a,"Cancelación de Viaje","Allianz",viaje,405.00,MXN,MX,1,1,1,3
+plan_0057f38f103e3115,"Care","Allianz",salud,200000.00,COP,CO,1,1,1,8
+plan_bcd040001eeb8a49,"EsenciAll","Allianz",vida,135000.00,COP,CO,1,1,1,3
+plan_07d70dec3c63833e,"EsenciAll 2","Allianz",vida,199000.00,COP,CO,1,1,3,3
+plan_4b81cf562de2fb07,"Gold Plus","Allianz",salud,150000.00,COP,CO,1,1,3,8
+plan_509d8ade260914d5,"Plus","Allianz",salud,100000.00,COP,CO,1,1,3,8
+plan_8110023df2b0803e,"Travel Estandar","Allianz",viaje,50000.00,COP,CO,1,1,2,8
+plan_729db9b365455d92,"Travel Insurance","Allianz",viaje,691.00,MXN,MX,1,1,2,8
+plan_1f3f668ebde0bd7b,"Travel Light","Allianz",viaje,30000.00,COP,CO,1,1,2,8
+plan_40df6618df0f5868,"Travel Premium","Allianz",viaje,75000.00,COP,CO,1,1,2,8
+plan_4ee2fc871d304642,"VitAllianz","Allianz",salud,91800.00,COP,CO,1,1,2,7
+plan_c64aadcdb9e45262,"BMI Travel Assist - Clásico","Bmi Cos.",viaje,18.25,COP,CO,1,1,2,8
+plan_ff1ee6bd7f7d8421,"BMI Travel Assist - Corporate Plan","Bmi Cos.",viaje,714.73,COP,CO,1,1,2,8
+plan_1f983de45ffe2102,"BMI Travel Assist - Corporate Plan","Bmi Cos.",viaje,714.73,MXN,MX,1,1,2,8
+plan_6b01ef0147b2797c,"BMI Travel Assist - Daily Plan","Bmi Cos.",viaje,18.25,MXN,MX,1,1,2,8
+plan_0f414ec1da9e8f71,"BMI Travel Assist - Daily Plan","Bmi Cos.",viaje,18.25,COP,CO,1,1,3,8
+plan_be7cbc0e2e991c7c,"BMI Travel Assist - Extended Stay Plan","Bmi Cos.",viaje,151.53,COP,CO,1,1,2,8
+plan_e67084a3fb2931da,"BMI Travel Assist - Extended Stay Plan","Bmi Cos.",viaje,151.53,MXN,MX,1,1,2,8
+plan_9ccd590088846c30,"BMI Travel Assist - Family Plan","Bmi Cos.",viaje,53.84,COP,CO,1,1,3,8
+plan_3d05a445bdfa0f2b,"BMI Travel Assist - Family Plan","Bmi Cos.",viaje,53.84,MXN,MX,1,1,3,8
+plan_f5ecb863c43d2edd,"BMI Travel Assist - Multi-Trip Annual Plan","Bmi Cos.",viaje,148.00,COP,CO,1,1,2,8
+plan_c30ceb2a1823c25a,"BMI Travel Assist - Multi-Trip Annual Plan","Bmi Cos.",viaje,148.00,MXN,MX,1,1,2,8
+plan_3477dbb03923eba9,"BMI Travel Assist - Student Plan","Bmi Cos.",viaje,230.00,COP,CO,1,1,2,8
+plan_d039354cc678972e,"BMI Travel Assist - Student Plan","Bmi Cos.",viaje,230.00,MXN,MX,1,0,2,8
+plan_726ba1c7b51b13fd,"AP+Mascotas","Chubb",mascotas,28000.00,COP,CO,1,0,1,8
+plan_fe3a79f1caebd0f6,"Accidentes Personales","Chubb",vida,11600.00,COP,CO,1,0,3,6
+plan_2c352cd4e81a0d9e,"Auto Chubb Plus","Chubb",auto,700.00,MXN,MX,1,0,2,3
+plan_981aef6f71ff136d,"Chubb Auto Insurance","Chubb",auto,4800.00,MXN,MX,1,0,2,8
+plan_6ec50250f4cdf7f7,"Chubb Hogar Seguro","Chubb",hogar,125.00,MXN,MX,1,0,3,8
+plan_daf855d99f03a06a,"Chubb Viaje Básico","Chubb",viaje,5000.00,COP,CO,1,0,3,8
+plan_d50616ee595773c2,"Chubb Viaje Elite","Chubb",viaje,30000.00,COP,CO,1,0,3,8
+plan_0ec3901a16633d21,"Chubb Viaje Premium","Chubb",viaje,15000.00,COP,CO,1,0,3,8
+plan_c072906a28194d6a,"Hogar Protegido Chubb","Chubb",hogar,150000.00,COP,CO,1,0,2,7
+plan_56847ba01a59cfc9,"Home Insurance Básico","Chubb",hogar,125.00,MXN,MX,1,0,2,8
+plan_67f1aca84565f365,"PyME Integral Chubb","Chubb",otros,120000.00,COP,CO,1,0,3,3
+plan_6e7dc13c55ed8223,"Seguro de Hospitalización + Dr. Kura (Plan Familiar)","Chubb",salud,325.00,MXN,MX,1,0,2,7
+plan_d9c840a6daa708c1,"Seguro de Hospitalización + Dr. Kura (Plan Individual)","Chubb",salud,225.00,MXN,MX,1,0,1,7
+plan_5ff6915c888e5a18,"Seguro de Vida con Devolución de Prima Banco Caja Social (Plan A)","Colmena Seguros",vida,150000.00,COP,CO,1,0,1,4
+plan_07113a5a44650034,"Seguro de Vida con Devolución de Prima Banco Caja Social (Plan B)","Colmena Seguros",vida,300000.00,COP,CO,1,0,1,4
+plan_7fb60edcb816f5ff,"Seguro de Vida con Devolución de Prima Banco Caja Social (Plan C)","Colmena Seguros",vida,450000.00,COP,CO,1,0,1,4
+plan_7d8e60c414a0bf45,"Seguro de Vida con Devolución de Prima Banco Caja Social (Plan D)","Colmena Seguros",vida,600000.00,COP,CO,1,0,1,4
+plan_2cfd315850632bdf,"Colsanitas Plan Esencial","Colsanitas",salud,39500.00,COP,CO,1,0,1,5
+plan_813c69c212baba3e,"Colsanitas Plan Integral","Colsanitas",salud,320000.00,COP,CO,1,0,1,6
+plan_057a0921ff3e46d5,"Medisanitas Plan","Colsanitas",salud,250000.00,COP,CO,1,0,3,4
+plan_6576c1ef8fc4d82f,"Planmed® Estándar","Colsanitas",salud,1999.00,MXN,MX,1,0,1,5
+plan_39d0c31422deda3e,"Planmed® Vital","Colsanitas",salud,4199.00,MXN,MX,1,0,1,5
+plan_624617921802a618,"Auto HDI Esencial","Hdi",auto,590.00,MXN,MX,1,0,2,3
+plan_f57afa02127cb742,"Pet Insurance","Hdi Seguros",mascotas,23455.00,COP,CO,1,0,6,8
+plan_fd7489170b788161,"Seguro de Vida Básico","Hdi Seguros",vida,2300.00,COP,CO,1,0,3,5
+plan_23aa0ff13162f69a,"Auto Mapfre Básico","MAPFRE",auto,620.00,MXN,MX,1,0,2,3
+plan_49d3c48965d328ac,"Comercio Mapfre PyME","MAPFRE",otros,450.00,MXN,MX,1,0,3,3
+plan_9d35c0e3b1fe020d,"Mascotas Mapfre","MAPFRE",mascotas,220.00,MXN,MX,1,0,2,3
+plan_9b9d39d70eced811,"SEGURO DE SALUD INTEGRAL","Seguros Bolívar",salud,374000.00,COP,CO,1,0,3,8
+plan_8122260c98709695,"Ala Azul","Seguros SURA",salud,676.80,MXN,MX,1,0,1,8
+plan_350d6afc8778398d,"Auto SURA Básico","Seguros SURA",auto,120000.00,COP,CO,1,0,2,3
+plan_84cba9b61d6c4b41,"Hogar SURA","Seguros SURA",hogar,60000.00,COP,CO,1,0,3,3
+plan_66372135ed6a934c,"Mascotas SURA","Seguros SURA",mascotas,25000.00,COP,CO,1,0,2,3
+plan_1c9451c46f6b6a7b,"PLAN SALUD CLASICO","Seguros SURA",salud,503355.00,COP,CO,1,0,3,8
+plan_1fc5e784d3150450,"PLAN SALUD GLOBAL","Seguros SURA",salud,601726.00,COP,CO,1,0,1,8
+plan_12b8cc5df5a99079,"Plan Empresario SURA","Seguros SURA",otros,250.00,MXN,MX,1,0,1,8
+plan_601ce55c4ea85c83,"SALUD PARA TODOS CLÁSICO","Seguros SURA",salud,141567.00,COP,CO,1,0,1,8
+plan_77dbbad1e0734261,"SALUD PARA TODOS PREFERENCIAL","Seguros SURA",salud,160811.00,COP,CO,1,0,1,8
+plan_6e58fdb56ea0f622,"Salud Clásico","Seguros SURA",salud,503355.00,COP,CO,1,0,3,8
+plan_10f933a75e9e06ce,"Salud Evoluciona","Seguros SURA",salud,389572.00,COP,CO,1,0,3,8
+plan_c2c201059b9d99b4,"Salud Global","Seguros SURA",salud,601726.00,COP,CO,1,1,4,4
+plan_2f234283be429fcf,"Seguro de Protección Cibernética","Seguros SURA",otros,10000.00,MXN,MX,1,0,6,6
+plan_d0cc128fe0591a4e,"Seguro de Vida Práctico","Seguros SURA",vida,66.67,MXN,MX,1,0,5,4

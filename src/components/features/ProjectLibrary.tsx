@@ -3,7 +3,7 @@
 import { Project } from '@/types/project';
 import { motion } from 'framer-motion';
 import { Clock, ArrowRight, Tag } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { textStyles } from '@/lib/styles';
 import { cn } from '@/lib/utils';
 

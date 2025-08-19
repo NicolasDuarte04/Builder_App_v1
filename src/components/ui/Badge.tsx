@@ -1,45 +1,36 @@
-"use client";
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
-import React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-type BadgeProps = {
-  label: string;
-  variant?: 'default' | 'react' | 'nextjs' | 'tailwind' | 'figma' | 'neutral';
-  className?: string;
-  autoDetect?: boolean;
-};
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
-const badgeStyles = {
-  default: 'bg-white/10 text-white',
-  react: 'bg-blue-500/20 text-blue-300',
-  nextjs: 'bg-gray-500/20 text-gray-300',
-  tailwind: 'bg-purple-500/20 text-purple-300',
-  figma: 'bg-pink-500/20 text-pink-300',
-  neutral: 'bg-neutral-700 text-neutral-200',
-};
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
 
-// Auto-detect variant from label
-const detectVariant = (label: string): BadgeProps['variant'] => {
-  const lowerLabel = label.toLowerCase();
-  if (lowerLabel.includes('react')) return 'react';
-  if (lowerLabel.includes('next') || lowerLabel.includes('nextjs')) return 'nextjs';
-  if (lowerLabel.includes('tailwind')) return 'tailwind';
-  if (lowerLabel.includes('figma')) return 'figma';
-  return 'neutral';
-};
-
-export function Badge({ label, variant = 'default', className, autoDetect = false }: BadgeProps) {
-  const finalVariant = autoDetect ? detectVariant(label) : (variant || 'default');
+function Badge({ className, variant, ...props }: BadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full",
-        badgeStyles[finalVariant as keyof typeof badgeStyles],
-        className
-      )}
-    >
-      {label}
-    </span>
-  );
-} 
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+  )
+}
+
+export { Badge, badgeVariants } 

@@ -4,7 +4,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, Minus, Star, TrendingUp, Info, ChevronDown } from 'lucide-react';
 import { InsurancePlan } from '@/components/briki-ai-assistant/NewPlanCard';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { jsPDF } from 'jspdf';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -65,7 +65,8 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
     const base = compareFeatures();
     const priorityKeywords = ['universidad', 'educación', 'matrícula', 'colegiatura', 'ahorro'];
     const score = (f: string) => priorityKeywords.reduce((acc, kw) => acc + (f.toLowerCase().includes(kw) ? 1 : 0), 0);
-    return base.sort((a, b) => score(b) - score(a));
+    // Avoid mutating the input array; work on a shallow copy for sort stability
+    return [...base].sort((a, b) => score(b) - score(a));
   }, [plans]);
 
   const getRowDiffClass = (values: Array<string | number | boolean | undefined>) => {
@@ -221,7 +222,7 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
         </h3>
         <div className="mt-1 flex items-center gap-2 text-sm">
           <span className="text-gray-600 dark:text-gray-400">{language === 'es' ? 'Análisis detallado de los planes seleccionados' : 'Detailed analysis of selected plans'}</span>
-          <Badge variant="neutral" className="text-[10px]" label={language === 'es' ? 'Recomendado para ti' : 'Recommended for you'} />
+          <Badge variant="secondary" className="text-[10px]">{language === 'es' ? 'Recomendado para ti' : 'Recommended for you'}</Badge>
           <button onClick={exportComparisonPDF} className="ml-auto text-xs text-blue-600 dark:text-blue-300 hover:underline">
             {language === 'es' ? 'Exportar a PDF' : 'Export to PDF'}
           </button>
@@ -391,7 +392,7 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
              <td className={`${CELL_PX} ${LABEL_TEXT} sticky left-0 z-10 bg-gray-50 dark:bg-gray-900`}>{language === 'es' ? 'Categoría' : 'Category'}</td>
               {plans.map((plan) => (
                 <td key={plan.id} className={`${CELL_PX} text-left align-middle`}>
-                   <Badge variant="neutral" className="text-[11px] px-2 py-0.5" label={translateCategoryIfEnglish(plan.category || 'General', language)} />
+                   <Badge variant="secondary" className="text-[11px] px-2 py-0.5">{translateCategoryIfEnglish(plan.category || 'General', language)}</Badge>
                 </td>
               ))}
             </tr>
@@ -401,7 +402,7 @@ export function ComparisonMessage({ plans }: ComparisonMessageProps) {
                <td className={`${CELL_PX} ${LABEL_TEXT} sticky left-0 z-10 bg-gray-50 dark:bg-gray-900`}>{language === 'es' ? 'Beneficios Totales Incluidos' : 'Total Benefits Included'}</td>
                {plans.map((plan) => (
                  <td key={plan.id} className={`${CELL_PX} text-left`}>
-                   <Badge variant="neutral" className="text-[11px] px-2 py-0.5" label={`${plan.benefits?.length || 0}`} />
+                   <Badge variant="secondary" className="text-[11px] px-2 py-0.5">{`${plan.benefits?.length || 0}`}</Badge>
                  </td>
                ))}
              </tr>

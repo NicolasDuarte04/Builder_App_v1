@@ -3,7 +3,7 @@
 import { FileText, Download, Trash2, Calendar, Building2, Shield, Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from '@/components/ui/badge';
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { useTranslation } from "@/hooks/useTranslation";

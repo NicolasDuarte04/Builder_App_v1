@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+import { access, writeFile, appendFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 type ThinResultEvent = {
@@ -21,14 +21,39 @@ function todayStamp(): string {
   return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
 }
 
-function ensureReportsDir(): string {
+function isServerlessEnvironment(): boolean {
+  return (
+    process.env.VERCEL === '1' ||
+    process.env.NEXT_RUNTIME === 'edge' ||
+    process.env.NODE_ENV === 'production'
+  );
+}
+
+function areFileLogsAllowed(): boolean {
+  const forceEnabled = !!process.env.BRIKI_ENABLE_FILE_LOGS;
+  return forceEnabled && !isServerlessEnvironment();
+}
+
+async function ensureReportsDir(): Promise<string> {
   const outDir = path.join(process.cwd(), 'reports');
-  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+  await mkdir(outDir, { recursive: true });
   return outDir;
 }
 
 export async function writeReport(event: ThinResultEvent): Promise<void> {
-  const dir = ensureReportsDir();
+  if (!areFileLogsAllowed()) {
+    try {
+      console.info(
+        '[thin-results] disabled (serverless). count=%d country=%s include=%j',
+        event.count,
+        event.country || '',
+        event.includeCategories || []
+      );
+    } catch {}
+    return;
+  }
+
+  const dir = await ensureReportsDir();
   const date = todayStamp();
   const csvPath = path.join(dir, `thin_results_${date}.csv`);
   const mdPath = path.join(dir, `thin_results_${date}.md`);
@@ -54,10 +79,17 @@ export async function writeReport(event: ThinResultEvent): Promise<void> {
     .join(',') + '\n';
 
   // CSV append with header if missing
-  if (!fs.existsSync(csvPath)) {
-    fs.writeFileSync(csvPath, csvHeader + csvLine, 'utf8');
-  } else {
-    fs.appendFileSync(csvPath, csvLine, 'utf8');
+  try {
+    await access(csvPath).then(
+      async () => {
+        await appendFile(csvPath, csvLine, 'utf8');
+      },
+      async () => {
+        await writeFile(csvPath, csvHeader + csvLine, 'utf8');
+      }
+    );
+  } catch (e) {
+    try { console.info('[thin-results] csv write skipped', e); } catch {}
   }
 
   // MD rollup append (short section)
@@ -76,21 +108,31 @@ export async function writeReport(event: ThinResultEvent): Promise<void> {
     ''
   ].join('\n');
 
-  if (!fs.existsSync(mdPath)) {
-    const header = `# Thin Results – ${date}\n\n`;
-    fs.writeFileSync(mdPath, header + mdSection + '\n', 'utf8');
-  } else {
-    fs.appendFileSync(mdPath, mdSection + '\n', 'utf8');
+  try {
+    await access(mdPath).then(
+      async () => {
+        await appendFile(mdPath, mdSection + '\n', 'utf8');
+      },
+      async () => {
+        const header = `# Thin Results – ${date}\n\n`;
+        await writeFile(mdPath, header + mdSection + '\n', 'utf8');
+      }
+    );
+  } catch (e) {
+    try { console.info('[thin-results] md write skipped', e); } catch {}
   }
 }
 
 export async function initDailyThinResultsFile(): Promise<void> {
-  const dir = ensureReportsDir();
+  if (!areFileLogsAllowed()) return; // noop in serverless
+  const dir = await ensureReportsDir();
   const date = todayStamp();
   const mdPath = path.join(dir, `thin_results_${date}.md`);
-  if (!fs.existsSync(mdPath)) {
-    fs.writeFileSync(mdPath, `# Thin Results – ${date}\n\n`, 'utf8');
-  }
+  try {
+    await access(mdPath).catch(async () => {
+      await writeFile(mdPath, `# Thin Results – ${date}\n\n`, 'utf8');
+    });
+  } catch {}
 }
 
 

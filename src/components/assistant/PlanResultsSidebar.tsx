@@ -155,24 +155,27 @@ export function PlanResultsSidebar({
   }, [activeResults?.plans, searchFilter]);
 
   // Get pinned and unpinned plans
-  const pinnedPlansList = filteredPlans.filter(plan => pinnedPlans.has(plan.id));
-  const unpinnedPlans = filteredPlans.filter(plan => !pinnedPlans.has(plan.id));
+  const pinnedPlansList = React.useMemo(() => filteredPlans.filter(plan => pinnedPlans.has(plan.id)), [filteredPlans, pinnedPlans]);
+  const unpinnedPlans = React.useMemo(() => filteredPlans.filter(plan => !pinnedPlans.has(plan.id)), [filteredPlans, pinnedPlans]);
 
-  // Log when the component renders
-  console.log('[PlanResultsSidebar] Rendering:', { isOpen, plans: currentResults?.plans?.length });
+  // Dev-only render log to avoid console spam in production
+  if (process.env.NODE_ENV !== 'production') {
+    // keep it lightweight; avoid stringifying large arrays
+    console.log('[PlanResultsSidebar] Rendering:', { isOpen, count: currentResults?.plans?.length ?? 0 });
+  }
 
   const overlay = useUIOverlay();
   const prevResultsStateRef = React.useRef<typeof overlay.resultsState | null>(null);
 
   // Restore drawer state when modal closes
   useEffect(() => {
-    if (!isModalOpen && prevResultsStateRef.current) {
-      const prev = prevResultsStateRef.current;
-      if (prev === 'open') overlay.openResults();
-      if (prev === 'minimized') overlay.minimizeResults();
-      if (prev === 'hidden') overlay.hideResults();
-      prevResultsStateRef.current = null;
-    }
+    if (isModalOpen) return;
+    if (!prevResultsStateRef.current) return;
+    const prev = prevResultsStateRef.current;
+    if (prev === 'open') overlay.openResults();
+    if (prev === 'minimized') overlay.minimizeResults();
+    if (prev === 'hidden') overlay.hideResults();
+    prevResultsStateRef.current = null;
   }, [isModalOpen, overlay]);
 
   if (!isOpen) return null;
