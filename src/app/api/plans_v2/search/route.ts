@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     params.push(`%${q}%`);
     i++;
   }
-  where.push(`base_price > 0`);
+  // Do NOT filter out quote-only or missing-price plans. The UI handles placeholder display.
 
   const sql = `SELECT id, provider, name, name_en, category, country, base_price, currency, external_link, brochure_link, benefits, benefits_en, tags
                FROM public.plans_v2

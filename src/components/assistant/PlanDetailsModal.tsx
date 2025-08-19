@@ -170,6 +170,19 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
                     <span className="text-sm font-normal text-gray-600 dark:text-gray-400"> {isEN ? '/month' : '/mes'}</span>
                   </div>
                 )}
+                {(!((plan as any).basePrice ?? (plan as any).base_price) && ((plan as any).external_link || (plan as any).website)) && (
+                  <div className="mt-2">
+                    <a
+                      href={(plan as any).external_link || (plan as any).website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-300 hover:underline"
+                    >
+                      {isEN ? 'See on website' : 'Ver en el sitio'}
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                )}
               </div>
 
               {/* Benefits */}

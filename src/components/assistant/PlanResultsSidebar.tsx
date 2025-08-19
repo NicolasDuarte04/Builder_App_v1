@@ -342,7 +342,7 @@ export function PlanResultsSidebar({
                       <div className="border-t border-gray-200 dark:border-gray-700 mb-4" />
                     )}
                     <h3 className="font-medium text-gray-900 dark:text-white mb-3">
-                      {activeResults.title}
+                      {activeResults?.title || (useTranslation().language?.startsWith('es') ? 'Resultados' : 'Results')}
                     </h3>
                     <div className="space-y-3">
                       {unpinnedPlans.map((plan) => (

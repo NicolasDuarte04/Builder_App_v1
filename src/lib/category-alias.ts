@@ -8,7 +8,8 @@ export type CanonicalCategory =
   | 'viaje'
   | 'empresarial'
   | 'mascotas'
-  | 'educacion';
+  | 'educacion'
+  | 'otros';
 
 const SYNONYM_TO_CANONICAL: Record<string, CanonicalCategory> = {
   auto: 'auto', car: 'auto', carro: 'auto', vehiculo: 'auto',
@@ -16,7 +17,7 @@ const SYNONYM_TO_CANONICAL: Record<string, CanonicalCategory> = {
   vida: 'vida', life: 'vida',
   hogar: 'hogar', home: 'hogar', casa: 'hogar',
   viaje: 'viaje', travel: 'viaje',
-  empresarial: 'empresarial', empresa: 'empresarial', negocio: 'empresarial',
+  empresarial: 'empresarial', empresa: 'empresarial', negocio: 'empresarial', otros: 'otros', other: 'otros', others: 'otros',
   mascotas: 'mascotas', pet: 'mascotas', pets: 'mascotas',
   educacion: 'educacion', educativa: 'educacion', educativo: 'educacion', estudios: 'educacion', universidad: 'educacion', colegio: 'educacion',
   education: 'educacion', tuition: 'educacion', school: 'educacion', university: 'educacion', college: 'educacion',
@@ -33,6 +34,7 @@ const CANONICAL_TO_STORED: Record<CanonicalCategory, string> = {
   mascotas: 'mascotas',
   // Our DB stores education as 'educativa'
   educacion: 'educativa',
+  otros: 'otros',
 };
 
 export function toCanonicalInputCategory(input?: string | null): CanonicalCategory | undefined {
