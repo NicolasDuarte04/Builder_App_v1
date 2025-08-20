@@ -1,28 +1,27 @@
 import { NextResponse } from 'next/server';
 import { pool, hasDatabaseUrl } from '@/lib/render-db';
-import { normalizeIncludeExclude } from '@/lib/category-alias';
+import { normalizeIncludeExclude, normalizeList, normalizeCategory } from '@/lib/category-alias';
 import { getDomainFromRequest } from '@/lib/server/base-url';
 import { writeReport } from '@/lib/observability/reports';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
-  if (!pool || !hasDatabaseUrl) {
-    return NextResponse.json([], { status: 200 });
-  }
   const start = Date.now();
   const requestId = Math.random().toString(36).slice(2, 7);
   const body = await req.json().catch(() => ({}));
-  const {
-    country,
-    includeCategories = [],
-    excludeCategories = [],
-    tags = [],
-    q = '',
-    limit = 20,
-  } = body || {};
+  
+  // Support both single & list, normalize on the server too
+  let include = normalizeList(body.includeCategories || body.include || []);
+  if (!include.length && body.category) include = [normalizeCategory(body.category)!];
 
-  const includeNorm = normalizeIncludeExclude(includeCategories);
+  const country = (body.country || "CO").toUpperCase();
+  const limit = Math.min(Number(body.limit || 12), 50);
+  const excludeCategories = body.excludeCategories || [];
+  const tags = body.tags || [];
+  const q = body.q || '';
+
+  const includeNorm = normalizeIncludeExclude(include);
   const excludeNorm = normalizeIncludeExclude(excludeCategories);
 
   const where: string[] = ['1=1'];
@@ -52,15 +51,18 @@ export async function POST(req: Request) {
   }
   // Do NOT filter out quote-only or missing-price plans. The UI handles placeholder display.
 
-  const sql = `SELECT id, provider, name, name_en, category, country, base_price, currency, external_link, brochure_link, benefits, benefits_en, tags
-               FROM public.plans_v2
-               WHERE ${where.join(' AND ')}
-               ORDER BY provider, name
-               LIMIT $${i}`;
-  params.push(Math.min(Number(limit) || 20, 100));
+  let rows: any[] = [];
+  if (pool && hasDatabaseUrl) {
+    const sql = `SELECT id, provider, name, name_en, category, country, base_price, currency, external_link, brochure_link, benefits, benefits_en, tags
+                 FROM public.plans_v2
+                 WHERE ${where.join(' AND ')}
+                 ORDER BY provider, name
+                 LIMIT $${i}`;
+    params.push(Math.min(Number(limit) || 20, 100));
 
-  const res = await pool.query(sql, params);
-  const rows = res.rows;
+    const res = await pool.query(sql, params);
+    rows = res.rows;
+  }
 
   try {
     console.info('[plans_v2/search]', {
@@ -68,6 +70,7 @@ export async function POST(req: Request) {
       country: country || null,
       count: Array.isArray(rows) ? rows.length : 0,
       runtime: process.env.NEXT_RUNTIME || 'nodejs',
+      limit,
     });
   } catch {}
 
@@ -94,7 +97,7 @@ export async function POST(req: Request) {
     }
   }
 
-  // Fallback: if DB returned no rows, try packaged ETL dataset (shadow)
+  // Fallback: if DB returned no rows or DB was unavailable, try packaged ETL dataset (shadow)
   if (!Array.isArray(rows) || rows.length === 0) {
     try {
       // Use a bundled import so the dataset is packaged with the serverless function

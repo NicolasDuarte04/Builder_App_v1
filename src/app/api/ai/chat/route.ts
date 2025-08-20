@@ -8,6 +8,8 @@ import { z } from 'zod';
 import { getSystemPrompt, logPromptVersion, PROMPT_VERSION } from '@/config/systemPrompt';
 import { franc } from 'franc-min';
 import { logToolError } from '@/lib/ai-error-handler';
+import { readPrefs, writePrefs } from '@/lib/chat/session-prefs';
+import { normalizeCategory } from '@/lib/category-alias';
 
 export const runtime = 'nodejs';
 
@@ -307,6 +309,17 @@ export async function POST(req: Request) {
                 includeCategories.push('educacion');
               }
 
+              // Get session preferences and detect user-intended category
+              const prefs = readPrefs();
+              
+              // Try to detect a user-intended category from last user message or chip
+              const detectedCategoryFromMessage = category || includeCategories[0];
+              const hintedCategory = normalizeCategory(detectedCategoryFromMessage ?? null) || prefs.category;
+              const countryPref = prefs.country || "CO"; // sensible default
+              
+              // Persist what we're about to use
+              writePrefs({ category: hintedCategory, country: countryPref });
+
               // Normalize category: map education synonyms to 'educacion' input key
               const categoryInput =
                 category && /(educacion|educativa|educativo|estudios|universidad|colegio|education|tuition|school)/i.test(category)
@@ -315,7 +328,7 @@ export async function POST(req: Request) {
 
               // Normalize to stored category and ensure country default
               const normalizedCategory = categoryInput === 'educacion' ? 'educativa' : categoryInput;
-              const normalizedCountry = country || 'CO';
+              const normalizedCountry = country || countryPref;
 
               // Feature-flag aware search path
               const anyPlans = await searchPlans({
@@ -346,12 +359,12 @@ export async function POST(req: Request) {
               }));
               
               // Check if we got fuzzy matches (different categories)
-              const isExactMatch = plans.length > 0 && plans.every(plan => 
+              const isExactMatch = plans.length > 0 && plans.every((plan: any) => 
                 plan.category.toLowerCase() === (normalizedCategory || '').toLowerCase()
               );
               
               // STRICT VALIDATION: Allow priced plans OR quote-flow plans with link
-              const validPlans = plans.filter(plan => 
+              const validPlans = plans.filter((plan: any) => 
                 plan && 
                 plan.name && 
                 plan.name !== 'No hay planes disponibles públicamente' &&
@@ -364,7 +377,7 @@ export async function POST(req: Request) {
               );
 
               // Transform for UI
-              const finalPlans = validPlans.map((plan, index) => ({
+              const finalPlans = validPlans.map((plan: any, index: number) => ({
                 id: plan.id,
                 name: plan.name,
                 provider: plan.provider,
@@ -386,11 +399,11 @@ export async function POST(req: Request) {
                 hasRealPlans: finalPlans.length > 0,
                 isExactMatch: isExactMatch && finalPlans.length > 0,
                 noExactMatchesFound: !isExactMatch && finalPlans.length > 0,
-                categoriesFound: [...new Set(finalPlans.map(p => p.category))],
+                categoriesFound: [...new Set(finalPlans.map((p: any) => p.category))],
                 filters: { includeCategories, excludeCategories, country: normalizedCountry },
-                dataSource: process.env.BRIKI_DATA_SOURCE || 'legacy'
+                dataSource: 'plans_v2'
               };
-              console.log('[plans] datasource used', { datasource: process.env.BRIKI_DATA_SOURCE ?? 'legacy/fallback-logic' });
+              console.log('[plans] datasource used', { datasource: 'plans_v2' });
               
               console.log('✅✅✅ TOOL EXECUTION FINISHED ✅✅✅');
               console.log('Returning to AI:', {
@@ -402,6 +415,9 @@ export async function POST(req: Request) {
                 categoriesFound: toolResult.categoriesFound,
                 samplePlanName: finalPlans[0]?.name
               });
+              
+              // Re-persist the category (keeps it sticky across turns)
+              writePrefs({ category: hintedCategory });
               
               return toolResult;
             } catch (error) {

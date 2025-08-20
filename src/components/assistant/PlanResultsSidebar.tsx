@@ -13,7 +13,8 @@ import { Input } from '@/components/ui/input';
 import { eventBus } from '@/lib/event-bus';
 import { translateIfEnglish, translateListIfEnglish, formatPlanName } from '@/lib/text-translation';
 import { useUIOverlay } from '@/state/uiOverlay';
-
+import { searchPlans } from '@/lib/plans-client-browser';
+import { normalizeCategory } from '@/lib/category-alias';
 
 interface PlanResultsData {
   title: string;
@@ -30,13 +31,17 @@ interface PlanResultsSidebarProps {
   onClose: () => void;
   currentResults?: PlanResultsData | null;
   className?: string;
+  activeCategory?: string | null;
+  country?: string | null;
 }
 
 export function PlanResultsSidebar({ 
   isOpen, 
   onClose, 
   currentResults,
-  className = "" 
+  className = "",
+  activeCategory,
+  country
 }: PlanResultsSidebarProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -52,11 +57,38 @@ export function PlanResultsSidebar({
   const [resultHistory, setResultHistory] = useState<PlanResultsData[]>([]);
   const [activeResultIndex, setActiveResultIndex] = useState(0);
 
+  // Fallback plans state
+  const [fallbackPlans, setFallbackPlans] = useState<any[] | null>(null);
+
+  // Fallback logic: if tool result missing, fetch directly
+  useEffect(() => {
+    let cancelled = false;
+    async function maybeFetch() {
+      setFallbackPlans(null);
+      if (currentResults && currentResults.plans.length > 0) return;
+      const cat = normalizeCategory(activeCategory || "");
+      if (!cat) return;
+      const rows = await searchPlans({ category: cat, country: country || "CO", limit: 12 }).catch(() => []);
+      if (!cancelled) setFallbackPlans(rows);
+    }
+    void maybeFetch();
+    return () => { cancelled = true; };
+  }, [currentResults, activeCategory, country]);
+
+  // Use fallback plans if tool plans are missing
+  const effectiveResults = currentResults?.plans?.length ? currentResults : 
+    fallbackPlans?.length ? { 
+      title: `Plans for ${activeCategory || 'selected category'}`, 
+      plans: fallbackPlans,
+      category: activeCategory,
+      timestamp: new Date()
+    } : null;
+
   // Update result history when new results come in
   useEffect(() => {
-    if (currentResults && currentResults.plans.length > 0) {
+    if (effectiveResults && effectiveResults.plans.length > 0) {
       const newResult = {
-        ...currentResults,
+        ...effectiveResults,
         timestamp: new Date()
       };
       
@@ -75,10 +107,10 @@ export function PlanResultsSidebar({
       
       setActiveResultIndex(0);
     }
-  }, [currentResults]);
+  }, [effectiveResults]);
 
   // Get currently active results
-  const activeResults = resultHistory[activeResultIndex] || currentResults;
+  const activeResults = resultHistory[activeResultIndex] || effectiveResults;
 
   // Handle plan interactions
   const handleViewDetails = (planId: number) => {

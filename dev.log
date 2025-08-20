@@ -1,0 +1,41 @@
+
+> briki-ai-project-builder-app@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:3000
+   - Network:      http://172.30.36.94:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 1058ms
+ ✓ Compiled /api/plans_v2/diag in 320ms (413 modules)
+🔌 Database connection details: { hasDatabaseUrl: true, envVarSet: true, envVarLength: 113 }
+ GET /api/plans_v2/diag 200 in 1308ms
+ ✓ Compiled /api/plans_v2/search in 241ms (422 modules)
+🔌 Database connection details: { hasDatabaseUrl: true, envVarSet: true, envVarLength: 113 }
+[plans_v2/search] {
+  includeCategories: [ 'educativa' ],
+  country: 'CO',
+  count: 2,
+  runtime: 'nodejs',
+  limit: 2
+}
+ GET /api/plans_v2/search?includeCategories=educacion&country=CO&limit=2 200 in 1234ms
+[plans_v2/search] {
+  includeCategories: [ 'salud' ],
+  country: 'CO',
+  count: 2,
+  runtime: 'nodejs',
+  limit: 2
+}
+ GET /api/plans_v2/search?includeCategories=salud&country=CO&limit=2 200 in 171ms
+ ✓ Compiled in 17ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1276ms (1828 modules)
+Briki build { commit: 'local', branch: 'local' }
+ ✓ Compiled in 309ms (846 modules)
+ ✓ Compiled in 200ms (846 modules)
+ ✓ Compiled in 183ms (846 modules)
+ ✓ Compiled in 153ms (846 modules)
+ ✓ Compiled in 124ms (846 modules)

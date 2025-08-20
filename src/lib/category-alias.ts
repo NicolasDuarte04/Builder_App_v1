@@ -13,13 +13,13 @@ export type CanonicalCategory =
 
 const SYNONYM_TO_CANONICAL: Record<string, CanonicalCategory> = {
   auto: 'auto', car: 'auto', carro: 'auto', vehiculo: 'auto',
-  salud: 'salud', health: 'salud', medico: 'salud', medicina: 'salud',
-  vida: 'vida', life: 'vida',
+  salud: 'salud', health: 'salud', medico: 'salud', medicina: 'salud', 'plan de salud': 'salud', eps: 'salud', 'popular options': 'salud', 'opciones populares': 'salud',
+  vida: 'vida', life: 'vida', 'seguro de vida': 'vida', todas: 'vida',
   hogar: 'hogar', home: 'hogar', casa: 'hogar',
   viaje: 'viaje', travel: 'viaje',
   empresarial: 'empresarial', empresa: 'empresarial', negocio: 'empresarial', otros: 'otros', other: 'otros', others: 'otros',
   mascotas: 'mascotas', pet: 'mascotas', pets: 'mascotas',
-  educacion: 'educacion', educativa: 'educacion', educativo: 'educacion', estudios: 'educacion', universidad: 'educacion', colegio: 'educacion',
+  educacion: 'educacion', educativa: 'educacion', educativo: 'educacion', estudios: 'educacion', universidad: 'educacion', colegio: 'educacion', 'ahorro universitario': 'educacion', 'plan educativo': 'educacion',
   education: 'educacion', tuition: 'educacion', school: 'educacion', university: 'educacion', college: 'educacion',
 };
 
@@ -36,6 +36,42 @@ const CANONICAL_TO_STORED: Record<CanonicalCategory, string> = {
   educacion: 'educativa',
   otros: 'otros',
 };
+
+// Normalize many phrasings -> canonical categories used in v2
+const MAP: Record<string, string> = {
+  // education
+  "educacion": "educativa",
+  "educativo": "educativa",
+  "universidad": "educativa",
+  "ahorro universitario": "educativa",
+  "plan educativo": "educativa",
+
+  // health
+  "salud": "salud",
+  "medico": "salud",
+  "plan de salud": "salud",
+  "eps": "salud",
+  "popular options": "salud",
+  "opciones populares": "salud",
+
+  // life
+  "vida": "vida",
+  "seguro de vida": "vida",
+  "todas": "vida",
+
+  // others already mapped
+  "hogar": "hogar", "auto": "auto", "viaje": "viaje", "mascotas": "mascotas", "otros": "otros"
+};
+
+export function normalizeCategory(input?: string | null): string | null {
+  if (!input) return null;
+  const s = input.toLowerCase().trim();
+  return MAP[s] || s;
+}
+
+export function normalizeList(inputs: (string | undefined)[] | undefined) {
+  return (inputs ?? []).map((x) => normalizeCategory(x || "")!).filter(Boolean);
+}
 
 export function toCanonicalInputCategory(input?: string | null): CanonicalCategory | undefined {
   if (!input) return undefined;
