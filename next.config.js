@@ -115,6 +115,20 @@ const nextConfig = {
         },
       };
     }
+
+    // Prevent canvas from being resolved on the server (safety net)
+    config.resolve = config.resolve || {};
+    config.resolve.fallback = {
+      ...(config.resolve.fallback || {}),
+      canvas: false, // ensure server build doesn't try to bundle it
+    };
+
+    // Additional alias for extra safety
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      canvas: false, // ensure server build doesn't try to bundle it
+    };
+
     return config;
   },
 };
