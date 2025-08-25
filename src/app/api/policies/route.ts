@@ -34,6 +34,22 @@ const SavePolicySchema = z.object({
   extracted_data: z.record(z.any()).default({})
 });
 
+async function getAuthUserIdByEmail(email: string): Promise<string | null> {
+  try {
+    // listUsers paginates; for our small preview env, first page is fine
+    const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+    if (error) {
+      console.error('[policies] admin.listUsers error', error);
+      return null;
+    }
+    const match = data.users.find((u: any) => (u.email || '').toLowerCase() === email.toLowerCase());
+    return match?.id ?? null;
+  } catch (e) {
+    console.error('[policies] getAuthUserIdByEmail exception', e);
+    return null;
+  }
+}
+
 // GET /api/policies - Fetch all saved policies for logged-in user
 export async function GET(request: NextRequest) {
   try {
@@ -53,11 +69,20 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Build query
+    // Resolve Supabase auth user id corresponding to this app user (by email)
+    const authUserId = session.user.email ? await getAuthUserIdByEmail(session.user.email) : null;
+    if (!authUserId) {
+      return NextResponse.json(
+        { error: "No autorizado" },
+        { status: 401 }
+      );
+    }
+
+    // Build query (filter by Supabase auth user id)
     let query = supabase
       .from("saved_policies")
       .select("*", { count: 'exact' })
-      .eq("user_id", session.user.id)
+      .eq("user_id", authUserId)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -145,11 +170,27 @@ export async function POST(request: NextRequest) {
       extracted_data
     } = validatedData;
 
+    // Map NextAuth user to Supabase auth user id via email
+    const email = (session.user as any)?.email;
+    if (!email) {
+      return NextResponse.json({ error: 'unauthorized', message: 'Missing email in session' }, { status: 401 });
+    }
+    let authUserId = await getAuthUserIdByEmail(email);
+    if (!authUserId) {
+      // Create a corresponding auth user to satisfy FK (preview-friendly). Email confirmed to avoid invites.
+      const { data: created, error: createErr } = await supabase.auth.admin.createUser({ email, email_confirm: true });
+      if (createErr || !created?.user?.id) {
+        console.error('[policies.save] create auth user failed', createErr);
+        return NextResponse.json({ error: 'auth_user_missing' }, { status: 401 });
+      }
+      authUserId = created.user.id;
+    }
+
     // Check if user already has a policy with the same name
     const { data: existingPolicy } = await supabase
       .from("saved_policies")
       .select("id")
-      .eq("user_id", session.user.id)
+      .eq("user_id", authUserId)
       .eq("custom_name", custom_name)
       .single();
 
@@ -348,7 +389,7 @@ export async function POST(request: NextRequest) {
     const { data: policy, error: insertError } = await supabase
       .from("saved_policies")
       .insert({
-        user_id: session.user.id,
+        user_id: authUserId,
         custom_name,
         insurer_name,
         policy_type,
@@ -367,7 +408,7 @@ export async function POST(request: NextRequest) {
       const { data: policy2, error: insertError2 } = await supabase
         .from('saved_policies')
         .insert({
-          user_id: session.user.id,
+          user_id: authUserId,
           custom_name,
           insurer_name,
           policy_type,
