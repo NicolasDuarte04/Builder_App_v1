@@ -79,37 +79,31 @@ export const authOptions: NextAuthOptions = {
   trustHost: true,
   cookies: {
     sessionToken: {
-      name: process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        // Use .brikiapp.com for cross-subdomain support
-        domain: process.env.NODE_ENV === "production" ? ".brikiapp.com" : undefined,
-      },
+      name: "next-auth.session-token",
+      options: { 
+        domain: ".brikiapp.com", 
+        path: "/", 
+        sameSite: "lax", 
+        secure: true 
+      }
     },
     callbackUrl: {
       name: "next-auth.callback-url",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? ".brikiapp.com" : undefined,
-      },
+      options: { 
+        domain: ".brikiapp.com", 
+        path: "/", 
+        sameSite: "lax", 
+        secure: true 
+      }
     },
     csrfToken: {
       name: "next-auth.csrf-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? ".brikiapp.com" : undefined,
-      },
+      options: { 
+        domain: ".brikiapp.com", 
+        path: "/", 
+        sameSite: "lax", 
+        secure: true 
+      }
     }
   },
   callbacks: {

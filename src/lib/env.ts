@@ -7,6 +7,7 @@ interface EnvironmentConfig {
   
   // Domain Configuration
   CANONICAL_DOMAIN: string;
+  BASE_URL: string;
   IS_PRODUCTION: boolean;
   IS_DEVELOPMENT: boolean;
   
@@ -42,12 +43,12 @@ function validateEnvironment(): EnvironmentConfig {
     throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
   }
 
-  // Determine canonical domain
+  // Determine canonical domain - prioritize environment variables
   const canonicalDomain = process.env.NEXT_PUBLIC_CANONICAL_DOMAIN || 
-                          process.env.NEXTAUTH_URL || 
-                          'https://brikiapp.com';
+                          process.env.NEXT_PUBLIC_BASE_URL ||
+                          'https://www.brikiapp.com';
 
-  // Ensure NEXTAUTH_URL is set correctly
+  // Ensure NEXTAUTH_URL is set correctly for production
   const nextAuthUrl = process.env.NEXTAUTH_URL || canonicalDomain;
 
   // Validate domain consistency
@@ -58,11 +59,22 @@ function validateEnvironment(): EnvironmentConfig {
     console.warn(`[ENV] Domain mismatch: NEXTAUTH_URL (${url.hostname}) vs CANONICAL_DOMAIN (${canonicalUrl.hostname})`);
   }
 
+  // Log environment configuration in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[ENV] Configuration:', {
+      NEXTAUTH_URL: nextAuthUrl,
+      CANONICAL_DOMAIN: canonicalDomain,
+      IS_PRODUCTION: false,
+      BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA || 'local'
+    });
+  }
+
   return {
     NEXTAUTH_URL: nextAuthUrl,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET!,
     
     CANONICAL_DOMAIN: canonicalDomain,
+    BASE_URL: canonicalDomain,
     IS_PRODUCTION: process.env.NODE_ENV === 'production',
     IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
     

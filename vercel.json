@@ -16,15 +16,9 @@
   },
   "redirects": [
     {
-      "source": "/",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "brikiapp.com" }],
-      "destination": "https://www.brikiapp.com",
-      "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "brikiapp.com" }],
-      "destination": "https://www.brikiapp.com/:path*",
+      "destination": "https://www.brikiapp.com/$1",
       "permanent": true
     }
   ],

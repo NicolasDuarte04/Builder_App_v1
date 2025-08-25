@@ -1,10 +1,10 @@
 // Service Worker for Briki App
-// Version: 2.0.0 - Bumped to invalidate stale caches
+// Version: 3.0.0 - Bumped to invalidate stale caches and fix ChunkLoadError
 // Scope: /
 
-const CACHE_NAME = 'briki-v2.0.0';
-const STATIC_CACHE = 'briki-static-v2.0.0';
-const CHUNK_CACHE = 'briki-chunks-v2.0.0';
+const CACHE_NAME = 'briki-v3.0.0';
+const STATIC_CACHE = 'briki-static-v3.0.0';
+const CHUNK_CACHE = 'briki-chunks-v3.0.0';
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {

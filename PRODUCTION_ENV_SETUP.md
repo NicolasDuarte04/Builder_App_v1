@@ -8,11 +8,11 @@
 # Primary domain - MUST match exactly
 NEXTAUTH_URL=https://www.brikiapp.com
 
-# Secret key - MUST be set and consistent
-NEXTAUTH_SECRET=your-strong-secret-key-here
-
 # NextAuth v5 compatibility
 AUTH_TRUST_HOST=true
+
+# Secret key - MUST be set and consistent
+NEXTAUTH_SECRET=your-strong-secret-key-here
 ```
 
 ### **2. Domain Configuration (REQUIRED)**
@@ -41,12 +41,22 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 ```
 
+## **🚨 IMPORTANT: Remove Old Variables**
+
+**Remove these if they exist:**
+- ❌ `NEXTAUTH_URL=https://brikiapp.com` (old apex domain)
+- ❌ Any other domain variations
+
+**Keep only:**
+- ✅ `NEXTAUTH_URL=https://www.brikiapp.com` (www subdomain only)
+
 ## **🔧 How to Set in Vercel**
 
 1. **Go to**: Vercel Dashboard → Your Project → Settings → Environment Variables
 2. **Environment**: Select "Production" (and Preview if needed)
 3. **Add each variable** with the exact names and values above
-4. **Redeploy** after setting all variables
+4. **Remove old variables** that use the wrong domain
+5. **Redeploy** after setting all variables
 
 ## **🌐 Domain Configuration in Vercel**
 
@@ -72,7 +82,7 @@ brikiapp.com → A → 76.76.21.21
 www.brikiapp.com → CNAME → cname.vercel-dns.com
 ```
 
-### **Remove Old Proxies**
+### **Remove Old DNS Records**
 - **Cloudflare**: Disable proxy (orange cloud → gray cloud)
 - **Other CDNs**: Remove any old proxy configurations
 
@@ -106,6 +116,7 @@ npm run build
 1. Set environment variables above
 2. Redeploy from main branch
 3. Visit `/__sw-reset` to clear stale service workers
+4. Hard refresh the page (Ctrl+F5 / Cmd+Shift+R)
 
 ### **Issue: NextAuth CORS errors**
 **Solution**:
@@ -122,6 +133,7 @@ npm run build
 ## **📱 Post-Setup Checklist**
 
 - [ ] All environment variables set in Vercel Production
+- [ ] **REMOVED** old `NEXTAUTH_URL=https://brikiapp.com`
 - [ ] Both domains attached to this project only
 - [ ] DNS records configured correctly
 - [ ] Old proxies/CDNs removed
@@ -137,6 +149,16 @@ If things go wrong:
 2. **Hard refresh**: `Ctrl+F5` (Windows) or `Cmd+Shift+R` (Mac)
 3. **Clear cookies**: For brikiapp.com domain
 4. **Check Vercel logs**: For deployment errors
+
+## **🔧 Service Worker Reset**
+
+**After deployment, users experiencing ChunkLoadError should:**
+1. Visit `/__sw-reset`
+2. Click "Reset Service Workers"
+3. Go to their main page
+4. Hard refresh (Ctrl+F5 / Cmd+Shift+R)
+
+This will clear stale service workers and load fresh assets.
 
 ---
 
