@@ -24,6 +24,10 @@ export function PolicyViewDialog({ id, defaultTitle, onClose, onDeleted, onRenam
   const [data, setData] = useState<any | null>(null);
   const [isRenaming, setIsRenaming] = useState(false);
   const [name, setName] = useState(defaultTitle);
+  const tOr = (key: string, fallback: string) => {
+    const v = t(key as any);
+    return v && v !== key ? v : fallback;
+  };
 
   useEffect(() => {
     let alive = true;
@@ -38,24 +42,26 @@ export function PolicyViewDialog({ id, defaultTitle, onClose, onDeleted, onRenam
   // Map saved_policies row to PolicyAnalysisDisplay props
   const display = useMemo(() => {
     if (!data) return null;
-    const a = data.analysis || {};
-    // Construct minimal shape PolicyAnalysisDisplay expects
+    const a = data.analysis || data.extracted_data || {};
+    // Map SavedAnalysis -> PolicyAnalysisDisplay shape
+    const limitsPairs = Array.isArray(a.coverages) ? a.coverages : [];
+    const deductPairs = Array.isArray(a.deductibles) ? a.deductibles : [];
     const analysis = {
       policyType: data.policy_type || '',
-      premium: a.prima ? { amount: a.prima.amount || 0, currency: a.prima.currency || 'COP', frequency: a.prima.frequency || 'monthly' } : { amount: 0, currency: 'COP', frequency: 'monthly' },
+      premium: a.premium ? { amount: a.premium.amount ?? 0, currency: a.premium.currency || 'COP', frequency: a.premium.frequency || 'monthly' } : { amount: 0, currency: 'COP', frequency: 'monthly' },
       coverage: {
-        limits: Object.fromEntries((a.limites_cobertura || []).map((it: any) => [it.label || '-', parseNumberLike(it.value)])),
-        deductibles: Object.fromEntries((a.deducibles || []).map((it: any) => [it.label || '-', parseNumberLike(it.value)])),
-        exclusions: a.exclusiones || [],
+        limits: Object.fromEntries(limitsPairs.map((it: any) => [it?.label || '-', parseNumberLike(it?.value)])),
+        deductibles: Object.fromEntries(deductPairs.map((it: any) => [it?.label || '-', parseNumberLike(it?.value)])),
+        exclusions: Array.isArray(a.exclusions) ? a.exclusions : [],
       },
-      policyDetails: { policyNumber: data?.metadata?.policy_number || undefined, effectiveDate: data?.metadata?.effective_date || undefined, expirationDate: data?.metadata?.expiration_date || undefined, insured: [] },
+      policyDetails: a.policyDetails || { policyNumber: data?.metadata?.policy_number, effectiveDate: data?.metadata?.effective_date, expirationDate: data?.metadata?.expiration_date, insured: [] },
       insurer: { name: data.insurer_name || undefined },
-      keyFeatures: a.caracteristicas || [],
-      recommendations: a.recomendaciones || [],
-      riskScore: (a.evaluacion_riesgo?.score ?? data?.metadata?.risk_score) || 0,
-      riskJustification: a.evaluacion_riesgo?.notes || undefined,
-      redFlags: a.senales_alerta || [],
-    };
+      keyFeatures: Array.isArray(a.features) ? a.features : [],
+      recommendations: Array.isArray(a.recommendations) ? a.recommendations : [],
+      riskScore: typeof a?.risk?.score === 'number' ? a.risk.score : (data?.metadata?.risk_score || 0),
+      riskJustification: a?.risk?.notes || undefined,
+      redFlags: Array.isArray(a?.senales_alerta) ? a.senales_alerta : [],
+    } as any;
     return { analysis, pdfUrl: data.pdf_url, fileName: data.custom_name, rawAnalysisData: data.extracted_data };
   }, [data]);
 
@@ -94,17 +100,17 @@ export function PolicyViewDialog({ id, defaultTitle, onClose, onDeleted, onRenam
           ) : (
             <div className="flex items-center gap-3">
               <div className="font-semibold text-lg truncate max-w-[40vw]">{name}</div>
-              <Button size="sm" variant="outline" onClick={() => setIsRenaming(true)}>{t('common.rename') || 'Rename'}</Button>
+              <Button size="sm" variant="outline" onClick={() => setIsRenaming(true)}>{tOr('common.rename','Renombrar')}</Button>
             </div>
           )}
           <div className="flex items-center gap-2">
             {data?.pdf_url && (
               <a href={data.pdf_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
-                {t('policy.viewOriginalPdf') || 'View original PDF'}
+                {tOr('policy.viewOriginalPdf','Ver PDF original')}
               </a>
             )}
-            <Button size="sm" variant="destructive" onClick={handleDelete}>{t('common.delete') || 'Delete'}</Button>
-            <Button size="sm" variant="outline" onClick={onClose}>{t('common.close') || 'Close'}</Button>
+            <Button size="sm" variant="destructive" onClick={handleDelete}>{tOr('common.delete','Eliminar')}</Button>
+            <Button size="sm" variant="outline" onClick={onClose}>{tOr('common.close','Cerrar')}</Button>
           </div>
         </div>
 
