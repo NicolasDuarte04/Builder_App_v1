@@ -18,11 +18,15 @@ import { useSession, signOut } from "next-auth/react";
 import { ChevronDown, LogOut, User } from "lucide-react";
 import Link from "next/link";
 
+// Global reopen chip config
+const REOPEN_STORAGE_KEY = 'briki:lastAnalyzer';
+
 const getNavItems = (t: (key: string) => string, isAuthenticated: boolean) => {
   const items = [
     { name: t("nav.home"), link: "/" },
     { name: t("nav.about"), link: "/about" },
     { name: t("nav.assistant"), link: "/assistant" },
+    { name: t("dashboard.insurance.title") || 'Dashboard', link: "/dashboard/insurance" },
   ];
 
   return items;
@@ -36,6 +40,20 @@ export function MainNavbar() {
   const { data: session, status } = useSession();
   const navItems = getNavItems(t, !!session);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const [reopen, setReopen] = useState<{ ts: number; pdfUrl?: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(REOPEN_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed?.ts && Date.now() - parsed.ts < 24 * 60 * 60 * 1000) {
+        setReopen({ ts: parsed.ts, pdfUrl: parsed.pdfUrl });
+      } else {
+        localStorage.removeItem(REOPEN_STORAGE_KEY);
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -100,6 +118,15 @@ export function MainNavbar() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="relative z-20 flex items-center space-x-2">
+            {reopen && (
+              <button
+                onClick={() => { window.location.href = '/assistant?reopen=1'; }}
+                className="hidden md:inline-flex items-center px-3 py-1.5 text-xs rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                title={t('assistant.reopen') || 'Reabrir analizador'}
+              >
+                {t('assistant.reopen') || 'Reabrir analizador'}
+              </button>
+            )}
             <LanguageToggle />
             {status === "loading" ? (
               <div className="px-4 py-2 text-sm text-gray-500">Loading...</div>

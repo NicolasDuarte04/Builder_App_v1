@@ -10,6 +10,8 @@ import React, { useRef, useState } from 'react';
 import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, XCircle, ChevronDown, ChevronUp, Share2, Link as LinkIcon } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { SavePolicyButton } from '../dashboard/SavePolicyButton';
+import { toSavedAnalysis } from '@/lib/policy/normalizeAnalysis';
+import type { SavedPolicyAnalysis } from '@/types/policies';
 import { ENABLE_SAVE_POLICY, ENABLE_PDF_VERIFY } from '@/lib/featureFlags';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -61,9 +63,11 @@ interface PolicyAnalysisDisplayProps {
   pdfUrl?: string;
   fileName?: string;
   rawAnalysisData?: any;
+  hideSave?: boolean;
+  hidePdfViewer?: boolean;
 }
 
-export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData }: PolicyAnalysisDisplayProps) {
+export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData, hideSave, hidePdfViewer }: PolicyAnalysisDisplayProps) {
   const { t, language } = useTranslation();
   const router = useRouter();
   const { data: session } = useSession();
@@ -244,16 +248,36 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     <div className="space-y-4">
       {/* Primary actions */}
       <div className="inline-flex items-center gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button size="sm" disabled={!hasAnyPageRefs}>{L.exportAnnotated}</Button>
-            </span>
-          </TooltipTrigger>
-          {!hasAnyPageRefs && <TooltipContent>{t('policy.pageLocationsHint') || 'Las ubicaciones por página aparecerán cuando estén disponibles.'}</TooltipContent>}
-        </Tooltip>
-        <Button variant="outline" size="sm" onClick={() => navigator.share?.({ title: 'Policy Analysis', url: location.href }).catch(() => {})}><Share2 className="h-4 w-4 mr-1"/>{L.share}</Button>
-        <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(location.href); }}><LinkIcon className="h-4 w-4 mr-1"/>{L.copyLink}</Button>
+        {/* Guardar análisis (primary) */}
+        {analysis && !hideSave && (
+          <SavePolicyButton
+            policyData={(function toSavePayload(){
+              const customName = fileName || analysis?.policyType || analysis?.insurer?.name || 'Póliza sin nombre';
+              const currency = analysis?.premium?.currency || 'COP';
+              const structured = toSavedAnalysis(analysis);
+              return {
+                custom_name: customName,
+                insurer_name: analysis?.insurer?.name || null,
+                policy_type: analysis?.policyType || null,
+                // Prefer server artifacts; avoid base64 for payload size
+                pdf_url: safePdfUrl || undefined,
+                storage_path: meta?.storagePath || undefined,
+                upload_id: meta?.uploadId || undefined,
+                uploader_user_id: meta?.uploaderUserId || undefined,
+                extracted_data: structured,
+                // Compact metadata
+                metadata: {
+                  premium: analysis?.premium?.amount ?? null,
+                  currency,
+                  frequency: analysis?.premium?.frequency ?? null,
+                  policy_number: analysis?.policyDetails?.policyNumber ?? null,
+                  source: 'analysis_modal',
+                },
+              };
+            })()}
+          />
+        )}
+        {/* Hidden unfinished actions for now */}
       </div>
 
       {/* Table of contents */}
@@ -546,7 +570,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     </div>
   );
 
-  if (!ENABLE_PDF_VERIFY) {
+  if (!ENABLE_PDF_VERIFY || hidePdfViewer) {
     return (
       <TooltipProvider>
         {AnalysisBody}

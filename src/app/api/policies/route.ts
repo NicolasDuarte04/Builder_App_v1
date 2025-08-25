@@ -30,9 +30,32 @@ const SavePolicySchema = z.object({
   // Legacy path (only when truly raw base64 is sent)
   pdf_base64: z.string().optional(),
 
+  // New structured analysis payload
+  analysis: z.record(z.any()).optional(),
+
+  // Alternative naming accepted (mapped in handler)
+  fileUrl: z.string().url().optional(),
+  title: z.string().optional(),
+
   metadata: z.record(z.any()).default({}),
   extracted_data: z.record(z.any()).default({})
 });
+
+async function getAuthUserIdByEmail(email: string): Promise<string | null> {
+  try {
+    // listUsers paginates; for our small preview env, first page is fine
+    const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+    if (error) {
+      console.error('[policies] admin.listUsers error', error);
+      return null;
+    }
+    const match = data.users.find((u: any) => (u.email || '').toLowerCase() === email.toLowerCase());
+    return match?.id ?? null;
+  } catch (e) {
+    console.error('[policies] getAuthUserIdByEmail exception', e);
+    return null;
+  }
+}
 
 // GET /api/policies - Fetch all saved policies for logged-in user
 export async function GET(request: NextRequest) {
@@ -53,11 +76,20 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Build query
+    // Resolve Supabase auth user id corresponding to this app user (by email)
+    const authUserId = session.user.email ? await getAuthUserIdByEmail(session.user.email) : null;
+    if (!authUserId) {
+      return NextResponse.json(
+        { error: "No autorizado" },
+        { status: 401 }
+      );
+    }
+
+    // Build query (filter by Supabase auth user id)
     let query = supabase
       .from("saved_policies")
       .select("*", { count: 'exact' })
-      .eq("user_id", session.user.id)
+      .eq("user_id", authUserId)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -141,15 +173,34 @@ export async function POST(request: NextRequest) {
       pdf_url: providedPdfUrl,
       storage_path: providedStoragePath,
       pdf_base64,
+      fileUrl,
+      title,
+      analysis,
       metadata,
       extracted_data
     } = validatedData;
+
+    // Map NextAuth user to Supabase auth user id via email
+    const email = (session.user as any)?.email;
+    if (!email) {
+      return NextResponse.json({ error: 'unauthorized', message: 'Missing email in session' }, { status: 401 });
+    }
+    let authUserId = await getAuthUserIdByEmail(email);
+    if (!authUserId) {
+      // Create a corresponding auth user to satisfy FK (preview-friendly). Email confirmed to avoid invites.
+      const { data: created, error: createErr } = await supabase.auth.admin.createUser({ email, email_confirm: true });
+      if (createErr || !created?.user?.id) {
+        console.error('[policies.save] create auth user failed', createErr);
+        return NextResponse.json({ error: 'auth_user_missing' }, { status: 401 });
+      }
+      authUserId = created.user.id;
+    }
 
     // Check if user already has a policy with the same name
     const { data: existingPolicy } = await supabase
       .from("saved_policies")
       .select("id")
-      .eq("user_id", session.user.id)
+      .eq("user_id", authUserId)
       .eq("custom_name", custom_name)
       .single();
 
@@ -270,6 +321,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Case 2b: alternative fileUrl field
+    if (!pdf_url && fileUrl) {
+      pdf_url = fileUrl;
+      const inferred = inferStoragePathFromUrl(fileUrl);
+      if (inferred) {
+        storage_path = inferred;
+      }
+    }
+
     // Case 3: legacy pdf_base64
     if (!pdf_url && pdf_base64) {
       // Validate it looks like a data URL for PDFs
@@ -344,32 +404,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert policy record
+    // Normalize payload to current schema (no 'analysis' column in some envs)
+    const extracted_data_normalized = (extracted_data && Object.keys(extracted_data).length > 0)
+      ? extracted_data
+      : (analysis && Object.keys(analysis || {}).length > 0)
+        ? analysis
+        : null;
+
+    // Insert policy record (omit 'analysis' column)
     const { data: policy, error: insertError } = await supabase
       .from("saved_policies")
       .insert({
-        user_id: session.user.id,
-        custom_name,
+        user_id: authUserId,
+        custom_name: title || custom_name,
         insurer_name,
         policy_type,
         priority,
         pdf_url,
         storage_path,
         metadata,
-        extracted_data
+        extracted_data: extracted_data_normalized || {}
       })
       .select()
       .single();
 
     if (insertError) {
-      console.error("Error inserting policy:", insertError);
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('[policies] insert error:', { code: insertError.code, message: insertError.message });
+      console.error("[policies.save] insert error (full payload)", { code: insertError.code, message: insertError.message });
+      // Fallback: insert minimal shape for DBs missing JSON columns (preview envs)
+      const { data: policy2, error: insertError2 } = await supabase
+        .from('saved_policies')
+        .insert({
+          user_id: authUserId,
+          custom_name: title || custom_name,
+          insurer_name,
+          policy_type,
+          priority,
+          pdf_url,
+          storage_path,
+        })
+        .select()
+        .single();
+      if (insertError2) {
+        console.error('[policies.save] minimal insert failed', { code: insertError2.code, message: insertError2.message });
+        return NextResponse.json(
+          { where: 'insert', error: 'Error al guardar la póliza', code: insertError2.code, message: insertError2.message },
+          { status: 500 }
+        );
       }
-      return NextResponse.json(
-        { where: 'insert', error: 'Error al guardar la póliza', code: insertError.code, message: insertError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ id: policy2.id, pdf_url: policy2.pdf_url, saved: true, signed: !!policy2.pdf_url, message: "Análisis guardado exitosamente" });
     }
 
     return NextResponse.json({ id: policy.id, pdf_url: policy.pdf_url, saved: true, signed: !!policy.pdf_url, message: "Análisis guardado exitosamente" });
