@@ -45,7 +45,7 @@ export async function GET(
 
     const { data: policy, error } = await supabase
       .from("saved_policies")
-      .select("*")
+      .select("id, custom_name, insurer_name, policy_type, created_at, pdf_url, storage_path, extracted_data")
       .eq("id", params.id)
       .eq("user_id", authUserId)
       .single();
@@ -57,7 +57,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ policy });
+    return NextResponse.json({ policy: { ...policy, analysis: policy.extracted_data } });
   } catch (error) {
     console.error("Error in GET /api/policies/[id]:", error);
     return NextResponse.json(
