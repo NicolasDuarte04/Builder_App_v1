@@ -75,35 +75,41 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  // NextAuth v5 compatibility
   trustHost: true,
   cookies: {
     sessionToken: {
-      name: 'next-auth.session-token',
+      name: process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
       options: {
-        domain: process.env.NODE_ENV === 'production' ? '.brikiapp.com' : undefined,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-      }
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        // Use .brikiapp.com for cross-subdomain support
+        domain: process.env.NODE_ENV === "production" ? ".brikiapp.com" : undefined,
+      },
     },
     callbackUrl: {
-      name: 'next-auth.callback-url',
+      name: "next-auth.callback-url",
       options: {
-        domain: process.env.NODE_ENV === 'production' ? '.brikiapp.com' : undefined,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-      }
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        domain: process.env.NODE_ENV === "production" ? ".brikiapp.com" : undefined,
+      },
     },
     csrfToken: {
-      name: 'next-auth.csrf-token',
+      name: "next-auth.csrf-token",
       options: {
-        domain: process.env.NODE_ENV === 'production' ? '.brikiapp.com' : undefined,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-      }
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        domain: process.env.NODE_ENV === "production" ? ".brikiapp.com" : undefined,
+      },
     }
   },
   callbacks: {

@@ -1,13 +1,16 @@
-// Service Worker for Briki - handles chunk caching and updates
-const CACHE_NAME = 'briki-v1';
-const CHUNK_CACHE_NAME = 'briki-chunks-v1';
-const STATIC_CACHE_NAME = 'briki-static-v1';
+// Service Worker for Briki App
+// Version: 2.0.0 - Bumped to invalidate stale caches
+// Scope: /
+
+const CACHE_NAME = 'briki-v2.0.0';
+const STATIC_CACHE = 'briki-static-v2.0.0';
+const CHUNK_CACHE = 'briki-chunks-v2.0.0';
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker');
   event.waitUntil(
-    caches.open(STATIC_CACHE_NAME).then((cache) => {
+    caches.open(STATIC_CACHE).then((cache) => {
       return cache.addAll([
         '/',
         '/offline.html',
@@ -26,8 +29,8 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME && 
-              cacheName !== CHUNK_CACHE_NAME && 
-              cacheName !== STATIC_CACHE_NAME) {
+              cacheName !== CHUNK_CACHE && 
+              cacheName !== STATIC_CACHE) {
             console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
@@ -87,7 +90,7 @@ async function handleChunkRequest(request) {
     
     if (networkResponse.ok) {
       // Cache the successful response
-      const cache = await caches.open(CHUNK_CACHE_NAME);
+      const cache = await caches.open(CHUNK_CACHE);
       cache.put(request, networkResponse.clone());
       return networkResponse;
     }
@@ -127,7 +130,7 @@ async function handleStaticRequest(request) {
     // If not in cache, fetch and cache
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
-      const cache = await caches.open(STATIC_CACHE_NAME);
+      const cache = await caches.open(STATIC_CACHE);
       cache.put(request, networkResponse.clone());
     }
     
