@@ -404,7 +404,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert policy record
+    // Normalize payload to current schema (no 'analysis' column in some envs)
+    const extracted_data_normalized = (extracted_data && Object.keys(extracted_data).length > 0)
+      ? extracted_data
+      : (analysis && Object.keys(analysis || {}).length > 0)
+        ? analysis
+        : null;
+
+    // Insert policy record (omit 'analysis' column)
     const { data: policy, error: insertError } = await supabase
       .from("saved_policies")
       .insert({
@@ -415,9 +422,8 @@ export async function POST(request: NextRequest) {
         priority,
         pdf_url,
         storage_path,
-        analysis: analysis ?? undefined,
         metadata,
-        extracted_data
+        extracted_data: extracted_data_normalized || {}
       })
       .select()
       .single();
