@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Shield, Plus, Loader2, RefreshCw, Search, Filter } from "lucide-react";
+import { FileText, Shield, Plus, Loader2 } from "lucide-react";
+import SavedAnalysesList from '@/components/dashboard/analyses/SavedAnalysesList';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -146,13 +147,11 @@ export default function MyInsurancePage() {
     fetchPolicies();
   }, [searchTerm, priorityFilter]);
 
-  // Require authentication for insurance dashboard
+  // Allow access without authentication for preview/testing
+  // (No redirect; API calls may 401 if not signed in.)
   useEffect(() => {
-    if (status === "loading") return;
-    if (!session) {
-      router.push("/login?callbackUrl=/dashboard/insurance");
-    }
-  }, [session, status, router]);
+    // no-op
+  }, [status]);
 
   if (status === "loading") {
     return (
@@ -162,9 +161,7 @@ export default function MyInsurancePage() {
     );
   }
 
-  if (!session) {
-    return null;
-  }
+  // If not signed in, we still render the portal UI; data calls may show empty or error toasts.
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl pt-32">
@@ -180,136 +177,25 @@ export default function MyInsurancePage() {
 
       {/* Tabs Section */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="saved-analyses" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             {t("dashboard.insurance.tabs.savedAnalyses")}
           </TabsTrigger>
-          <TabsTrigger value="tracked-plans" className="flex items-center gap-2">
+          <TabsTrigger value="saved-plans" className="flex items-center gap-2" disabled title={t('common.comingSoon') || 'Coming soon'}>
             <Shield className="h-4 w-4" />
             {t("dashboard.insurance.tabs.trackedPlans")}
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="flex items-center gap-2" disabled title={t('common.comingSoon') || 'Coming soon'}>
+            {/* reuse icon */}
+            <Shield className="h-4 w-4" />
+            Activity
           </TabsTrigger>
         </TabsList>
 
         {/* Saved Analyses Tab */}
         <TabsContent value="saved-analyses" className="space-y-4">
-          {/* Search and Filter Section */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nombre..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value === " " ? "" : value)}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filtrar por prioridad" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value=" ">Todas las prioridades</SelectItem>
-                <SelectItem value="high">Alta</SelectItem>
-                <SelectItem value="medium">Media</SelectItem>
-                <SelectItem value="low">Baja</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={fetchPolicies}
-              disabled={isRefreshing}
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
-
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : savedPolicies.length > 0 ? (
-            <>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">
-                  {savedPolicies.length} {savedPolicies.length === 1 ? 'análisis guardado' : 'análisis guardados'}
-                </h3>
-                <div className="flex items-center gap-2">
-                  {selectedForComparison.length > 0 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedForComparison([]);
-                      }}
-                    >
-                      Cancelar selección ({selectedForComparison.length})
-                    </Button>
-                  )}
-                  {selectedForComparison.length >= 2 && (
-                    <Button
-                      size="sm"
-                      onClick={() => setShowComparison(true)}
-                      className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
-                    >
-                      Comparar ({selectedForComparison.length})
-                    </Button>
-                  )}
-                  {savedPolicies.length >= 2 && selectedForComparison.length === 0 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        // Start comparison mode
-                        setSelectedForComparison([]);
-                      }}
-                    >
-                      Comparar pólizas
-                    </Button>
-                  )}
-                </div>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {savedPolicies.map((policy) => (
-                  <SavedPoliciesCard
-                    key={policy.id}
-                    policy={policy}
-                    onDelete={handleDeletePolicy}
-                    onView={handleViewPolicy}
-                    isSelected={selectedForComparison.includes(policy.id)}
-                    onSelect={(id) => {
-                      setSelectedForComparison(prev => 
-                        prev.includes(id) 
-                          ? prev.filter(p => p !== id)
-                          : [...prev, id]
-                      );
-                    }}
-                    selectionMode={selectedForComparison.length > 0 || savedPolicies.length >= 2}
-                  />
-                ))}
-              </div>
-            </>
-          ) : (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-                <CardTitle className="text-xl mb-2">
-                  {t("dashboard.insurance.savedAnalyses.emptyTitle")}
-                </CardTitle>
-                <CardDescription className="text-center max-w-md mb-6">
-                  {t("dashboard.insurance.savedAnalyses.emptyDescription")}
-                </CardDescription>
-                <Button 
-                  onClick={() => router.push("/assistant")}
-                  className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("dashboard.insurance.savedAnalyses.analyzeButton")}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          <SavedAnalysesList />
         </TabsContent>
 
         {/* Tracked Plans Tab */}

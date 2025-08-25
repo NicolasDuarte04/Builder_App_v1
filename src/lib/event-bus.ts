@@ -81,6 +81,7 @@ export const BrikiEvents = {
   PDF_ANALYSIS_RECEIVED: 'pdf-analysis-received',
   COMPARISON_READY: 'comparison-ready',
   ERROR_OCCURRED: 'error-occurred',
+  POLICY_SAVED: 'policy-saved',
 } as const;
 
 // Type definitions for structured data

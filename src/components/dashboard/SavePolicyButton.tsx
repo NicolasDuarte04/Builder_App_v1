@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSession, signIn } from 'next-auth/react';
+import { eventBus, BrikiEvents } from '@/lib/event-bus';
 
 interface SavePolicyButtonProps {
   policyData: {
@@ -76,6 +77,8 @@ export function SavePolicyButton({ policyData, onSuccess, onBeforeSave }: SavePo
         title: "¡Éxito!",
         description: data.message || "Análisis guardado exitosamente",
       });
+
+      try { eventBus.emit(BrikiEvents.POLICY_SAVED, { id: data.id }); } catch {}
 
       onSuccess?.();
       return true;

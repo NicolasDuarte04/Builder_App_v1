@@ -23,6 +23,7 @@ const getNavItems = (t: (key: string) => string, isAuthenticated: boolean) => {
     { name: t("nav.home"), link: "/" },
     { name: t("nav.about"), link: "/about" },
     { name: t("nav.assistant"), link: "/assistant" },
+    { name: t("dashboard.insurance.title") || 'Dashboard', link: "/dashboard/insurance" },
   ];
 
   return items;
