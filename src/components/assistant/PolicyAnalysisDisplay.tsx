@@ -278,16 +278,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
             })()}
           />
         )}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button size="sm" disabled={!hasAnyPageRefs}>{L.exportAnnotated}</Button>
-            </span>
-          </TooltipTrigger>
-          {!hasAnyPageRefs && <TooltipContent>{t('policy.pageLocationsHint') || 'Las ubicaciones por página aparecerán cuando estén disponibles.'}</TooltipContent>}
-        </Tooltip>
-        <Button variant="outline" size="sm" onClick={() => navigator.share?.({ title: 'Policy Analysis', url: location.href }).catch(() => {})}><Share2 className="h-4 w-4 mr-1"/>{L.share}</Button>
-        <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(location.href); }}><LinkIcon className="h-4 w-4 mr-1"/>{L.copyLink}</Button>
+        {/* Hidden unfinished actions for now */}
       </div>
 
       {/* Table of contents */}

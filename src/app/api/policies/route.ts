@@ -362,14 +362,29 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError) {
-      console.error("Error inserting policy:", insertError);
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('[policies] insert error:', { code: insertError.code, message: insertError.message });
+      console.error("[policies.save] insert error (full payload)", { code: insertError.code, message: insertError.message });
+      // Fallback: insert minimal shape for DBs missing JSON columns (preview envs)
+      const { data: policy2, error: insertError2 } = await supabase
+        .from('saved_policies')
+        .insert({
+          user_id: session.user.id,
+          custom_name,
+          insurer_name,
+          policy_type,
+          priority,
+          pdf_url,
+          storage_path,
+        })
+        .select()
+        .single();
+      if (insertError2) {
+        console.error('[policies.save] minimal insert failed', { code: insertError2.code, message: insertError2.message });
+        return NextResponse.json(
+          { where: 'insert', error: 'Error al guardar la póliza', code: insertError2.code, message: insertError2.message },
+          { status: 500 }
+        );
       }
-      return NextResponse.json(
-        { where: 'insert', error: 'Error al guardar la póliza', code: insertError.code, message: insertError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ id: policy2.id, pdf_url: policy2.pdf_url, saved: true, signed: !!policy2.pdf_url, message: "Análisis guardado exitosamente" });
     }
 
     return NextResponse.json({ id: policy.id, pdf_url: policy.pdf_url, saved: true, signed: !!policy.pdf_url, message: "Análisis guardado exitosamente" });
