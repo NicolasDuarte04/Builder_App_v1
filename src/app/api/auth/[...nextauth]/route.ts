@@ -75,6 +75,36 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  cookies: {
+    sessionToken: {
+      name: 'next-auth.session-token',
+      options: {
+        domain: process.env.NODE_ENV === 'production' ? '.brikiapp.com' : undefined,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+      }
+    },
+    callbackUrl: {
+      name: 'next-auth.callback-url',
+      options: {
+        domain: process.env.NODE_ENV === 'production' ? '.brikiapp.com' : undefined,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+      }
+    },
+    csrfToken: {
+      name: 'next-auth.csrf-token',
+      options: {
+        domain: process.env.NODE_ENV === 'production' ? '.brikiapp.com' : undefined,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+      }
+    }
+  },
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google" && profile) {

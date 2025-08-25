@@ -19,6 +19,11 @@
       "source": "/www/(.*)",
       "destination": "/$1",
       "permanent": true
+    },
+    {
+      "source": "https://brikiapp.com/(.*)",
+      "destination": "https://www.brikiapp.com/$1",
+      "permanent": true
     }
   ],
   "headers": [
