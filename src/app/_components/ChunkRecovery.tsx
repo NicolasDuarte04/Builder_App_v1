@@ -52,6 +52,24 @@ export default function ChunkRecovery() {
       window.location.replace(url.toString());
     };
 
+    // Check if page is completely blank (white screen)
+    const checkForWhiteScreen = () => {
+      // If the page has no content after 3 seconds, force reload
+      setTimeout(() => {
+        const body = document.body;
+        const hasContent = body.children.length > 0 && 
+                          body.innerHTML.trim().length > 100;
+        
+        if (!hasContent) {
+          console.warn('[ChunkRecovery] White screen detected, forcing reload');
+          reloadWithBuildId();
+        }
+      }, 3000);
+    };
+
+    // Run white screen check
+    checkForWhiteScreen();
+
     const handleChunkError = (error: any) => {
       const errorMessage = String(error?.message || error?.reason || "").toLowerCase();
       

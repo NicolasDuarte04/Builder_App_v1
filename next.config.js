@@ -26,28 +26,27 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
+  // Cache control headers
   async headers() {
     return [
       {
-        // Apply to all routes
-        source: '/(.*)',
+        source: '/',
         headers: [
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: 'Pragma',
+            value: 'no-cache',
           },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: 'Expires',
+            value: '0',
           },
         ],
       },
       {
-        // HTML pages - no cache to prevent stale chunk references
         source: '/((?!_next/static|_next/image|favicon.ico).*)',
         headers: [
           {
@@ -65,7 +64,6 @@ const nextConfig = {
         ],
       },
       {
-        // Static assets - long cache with versioning
         source: '/_next/static/(.*)',
         headers: [
           {
@@ -75,7 +73,6 @@ const nextConfig = {
         ],
       },
       {
-        // API routes - no cache
         source: '/api/(.*)',
         headers: [
           {
