@@ -118,7 +118,7 @@ export function PolicyViewDialog({ id, defaultTitle, onClose, onDeleted, onRenam
                 <Button variant="outline" onClick={() => { setError(null); setLoading(true); getPolicyById(id).then(s => { setData(s); setLoading(false); }).catch(e => { setError(e.message); setLoading(false); }); }}>{t('common.retry') || 'Retry'}</Button>
               </div>
             ) : display ? (
-              <PolicyAnalysisDisplay analysis={display.analysis as any} pdfUrl={display.pdfUrl} fileName={display.fileName} rawAnalysisData={display.rawAnalysisData} />
+              <PolicyAnalysisDisplay analysis={display.analysis as any} pdfUrl={display.pdfUrl} fileName={display.fileName} rawAnalysisData={display.rawAnalysisData} hideSave />
             ) : (
               <div className="h-64 flex items-center justify-center text-sm text-gray-500">{t('common.noData') || 'No data'}</div>
             )}

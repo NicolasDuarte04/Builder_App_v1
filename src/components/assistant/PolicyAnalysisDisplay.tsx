@@ -63,9 +63,10 @@ interface PolicyAnalysisDisplayProps {
   pdfUrl?: string;
   fileName?: string;
   rawAnalysisData?: any;
+  hideSave?: boolean;
 }
 
-export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData }: PolicyAnalysisDisplayProps) {
+export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData, hideSave }: PolicyAnalysisDisplayProps) {
   const { t, language } = useTranslation();
   const router = useRouter();
   const { data: session } = useSession();
@@ -247,7 +248,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       {/* Primary actions */}
       <div className="inline-flex items-center gap-2">
         {/* Guardar análisis (primary) */}
-        {analysis && (
+        {analysis && !hideSave && (
           <SavePolicyButton
             policyData={(function toSavePayload(){
               const customName = fileName || analysis?.policyType || analysis?.insurer?.name || 'Póliza sin nombre';

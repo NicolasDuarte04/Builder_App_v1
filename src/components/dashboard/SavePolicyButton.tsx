@@ -31,6 +31,7 @@ interface SavePolicyButtonProps {
 export function SavePolicyButton({ policyData, onSuccess, onBeforeSave }: SavePolicyButtonProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [dupNameError, setDupNameError] = useState<string | null>(null);
   const { toast } = useToast();
   const { data: session } = useSession();
   const [showMismatchModal, setShowMismatchModal] = useState(false);
@@ -69,6 +70,10 @@ export function SavePolicyButton({ policyData, onSuccess, onBeforeSave }: SavePo
         if (response.status === 409 && error?.error === 'upload_not_owned') {
           setShowMismatchModal(true);
           return false as any;
+        }
+        if (response.status === 400 && (error?.error || '').includes('mismo nombre')) {
+          setDupNameError(error?.error || 'Nombre duplicado');
+          throw new Error(error?.error || 'Nombre duplicado');
         }
         throw new Error(error.error || "Failed to save policy");
       }
@@ -115,6 +120,9 @@ export function SavePolicyButton({ policyData, onSuccess, onBeforeSave }: SavePo
           </Button>
         )}
       </div>
+      {dupNameError && (
+        <div className="text-xs text-red-600 mt-1">{dupNameError}</div>
+      )}
 
       {showMismatchModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
