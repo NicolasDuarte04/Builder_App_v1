@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { getPolicyById, updatePolicy, deletePolicy as apiDeletePolicy } from '@/lib/api/policies';
+import { PolicyViewDialog } from './PolicyViewDialog';
 import { useTranslation } from '@/hooks/useTranslation';
 import { eventBus, BrikiEvents } from '@/lib/event-bus';
 
@@ -38,6 +39,10 @@ async function deleteSavedPolicy(id: string) { await apiDeletePolicy(id); return
 export default function SavedAnalysesList() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const tOr = (key: string, fallback: string) => {
+    const v = t(key as any);
+    return v && v !== key ? v : fallback;
+  };
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const limit = 20;
@@ -88,13 +93,13 @@ export default function SavedAnalysesList() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
         <Input
-          placeholder={t('dashboard.insurance.searchPlaceholder') || 'Search by name or insurer'}
+          placeholder={tOr('dashboard.insurance.searchPlaceholder', 'Buscar análisis…')}
           value={search}
           onChange={(e) => { setPage(0); setSearch(e.target.value); }}
           className="sm:max-w-md"
         />
         <div className="flex-1" />
-        <Button variant="outline" onClick={() => { setPage(0); void load(); }}>{t('common.refresh') || 'Refresh'}</Button>
+        <Button variant="outline" onClick={() => { setPage(0); void load(); }}>{tOr('common.refresh', 'Actualizar')}</Button>
       </div>
 
       {loading ? (
@@ -123,9 +128,9 @@ export default function SavedAnalysesList() {
                   <div className="text-[11px] text-gray-400">{p.policy_type || ''} {p.created_at ? '· ' + new Date(p.created_at).toLocaleString() : ''}</div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => setViewItem(p)}>{t('common.view') || 'View'}</Button>
+                  <Button size="sm" onClick={() => setViewItem(p)}>{tOr('common.view', 'Ver')}</Button>
                   <Button size="sm" variant="destructive" onClick={() => void handleDelete(p.id)}>
-                    {t('common.delete') || 'Delete'}
+                    {tOr('common.delete', 'Eliminar')}
                   </Button>
                 </div>
               </CardContent>
@@ -134,13 +139,13 @@ export default function SavedAnalysesList() {
 
           <div className="flex justify-between items-center">
             <Button variant="outline" disabled={!canPrev} onClick={() => canPrev && setPage((p) => p - 1)}>
-              {t('common.prev') || 'Prev'}
+              {tOr('common.prev', 'Anterior')}
             </Button>
             <div className="text-xs text-gray-500">
               {offset + 1}–{Math.min(offset + limit, total)} / {total}
             </div>
             <Button variant="outline" disabled={!canNext} onClick={() => canNext && setPage((p) => p + 1)}>
-              {t('common.next') || 'Next'}
+              {tOr('common.next', 'Siguiente')}
             </Button>
           </div>
         </div>
