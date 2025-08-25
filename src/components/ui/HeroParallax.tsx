@@ -99,7 +99,6 @@ export const Header: React.FC = () => {
               onClick={() => window.location.href = '/assistant'}
             >
               {t("hero.cta_secondary")}
-              <IconSparkles className="ml-2 w-5 h-5" strokeWidth={2} />
             </Button>
           </motion.div>
         </div>
