@@ -27,23 +27,94 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
   async headers() {
-    // Avoid caching dev chunks (paths like /_next/static/chunks/app/layout.js are not hashed in dev)
-    // This prevents browsers from caching truncated scripts when the dev server restarts mid-stream.
-    if (!isProd) return [];
     return [
       {
-        source: "/_next/static/chunks/:path*",
+        // Apply to all routes
+        source: '/(.*)',
         headers: [
-          { key: "Cache-Control", value: "public, max-age=60, s-maxage=60, stale-while-revalidate=59" },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+      {
+        // HTML pages - no cache to prevent stale chunk references
+        source: '/((?!_next/static|_next/image|favicon.ico).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
+      {
+        // Static assets - long cache with versioning
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // API routes - no cache
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
+          },
         ],
       },
     ];
   },
-  webpack: (config) => {
-    config.resolve = config.resolve || {};
-    // Prevent accidental resolution of node "canvas" in server builds
-    config.resolve.fallback = { ...(config.resolve.fallback || {}), canvas: false };
-
+  // Ensure consistent build output
+  generateBuildId: async () => {
+    // Use timestamp for development, git commit for production
+    if (process.env.NODE_ENV === 'development') {
+      return `dev-${Date.now()}`;
+    }
+    return process.env.VERCEL_GIT_COMMIT_SHA || `build-${Date.now()}`;
+  },
+  // Optimize chunk loading
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      // Production optimizations
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            enforce: true,
+          },
+        },
+      };
+    }
     return config;
   },
 };
