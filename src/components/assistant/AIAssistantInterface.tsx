@@ -276,7 +276,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
       console.log('🎯 Injecting onboarding context:', onboardingData);
       
       // Create a context message based on onboarding data
-      const contextMessage = createContextMessage(onboardingData);
+      const contextMessage = createContextMessage(onboardingData, language);
       
       // Note: We can't directly append to the chat, but the context will be used
       // when the user starts chatting. The AI will have access to this context.
@@ -338,7 +338,8 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
           'business': 'empresarial'
         };
         
-        const insuranceCategory = insuranceTypeMap[loadedOnboardingData.insuranceType] || loadedOnboardingData.insuranceType;
+        const insuranceKey = (loadedOnboardingData as any)?.insuranceType ?? '';
+        const insuranceCategory = insuranceTypeMap[insuranceKey] || insuranceKey;
         
         // Vary the search query to avoid repetition
         const searchTemplates = [
@@ -700,7 +701,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 {loadedOnboardingData && Object.keys(loadedOnboardingData).length > 0 && (
                   <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <p className="text-sm text-blue-700 dark:text-blue-300">
-                      <strong>{t("assistant.context")}:</strong> {createContextMessage(loadedOnboardingData)}
+                      <strong>{t("assistant.context")}:</strong> {createContextMessage(loadedOnboardingData as any, language)}
                     </p>
                   </div>
                 )}

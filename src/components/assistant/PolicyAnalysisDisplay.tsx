@@ -244,6 +244,40 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     <div className="space-y-4">
       {/* Primary actions */}
       <div className="inline-flex items-center gap-2">
+        {/* Guardar análisis (primary) */}
+        {analysis && (
+          <SavePolicyButton
+            policyData={(function toSavePayload(){
+              const customName = fileName || analysis?.policyType || analysis?.insurer?.name || 'Póliza sin nombre';
+              const currency = analysis?.premium?.currency || 'COP';
+              return {
+                custom_name: customName,
+                insurer_name: analysis?.insurer?.name || null,
+                policy_type: analysis?.policyType || null,
+                // Prefer server artifacts; avoid base64 for payload size
+                pdf_url: safePdfUrl || undefined,
+                storage_path: meta?.storagePath || undefined,
+                upload_id: meta?.uploadId || undefined,
+                uploader_user_id: meta?.uploaderUserId || undefined,
+                // Compact metadata
+                metadata: {
+                  premium: analysis?.premium?.amount ?? null,
+                  currency,
+                  frequency: analysis?.premium?.frequency ?? null,
+                  policy_number: analysis?.policyDetails?.policyNumber ?? null,
+                  source: 'analysis_modal',
+                },
+                // Compact extracted selection only
+                extracted_data: {
+                  coverages: analysis?.coverage?.limits ? Object.keys(analysis.coverage.limits) : [],
+                  deductibles: analysis?.coverage?.deductibles ? Object.keys(analysis.coverage.deductibles) : [],
+                  exclusions: analysis?.coverage?.exclusions ?? [],
+                  recommendations: analysis?.recommendations ?? [],
+                },
+              };
+            })()}
+          />
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
