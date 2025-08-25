@@ -1,5 +1,23 @@
 # 🚀 Production Environment Setup Guide
 
+## **🚨 URGENT: Fix DNS First (5 minutes)**
+
+**Before setting environment variables, fix DNS to resolve ChunkLoadError:**
+
+1. **Go to your DNS provider** (Cloudflare, etc.)
+2. **Remove ALL `www` records** pointing to apex or IP
+3. **Add only**: `www.brikiapp.com` → `CNAME` → `cname.vercel-dns.com`
+4. **Keep**: `brikiapp.com` → `A` → `76.76.21.21`
+
+**Why this is critical:**
+- Current DNS: `www.brikiapp.com` → `brikiapp.com` (WRONG)
+- This causes Service Worker interference and ChunkLoadError
+- Chunks return 404 via browser but 200 via curl (SW cache issue)
+
+**See**: `DNS_FIX_GUIDE.md` for detailed instructions.
+
+---
+
 ## **Critical: Set These Environment Variables in Vercel**
 
 ### **1. NextAuth Configuration (REQUIRED)**

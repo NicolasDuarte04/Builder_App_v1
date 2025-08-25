@@ -55,6 +55,30 @@ export default function RootLayout({
       <head>
         <meta name="build-id" content={buildId} />
         <meta name="next-build-id" content={buildId} />
+        {/* Service Worker Killer - Immediately unregister any existing SW */}
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            if ('serviceWorker' in navigator) {
+              // Immediately unregister any existing service workers
+              navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                  console.log('[SW-KILLER] Unregistering service worker:', registration.scope);
+                  registration.unregister();
+                }
+              });
+              
+              // Also clear any caches
+              if ('caches' in window) {
+                caches.keys().then(function(names) {
+                  for (let name of names) {
+                    console.log('[SW-KILLER] Deleting cache:', name);
+                    caches.delete(name);
+                  }
+                });
+              }
+            }
+          })();
+        ` }} />
       </head>
       <body className={inter.className}>
         {/* Soft console.error interceptor (non-throwing) */}
