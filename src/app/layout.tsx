@@ -55,6 +55,8 @@ export default function RootLayout({
       <head>
         <meta name="build-id" content={buildId} />
         <meta name="next-build-id" content={buildId} />
+        {/* Cache busting - force HTML changes to prevent CDN reuse */}
+        <link rel="preload" href={`/favicon.ico?v=${process.env.NEXT_PUBLIC_BUILD_TAG || Date.now()}`} as="image" />
         {/* Service Worker Killer - Immediately unregister any existing SW */}
         <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `
           (function() {

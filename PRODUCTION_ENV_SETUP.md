@@ -41,6 +41,9 @@ NEXT_PUBLIC_CANONICAL_DOMAIN=https://www.brikiapp.com
 
 # Base URL for client-side requests
 NEXT_PUBLIC_BASE_URL=https://www.brikiapp.com
+
+# Cache busting tag (set to current timestamp)
+NEXT_PUBLIC_BUILD_TAG=1756165188
 ```
 
 ### **3. OAuth Configuration (REQUIRED)**
