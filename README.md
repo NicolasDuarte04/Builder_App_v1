@@ -1,15 +1,55 @@
-# Briki-AI-Project-Builder-App-v1-
+# Briki - AI Insurance Assistant
 
-A simple, beautiful AI-powered app to turn your ideas into actionable project maps.
+## PDF Viewer and SSR
 
-## 🚀 Tech Stack
+### Why We Use Legacy Build + Client Boundary
 
-- **Next.js 15** - React framework with App Router
-- **TypeScript** - Type-safe JavaScript
-- **TailwindCSS** - Utility-first CSS framework
-- **ESLint** - Code linting and formatting
+The PDF viewer in this application is designed to be **strictly client-side** to avoid server-side rendering issues and Node.js dependencies. Here's why and how:
 
-## 🛠️ Getting Started
+#### **Problem Solved**
+- **Canvas Dependency**: `pdfjs-dist` requires Node.js `canvas` package on the server
+- **Build Failures**: Vercel builds fail with "Module not found: Can't resolve 'canvas'"
+- **Bundle Bloat**: Server bundle includes unnecessary PDF rendering code
+
+#### **Solution Implemented**
+1. **Legacy Build**: Uses `pdfjs-dist/legacy/build/pdf` instead of `pdfjs-dist/build/pdf`
+   - Legacy build is designed for browser environments
+   - No Node.js canvas dependency
+   - Smaller bundle size
+
+2. **Client Boundary**: All PDF-related code is contained in client components
+   - `PdfInner.tsx` - Contains all PDF.js logic
+   - `PdfViewerPane.tsx` - Wrapper component with refs
+   - Dynamic imports with `ssr: false` prevent server bundling
+
+3. **Worker Configuration**: PDF worker loads from `/public/pdf.worker.js`
+   - Copied during postinstall from `pdfjs-dist`
+   - Set via `GlobalWorkerOptions.workerSrc`
+
+#### **File Structure**
+```
+src/components/assistant/
+├── PdfInner.tsx          # All PDF.js logic (client-only)
+├── PdfViewerPane.tsx     # Wrapper with refs (client-only)
+└── PolicyAnalysisDisplayClient.tsx  # Uses dynamic import
+```
+
+#### **Import Chain**
+```
+/assistant/page.tsx (client) 
+  → PolicyAnalysisDisplay (server)
+    → PolicyAnalysisDisplayClient (client)
+      → PdfViewerPane (dynamic, ssr: false)
+        → PdfInner (client, pdfjs-dist/legacy)
+```
+
+This approach ensures:
+- ✅ **Build Success**: No canvas resolution errors on Vercel
+- ✅ **Performance**: PDF code only loads when needed
+- ✅ **Reliability**: No SSR-related PDF rendering issues
+- ✅ **Maintainability**: Clear separation of concerns
+
+## Getting Started
 
 ### Prerequisites
 

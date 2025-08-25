@@ -8,7 +8,7 @@ import { MainNavbar } from "@/components/layout/Navbar"
 import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar"
 import AuthProvider from "@/components/AuthProvider"
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider"
-import ChunkRecovery from "./_components/ChunkRecovery"
+import ChunkRecovery from "@/components/system/ChunkRecovery";
 import { ChunkErrorBoundary } from "@/components/common/ChunkErrorBoundary";
 import BuildDiagnostics from "@/components/common/BuildDiagnostics";
 

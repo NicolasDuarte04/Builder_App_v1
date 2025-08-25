@@ -75,6 +75,7 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  trustHost: true,
   cookies: {
     sessionToken: {
       name: 'next-auth.session-token',

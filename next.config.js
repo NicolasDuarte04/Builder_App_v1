@@ -26,6 +26,19 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
+  
+  // Canonical domain redirects
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "brikiapp.com" }], // apex
+        destination: "https://www.brikiapp.com/:path*",
+        permanent: true, // 308
+      },
+    ];
+  },
+  
   // Cache control headers
   async headers() {
     return [
