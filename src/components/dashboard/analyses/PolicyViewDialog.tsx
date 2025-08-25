@@ -94,8 +94,8 @@ export function PolicyViewDialog({ id, defaultTitle, onClose, onDeleted, onRenam
           {isRenaming ? (
             <div className="flex items-center gap-2 w-full">
               <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full" />
-              <Button size="sm" onClick={handleRename}>{t('common.save') || 'Save'}</Button>
-              <Button size="sm" variant="outline" onClick={() => setIsRenaming(false)}>{t('common.cancel') || 'Cancel'}</Button>
+              <Button size="sm" onClick={handleRename}>{tOr('common.save','Guardar')}</Button>
+              <Button size="sm" variant="outline" onClick={() => setIsRenaming(false)}>{tOr('common.cancel','Cancelar')}</Button>
             </div>
           ) : (
             <div className="flex items-center gap-3">
@@ -114,8 +114,8 @@ export function PolicyViewDialog({ id, defaultTitle, onClose, onDeleted, onRenam
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-0 h-[calc(100%_-_48px)]">
-          <div className="col-span-12 lg:col-span-8 min-w-0 overflow-y-auto p-4">
+        <div className="grid grid-cols-1 h-[calc(100%_-_48px)]">
+          <div className="min-w-0 overflow-y-auto p-4">
             {loading ? (
               <div className="h-64 flex items-center justify-center text-sm text-gray-500">{t('common.loading') || 'Loading…'}</div>
             ) : error ? (
@@ -129,7 +129,6 @@ export function PolicyViewDialog({ id, defaultTitle, onClose, onDeleted, onRenam
               <div className="h-64 flex items-center justify-center text-sm text-gray-500">{t('common.noData') || 'No data'}</div>
             )}
           </div>
-          {/* Right panel is provided by PolicyAnalysisDisplay when not hidden; we do not duplicate a second PDF here. */}
         </div>
       </div>
     </div>
