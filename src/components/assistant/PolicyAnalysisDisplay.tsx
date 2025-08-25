@@ -10,6 +10,7 @@ import React, { useRef, useState } from 'react';
 import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, XCircle, ChevronDown, ChevronUp, Share2, Link as LinkIcon } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { SavePolicyButton } from '../dashboard/SavePolicyButton';
+import type { SavedPolicyAnalysis } from '@/types/policies';
 import { ENABLE_SAVE_POLICY, ENABLE_PDF_VERIFY } from '@/lib/featureFlags';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -250,6 +251,25 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
             policyData={(function toSavePayload(){
               const customName = fileName || analysis?.policyType || analysis?.insurer?.name || 'Póliza sin nombre';
               const currency = analysis?.premium?.currency || 'COP';
+              // Build structured SavedPolicyAnalysis payload from current analysis
+              const structured: SavedPolicyAnalysis = {
+                prima: analysis?.premium ? { amount: analysis.premium.amount, currency: analysis.premium.currency || 'COP', frequency: (analysis.premium.frequency as any) || 'monthly' } : null,
+                limites_cobertura: analysis?.coverage?.limits ? Object.entries(analysis.coverage.limits).map(([label, value]) => ({ label, value: typeof value === 'number' ? new Intl.NumberFormat('es-CO', { style:'currency', currency: analysis.premium.currency || 'COP', minimumFractionDigits: 0 }).format(value) : String(value) })) : [],
+                deducibles: analysis?.coverage?.deductibles ? Object.entries(analysis.coverage.deductibles).map(([label, value]) => ({ label, value: typeof value === 'number' ? new Intl.NumberFormat('es-CO', { style:'currency', currency: analysis.premium.currency || 'COP', minimumFractionDigits: 0 }).format(value) : String(value) })) : [],
+                caracteristicas: Array.isArray(analysis?.keyFeatures) ? [...analysis.keyFeatures] : [],
+                exclusiones: Array.isArray(analysis?.coverage?.exclusions) ? [...analysis.coverage.exclusions] : [],
+                evaluacion_riesgo: typeof analysis?.riskScore === 'number' ? { score: analysis.riskScore, notes: analysis.riskJustification || '' } : null,
+                recomendaciones: Array.isArray(analysis?.recommendations) ? [...analysis.recommendations] : [],
+                detalles_poliza: (function(){
+                  const parts: string[] = [];
+                  if (analysis?.policyDetails?.policyNumber) parts.push(`Número: ${analysis.policyDetails.policyNumber}`);
+                  if (analysis?.policyDetails?.effectiveDate) parts.push(`Vigencia desde: ${analysis.policyDetails.effectiveDate}`);
+                  if (analysis?.policyDetails?.expirationDate) parts.push(`hasta: ${analysis.policyDetails.expirationDate}`);
+                  if (Array.isArray(analysis?.policyDetails?.insured) && analysis.policyDetails.insured.length) parts.push(`Asegurados: ${analysis.policyDetails.insured.join(', ')}`);
+                  return parts.length ? parts.join(' · ') : null;
+                })(),
+                senales_alerta: Array.isArray(analysis?.redFlags) ? [...analysis.redFlags] : [],
+              };
               return {
                 custom_name: customName,
                 insurer_name: analysis?.insurer?.name || null,
@@ -259,6 +279,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
                 storage_path: meta?.storagePath || undefined,
                 upload_id: meta?.uploadId || undefined,
                 uploader_user_id: meta?.uploaderUserId || undefined,
+                analysis: structured,
                 // Compact metadata
                 metadata: {
                   premium: analysis?.premium?.amount ?? null,

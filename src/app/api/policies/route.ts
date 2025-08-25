@@ -30,6 +30,13 @@ const SavePolicySchema = z.object({
   // Legacy path (only when truly raw base64 is sent)
   pdf_base64: z.string().optional(),
 
+  // New structured analysis payload
+  analysis: z.record(z.any()).optional(),
+
+  // Alternative naming accepted (mapped in handler)
+  fileUrl: z.string().url().optional(),
+  title: z.string().optional(),
+
   metadata: z.record(z.any()).default({}),
   extracted_data: z.record(z.any()).default({})
 });
@@ -166,6 +173,9 @@ export async function POST(request: NextRequest) {
       pdf_url: providedPdfUrl,
       storage_path: providedStoragePath,
       pdf_base64,
+      fileUrl,
+      title,
+      analysis,
       metadata,
       extracted_data
     } = validatedData;
@@ -311,6 +321,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Case 2b: alternative fileUrl field
+    if (!pdf_url && fileUrl) {
+      pdf_url = fileUrl;
+      const inferred = inferStoragePathFromUrl(fileUrl);
+      if (inferred) {
+        storage_path = inferred;
+      }
+    }
+
     // Case 3: legacy pdf_base64
     if (!pdf_url && pdf_base64) {
       // Validate it looks like a data URL for PDFs
@@ -390,12 +409,13 @@ export async function POST(request: NextRequest) {
       .from("saved_policies")
       .insert({
         user_id: authUserId,
-        custom_name,
+        custom_name: title || custom_name,
         insurer_name,
         policy_type,
         priority,
         pdf_url,
         storage_path,
+        analysis: analysis ?? undefined,
         metadata,
         extracted_data
       })
@@ -409,7 +429,7 @@ export async function POST(request: NextRequest) {
         .from('saved_policies')
         .insert({
           user_id: authUserId,
-          custom_name,
+          custom_name: title || custom_name,
           insurer_name,
           policy_type,
           priority,

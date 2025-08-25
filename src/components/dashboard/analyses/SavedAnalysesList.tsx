@@ -19,6 +19,7 @@ interface SavedPolicyRow {
   pdf_url?: string;
   metadata?: any;
   extracted_data?: any;
+  analysis?: any;
 }
 
 async function fetchSavedPolicies(opts: { search?: string; limit: number; offset: number }) {
@@ -161,17 +162,130 @@ export default function SavedAnalysesList() {
             <div className="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
               <div className="text-sm"><strong>{t('dashboard.insurance.insurer') || 'Insurer'}:</strong> {viewItem.insurer_name || '-'}</div>
               <div className="text-sm"><strong>{t('dashboard.insurance.type') || 'Type'}:</strong> {viewItem.policy_type || '-'}</div>
-              {viewItem.metadata && (
-                <details>
-                  <summary className="cursor-pointer text-sm font-medium">Metadata</summary>
-                  <pre className="text-xs mt-2 whitespace-pre-wrap break-words">{JSON.stringify(viewItem.metadata, null, 2)}</pre>
-                </details>
-              )}
-              {viewItem.extracted_data && (
-                <details>
-                  <summary className="cursor-pointer text-sm font-medium">Extracted</summary>
-                  <pre className="text-xs mt-2 whitespace-pre-wrap break-words">{JSON.stringify(viewItem.extracted_data, null, 2)}</pre>
-                </details>
+
+              {viewItem.analysis ? (
+                <div className="space-y-3">
+                  {/* Prima */}
+                  {viewItem.analysis.prima && (
+                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-md p-3 border border-gray-200 dark:border-gray-700">
+                      <div className="text-xs text-gray-500 mb-1">Prima</div>
+                      <div className="font-semibold text-gray-900 dark:text-white">
+                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: viewItem.analysis.prima.currency || 'COP', minimumFractionDigits: 0 }).format(viewItem.analysis.prima.amount)}
+                        {viewItem.analysis.prima.frequency && (
+                          <span className="text-xs text-gray-500 ml-1">/{viewItem.analysis.prima.frequency === 'monthly' ? 'mensual' : viewItem.analysis.prima.frequency === 'annual' ? 'anual' : viewItem.analysis.prima.frequency}</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Límites de Cobertura */}
+                  {Array.isArray(viewItem.analysis.limites_cobertura) && viewItem.analysis.limites_cobertura.length > 0 && (
+                    <div className="border rounded-md p-3">
+                      <div className="font-medium mb-2">Límites de Cobertura</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {viewItem.analysis.limites_cobertura.map((it: any, idx: number) => (
+                          <div key={idx} className="text-sm flex items-center justify-between gap-2 border rounded p-2">
+                            <span className="text-gray-700 dark:text-gray-300 truncate">{it.label || '-'}</span>
+                            <span className="font-medium text-gray-900 dark:text-white">{it.value || '-'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Deducibles */}
+                  {Array.isArray(viewItem.analysis.deducibles) && viewItem.analysis.deducibles.length > 0 && (
+                    <div className="border rounded-md p-3">
+                      <div className="font-medium mb-2">Deducibles</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {viewItem.analysis.deducibles.map((it: any, idx: number) => (
+                          <div key={idx} className="text-sm flex items-center justify-between gap-2 border rounded p-2">
+                            <span className="text-gray-700 dark:text-gray-300 truncate">{it.label || '-'}</span>
+                            <span className="font-medium text-gray-900 dark:text-white">{it.value || '-'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Características */}
+                  {Array.isArray(viewItem.analysis.caracteristicas) && viewItem.analysis.caracteristicas.length > 0 && (
+                    <div className="border rounded-md p-3">
+                      <div className="font-medium mb-2">Características Principales</div>
+                      <ul className="list-disc ml-5 text-sm space-y-1">
+                        {viewItem.analysis.caracteristicas.map((s: string, i: number) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Exclusiones */}
+                  {Array.isArray(viewItem.analysis.exclusiones) && viewItem.analysis.exclusiones.length > 0 && (
+                    <div className="border rounded-md p-3">
+                      <div className="font-medium mb-2">Exclusiones</div>
+                      <ul className="list-disc ml-5 text-sm space-y-1">
+                        {viewItem.analysis.exclusiones.map((s: string, i: number) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Evaluación de Riesgo */}
+                  {viewItem.analysis.evaluacion_riesgo && (
+                    <div className="border rounded-md p-3">
+                      <div className="font-medium mb-1">Evaluación de Riesgo</div>
+                      <div className="text-sm">Puntaje: <span className="font-semibold">{viewItem.analysis.evaluacion_riesgo.score ?? '-'}/10</span></div>
+                      {viewItem.analysis.evaluacion_riesgo.notes && <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{viewItem.analysis.evaluacion_riesgo.notes}</div>}
+                    </div>
+                  )}
+
+                  {/* Recomendaciones */}
+                  {Array.isArray(viewItem.analysis.recomendaciones) && viewItem.analysis.recomendaciones.length > 0 && (
+                    <div className="border rounded-md p-3">
+                      <div className="font-medium mb-2">Recomendaciones</div>
+                      <ul className="list-disc ml-5 text-sm space-y-1">
+                        {viewItem.analysis.recomendaciones.map((s: string, i: number) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Detalles y Señales */}
+                  {viewItem.analysis.detalles_poliza && (
+                    <div className="border rounded-md p-3">
+                      <div className="font-medium mb-2">Detalles de la Póliza</div>
+                      <div className="text-sm text-gray-700 dark:text-gray-300">{viewItem.analysis.detalles_poliza}</div>
+                    </div>
+                  )}
+                  {Array.isArray(viewItem.analysis.senales_alerta) && viewItem.analysis.senales_alerta.length > 0 && (
+                    <div className="border rounded-md p-3">
+                      <div className="font-medium mb-2">Señales de Alerta</div>
+                      <ul className="list-disc ml-5 text-sm space-y-1">
+                        {viewItem.analysis.senales_alerta.map((s: string, i: number) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {viewItem.metadata && (
+                    <details>
+                      <summary className="cursor-pointer text-sm font-medium">Metadata</summary>
+                      <pre className="text-xs mt-2 whitespace-pre-wrap break-words">{JSON.stringify(viewItem.metadata, null, 2)}</pre>
+                    </details>
+                  )}
+                  {viewItem.extracted_data && (
+                    <details>
+                      <summary className="cursor-pointer text-sm font-medium">Extracted</summary>
+                      <pre className="text-xs mt-2 whitespace-pre-wrap break-words">{JSON.stringify(viewItem.extracted_data, null, 2)}</pre>
+                    </details>
+                  )}
+                </>
               )}
             </div>
             <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-2">

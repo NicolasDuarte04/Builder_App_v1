@@ -20,6 +20,7 @@ interface SavePolicyButtonProps {
     storage_path?: string;
     pdf_url?: string;
     uploader_user_id?: string;
+    analysis?: any;
     metadata?: any;
     extracted_data?: any;
   };
