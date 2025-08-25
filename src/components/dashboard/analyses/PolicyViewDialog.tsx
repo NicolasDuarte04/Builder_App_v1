@@ -82,9 +82,9 @@ export function PolicyViewDialog({ id, defaultTitle, onClose, onDeleted, onRenam
   };
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 w-full max-w-5xl rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2 justify-between">
+    <div className="fixed inset-0 z-[60] bg-black/50 flex items-start justify-center pt-[64px] p-0" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 w-screen max-w-screen-2xl h-[calc(100vh-64px)] rounded-none border-t border-gray-200 dark:border-gray-700 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2 justify-between">
           {isRenaming ? (
             <div className="flex items-center gap-2 w-full">
               <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full" />
@@ -108,19 +108,28 @@ export function PolicyViewDialog({ id, defaultTitle, onClose, onDeleted, onRenam
           </div>
         </div>
 
-        <div className="p-4 max-h-[75vh] overflow-y-auto">
-          {loading ? (
-            <div className="h-64 flex items-center justify-center text-sm text-gray-500">{t('common.loading') || 'Loading…'}</div>
-          ) : error ? (
-            <div className="h-64 flex flex-col items-center justify-center gap-3">
-              <div className="text-sm text-red-600">{error}</div>
-              <Button variant="outline" onClick={() => { setError(null); setLoading(true); getPolicyById(id).then(s => { setData(s); setLoading(false); }).catch(e => { setError(e.message); setLoading(false); }); }}>{t('common.retry') || 'Retry'}</Button>
-            </div>
-          ) : display ? (
-            <PolicyAnalysisDisplay analysis={display.analysis as any} pdfUrl={display.pdfUrl} fileName={display.fileName} rawAnalysisData={display.rawAnalysisData} />
-          ) : (
-            <div className="h-64 flex items-center justify-center text-sm text-gray-500">{t('common.noData') || 'No data'}</div>
-          )}
+        <div className="grid grid-cols-12 gap-0 h-[calc(100%_-_48px)]">
+          <div className="col-span-12 lg:col-span-8 min-w-0 overflow-y-auto p-4">
+            {loading ? (
+              <div className="h-64 flex items-center justify-center text-sm text-gray-500">{t('common.loading') || 'Loading…'}</div>
+            ) : error ? (
+              <div className="h-64 flex flex-col items-center justify-center gap-3">
+                <div className="text-sm text-red-600">{error}</div>
+                <Button variant="outline" onClick={() => { setError(null); setLoading(true); getPolicyById(id).then(s => { setData(s); setLoading(false); }).catch(e => { setError(e.message); setLoading(false); }); }}>{t('common.retry') || 'Retry'}</Button>
+              </div>
+            ) : display ? (
+              <PolicyAnalysisDisplay analysis={display.analysis as any} pdfUrl={display.pdfUrl} fileName={display.fileName} rawAnalysisData={display.rawAnalysisData} />
+            ) : (
+              <div className="h-64 flex items-center justify-center text-sm text-gray-500">{t('common.noData') || 'No data'}</div>
+            )}
+          </div>
+          <div className="hidden lg:block lg:col-span-4 border-l border-gray-200 dark:border-gray-800 h-full overflow-y-auto">
+            {data?.pdf_url ? (
+              <iframe title="Policy PDF" src={data.pdf_url} className="w-full h-full" />
+            ) : (
+              <div className="h-full flex items-center justify-center text-sm text-gray-500">{t('policy.noPdf') || 'No PDF available'}</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

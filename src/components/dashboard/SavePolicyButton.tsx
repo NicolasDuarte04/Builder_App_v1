@@ -3,7 +3,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
+import { Save, Loader2, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSession, signIn } from 'next-auth/react';
 import { eventBus, BrikiEvents } from '@/lib/event-bus';
@@ -30,6 +30,7 @@ interface SavePolicyButtonProps {
 
 export function SavePolicyButton({ policyData, onSuccess, onBeforeSave }: SavePolicyButtonProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
   const { toast } = useToast();
   const { data: session } = useSession();
   const [showMismatchModal, setShowMismatchModal] = useState(false);
@@ -80,6 +81,7 @@ export function SavePolicyButton({ policyData, onSuccess, onBeforeSave }: SavePo
       });
 
       try { eventBus.emit(BrikiEvents.POLICY_SAVED, { id: data.id }); } catch {}
+      setSavedId(data.id || null);
 
       onSuccess?.();
       return true;
@@ -98,14 +100,21 @@ export function SavePolicyButton({ policyData, onSuccess, onBeforeSave }: SavePo
 
   return (
     <>
-      <Button
-        onClick={handleSave}
-        disabled={isSaving}
-        className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
-      >
-        <Save className="h-4 w-4 mr-2" />
-        {isSaving ? "Guardando..." : "Guardar Análisis"}
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          onClick={handleSave}
+          disabled={isSaving || !!savedId}
+          className="gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
+        >
+          {savedId ? <Check className="h-4 w-4" /> : isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {savedId ? "Guardado ✓" : isSaving ? "Guardando..." : "Guardar análisis"}
+        </Button>
+        {savedId && (
+          <Button variant="outline" onClick={() => { window.location.href = '/dashboard/insurance'; }}>
+            Ver en Mis Seguros
+          </Button>
+        )}
+      </div>
 
       {showMismatchModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
