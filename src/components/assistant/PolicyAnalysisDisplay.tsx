@@ -64,9 +64,10 @@ interface PolicyAnalysisDisplayProps {
   fileName?: string;
   rawAnalysisData?: any;
   hideSave?: boolean;
+  hidePdfViewer?: boolean;
 }
 
-export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData, hideSave }: PolicyAnalysisDisplayProps) {
+export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData, hideSave, hidePdfViewer }: PolicyAnalysisDisplayProps) {
   const { t, language } = useTranslation();
   const router = useRouter();
   const { data: session } = useSession();
@@ -569,7 +570,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     </div>
   );
 
-  if (!ENABLE_PDF_VERIFY) {
+  if (!ENABLE_PDF_VERIFY || hidePdfViewer) {
     return (
       <TooltipProvider>
         {AnalysisBody}

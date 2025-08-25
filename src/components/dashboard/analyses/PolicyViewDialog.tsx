@@ -123,13 +123,7 @@ export function PolicyViewDialog({ id, defaultTitle, onClose, onDeleted, onRenam
               <div className="h-64 flex items-center justify-center text-sm text-gray-500">{t('common.noData') || 'No data'}</div>
             )}
           </div>
-          <div className="hidden lg:block lg:col-span-4 border-l border-gray-200 dark:border-gray-800 h-full overflow-y-auto">
-            {data?.pdf_url ? (
-              <iframe title="Policy PDF" src={data.pdf_url} className="w-full h-full" />
-            ) : (
-              <div className="h-full flex items-center justify-center text-sm text-gray-500">{t('policy.noPdf') || 'No PDF available'}</div>
-            )}
-          </div>
+          {/* Right panel is provided by PolicyAnalysisDisplay when not hidden; we do not duplicate a second PDF here. */}
         </div>
       </div>
     </div>
