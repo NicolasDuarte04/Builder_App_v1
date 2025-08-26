@@ -75,37 +75,6 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
-  // NextAuth v5 compatibility
-  trustHost: true,
-  cookies: {
-    sessionToken: {
-      name: "next-auth.session-token",
-      options: { 
-        domain: ".brikiapp.com", 
-        path: "/", 
-        sameSite: "lax", 
-        secure: true 
-      }
-    },
-    callbackUrl: {
-      name: "next-auth.callback-url",
-      options: { 
-        domain: ".brikiapp.com", 
-        path: "/", 
-        sameSite: "lax", 
-        secure: true 
-      }
-    },
-    csrfToken: {
-      name: "next-auth.csrf-token",
-      options: { 
-        domain: ".brikiapp.com", 
-        path: "/", 
-        sameSite: "lax", 
-        secure: true 
-      }
-    }
-  },
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google" && profile) {

@@ -26,118 +26,23 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
-  
-  // Canonical domain redirects
-  async redirects() {
-    return [
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "brikiapp.com" }], // apex
-        destination: "https://www.brikiapp.com/:path*",
-        permanent: true, // 308
-      },
-    ];
-  },
-  
-  // Cache control headers
   async headers() {
+    // Avoid caching dev chunks (paths like /_next/static/chunks/app/layout.js are not hashed in dev)
+    // This prevents browsers from caching truncated scripts when the dev server restarts mid-stream.
+    if (!isProd) return [];
     return [
       {
-        source: '/',
+        source: "/_next/static/chunks/:path*",
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate, max-age=0',
-          },
-          {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-          {
-            key: 'Expires',
-            value: '0',
-          },
-        ],
-      },
-      {
-        source: '/((?!_next/static|_next/image|favicon.ico).*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate, max-age=0',
-          },
-          {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-          {
-            key: 'Expires',
-            value: '0',
-          },
-        ],
-      },
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, s-maxage=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/api/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate, max-age=0',
-          },
+          { key: "Cache-Control", value: "public, max-age=60, s-maxage=60, stale-while-revalidate=59" },
         ],
       },
     ];
   },
-  // Ensure consistent build output
-  generateBuildId: async () => {
-    // Use timestamp for development, git commit for production
-    if (process.env.NODE_ENV === 'development') {
-      return `dev-${Date.now()}`;
-    }
-    return process.env.VERCEL_GIT_COMMIT_SHA || `build-${Date.now()}`;
-  },
-  // Optimize chunk loading
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      // Production optimizations
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-          },
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            enforce: true,
-          },
-        },
-      };
-    }
-
-    // Prevent canvas from being resolved on the server (safety net)
+  webpack: (config) => {
     config.resolve = config.resolve || {};
-    config.resolve.fallback = {
-      ...(config.resolve.fallback || {}),
-      canvas: false, // ensure server build doesn't try to bundle it
-    };
-
-    // Additional alias for extra safety
-    config.resolve.alias = {
-      ...(config.resolve.alias || {}),
-      canvas: false, // ensure server build doesn't try to bundle it
-    };
+    // Prevent accidental resolution of node "canvas" in server builds
+    config.resolve.fallback = { ...(config.resolve.fallback || {}), canvas: false };
 
     return config;
   },
