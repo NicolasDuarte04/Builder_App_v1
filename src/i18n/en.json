@@ -1,0 +1,38 @@
+{
+  "membership": {
+    "title": "Briki Plus",
+    "subtitle": "Unlock everything for less than a coffee",
+    "free": {
+      "title": "Free",
+      "price": "$0",
+      "limits": "Save up to 4 policies",
+      "bullets": ["Basic analyses", "Community access", "Starter features"]
+    },
+    "plus": {
+      "title": "Briki Plus",
+      "price": "$3.99",
+      "bullets": [
+        "Unlimited policy analyses",
+        "Family profiles (coming soon)",
+        "Exclusive features",
+        "Priority support",
+        "Early access to new features"
+      ],
+      "cta": "Upgrade to Briki Plus"
+    },
+    "cta": {
+      "upgrade": "Upgrade to Briki Plus",
+      "continueFree": "Continue with Free"
+    },
+    "emptyState": {
+      "helper": "Save up to 4 policies on the free plan",
+      "viewMembership": "View membership"
+    },
+    "navbar": {
+      "tooltip": "Briki Plus"
+    },
+    "legal": { 
+      "cancelAnytime": "Cancel anytime. No long-term commitment." 
+    }
+  }
+}

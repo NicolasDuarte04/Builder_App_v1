@@ -310,7 +310,7 @@ export async function POST(req: Request) {
               }
 
               // Get session preferences and detect user-intended category
-              const prefs = readPrefs();
+              const prefs = await readPrefs();
               
               // Try to detect a user-intended category from last user message or chip
               const detectedCategoryFromMessage = category || includeCategories[0];
@@ -318,7 +318,7 @@ export async function POST(req: Request) {
               const countryPref = prefs.country || "CO"; // sensible default
               
               // Persist what we're about to use
-              writePrefs({ category: hintedCategory, country: countryPref });
+              await writePrefs({ category: hintedCategory, country: countryPref });
 
               // Normalize category: map education synonyms to 'educacion' input key
               const categoryInput =
@@ -336,7 +336,9 @@ export async function POST(req: Request) {
                 max_price,
                 country: normalizedCountry,
                 tags,
-                benefits_contain,
+                benefits_contain: (typeof benefits_contain === 'string' && benefits_contain.trim())
+                  ? benefits_contain.split(',').map((s: string) => s.trim()).filter(Boolean).join(',')
+                  : undefined,
                 limit: 4,
                 includeCategories: includeCategories.length ? includeCategories : undefined,
                 excludeCategories: excludeCategories.length ? excludeCategories : undefined,
@@ -417,7 +419,7 @@ export async function POST(req: Request) {
               });
               
               // Re-persist the category (keeps it sticky across turns)
-              writePrefs({ category: hintedCategory });
+              await writePrefs({ category: hintedCategory });
               
               return toolResult;
             } catch (error) {

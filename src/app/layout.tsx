@@ -3,8 +3,8 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/ThemeProvider"
 import { LanguageProvider } from "@/components/LanguageProvider"
-import { useLanguage } from "@/components/LanguageProvider"
 import { MainNavbar } from "@/components/layout/Navbar"
+import { Footer } from "@/components/blocks/footer-section"
 import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar"
 import AuthProvider from "@/components/AuthProvider"
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider"
@@ -13,7 +13,7 @@ import ChunkRecovery from "./_components/ChunkRecovery"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Briki - Asistente de Seguros con IA",
+  title: "Briki Co‑Pilot — Asistente de Seguros con IA",
   description: "Tu primer asistente de seguros con IA — chatea y recibe planes reales en segundos.",
   manifest: "/site.webmanifest",
   icons: {
@@ -63,7 +63,10 @@ export default function RootLayout({
               <OnboardingProvider>
                 <ScrollProgressBar />
                 <MainNavbar />
-                {children}
+                <main className="min-h-screen">
+                  {children}
+                </main>
+                <Footer />
               </OnboardingProvider>
             </AuthProvider>
           </LanguageProvider>

@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractTextFromPDF } from '@/lib/pdf-analyzer';
-import { extractTextFromPDFWithOCR, extractTextFromPDFOCROnly } from '@/lib/pdf-analyzer-enhanced';
+// Lazy import to avoid optional dependency at build time
+let enhanced: any = null;
+async function ensureEnhanced() {
+  if (!enhanced) {
+    try { enhanced = await import('@/lib/pdf-analyzer-enhanced'); } catch { enhanced = null; }
+  }
+  return enhanced;
+}
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
 import { updatePolicyUpload } from '@/lib/supabase-policy';
@@ -251,16 +258,22 @@ export async function POST(request: NextRequest) {
       let pdfText: string;
       
       try {
-        if (forceOcr) {
+        const enh = await ensureEnhanced();
+        if (forceOcr && enh?.extractTextFromPDFOCROnly) {
           console.log('🧾 Force OCR is enabled by user');
-          const extractionResult = await extractTextFromPDFOCROnly(file);
+          const extractionResult = await enh.extractTextFromPDFOCROnly(file);
+          pdfText = extractionResult.text;
+          extractionMethod = extractionResult.method;
+        } else if (enh?.extractTextFromPDFWithOCR) {
+          // Try enhanced extraction with OCR fallback
+          const extractionResult = await enh.extractTextFromPDFWithOCR(file);
           pdfText = extractionResult.text;
           extractionMethod = extractionResult.method;
         } else {
-          // Try enhanced extraction with OCR fallback
-          const extractionResult = await extractTextFromPDFWithOCR(file);
-          pdfText = extractionResult.text;
-          extractionMethod = extractionResult.method;
+          // Fallback to standard analyzer
+          const text = await extractTextFromPDF(file);
+          pdfText = text;
+          extractionMethod = 'text';
         }
         console.log(`✅ PDF text extracted using ${extractionMethod}, length: ${pdfText.length}`);
       } catch (enhancedError) {

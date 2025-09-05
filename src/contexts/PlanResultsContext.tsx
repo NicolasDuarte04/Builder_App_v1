@@ -9,6 +9,9 @@ interface PlanResultsData {
   category?: string;
   query?: string;
   timestamp?: Date;
+  // Analysis results support
+  analysis?: any;
+  analysisType?: 'policy_analysis';
 }
 
 interface PlanResultsContextType {

@@ -158,6 +158,9 @@
     "search_insurance": "Search Insurance",
     "context": "Context",
     "restart_chat": "Restart Chat",
+    "compare_selected": "Compare selected",
+    "add_to_proposal": "Add to proposal",
+    "generate_proposal": "Generate proposal",
     "auth": {
       "title": "Exclusive access for users",
       "description": "Sign in to access your personalized AI insurance assistant.",
@@ -474,6 +477,19 @@
     "scannedToggle": "This is a scanned PDF (force OCR)",
     "analyzing": "Analyzing policy...",
     "analyzeButton": "Analyze policy",
+    "upload_prompt": "Upload a PDF to analyze",
+    "choose_pdf": "Select PDF",
+    "remove_file": "Remove",
+    "error_no_pdf": "Please upload a PDF file.",
+    "status": {
+      "collecting_brief": "Collecting client information…",
+      "analyzing_pdf": "Analyzing policy (PDF)…",
+      "processing": "Generating results…"
+    },
+    "no_results_title": "No options found",
+    "no_results_subtitle": "Try adjusting your search criteria",
+    "expand_budget": "Increase budget",
+    "fewer_requirements": "Fewer requirements",
     "errors": {
       "pdfOnly": "Only PDF files are allowed",
       "tooLarge": "File is too large. Maximum 10MB",

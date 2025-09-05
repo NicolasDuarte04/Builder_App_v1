@@ -3,6 +3,8 @@ import { pool, hasDatabaseUrl } from '@/lib/render-db';
 import { normalizeIncludeExclude, normalizeList, normalizeCategory } from '@/lib/category-alias';
 import { getDomainFromRequest } from '@/lib/server/base-url';
 import { writeReport } from '@/lib/observability/reports';
+import { FLAGS } from '@/lib/flags';
+import { normalizeCarrier } from '@/lib/catalog/normalize';
 
 export const runtime = 'nodejs';
 
@@ -10,6 +12,10 @@ export async function POST(req: Request) {
   const start = Date.now();
   const requestId = Math.random().toString(36).slice(2, 7);
   const body = await req.json().catch(() => ({}));
+  
+  // TODO: feature flag scaffolding for ranking tweaks
+  // import { FLAGS } from '@/lib/flags';
+  // if (FLAGS.newSearchRanking) { /* apply scoring tweaks in future */ }
   
   // Support both single & list, normalize on the server too
   let include = normalizeList(body.includeCategories || body.include || []);
@@ -20,6 +26,10 @@ export async function POST(req: Request) {
   const excludeCategories = body.excludeCategories || [];
   const tags = body.tags || [];
   const q = body.q || '';
+  // Optional filters (provider & price window) honored if present
+  const providerRaw: string | undefined = body.provider || body.providerName || undefined;
+  const minPrice: number | undefined = body.minPrice != null ? Number(body.minPrice) : undefined;
+  const maxPrice: number | undefined = body.maxPrice != null ? Number(body.maxPrice) : undefined;
 
   const includeNorm = normalizeIncludeExclude(include);
   const excludeNorm = normalizeIncludeExclude(excludeCategories);
@@ -49,14 +59,48 @@ export async function POST(req: Request) {
     params.push(`%${q}%`);
     i++;
   }
+  if (providerRaw && typeof providerRaw === 'string' && providerRaw.trim()) {
+    const canonical = normalizeCarrier(providerRaw.trim());
+    where.push(`provider = $${i++}`);
+    params.push(canonical);
+  }
+  if (typeof minPrice === 'number' && Number.isFinite(minPrice)) {
+    where.push(`base_price >= $${i++}`);
+    params.push(minPrice);
+  }
+  if (typeof maxPrice === 'number' && Number.isFinite(maxPrice)) {
+    where.push(`base_price <= $${i++}`);
+    params.push(maxPrice);
+  }
+  // Benefits filter (CSV terms; case-insensitive contains on any benefit string)
+  const benefitsContainsRaw = Array.isArray((body as any)?.benefitsContains)
+    ? (body as any).benefitsContains
+    : (typeof (body as any)?.benefitsContains === 'string' ? String((body as any).benefitsContains) : undefined);
+  if (benefitsContainsRaw) {
+    const terms = (Array.isArray(benefitsContainsRaw) ? benefitsContainsRaw : String(benefitsContainsRaw).split(','))
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+    if (terms.length > 0) {
+      where.push(`EXISTS (SELECT 1 FROM jsonb_array_elements_text(benefits) btxt WHERE btxt ILIKE ANY($${i++}::text[]))`);
+      params.push(terms.map((t: string) => `%${t}%`));
+    }
+  }
   // Do NOT filter out quote-only or missing-price plans. The UI handles placeholder display.
 
   let rows: any[] = [];
   if (pool && hasDatabaseUrl) {
+    // Default sort: price ascending (can be overridden via body.sort = 'price_desc' | 'name')
+    const sortRaw = (body as any)?.sort || 'price_asc';
+    let orderBy = 'base_price ASC';
+    if (typeof sortRaw === 'string') {
+      const s = sortRaw.toLowerCase();
+      if (s === 'price_desc') orderBy = 'base_price DESC';
+      else if (s === 'name_asc') orderBy = 'provider ASC, name ASC';
+    }
     const sql = `SELECT id, provider, name, name_en, category, country, base_price, currency, external_link, brochure_link, benefits, benefits_en, tags
                  FROM public.plans_v2
                  WHERE ${where.join(' AND ')}
-                 ORDER BY provider, name
+                 ORDER BY ${orderBy}
                  LIMIT $${i}`;
     params.push(Math.min(Number(limit) || 20, 100));
 
@@ -97,7 +141,7 @@ export async function POST(req: Request) {
     }
   }
 
-  // Fallback: if DB returned no rows or DB was unavailable, try packaged ETL dataset (shadow)
+  // DB-first: query Postgres; only if it yields 0 rows (or DB unavailable), use bundled JSON fallback
   if (!Array.isArray(rows) || rows.length === 0) {
     try {
       // Use a bundled import so the dataset is packaged with the serverless function
@@ -134,6 +178,25 @@ export async function POST(req: Request) {
     }
   }
 
+  // Lightweight relevance tweak (flagged): boost matches by intent keywords vs plan tags
+  try {
+    if (Array.isArray(rows) && rows.length > 0 && FLAGS.newSearchRanking) {
+      const needle = String(q || '').toLowerCase();
+      const want = new Set<string>([]);
+      if (/(grua|grúa|asistencia)/.test(needle)) want.add('asistencia vial');
+      if (/(robo|hurto)/.test(needle)) want.add('robo total');
+      if (/(rc|responsabilidad\s*civil)/.test(needle)) want.add('responsabilidad civil');
+      const scored = rows.map((r: any, idx: number) => {
+        const tagsArr = Array.isArray(r.tags) ? r.tags.map((t: any) => String(t).toLowerCase()) : [];
+        let boost = 0;
+        want.forEach((k) => { if (tagsArr.includes(k)) boost += 1; });
+        return { r, s: boost, i: idx };
+      });
+      scored.sort((a, b) => (b.s - a.s) || (a.i - b.i));
+      rows = scored.map((x) => x.r);
+    }
+  } catch {}
+
   return NextResponse.json(rows, { status: 200 });
 }
 
@@ -145,8 +208,13 @@ export async function GET(req: Request) {
   const excludeCategories = url.searchParams.getAll('excludeCategories');
   const tags = url.searchParams.getAll('tags');
   const q = url.searchParams.get('q') || '';
+  const provider = url.searchParams.get('provider') || undefined;
+  const minPrice = url.searchParams.get('minPrice');
+  const maxPrice = url.searchParams.get('maxPrice');
+  const benefitsContains = url.searchParams.get('benefitsContains') || undefined;
+  const sort = url.searchParams.get('sort') || 'price_asc';
   const limit = Number(url.searchParams.get('limit') || '20');
-  return POST(new Request(req.url, { method: 'POST', body: JSON.stringify({ country, includeCategories, excludeCategories, tags, q, limit }) }));
+  return POST(new Request(req.url, { method: 'POST', body: JSON.stringify({ country, includeCategories, excludeCategories, tags, q, provider, minPrice, maxPrice, benefitsContains, sort, limit }) }));
 }
 
 

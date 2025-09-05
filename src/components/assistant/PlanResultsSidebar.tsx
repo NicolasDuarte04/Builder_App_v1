@@ -24,6 +24,9 @@ interface PlanResultsData {
   timestamp?: Date;
   filters?: { includeCategories?: string[]; excludeCategories?: string[] };
   dataSource?: string;
+  // Analysis results support
+  analysis?: any;
+  analysisType?: 'policy_analysis';
 }
 
 interface PlanResultsSidebarProps {
@@ -322,6 +325,93 @@ export function PlanResultsSidebar({
                 <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
                   Ask the AI assistant about insurance plans and the results will appear here for easy comparison and interaction.
                 </p>
+              </div>
+            ) : activeResults.analysisType === 'policy_analysis' ? (
+              // Analysis results display
+              <div className="p-4">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    {activeResults.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Análisis detallado de la póliza PDF
+                  </p>
+                </div>
+                
+                {activeResults.analysis && (
+                  <div className="space-y-4">
+                    {/* Policy Type */}
+                    {activeResults.analysis.policyType && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                        <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-1">Tipo de Póliza</h4>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">{activeResults.analysis.policyType}</p>
+                      </div>
+                    )}
+                    
+                    {/* Premium */}
+                    {activeResults.analysis.premium && (
+                      <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                        <h4 className="font-medium text-green-900 dark:text-green-100 mb-1">Prima</h4>
+                        <p className="text-sm text-green-700 dark:text-green-300">
+                          ${activeResults.analysis.premium.amount?.toLocaleString()} {activeResults.analysis.premium.currency} / {activeResults.analysis.premium.frequency}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Key Features */}
+                    {activeResults.analysis.keyFeatures && activeResults.analysis.keyFeatures.length > 0 && (
+                      <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg">
+                        <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2">Características Clave</h4>
+                        <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+                          {activeResults.analysis.keyFeatures.map((feature: string, index: number) => (
+                            <li key={index} className="flex items-start">
+                              <span className="mr-2">•</span>
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Recommendations */}
+                    {activeResults.analysis.recommendations && activeResults.analysis.recommendations.length > 0 && (
+                      <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+                        <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-2">Recomendaciones</h4>
+                        <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
+                          {activeResults.analysis.recommendations.map((rec: string, index: number) => (
+                            <li key={index} className="flex items-start">
+                              <span className="mr-2">•</span>
+                              <span>{rec}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Risk Score */}
+                    {activeResults.analysis.riskScore && (
+                      <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
+                        <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-1">Puntuación de Riesgo</h4>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-orange-200 dark:bg-orange-800 rounded-full h-2">
+                            <div 
+                              className="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${(activeResults.analysis.riskScore / 10) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                            {activeResults.analysis.riskScore}/10
+                          </span>
+                        </div>
+                        {activeResults.analysis.riskJustification && (
+                          <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                            {activeResults.analysis.riskJustification}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="p-4 space-y-6">

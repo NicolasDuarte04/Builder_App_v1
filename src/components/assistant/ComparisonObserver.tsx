@@ -77,5 +77,17 @@ export function ComparisonObserver({ appendAssistantMessage }: ComparisonObserve
     };
   }, [appendAssistantMessage, currentResults]);
 
+  // Handle briki:compare-selected event from QuickActionBar
+  useEffect(() => {
+    const onCompareSelected = () => {
+      console.log('🔄 ComparisonObserver: Received briki:compare-selected event');
+      // Trigger the existing comparison logic by dispatching the eventBus event
+      eventBus.emit('comparison:request', {});
+    };
+
+    window.addEventListener('briki:compare-selected', onCompareSelected);
+    return () => window.removeEventListener('briki:compare-selected', onCompareSelected);
+  }, []);
+
   return null;
 }

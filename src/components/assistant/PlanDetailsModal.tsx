@@ -167,13 +167,13 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                   {localizedName((plan as any).name, (plan as any).name_en, isEN)}
                 </h3>
-                {fmt((plan as any).basePrice ?? (plan as any).base_price, (plan as any).currency) && (
+                {fmt((plan as any).base_price, (plan as any).currency) && (
                   <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
-                    {fmt((plan as any).basePrice ?? (plan as any).base_price, (plan as any).currency)}
+                    {fmt((plan as any).base_price, (plan as any).currency)}
                     <span className="text-sm font-normal text-gray-600 dark:text-gray-400"> {isEN ? '/month' : '/mes'}</span>
                   </div>
                 )}
-                {(!((plan as any).basePrice ?? (plan as any).base_price) && ((plan as any).external_link || (plan as any).website)) && (
+                {(!((plan as any).base_price) && ((plan as any).external_link || (plan as any).website)) && (
                   <div className="mt-2">
                     <a
                       href={(plan as any).external_link || (plan as any).website}

@@ -23,10 +23,8 @@ const REOPEN_STORAGE_KEY = 'briki:lastAnalyzer';
 
 const getNavItems = (t: (key: string) => string, isAuthenticated: boolean) => {
   const items = [
-    { name: t("nav.home"), link: "/" },
     { name: t("nav.about"), link: "/about" },
-    { name: t("nav.assistant"), link: "/assistant" },
-    { name: t("dashboard.insurance.title") || 'Dashboard', link: "/dashboard/insurance" },
+    { name: t("dashboard.insurance.title") || 'My Insurance', link: "/dashboard/insurance" },
   ];
 
   return items;

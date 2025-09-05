@@ -11,7 +11,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { formatPrice, localizedName, localizedBenefits } from '@/lib/formatters';
 
 interface InsurancePlanCardProps {
-  plan: AnyPlan as any;
+  plan: AnyPlan;
   onQuote: (planId: string) => void;
   onDetails: (planId: string) => void;
 }
@@ -24,7 +24,8 @@ export function InsurancePlanCard({ plan, onQuote, onDetails }: InsurancePlanCar
   const brochureUrl = isV2 ? (plan as any).brochure_link ?? undefined : (plan as any).brochure ?? undefined;
   const displayName = localizedName((plan as any).name || (plan as any).plan_name, (plan as any).name_en, isEN);
   const benefits = localizedBenefits((plan as any).benefits, (plan as any).benefits_en, isEN);
-  const priceText = formatPrice((plan as any).base_price, (plan as any).currency);
+  const priceNum = typeof (plan as any).base_price === 'string' ? Number((plan as any).base_price) : (plan as any).base_price;
+  const priceText = priceNum && priceNum > 0 ? formatPrice(priceNum, (plan as any).currency) : null;
   const perLabel = isEN ? '/month' : '/mes';
   const t = (k: string) => {
     const EN = { quote: 'Quote', seeWebsite: 'See Website', viewPolicy: 'View Policy (PDF)', details: 'Details' } as const;

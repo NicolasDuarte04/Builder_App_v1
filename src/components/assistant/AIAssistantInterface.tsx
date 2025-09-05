@@ -44,26 +44,32 @@ Diagnostic notes for Analyze Policy PDF modal (read-only audit):
 import type React from "react";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { ArrowUp, FileText, Shield } from "lucide-react";
+import { ArrowUp, FileText, Shield, ArrowLeftRight, Plus, Loader2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBrikiChat } from "@/hooks/useBrikiChat";
 import { MessageRenderer } from "./MessageRenderer";
-import { PDFUpload } from "./PDFUpload";
+// PDFUpload removed - analyzer now uses in-card panel
 import { PolicyAnalysisDisplay } from "./PolicyAnalysisDisplay";
 import { PolicyHistory } from "./PolicyHistory";
 import { X, Sidebar, MessageSquare, Layout } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { PlanResultsProvider, usePlanResults } from "@/contexts/PlanResultsContext";
+import {
+  PlanResultsProvider,
+  usePlanResults,
+} from "@/contexts/PlanResultsContext";
 import { PlanResultsSidebar } from "./PlanResultsSidebar";
 import { LayoutModeToggle } from "./LayoutModeToggle";
 import { PlanResultsObserver } from "./PlanResultsObserver";
 import { PlanPinObserver } from "./PlanPinObserver";
 import { CategoryFallbackObserver } from "./CategoryFallbackObserver";
 import { ComparisonObserver } from "./ComparisonObserver";
-import { useUIOverlay } from '@/state/uiOverlay';
-import { ResultsToggle } from './ResultsToggle';
+import { useUIOverlay } from "@/state/uiOverlay";
+import { ResultsToggle } from "./ResultsToggle";
+import { useProposal, useUiPhase } from "@/state/proposal";
+import { QuickActionBar } from "./QuickActionBar";
 
 interface AIAssistantInterfaceProps {
   isLoading?: boolean;
@@ -73,24 +79,90 @@ interface AIAssistantInterfaceProps {
     budget: string;
     city: string;
   }>;
+  mode?: "full" | "embedded";
+  showWelcome?: boolean;
+  initialSeed?: { brief: any; shortlist: any[] } | null;
+  onAnalyzePlan?: (plan: any) => void;
+  onToggleSelect?: (plan: any) => void;
+  isSelected?: (planId: string) => boolean;
+  onAppendMessage?: (fn: (msg: any) => void) => void;
 }
 
-export function AIAssistantInterface({ isLoading = false, onboardingData = {} }: AIAssistantInterfaceProps) {
+function WelcomeHero({
+  onStartBrief,
+  onAnalyzePdf,
+}: {
+  onStartBrief: () => void;
+  onAnalyzePdf: () => void;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full px-6">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-center">
+        <span className="text-foreground">
+          {t("assistant.welcome_title").replace("Briki", "")}
+        </span>{" "}
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-400">
+          Briki
+        </span>
+      </h1>
+      {/* no subtitle, no buttons */}
+    </div>
+  );
+}
+
+export function AIAssistantInterface({
+  isLoading = false,
+  onboardingData = {},
+  mode = "full",
+  showWelcome = true,
+  initialSeed = null,
+  onAnalyzePlan,
+  onToggleSelect,
+  isSelected,
+  onAppendMessage,
+}: AIAssistantInterfaceProps) {
   return (
     <PlanResultsProvider defaultDualPanelMode={true}>
-      <AIAssistantInterfaceInner isLoading={isLoading} onboardingData={onboardingData} />
+      <AIAssistantInterfaceInner
+        isLoading={isLoading}
+        onboardingData={onboardingData}
+        mode={mode}
+        showWelcome={showWelcome}
+        initialSeed={initialSeed}
+        onAnalyzePlan={onAnalyzePlan}
+        onToggleSelect={onToggleSelect}
+        isSelected={isSelected}
+        onAppendMessage={onAppendMessage}
+      />
     </PlanResultsProvider>
   );
 }
 
-function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: AIAssistantInterfaceProps) {
+function AIAssistantInterfaceInner({
+  isLoading = false,
+  onboardingData = {},
+  mode = "full",
+  showWelcome = true,
+  initialSeed = null,
+  onAnalyzePlan,
+  onToggleSelect,
+  isSelected,
+  onAppendMessage,
+}: AIAssistantInterfaceProps) {
+  // Utility variables for embedded vs full-screen mode
+  const isEmbedded = mode === "embedded";
+  const railPad = isEmbedded ? "px-4 md:px-6" : "px-6 md:px-8";
+  const railWidth = isEmbedded ? "max-w-none w-full mx-0" : "mx-auto max-w-3xl";
+
   const { t, language } = useTranslation();
   const searchParams = useSearchParams();
-  const { 
-    currentResults, 
-    isRightPanelOpen, 
-    hideRightPanel, 
-    isDualPanelMode, 
+  const {
+    currentResults,
+    isRightPanelOpen,
+    hideRightPanel,
+    isDualPanelMode,
     setDualPanelMode,
     setSidebarOpen,
   } = usePlanResults();
@@ -98,95 +170,109 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
   // Helper function to create context message from onboarding data
   const createContextMessage = (data: any, userLanguage: string) => {
     const parts = [];
-    const isEnglish = userLanguage === 'en';
-    
+    const isEnglish = userLanguage === "en";
+
     // Map the values based on language
-    const insuranceTypeMap: Record<string, string> = isEnglish ? {
-      'health': 'health',
-      'life': 'life',
-      'auto': 'auto',
-      'home': 'home',
-      'travel': 'travel',
-      'business': 'business',
-      'unsure': 'undefined'
-    } : {
-      'health': 'salud',
-      'life': 'vida',
-      'auto': 'auto',
-      'home': 'hogar',
-      'travel': 'viaje',
-      'business': 'empresarial',
-      'unsure': 'no definido'
-    };
-    
-    const coverageMap: Record<string, string> = isEnglish ? {
-      'me': 'individual',
-      'couple': 'couple',
-      'family': 'family',
-      'business': 'business'
-    } : {
-      'me': 'individual',
-      'couple': 'pareja',
-      'family': 'familiar',
-      'business': 'empresarial'
-    };
-    
-    const budgetMap: Record<string, string> = isEnglish ? {
-      'under_50k': 'under $50,000 COP (~$12 USD/month)',
-      '50k_to_100k': '$50,000 to $100,000 COP (~$12-25 USD/month)',
-      'over_100k': 'over $100,000 COP (~$25+ USD/month)',
-      'unsure': 'undefined'
-    } : {
-      'under_50k': 'menos de $50.000 COP',
-      '50k_to_100k': '$50.000 a $100.000 COP',
-      'over_100k': 'más de $100.000 COP',
-      'unsure': 'no definido'
-    };
-    
+    const insuranceTypeMap: Record<string, string> = isEnglish
+      ? {
+          health: "health",
+          life: "life",
+          auto: "auto",
+          home: "home",
+          travel: "travel",
+          business: "business",
+          unsure: "undefined",
+        }
+      : {
+          health: "salud",
+          life: "vida",
+          auto: "auto",
+          home: "hogar",
+          travel: "viaje",
+          business: "empresarial",
+          unsure: "no definido",
+        };
+
+    const coverageMap: Record<string, string> = isEnglish
+      ? {
+          me: "individual",
+          couple: "couple",
+          family: "family",
+          business: "business",
+        }
+      : {
+          me: "individual",
+          couple: "pareja",
+          family: "familiar",
+          business: "empresarial",
+        };
+
+    const budgetMap: Record<string, string> = isEnglish
+      ? {
+          under_50k: "under $50,000 COP (~$12 USD/month)",
+          "50k_to_100k": "$50,000 to $100,000 COP (~$12-25 USD/month)",
+          over_100k: "over $100,000 COP (~$25+ USD/month)",
+          unsure: "undefined",
+        }
+      : {
+          under_50k: "menos de $50.000 COP",
+          "50k_to_100k": "$50.000 a $100.000 COP",
+          over_100k: "más de $100.000 COP",
+          unsure: "no definido",
+        };
+
     if (data.insuranceType) {
-      const label = isEnglish ? 'Insurance type' : 'Tipo de seguro';
-      const insuranceLabel = insuranceTypeMap[data.insuranceType] || data.insuranceType;
+      const label = isEnglish ? "Insurance type" : "Tipo de seguro";
+      const insuranceLabel =
+        insuranceTypeMap[data.insuranceType] || data.insuranceType;
       parts.push(`${label}: ${insuranceLabel}`);
     }
     if (data.coverageFor) {
-      const label = isEnglish ? 'Coverage' : 'Cobertura';
+      const label = isEnglish ? "Coverage" : "Cobertura";
       const coverageLabel = coverageMap[data.coverageFor] || data.coverageFor;
       parts.push(`${label}: ${coverageLabel}`);
     }
     if (data.budget) {
-      const label = isEnglish ? 'Monthly budget' : 'Presupuesto mensual';
+      const label = isEnglish ? "Monthly budget" : "Presupuesto mensual";
       const budgetLabel = budgetMap[data.budget] || data.budget;
       parts.push(`${label}: ${budgetLabel}`);
     }
     if (data.city) {
-      const label = isEnglish ? 'City' : 'Ciudad';
+      const label = isEnglish ? "City" : "Ciudad";
       parts.push(`${label}: ${data.city}`);
     }
-    
+
     if (parts.length > 0) {
-      const contextPrefix = isEnglish ? 'User context' : 'Contexto del usuario';
-      const contextSuffix = isEnglish ? 
-        'Use this information to provide more accurate and relevant recommendations.' :
-        'Usa esta información para proporcionar recomendaciones más precisas y relevantes.';
-      return `${contextPrefix}: ${parts.join(', ')}. ${contextSuffix}`;
+      const contextPrefix = isEnglish ? "User context" : "Contexto del usuario";
+      const contextSuffix = isEnglish
+        ? "Use this information to provide more accurate and relevant recommendations."
+        : "Usa esta información para proporcionar recomendaciones más precisas y relevantes.";
+      return `${contextPrefix}: ${parts.join(", ")}. ${contextSuffix}`;
     }
-    
-    return '';
+
+    return "";
   };
 
   // Disable onboarding data loading - start with clean state
   const [loadedOnboardingData, setLoadedOnboardingData] = useState(() => {
     // Always return empty object to start with clean state
-    console.log('🎯 Starting with clean state - no onboarding data');
+    console.log("🎯 Starting with clean state - no onboarding data");
     return {};
   });
 
   // Create initial messages - always start with empty array for clean state
   const [initialMessages] = useState(() => {
     // Always return empty array - no pre-loaded messages or context
-    console.log('🎯 Starting with clean chat - no initial messages');
+    console.log("🎯 Starting with clean chat - no initial messages");
     return [];
   });
+
+  // Track if we've seeded the chat
+  const didSeedRef = useRef(false);
+
+  // Get proposal state for quick actions
+  const { selected, setUiPhase, brief, shortlist } = useProposal();
+  const uiPhase = useUiPhase();
 
   const {
     messages,
@@ -199,50 +285,77 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     appendAssistantMessage,
   } = useBrikiChat(initialMessages);
 
+  // Safe, one-time seeding (fixes "setState during render")
+  useEffect(() => {
+    if (!didSeedRef.current && initialSeed && initialSeed.shortlist?.length && initialSeed.brief) {
+      const seedContent = JSON.stringify({
+        type: "insurance_plans",
+        brief: initialSeed.brief,
+        plans: initialSeed.shortlist,
+        message: `Con tu brief (${initialSeed.brief.category_code}, máx $${initialSeed.brief.budget_high.toLocaleString()}, imprescindibles: ${initialSeed.brief.must_haves.join(", ")}), aquí tienes las 3 mejores opciones que encontré:`,
+      });
+      appendAssistantMessage(seedContent);
+      didSeedRef.current = true;
+      setUiPhase('results');
+    }
+  }, [initialSeed, appendAssistantMessage, setUiPhase]);
+
+  // Expose appendAssistantMessage to parent
+  useEffect(() => {
+    if (onAppendMessage) {
+      onAppendMessage(appendAssistantMessage);
+    }
+  }, [onAppendMessage, appendAssistantMessage]);
+
   // Detect comparison messages to allow wider chat area when sidebar is open
   // Declare this BEFORE any early returns to preserve hook order
   const hasComparisonMessage = useMemo(() => {
     return messages.some((m) => {
-      if (m.role !== 'assistant') return false;
+      if (m.role !== "assistant") return false;
       try {
         const parsed = JSON.parse(m.content as string);
-        return parsed?.type === 'comparison';
+        return parsed?.type === "comparison";
       } catch {
         return false;
       }
     });
   }, [messages]);
 
-  
-
   const { data: session } = useSession();
-  const [userId, setUserId] = useState<string>(''); // Initialize as empty string
+  const [userId, setUserId] = useState<string>(""); // Initialize as empty string
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const [showUploadAnimation, setShowUploadAnimation] = useState(false);
   const [activeCommandCategory, setActiveCommandCategory] = useState<
     string | null
   >(null);
-  const [showPDFUpload, setShowPDFUpload] = useState(false);
   const [policyAnalysis, setPolicyAnalysis] = useState<any>(null);
   const [isAnalysisDocked, setIsAnalysisDocked] = useState(false);
   const [showPolicyHistory, setShowPolicyHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRegionRef = useRef<HTMLDivElement>(null);
+  const prevCountRef = useRef<number>(0);
 
   // Global overlay coordination
   const overlay = useUIOverlay();
 
-  // Open/minimize logic when user triggers analyzer from button
-  const handleUploadFile = () => {
-    setShowPDFUpload(true);
-    overlay.openAnalyzeModal();
-  };
+  // Phase text for status banner
+  const phaseText =
+    uiPhase === 'collecting_brief' ? t("assistant.status.collecting_brief") :
+    uiPhase === 'analyzing_pdf'    ? t("assistant.status.analyzing_pdf") :
+    uiPhase === 'processing'       ? t("assistant.status.processing") :
+    null;
 
-  // Close modal paths should restore previous results state
-  const closeAnalyzer = () => {
-    setShowPDFUpload(false);
-    setPolicyAnalysis(null);
-    overlay.closeAnalyzeModal();
-  };
+  // Scroll only when a new message arrives
+  useEffect(() => {
+    const el = scrollRegionRef.current;
+    if (!el) return;
+    if (messages.length > prevCountRef.current) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
+    prevCountRef.current = messages.length;
+  }, [messages.length]);
+
+  // Analyzer now handled by in-card panel - no modal needed
 
   // Set userId from session when available
   useEffect(() => {
@@ -250,17 +363,17 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
       const sessionUser = session.user as any;
       if (sessionUser.id) {
         setUserId(sessionUser.id);
-        console.log('🔐 User ID set from session:', sessionUser.id);
+        console.log("🔐 User ID set from session:", sessionUser.id);
       } else if (sessionUser.email) {
         // Fallback to email if no ID
         setUserId(sessionUser.email);
-        console.log('📧 Using email as user ID:', sessionUser.email);
+        console.log("📧 Using email as user ID:", sessionUser.email);
       }
     } else {
       // For chat functionality without auth, use a session-based ID
       const sessionId = `guest-${Date.now()}`;
       setUserId(sessionId);
-      console.log('👤 Using guest session ID:', sessionId);
+      console.log("👤 Using guest session ID:", sessionId);
     }
   }, [session]);
 
@@ -272,87 +385,103 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
 
   // Inject onboarding context when component mounts and has data
   useEffect(() => {
-    if (onboardingData && Object.keys(onboardingData).length > 0 && messages.length === 0) {
-      console.log('🎯 Injecting onboarding context:', onboardingData);
-      
+    if (
+      onboardingData &&
+      Object.keys(onboardingData).length > 0 &&
+      messages.length === 0
+    ) {
+      console.log("🎯 Injecting onboarding context:", onboardingData);
+
       // Create a context message based on onboarding data
       const contextMessage = createContextMessage(onboardingData, language);
-      
+
       // Note: We can't directly append to the chat, but the context will be used
       // when the user starts chatting. The AI will have access to this context.
-      console.log('📝 Context message created:', contextMessage);
+      console.log("📝 Context message created:", contextMessage);
     }
   }, [onboardingData, messages.length]);
 
-  // Check for openUpload parameter and open modal
-  useEffect(() => {
-    if (searchParams) {
-      const shouldOpenUpload = searchParams.get('openUpload') === 'true';
-      if (shouldOpenUpload) {
-        setShowPDFUpload(true);
-      }
-    }
-  }, [searchParams]);
-
-  // Handle reanalyze request from SavePolicyButton guardrail modal
-  useEffect(() => {
-    const handler = () => {
-      setPolicyAnalysis(null);
-      setShowPDFUpload(true);
-    };
-    window.addEventListener('reanalyze-under-current-account', handler as EventListener);
-    return () => window.removeEventListener('reanalyze-under-current-account', handler as EventListener);
-  }, []);
+  // Analyzer now handled by in-card panel - no URL parameters or events needed
 
   // Helper function to check if user input is an affirmative command
   const isAffirmativeCommand = (text: string): boolean => {
     const affirmatives = [
-      'sí', 'si', 'yes', 'dale', 'ok', 'okay', 
-      'búscalos', 'buscalos', 'busca', 'muéstrame', 'muestrame',
-      'adelante', 'vamos', 'claro', 'por supuesto', 'obvio',
-      'ya', 'ahora', 'búscalos ya', 'buscalos ya', 'hazlo'
+      "sí",
+      "si",
+      "yes",
+      "dale",
+      "ok",
+      "okay",
+      "búscalos",
+      "buscalos",
+      "busca",
+      "muéstrame",
+      "muestrame",
+      "adelante",
+      "vamos",
+      "claro",
+      "por supuesto",
+      "obvio",
+      "ya",
+      "ahora",
+      "búscalos ya",
+      "buscalos ya",
+      "hazlo",
     ];
     const normalizedText = text.toLowerCase().trim();
-    return affirmatives.some(word => normalizedText.includes(word));
+    return affirmatives.some((word) => normalizedText.includes(word));
   };
 
   // Handle form submission with intent detection
   const handleSmartSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (input.trim()) {
       // Check if this is an affirmative response and we have onboarding data
-      const hasOnboardingData = loadedOnboardingData && Object.keys(loadedOnboardingData).length > 0;
-      const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop();
-      const isWaitingForConfirmation = lastAssistantMessage?.content?.includes('¿Busco planes ahora?');
-      
-      if (hasOnboardingData && isWaitingForConfirmation && isAffirmativeCommand(input)) {
+      const hasOnboardingData =
+        loadedOnboardingData && Object.keys(loadedOnboardingData).length > 0;
+      const lastAssistantMessage = messages
+        .filter((m) => m.role === "assistant")
+        .pop();
+      const isWaitingForConfirmation = lastAssistantMessage?.content?.includes(
+        "¿Busco planes ahora?",
+      );
+
+      if (
+        hasOnboardingData &&
+        isWaitingForConfirmation &&
+        isAffirmativeCommand(input)
+      ) {
         // Transform affirmative to a search query
         const insuranceTypeMap: Record<string, string> = {
-          'health': 'salud',
-          'life': 'vida',
-          'auto': 'auto',
-          'home': 'hogar',
-          'travel': 'viaje',
-          'business': 'empresarial'
+          health: "salud",
+          life: "vida",
+          auto: "auto",
+          home: "hogar",
+          travel: "viaje",
+          business: "empresarial",
         };
-        
-        const insuranceKey = (loadedOnboardingData as any)?.insuranceType ?? '';
-        const insuranceCategory = insuranceTypeMap[insuranceKey] || insuranceKey;
-        
+
+        const insuranceKey = (loadedOnboardingData as any)?.insuranceType ?? "";
+        const insuranceCategory =
+          insuranceTypeMap[insuranceKey] || insuranceKey;
+
         // Vary the search query to avoid repetition
         const searchTemplates = [
           `Buscar planes de ${insuranceCategory}`,
           `Mostrar seguros de ${insuranceCategory}`,
           `Ver opciones de ${insuranceCategory}`,
-          `Planes de ${insuranceCategory} disponibles`
+          `Planes de ${insuranceCategory} disponibles`,
         ];
-        const searchQuery = searchTemplates[Math.floor(Math.random() * searchTemplates.length)];
-        
+        const searchQuery =
+          searchTemplates[Math.floor(Math.random() * searchTemplates.length)];
+
         // Replace the input with the search query
-        handleInputChange({ target: { value: searchQuery } } as React.ChangeEvent<HTMLInputElement>);
-        
+        handleInputChange({
+          target: { value: searchQuery },
+        } as React.ChangeEvent<HTMLInputElement>);
+
         // Submit after a brief moment
         setTimeout(() => {
           handleSubmit(e);
@@ -381,8 +510,12 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
               className="flex flex-col items-center"
             >
               <h1 className="text-6xl font-bold mb-2">
-                <span className="text-black dark:text-white">{t("assistant.welcome_title").replace("Briki", "")}</span>
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-400">Briki</span>
+                <span className="text-black dark:text-white">
+                  {t("assistant.welcome_title").replace("Briki", "")}
+                </span>
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-400">
+                  Briki
+                </span>
               </h1>
               <p className="text-gray-500 dark:text-gray-400 max-w-md">
                 {t("assistant.loading_subtitle")}
@@ -406,20 +539,12 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
 
   // keep reference; replaced above to coordinate overlay
 
-  const handleAnalysisComplete = (analysis: any) => {
-    setPolicyAnalysis(analysis);
-    setShowPDFUpload(false);
-    // keep modal context open while analysis dialog is open
-  };
-
-  const handleAnalysisError = (error: string) => {
-    console.error('PDF analysis error:', error);
-    setShowPDFUpload(false);
-    overlay.closeAnalyzeModal();
-  };
+  // Analysis completion now handled by in-card panel
 
   const handleCommandSelect = (command: string) => {
-    handleInputChange({ target: { value: command } } as React.ChangeEvent<HTMLInputElement>);
+    handleInputChange({
+      target: { value: command },
+    } as React.ChangeEvent<HTMLInputElement>);
     setActiveCommandCategory(null);
 
     if (inputRef.current) {
@@ -427,153 +552,276 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
     }
   };
 
-
-
-  console.log('🎯 GEMINI-STYLE: Layout state:', { isDualPanelMode, isRightPanelOpen, currentResults });
+  console.log("🎯 GEMINI-STYLE: Layout state:", {
+    isDualPanelMode,
+    isRightPanelOpen,
+    currentResults,
+  });
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-black">
+    <div
+      className={
+        isEmbedded
+          ? "h-full w-full flex flex-col overflow-hidden"
+          : "h-screen w-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-black"
+      }
+    >
       {/* PlanResultsObserver - Listens for structured data events */}
       <PlanResultsObserver appendAssistantMessage={appendAssistantMessage} />
-      
+
       {/* PlanPinObserver - Listens for plan pin/unpin events */}
       <PlanPinObserver appendAssistantMessage={appendAssistantMessage} />
-      
+
       {/* CategoryFallbackObserver - Listens for category not found events */}
-      <CategoryFallbackObserver appendAssistantMessage={appendAssistantMessage} />
-      
+      <CategoryFallbackObserver
+        appendAssistantMessage={appendAssistantMessage}
+      />
+
       {/* ComparisonObserver - Listens for comparison requests */}
       <ComparisonObserver appendAssistantMessage={appendAssistantMessage} />
-      
+
       {/* Layout Mode Toggle hidden per design cleanup */}
       {/* <LayoutModeToggle variant="floating" size="sm" /> */}
-      
-      {/* GEMINI-STYLE: True dual-panel layout with automatic compression */}
-      <div className="h-full w-full flex pt-16">
-        {/* LEFT PANEL: Chat Area */}
-        <div className={`flex flex-col transition-all duration-300 ${
-          isDualPanelMode && isRightPanelOpen 
-            ? 'w-[calc(100%-28rem)] lg:w-[calc(100%-32rem)]' // Compressed when panel open
-            : 'w-full' // Full width when panel closed
-        }`}>
-        {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto">
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full px-6 pt-8">
-              {/* Welcome message */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-center mb-8"
-              >
-                <h1 className="text-6xl font-bold mb-4">
-                  <span className="text-black dark:text-white">{t("assistant.welcome_title").replace("Briki", "")}</span>
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-400">Briki</span>
-                </h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md">
-                  {t("assistant.welcome_subtitle")}
-                </p>
-                {loadedOnboardingData && Object.keys(loadedOnboardingData).length > 0 && (
-                  <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                      <strong>{t("assistant.context")}:</strong> {createContextMessage(loadedOnboardingData as any, language)}
-                    </p>
-                  </div>
-                )}
-              </motion.div>
 
-              {/* Command suggestions */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="w-full max-w-xl mx-auto"
+      {/* GEMINI-STYLE: True dual-panel layout with automatic compression */}
+      <div
+        className={
+          isEmbedded ? "h-full w-full flex" : "h-full w-full flex pt-16"
+        }
+      >
+        {/* LEFT PANEL: Chat Area */}
+        <div
+          className={`flex flex-col transition-all duration-300 ${
+            isDualPanelMode && isRightPanelOpen
+              ? "w-[calc(100%-28rem)] lg:w-[calc(100%-32rem)]" // Compressed when panel open
+              : "w-full" // Full width when panel closed
+          }`}
+        >
+          {/* Main Content Area */}
+          <div
+            className={
+              isEmbedded
+                ? `flex-1 min-h-0 overflow-y-auto ${railPad}`
+                : "flex-1 overflow-y-auto"
+            }
+            ref={scrollRegionRef}
+          >
+            {/* Status Banner - only when messages are empty and in working phase */}
+            {messages.length === 0 && phaseText && (
+              <div 
+                className="sticky top-0 z-10 px-3 py-2 mb-2 mt-2 text-xs text-muted-foreground bg-muted/30 border rounded-md flex items-center gap-2"
+                role="status"
+                aria-live="polite"
+                aria-label={phaseText}
               >
-                <div className="grid grid-cols-1 gap-3">
-                  <CommandButton
-                    icon={<Shield className="w-4 h-4" />}
-                    label={t("assistant.search_insurance")}
-                    isActive={activeCommandCategory === 'compare'}
-                    onClick={() => setActiveCommandCategory('compare')}
-                  />
-                  <CommandButton
-                    icon={<FileText className="w-4 h-4" />}
-                    label={t("assistant.analyze_policy")}
-                    isActive={activeCommandCategory === 'analyze'}
-                    onClick={() => setActiveCommandCategory('analyze')}
-                  />
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>{phaseText}</span>
+              </div>
+            )}
+
+            {/* Right Panel Empty Results - when no results found */}
+            {messages.length === 0 && uiPhase === 'results' && brief && shortlist.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-full px-6 py-12 text-center">
+                <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="font-medium mb-2">{t("assistant.no_results_title")}</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {t("assistant.no_results_subtitle")}
+                </p>
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      try { window.dispatchEvent(new CustomEvent('briki:open-brief')); } catch {}
+                    }}
+                  >
+                    {t("assistant.expand_budget")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      try { window.dispatchEvent(new CustomEvent('briki:open-brief')); } catch {}
+                    }}
+                  >
+                    {t("assistant.fewer_requirements")}
+                  </Button>
                 </div>
-                <AnimatePresence>
-                  {activeCommandCategory && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="mt-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg"
-                    >
-                      <div className="space-y-2">
-                        {commandSuggestions[activeCommandCategory as keyof typeof commandSuggestions]?.map((suggestion, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleCommandSelect(suggestion)}
-                            className="w-full text-left p-2 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
+              </div>
+            )}
+            {showWelcome !== false && messages.length === 0 && uiPhase === 'welcome' ? (
+              <WelcomeHero
+                onStartBrief={() => {
+                  // open the left brief or focus the brief section
+                  // Emit an event or call a prop if you already pass one.
+                  // Fallback: focus the left column via a custom event.
+                  try { window.dispatchEvent(new CustomEvent('briki:open-brief')); } catch {}
+                }}
+                onAnalyzePdf={() => {
+                  // Analyzer now handled by in-card panel - dispatch event to open it
+                  window.dispatchEvent(new CustomEvent('briki:open-analyzer-panel'));
+                }}
+              />
+            ) : showWelcome !== false &&
+              messages.length === 0 &&
+              uiPhase === 'welcome' &&
+              !isEmbedded ? (
+              <div className="flex flex-col items-center justify-center h-full px-6 pt-8">
+                {/* Welcome message */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="text-center mb-8"
+                >
+                  <h1 className="text-6xl font-bold mb-4">
+                    <span className="text-black dark:text-white">
+                      {t("assistant.welcome_title").replace("Briki", "")}
+                    </span>
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-400">
+                      Briki
+                    </span>
+                  </h1>
+                  <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md">
+                    {t("assistant.welcome_subtitle")}
+                  </p>
+                  {loadedOnboardingData &&
+                    Object.keys(loadedOnboardingData).length > 0 && (
+                      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          <strong>{t("assistant.context")}:</strong>{" "}
+                          {createContextMessage(
+                            loadedOnboardingData as any,
+                            language,
+                          )}
+                        </p>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            </div>
-          ) : (
-            <div className={`${
-              isDualPanelMode && isRightPanelOpen ? (hasComparisonMessage ? 'max-w-4xl' : 'max-w-lg') : 'max-w-2xl'
-            } mx-auto px-3 py-3 space-y-2 sm:space-y-1.5 transition-all duration-300`}>
-              {messages
-                .filter(message => message.role !== 'system') // Hide system messages from UI
-                .map((message, index) => {
-                  let isComparison = false;
-                  try {
-                    const parsed = JSON.parse(message.content);
-                    isComparison = parsed?.type === 'comparison';
-                  } catch {}
-                  return (
-                    <div
-                      key={index}
-                      className={`flex ${
-                        message.role === 'user' ? 'justify-end' : 'justify-start'
-                      }`}
-                    >
+                    )}
+                </motion.div>
+
+                {/* Command suggestions */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="w-full max-w-xl mx-auto"
+                >
+                  <div className="grid grid-cols-1 gap-3">
+                    <CommandButton
+                      icon={<Shield className="w-4 h-4" />}
+                      label={t("assistant.search_insurance")}
+                      isActive={activeCommandCategory === "compare"}
+                      onClick={() => setActiveCommandCategory("compare")}
+                    />
+                    <CommandButton
+                      icon={<FileText className="w-4 h-4" />}
+                      label={t("assistant.analyze_policy")}
+                      isActive={activeCommandCategory === "analyze"}
+                      onClick={() => setActiveCommandCategory("analyze")}
+                    />
+                  </div>
+                  <AnimatePresence>
+                    {activeCommandCategory && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mt-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg"
+                      >
+                        <div className="space-y-2">
+                          {commandSuggestions[
+                            activeCommandCategory as keyof typeof commandSuggestions
+                          ]?.map((suggestion, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handleCommandSelect(suggestion)}
+                              className="w-full text-left p-2 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </div>
+            ) : (
+              <div
+                className={
+                  isEmbedded
+                    ? `flex-1 min-h-0 overflow-y-auto ${railWidth} ${railPad} py-3 space-y-2 sm:space-y-1.5`
+                    : `${
+                        isDualPanelMode && isRightPanelOpen
+                          ? hasComparisonMessage
+                            ? "max-w-4xl"
+                            : "max-w-lg"
+                          : "max-w-2xl"
+                      } mx-auto px-3 py-3 space-y-2 sm:space-y-1.5 transition-all duration-300`
+                }
+              >
+                {messages
+                  .filter((message) => message.role !== "system") // Hide system messages from UI
+                  .map((message, index) => {
+                    let isComparison = false;
+                    try {
+                      const parsed = JSON.parse(message.content);
+                      isComparison = parsed?.type === "comparison";
+                    } catch {}
+                    return (
                       <div
-                        className={`max-w-full ${isComparison ? 'sm:max-w-[95%]' : 'sm:max-w-[85%]'} rounded-lg px-4 py-3 text-xl leading-relaxed ${
-                          message.role === 'user'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-neutral-700'
+                        key={index}
+                        className={`flex ${
+                          message.role === "user"
+                            ? "justify-end"
+                            : "justify-start"
                         }`}
                       >
-                        <MessageRenderer
-                          content={message.content}
-                          role={message.role}
-                          name={(message as any).name}
-                          toolInvocations={(message as any).toolInvocations}
-                        />
+                        <div
+                          className={`max-w-full ${isEmbedded ? (isComparison ? "sm:max-w-[98%]" : "sm:max-w-[95%]") : isComparison ? "sm:max-w-[95%]" : "sm:max-w-[85%]"} rounded-lg px-4 py-3 text-xl leading-relaxed ${
+                            message.role === "user"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-neutral-700"
+                          }`}
+                        >
+                          <MessageRenderer
+                            content={message.content}
+                            role={message.role}
+                            name={(message as any).name}
+                            toolInvocations={(message as any).toolInvocations}
+                            onAnalyzePlan={onAnalyzePlan}
+                            onToggleSelect={onToggleSelect}
+                            isSelected={isSelected}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-        </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
 
-        {/* Sticky Input Area */}
-        <div className="sticky bottom-0 z-10 border-t bg-white dark:bg-black">
-          <div className={`${
-            isDualPanelMode && isRightPanelOpen ? (hasComparisonMessage ? 'max-w-4xl' : 'max-w-lg') : 'max-w-2xl'
-          } mx-auto px-3 transition-all duration-300`}>
-            <form onSubmit={handleSmartSubmit} className="w-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden my-2">
+          {/* Composer Area */}
+          <div
+            className={
+              isEmbedded
+                ? `border-t bg-white dark:bg-black ${railWidth} ${railPad} pb-[env(safe-area-inset-bottom,12px)]`
+                : `sticky bottom-0 z-10 border-t bg-white dark:bg-black ${
+                    isDualPanelMode && isRightPanelOpen
+                      ? hasComparisonMessage
+                        ? "max-w-4xl"
+                        : "max-w-lg"
+                      : "max-w-2xl"
+                  } mx-auto px-3 transition-all duration-300 pb-[env(safe-area-inset-bottom,12px)]`
+            }
+          >
+            {/* Quick actions rail above composer */}
+            <QuickActionBar />
+            
+            <form
+              onSubmit={handleSmartSubmit}
+              className="w-full bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden my-2"
+            >
               <div className="p-3">
                 <input
                   ref={inputRef}
@@ -585,14 +833,16 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 />
               </div>
               <div className="px-4 py-2 border-t border-gray-100 dark:border-neutral-700 flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={handleUploadFile}
-                  className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span>{t("assistant.analyze_policy")}</span>
-                </button>
+                {!isEmbedded && (
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('briki:open-analyzer-panel'))}
+                    className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>{t("assistant.analyze_policy")}</span>
+                  </button>
+                )}
                 <div className="flex items-center gap-2">
                   {messages.length > 0 && (
                     <button
@@ -625,55 +875,7 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
           </div>
         </div>
 
-        {/* Modals */}
-        <AnimatePresence>
-          {showPDFUpload && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[90] flex items-center justify-center p-4"
-              onClick={closeAnalyzer}
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                      {t("assistant.analyze_policy")}
-                    </h2>
-                    <button
-                      onClick={closeAnalyzer}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-6">
-                    <PDFUpload
-                      onAnalysisComplete={handleAnalysisComplete}
-                      onError={handleAnalysisError}
-                      userId={userId}
-                    />
-                    
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                      <PolicyHistory 
-                        userId={userId} 
-                        onViewAnalysis={setPolicyAnalysis}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* PDF Upload modal removed - analyzer now uses in-card panel */}
 
         <AnimatePresence>
           {policyAnalysis && !isAnalysisDocked && (
@@ -682,7 +884,10 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
-              onClick={() => { setPolicyAnalysis(null); overlay.closeAnalyzeModal(); }}
+              onClick={() => {
+                setPolicyAnalysis(null);
+                overlay.closeAnalyzeModal();
+              }}
             >
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
@@ -691,26 +896,46 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
                 className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-[1460px] w-[96.5vw] h-[92vh] overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="h-full overflow-y-auto" style={{ scrollbarGutter: 'stable' as any }}>
-                  <div className="p-6" aria-labelledby="analysis-dialog-title" aria-describedby="analysis-dialog-desc">
-                    <div id="analysis-dialog-title" className="sr-only">Analyze Policy PDF</div>
+                <div
+                  className="h-full overflow-y-auto"
+                  style={{ scrollbarGutter: "stable" as any }}
+                >
+                  <div
+                    className="p-6"
+                    aria-labelledby="analysis-dialog-title"
+                    aria-describedby="analysis-dialog-desc"
+                  >
+                    <div id="analysis-dialog-title" className="sr-only">
+                      Analyze Policy PDF
+                    </div>
                     <div className="flex items-center justify-between mb-6">
                       <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                         {t("assistant.analyze_policy")}
                       </h2>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => { setIsAnalysisDocked(true); overlay.closeAnalyzeModal(); }} className="px-2 py-1 text-xs border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-800">Minimize</button>
                         <button
-                          onClick={() => { setPolicyAnalysis(null); overlay.closeAnalyzeModal(); }}
+                          onClick={() => {
+                            setIsAnalysisDocked(true);
+                            overlay.closeAnalyzeModal();
+                          }}
+                          className="px-2 py-1 text-xs border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
+                        >
+                          Minimize
+                        </button>
+                        <button
+                          onClick={() => {
+                            setPolicyAnalysis(null);
+                            overlay.closeAnalyzeModal();
+                          }}
                           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                         >
                           <X className="w-5 h-5" />
                         </button>
                       </div>
                     </div>
-                    
-                    <PolicyAnalysisDisplay 
-                      analysis={policyAnalysis} 
+
+                    <PolicyAnalysisDisplay
+                      analysis={policyAnalysis}
                       pdfUrl={policyAnalysis._pdfData?.pdfUrl}
                       fileName={policyAnalysis._pdfData?.fileName}
                       rawAnalysisData={policyAnalysis._pdfData?.rawAnalysisData}
@@ -725,16 +950,34 @@ function AIAssistantInterfaceInner({ isLoading = false, onboardingData = {} }: A
         {policyAnalysis && isAnalysisDocked && (
           <div className="fixed bottom-4 right-4 z-[95]">
             <div className="flex items-center gap-3 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2">
-              <span className="text-sm text-gray-700 dark:text-gray-200">{t('assistant.analyze_policy')}</span>
-              <button onClick={() => { setIsAnalysisDocked(false); overlay.openAnalyzeModal(); }} className="text-xs px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700">Reopen</button>
-              <button onClick={() => { setIsAnalysisDocked(false); setPolicyAnalysis(null); overlay.closeAnalyzeModal(); }} className="text-xs px-2 py-1 rounded-full border hover:bg-gray-50 dark:hover:bg-neutral-800 text-gray-600 dark:text-gray-300">Close</button>
+              <span className="text-sm text-gray-700 dark:text-gray-200">
+                {t("assistant.analyze_policy")}
+              </span>
+              <button
+                onClick={() => {
+                  setIsAnalysisDocked(false);
+                  overlay.openAnalyzeModal();
+                }}
+                className="text-xs px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Reopen
+              </button>
+              <button
+                onClick={() => {
+                  setIsAnalysisDocked(false);
+                  setPolicyAnalysis(null);
+                  overlay.closeAnalyzeModal();
+                }}
+                className="text-xs px-2 py-1 rounded-full border hover:bg-gray-50 dark:hover:bg-neutral-800 text-gray-600 dark:text-gray-300"
+              >
+                Close
+              </button>
             </div>
           </div>
         )}
 
         {/* Floating handle to restore results when minimized (hidden while modal open) */}
         <ResultsToggle />
-        </div>
 
         {/* RIGHT PANEL: Insurance Results (Gemini-style) */}
         {isDualPanelMode && isRightPanelOpen && (
@@ -765,8 +1008,8 @@ function CommandButton({ icon, label, isActive, onClick }: CommandButtonProps) {
       onClick={onClick}
       className={`flex items-center space-x-2 p-3 rounded-lg border transition-all ${
         isActive
-          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-          : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
+          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+          : "border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
       }`}
     >
       {icon}
@@ -775,4 +1018,4 @@ function CommandButton({ icon, label, isActive, onClick }: CommandButtonProps) {
       </span>
     </button>
   );
-} 
+}

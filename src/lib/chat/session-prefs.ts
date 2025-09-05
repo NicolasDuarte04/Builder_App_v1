@@ -4,16 +4,16 @@ import { cookies } from "next/headers";
 const CAT_KEY = "briki.activeCategory";
 const COUNTRY_KEY = "briki.country";
 
-export function readPrefs() {
-  const c = cookies();
+export async function readPrefs() {
+  const c = await cookies();
   return {
     category: c.get(CAT_KEY)?.value || null,
     country: c.get(COUNTRY_KEY)?.value || null,
   };
 }
 
-export function writePrefs(next: { category?: string | null; country?: string | null }) {
-  const c = cookies();
+export async function writePrefs(next: { category?: string | null; country?: string | null }) {
+  const c = await cookies();
   if (typeof next.category !== "undefined") {
     if (next.category) c.set(CAT_KEY, next.category, { httpOnly: false, sameSite: "lax", path: "/" });
     else c.delete(CAT_KEY);

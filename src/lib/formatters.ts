@@ -3,6 +3,15 @@ import type { Currency } from '@/types/plan';
 export function formatPrice(amount?: number | null, currency?: Currency | null) {
   if (!amount || amount <= 0 || !currency) return null;
   try {
+    if (currency === 'COP') {
+      // Compact COP: $120.000 COP
+      const formatted = new Intl.NumberFormat('es-CO', {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+      return `$${formatted} COP`;
+    }
     return new Intl.NumberFormat(undefined, {
       style: 'currency',
       currency,

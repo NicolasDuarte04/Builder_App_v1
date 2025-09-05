@@ -1,0 +1,97 @@
+"use client";
+
+import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useProposal, useUiPhase } from '@/state/proposal';
+import { Button } from '@/components/ui/button';
+import { ArrowLeftRight, Plus, FileText } from 'lucide-react';
+
+export function QuickActionBar() {
+  const { t } = useTranslation();
+  const { selected, brief, shortlist } = useProposal();
+  const uiPhase = useUiPhase();
+
+  // Visibility rule: render only if we have results or selections and not in welcome phase
+  const shouldShow = (uiPhase === 'results' || shortlist.length > 0 || selected.length > 0) && uiPhase !== 'welcome';
+
+  if (!shouldShow) {
+    return null;
+  }
+
+  const selectedCount = selected.length;
+  const isDisabled = selectedCount === 0;
+
+  const handleCompare = () => {
+    window.dispatchEvent(new CustomEvent('briki:compare-selected'));
+  };
+
+  const handleAddToProposal = () => {
+    window.dispatchEvent(new CustomEvent('briki:create-proposal'));
+  };
+
+  const handleGenerateProposal = () => {
+    window.dispatchEvent(new CustomEvent('briki:create-proposal'));
+  };
+
+  return (
+    <div
+      role="toolbar"
+      className="w-full flex items-center gap-2 px-3 py-2 border-b bg-white/70 dark:bg-black/50 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-10"
+      aria-label="Acciones rápidas"
+    >
+      {/* Compare Selected Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleCompare}
+        disabled={isDisabled}
+        className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+        aria-label={`${t("assistant.compare_selected")} (${selectedCount} seleccionados)`}
+      >
+        <ArrowLeftRight className="w-4 h-4" />
+        <span>{t("assistant.compare_selected")}</span>
+        {selectedCount > 0 && (
+          <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border px-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+            {selectedCount}
+          </span>
+        )}
+      </Button>
+
+      {/* Add to Proposal Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleAddToProposal}
+        disabled={isDisabled}
+        className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+        aria-label={`${t("assistant.add_to_proposal")} (${selectedCount} seleccionados)`}
+      >
+        <Plus className="w-4 h-4" />
+        <span>{t("assistant.add_to_proposal")}</span>
+        {selectedCount > 0 && (
+          <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border px-1 text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+            {selectedCount}
+          </span>
+        )}
+      </Button>
+
+      {/* Generate Proposal Button (Primary) */}
+      <Button
+        variant="default"
+        size="sm"
+        onClick={handleGenerateProposal}
+        disabled={isDisabled}
+        className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+        aria-label={`${t("assistant.generate_proposal")} (${selectedCount} seleccionados)`}
+      >
+        <FileText className="w-4 h-4" />
+        <span>{t("assistant.generate_proposal")}</span>
+        {selectedCount > 0 && (
+          <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border px-1 text-xs bg-white/20 text-white border-white/30">
+            {selectedCount}
+          </span>
+        )}
+      </Button>
+    </div>
+  );
+}

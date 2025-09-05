@@ -42,6 +42,7 @@ export async function searchPlans(opts: {
   limit?: number;
   // tolerated extras (used by callers); forwarded when meaningful
   max_price?: number;
+  min_price?: number;
   tags?: string[];
   benefits_contain?: string;
 }) {
@@ -56,7 +57,19 @@ export async function searchPlans(opts: {
 
   const body: any = { includeCategories: include, country: opts.country };
   if (Array.isArray(opts.tags) && opts.tags.length) body.tags = opts.tags;
-  // benefits_contain is not supported by v2 API directly; omit or map to q in the future if needed
+  // Price window
+  if (typeof opts.min_price === 'number') body.minPrice = opts.min_price;
+  if (typeof opts.max_price === 'number') body.maxPrice = opts.max_price;
+  // Benefits contains CSV
+  if (typeof opts.benefits_contain === 'string' && opts.benefits_contain.trim()) {
+    body.benefitsContains = opts.benefits_contain
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join(',');
+  }
+  // Default sort: price asc
+  body.sort = 'price_asc';
 
   const res = await doFetch(url, { method: 'POST', body: JSON.stringify(body) });
   const data = await res.json();

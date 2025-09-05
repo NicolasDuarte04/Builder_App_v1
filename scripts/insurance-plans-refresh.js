@@ -335,7 +335,7 @@ class InsurancePlansRefresher {
           const placeholders = fields.map((_, i) => `$${i + 1}`).join(', ');
           
           const query = `
-            INSERT INTO insurance_plans (${fields.join(', ')})
+            INSERT npm INTO insurance_plans (${fields.join(', ')})
             VALUES (${placeholders})
           `;
           

@@ -1,0 +1,78 @@
+{
+  "en": {
+    "title": "Membership",
+    "subtitle": "Choose the plan that fits you",
+    "free": {
+      "title": "Free Plan",
+      "price": "$0 / month",
+      "limits": "Save up to 4 policy analyses",
+      "bullets": [
+        "Save up to 4 policy analyses",
+        "Basic policy insights",
+        "Community access"
+      ],
+      "continue": "Continue with free plan",
+      "currentPlan": "Current plan"
+    },
+    "plus": {
+      "title": "Briki Plus",
+      "price": "$3.99 / month",
+      "bullets": [
+        "Unlimited saved policies",
+        "Family profiles (coming soon)",
+        "Exclusive features",
+        "Priority support",
+        "Early access to new features"
+      ],
+      "cta": "Upgrade to Briki Plus"
+    },
+    "navbar": {
+      "tooltip": "View membership"
+    },
+    "emptyState": {
+      "helper": "Save up to 4 analyses on the free plan",
+      "viewMembership": "View membership"
+    },
+    "legal": {
+      "cancelAnytime": "Cancel anytime. No long-term commitments."
+    }
+  },
+  "es": {
+    "title": "Membresía",
+    "subtitle": "Elige el plan que se adapta a ti",
+    "free": {
+      "title": "Plan Gratuito",
+      "price": "$0 / mes",
+      "limits": "Guarda hasta 4 análisis de pólizas",
+      "bullets": [
+        "Guarda hasta 4 análisis de pólizas",
+        "Análisis básico de pólizas",
+        "Acceso a la comunidad"
+      ],
+      "continue": "Seguir con plan gratuito",
+      "currentPlan": "Plan actual"
+    },
+    "plus": {
+      "title": "Briki Plus",
+      "price": "$3.99 / mes",
+      "bullets": [
+        "Pólizas guardadas ilimitadas",
+        "Perfiles familiares (muy pronto)",
+        "Funciones exclusivas",
+        "Soporte prioritario",
+        "Acceso anticipado a nuevas funciones"
+      ],
+      "cta": "Actualizar a Briki Plus"
+    },
+    "navbar": {
+      "tooltip": "Ver membresía"
+    },
+    "emptyState": {
+      "helper": "Guarda hasta 4 análisis en el plan gratuito",
+      "viewMembership": "Ver membresía"
+    },
+    "legal": {
+      "cancelAnytime": "Cancela en cualquier momento. Sin compromisos a largo plazo."
+    }
+  }
+}

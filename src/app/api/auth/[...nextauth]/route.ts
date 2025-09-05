@@ -6,6 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
 
 // Create Supabase client for user management
+// Use service key server-side only
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -162,6 +163,7 @@ export const authOptions: NextAuthOptions = {
   },
   debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true, // Allow localhost and preview URLs
 };
 
 const handler = NextAuth(authOptions);

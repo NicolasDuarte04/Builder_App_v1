@@ -1,0 +1,38 @@
+{
+  "membership": {
+    "title": "Briki Plus",
+    "subtitle": "Desbloquea todo por menos que un café",
+    "free": {
+      "title": "Gratis",
+      "price": "$0",
+      "limits": "Guarda hasta 4 pólizas",
+      "bullets": ["Análisis básicos", "Acceso a la comunidad", "Funciones iniciales"]
+    },
+    "plus": {
+      "title": "Briki Plus",
+      "price": "$3.99",
+      "bullets": [
+        "Análisis de pólizas ilimitados",
+        "Perfiles familiares (muy pronto)",
+        "Funciones exclusivas",
+        "Soporte prioritario",
+        "Acceso anticipado a nuevas funciones"
+      ],
+      "cta": "Actualizar a Briki Plus"
+    },
+    "cta": {
+      "upgrade": "Actualizar a Briki Plus",
+      "continueFree": "Seguir con Gratis"
+    },
+    "emptyState": {
+      "helper": "Guarda hasta 4 pólizas en el plan gratuito",
+      "viewMembership": "Ver membresía"
+    },
+    "navbar": {
+      "tooltip": "Briki Plus"
+    },
+    "legal": { 
+      "cancelAnytime": "Cancela en cualquier momento. Sin compromiso a largo plazo." 
+    }
+  }
+}

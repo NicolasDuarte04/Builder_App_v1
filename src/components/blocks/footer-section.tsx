@@ -2,6 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { LinkedinIcon } from 'lucide-react';
+import BrandMark from '@/components/BrandMark';
 
 export function Footer() {
 	const currentYear = new Date().getFullYear();
@@ -13,9 +14,7 @@ export function Footer() {
 				<div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
 					{/* Logo */}
 					<Link href="/" className="inline-block">
-						<h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-cyan-400">
-							briki
-						</h1>
+						<BrandMark withCopilot className="text-xl font-semibold" as="h2" />
 					</Link>
 
 					{/* Copyright */}

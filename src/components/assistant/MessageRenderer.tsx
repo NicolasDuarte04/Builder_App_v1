@@ -4,12 +4,16 @@ import React, { useEffect, useMemo } from 'react';
 import { useRightPanelTrigger } from '@/contexts/PlanResultsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ComparisonMessage } from './ComparisonMessage';
+import { PlanResultCard } from '@/components/PlanResultCard';
 
 interface MessageRendererProps {
   content: string;
   role?: string;
   name?: string;
   toolInvocations?: any[];
+  onAnalyzePlan?: (plan: any) => void;
+  onToggleSelect?: (plan: any) => void;
+  isSelected?: (planId: string) => boolean;
 }
 
 export const MessageRenderer = React.memo(function MessageRenderer({
@@ -17,6 +21,9 @@ export const MessageRenderer = React.memo(function MessageRenderer({
   role,
   name,
   toolInvocations,
+  onAnalyzePlan,
+  onToggleSelect,
+  isSelected,
 }: MessageRendererProps) {
   const { t } = useTranslation();
   const { showPanelWithPlans, isDualPanelMode } = useRightPanelTrigger();
@@ -76,6 +83,63 @@ export const MessageRenderer = React.memo(function MessageRenderer({
   
   if (role === 'assistant' && parsed.isJSON && parsed.payload?.type === 'comparison' && parsed.payload?.plans) {
     return <ComparisonMessage plans={parsed.payload.plans} />;
+  }
+
+  // Handle analysis results
+  if (role === 'assistant' && parsed.isJSON && parsed.payload?.type === 'analysis_results' && parsed.payload?.analysis) {
+    // Trigger right panel with analysis results
+    useEffect(() => {
+      if (isDualPanelMode && parsed.payload?.analysis) {
+        showPanelWithPlans({
+          title: 'Análisis de Póliza',
+          plans: [], // Empty plans array for analysis
+          analysis: parsed.payload.analysis,
+          analysisType: 'policy_analysis'
+        });
+      }
+    }, [parsed.payload?.analysis, isDualPanelMode, showPanelWithPlans]);
+
+    return (
+      <div className="space-y-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+        <div className="flex items-start space-x-3">
+          <div className="mt-1">
+            <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+              Análisis de póliza completado
+            </p>
+            <p className="mt-1 text-xs text-green-700 dark:text-green-300">
+              Revisa los resultados detallados en el panel derecho
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle custom plan rendering for copilot integration
+  if (role === 'assistant' && parsed.isJSON && parsed.payload?.type === 'insurance_plans' && !isDualPanelMode) {
+    const { plans, message } = parsed.payload;
+    return (
+      <div className="space-y-3">
+        {message && <p className="text-sm mb-3">{message}</p>}
+        <div className="space-y-2">
+          {plans.map((plan: any) => (
+            <PlanResultCard
+              key={plan.id}
+              plan={plan}
+              selected={isSelected?.(plan.id) || false}
+              onAnalyze={() => onAnalyzePlan?.(plan)}
+              onToggle={() => onToggleSelect?.(plan)}
+              compact
+            />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractTextFromPDFWithOCR } from '@/lib/pdf-analyzer-enhanced';
+// Keep route but avoid importing optional deps that break builds in Co‑Pilot MVP
+// Lazy import inside handler if needed
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +23,11 @@ export async function POST(request: NextRequest) {
     
     console.log('🧪 Testing enhanced PDF analyzer...');
     
-    const result = await extractTextFromPDFWithOCR(file);
+    const mod = await import('@/lib/pdf-analyzer-enhanced').catch(() => null as any);
+    if (!mod?.extractTextFromPDFWithOCR) {
+      return NextResponse.json({ success: false, error: 'enhanced_analyzer_unavailable' }, { status: 501 });
+    }
+    const result = await mod.extractTextFromPDFWithOCR(file);
     
     return NextResponse.json({
       success: true,

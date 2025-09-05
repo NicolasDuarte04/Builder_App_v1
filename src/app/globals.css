@@ -120,8 +120,20 @@
   }
 }
 
+@keyframes shine {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
 .animate-marquee {
   animation: marquee var(--duration) linear infinite;
+}
+
+/* Prevent chat input hugging the bottom on iOS with home indicator */
+@supports (padding: max(0px)) {
+  .pb-safe {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
 }
 
 .relative {
