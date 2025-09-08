@@ -64,6 +64,24 @@
       "tooLong": "La descripción es demasiado larga"
     }
   },
+  "portal": {
+    "prep": {
+      "narration": "Voy a analizar {fileName}. Elige áreas de enfoque y presiona Iniciar análisis.",
+      "focus_label": "Áreas de enfoque"
+    },
+    "chips": ["exclusiones","deducibles","límites","carencias","cobertura internacional","cláusulas específicas"],
+    "cta_analyze": "Iniciar análisis",
+    "cta_change": "Cambiar PDF",
+    "running": {
+      "initializing": "Inicializando",
+      "extracting": "Extrayendo",
+      "analyzing": "Analizando",
+      "summarizing": "Resumiendo",
+      "done": "Listo",
+      "cancel": "Cancelar",
+      "progress_aria": "{status} {progress}%"
+    }
+  },
   "features": {
     "section_title": "Búsqueda inteligente de seguros. Planes reales. Respuestas instantáneas.",
     "section_subtitle": "Aquí está lo que el Asistente de Seguros Briki hace por ti — y por qué importa.",
@@ -473,6 +491,14 @@
       "collecting_brief": "Recopilando información del cliente…",
       "analyzing_pdf": "Analizando póliza (PDF)…",
       "processing": "Generando resultados…"
+    },
+    "analysis_prep": {
+      "title": "Preparado para analizar tu póliza",
+      "bullets": ["Coberturas detalladas y límites", "Deducibles y exclusiones importantes", "Recomendaciones personalizadas", "Alertas sobre cláusulas importantes"],
+      "cta_analyze": "Analizar ahora",
+      "cta_change": "Cambiar PDF",
+      "note_hint": "Esta nota guiará el análisis. No enviaré mensajes hasta que presiones Analizar ahora.",
+      "chips": ["exclusiones","deducibles","límites","carencias","cobertura internacional","cláusulas específicas"]
     },
     "no_results_title": "No encontramos opciones",
     "no_results_subtitle": "Intenta ajustar los criterios de búsqueda",

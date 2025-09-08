@@ -79,6 +79,24 @@
       "tooLong": "Description is too long"
     }
   },
+  "portal": {
+    "prep": {
+      "narration": "I'll analyze {fileName}. Choose focus areas and press Start analysis.",
+      "focus_label": "Focus areas"
+    },
+    "chips": ["exclusions","deductibles","limits","waiting periods","international coverage","specific clauses"],
+    "cta_analyze": "Start analysis",
+    "cta_change": "Change PDF",
+    "running": {
+      "initializing": "Initializing",
+      "extracting": "Extracting",
+      "analyzing": "Analyzing",
+      "summarizing": "Summarizing",
+      "done": "Done",
+      "cancel": "Cancel",
+      "progress_aria": "{status} {progress}%"
+    }
+  },
   "placeholders": {
     "whatToBuild": "What do you want to build with Briki AI?",
     "describeIdea": "Describe your idea and I'll help create a roadmap...",
@@ -485,6 +503,14 @@
       "collecting_brief": "Collecting client information…",
       "analyzing_pdf": "Analyzing policy (PDF)…",
       "processing": "Generating results…"
+    },
+    "analysis_prep": {
+      "title": "Ready to analyze your policy",
+      "bullets": ["Detailed coverage and limits", "Important deductibles and exclusions", "Personalized recommendations", "Alerts about important clauses"],
+      "cta_analyze": "Analyze now",
+      "cta_change": "Change PDF",
+      "note_hint": "This note will guide the analysis. I won't send messages until you press Analyze now.",
+      "chips": ["exclusions","deductibles","limits","waiting periods","international coverage","specific clauses"]
     },
     "no_results_title": "No options found",
     "no_results_subtitle": "Try adjusting your search criteria",

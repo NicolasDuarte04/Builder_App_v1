@@ -13,14 +13,23 @@ import { AnalyzerPanel } from '@/components/copilot/AnalyzerPanel';
 import { AIAssistantInterface } from '@/components/assistant/AIAssistantInterface';
 import { BootOverlay } from '@/components/BootOverlay';
 import { useProposal } from '@/state/proposal';
+import { useUI } from '@/state/ui';
+import { useAnalyzer } from '@/state/analyzer';
 import { useRouter } from 'next/navigation';
 import { FileText, Sparkles, AlertCircle } from 'lucide-react';
 import { telemetry } from '@/lib/telemetry';
+import { ENABLE_BRC_PORTAL, DEBUG_PORTAL } from '@/lib/featureFlags';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import IconRail from '@/components/assistant/IconRail';
+import PortalPrep from '@/components/assistant/portal/PortalPrep';
+import PortalRunning from '@/components/assistant/portal/PortalRunning';
 
 export default function AssistantPage() {
   const router = useRouter();
   const { brief, shortlist, selected, setBrief, setShortlist, isSelected, toggleSelect, setUiPhase } = useProposal();
+  const { layoutMode } = useUI();
+  const isPortalMode = layoutMode === 'analysis_portal_prep' || layoutMode === 'analysis_running' || layoutMode === 'analysis_results';
   const [loading, setLoading] = useState(false);
   const [briefOpen, setBriefOpen] = useState(false);
   const [isAnalyzerExpanded, setIsAnalyzerExpanded] = useState(false);
@@ -68,6 +77,145 @@ export default function AssistantPage() {
     window.addEventListener('briki:open-analyzer-panel', handler);
     return () => window.removeEventListener('briki:open-analyzer-panel', handler);
   }, []);
+
+  // Handle briki:pdf-selected event for layout transition
+  useEffect(() => {
+    const onPdf = (e: Event) => {
+      if (DEBUG_PORTAL) {
+        console.log('[DEBUG_PORTAL] PDF selected event fired');
+        console.log('[DEBUG_PORTAL] ENABLE_BRC_PORTAL:', ENABLE_BRC_PORTAL);
+        console.log('[DEBUG_PORTAL] Current layoutMode:', useUI.getState().layoutMode);
+      }
+      try {
+        telemetry.track(telemetry.events.LAYOUT_MODE_CHANGED || 'layout_mode_changed', {
+          from: useUI.getState().layoutMode,
+          to: ENABLE_BRC_PORTAL ? 'analysis_portal_prep' : 'analysis_prep'
+        });
+        if (ENABLE_BRC_PORTAL && (telemetry as any)?.events?.PORTAL_OPENED) {
+          telemetry.track((telemetry as any).events.PORTAL_OPENED, {});
+        }
+      } catch {}
+      // Collapse left rail and expand chat
+      if (ENABLE_BRC_PORTAL) {
+        // If already in portal prep, do nothing to avoid flicker
+        if (useUI.getState().layoutMode === 'analysis_portal_prep') {
+          if (DEBUG_PORTAL) console.log('[DEBUG_PORTAL] Already in analysis_portal_prep, skipping setLayoutMode');
+        } else {
+          useUI.getState().setLayoutMode('analysis_portal_prep');
+          if (DEBUG_PORTAL) console.log('[DEBUG_PORTAL] Layout mode changed to: analysis_portal_prep');
+        }
+      } else {
+        const newMode = 'analysis_prep';
+        useUI.getState().setLayoutMode(newMode);
+        if (DEBUG_PORTAL) console.log('[DEBUG_PORTAL] Layout mode changed to:', newMode);
+      }
+      // If brief panel is open, close it (optional, maintain your existing state)
+      setBriefOpen(false);
+      // Inject prelude message via event (chat handles rendering) unless portal is enabled
+      if (!ENABLE_BRC_PORTAL) {
+        window.dispatchEvent(new CustomEvent("briki:analysis-prep"));
+      } else {
+        // In portal mode, dispatch narration event for the chat
+        const detail = (e as CustomEvent).detail;
+        if (detail?.name && detail?.size) {
+          window.dispatchEvent(new CustomEvent("briki:portal-prep-narration", {
+            detail: { fileName: detail.name, fileSize: detail.size }
+          }));
+        }
+      }
+    };
+    window.addEventListener("briki:pdf-selected", onPdf);
+    return () => window.removeEventListener("briki:pdf-selected", onPdf);
+  }, []);
+
+  // Handle briki:start-analysis to kick off analysis with instructions
+  useEffect(() => {
+    const onStart = async (ev: Event) => {
+      if (DEBUG_PORTAL) {
+        console.log('[DEBUG_PORTAL] Start analysis event fired');
+        console.log('[DEBUG_PORTAL] Current layoutMode:', useUI.getState().layoutMode);
+      }
+      try {
+        const detail = (ev as CustomEvent).detail || {};
+        const { file, note, focusAreas } = useAnalyzer.getState();
+        if (!file) {
+          console.warn('No file selected for analysis');
+          return;
+        }
+        if (DEBUG_PORTAL) {
+          console.log('[DEBUG_PORTAL] Starting analysis with file:', file.name);
+          console.log('[DEBUG_PORTAL] Focus areas:', focusAreas);
+        }
+        // Set phase to analyzing
+        setUiPhase('analyzing_pdf');
+        // Optional: flip layout to running/focus
+        try {
+          telemetry.track(telemetry.events.LAYOUT_MODE_CHANGED || 'layout_mode_changed', {
+            from: useUI.getState().layoutMode,
+            to: ENABLE_BRC_PORTAL ? 'analysis_running' : 'analysis_focus'
+          });
+          if (ENABLE_BRC_PORTAL && (telemetry as any)?.events?.RUN_STARTED) {
+            telemetry.track((telemetry as any).events.RUN_STARTED, {});
+          }
+        } catch {}
+        const runningMode = ENABLE_BRC_PORTAL ? 'analysis_running' : 'analysis_focus';
+        useUI.getState().setLayoutMode(runningMode);
+        if (DEBUG_PORTAL) {
+          console.log('[DEBUG_PORTAL] Layout mode changed to:', runningMode);
+        }
+
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('instructions', JSON.stringify({ note, focusAreas }));
+
+        const controller = new AbortController();
+        try { useAnalyzer.getState().setAbortController(controller); } catch {}
+        try {
+          const res = await fetch('/api/ai/analyze-policy', { method: 'POST', body: fd, signal: controller.signal });
+          const data = res.ok ? await res.json() : { analysisSummary: 'Análisis completado.' };
+          // Store uploadId for polling
+          const uid = (data && data.uploadId) ? String(data.uploadId) : null;
+          if (uid) { try { useAnalyzer.getState().setUploadId(uid); } catch {} }
+          // Start polling status in portal mode
+          if (ENABLE_BRC_PORTAL && uid) {
+            // Immediate flip to running already happened; emit first tick
+            window.dispatchEvent(new CustomEvent('analysis:progress', { detail: { uploadId: uid, status: 'queued', progress: 10 } }));
+            try { telemetry.track(telemetry.events.RUN_PROGRESS, { uploadId: uid, status: 'queued', progress: 10 }); } catch {}
+          }
+        } catch (e: any) {
+          // aborted or failed
+          if (e?.name === 'AbortError') {
+            try { telemetry.track(telemetry.events.ANALYZER_CANCELLED, {}); } catch {}
+          } else {
+            console.error('Error starting analysis', e);
+          }
+        } finally {
+          try { useAnalyzer.getState().setAbortController(null); } catch {}
+        }
+
+        // Move to processing after request sent
+        setUiPhase('processing');
+
+        // In portal mode, transition to results is handled by poller in PortalRunning
+
+        // In portal mode, defer assistant message injection until result is ready (handled by poller). For non-portal, keep existing message.
+        if (!ENABLE_BRC_PORTAL) {
+          const structuredMessage = {
+            role: 'assistant',
+            content: 'Análisis completado.',
+            type: 'analysis_results',
+            analysis: null,
+            timestamp: new Date().toISOString()
+          };
+          window.dispatchEvent(new CustomEvent('briki:assistant-message', { detail: structuredMessage }));
+        }
+      } catch (err) {
+        console.error('Error starting analysis', err);
+      }
+    };
+    window.addEventListener('briki:start-analysis', onStart);
+    return () => window.removeEventListener('briki:start-analysis', onStart);
+  }, [setUiPhase]);
 
   // Create proposal handler - must be declared before useEffect that references it
   const handleCreateProposal = useCallback(async () => {
@@ -175,7 +323,7 @@ export default function AssistantPage() {
 
       {/* Main workspace */}
       <div
-        className="container max-w-7xl mx-auto px-4 pb-10 pt-[calc(var(--nav-h,64px)+16px)]"
+        className="container max-w-6xl mx-auto px-4 pb-10 pt-[calc(var(--nav-h,64px)+16px)]"
         style={{
           ['--nav-h' as any]: '64px',       // keep or compute dynamically
           ['--hdr-h' as any]: '0px',         // no header strip now
@@ -183,9 +331,28 @@ export default function AssistantPage() {
       >
         <section className="relative">
           {/* header + grid go inside here */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[calc(100vh-var(--nav-h)-var(--hdr-h))]">
+          <div className={cn(
+            "grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[calc(100vh-var(--nav-h)-var(--hdr-h))]",
+            isPortalMode && "bg-gradient-to-b from-[var(--briki-from)]/6 via-transparent to-[var(--briki-to)]/8"
+          )}>
           {/* Left rail: results */}
-          <section ref={briefSectionRef} className="lg:col-span-4 space-y-4">
+          {!isPortalMode && (
+            <motion.section 
+              ref={briefSectionRef} 
+              className={cn(
+                (layoutMode === "analysis_prep") ? "hidden lg:block lg:col-span-1" : "lg:col-span-4",
+                "space-y-4"
+              )}
+              style={(layoutMode === "analysis_prep") ? { width: 48 } : undefined}
+              aria-hidden={(layoutMode === "analysis_prep") ? "true" : "false"}
+              initial={false}
+              animate={layoutMode === 'analysis_prep' ? { opacity: 1, x: 0 } : { opacity: 1, x: 0 }}
+              transition={{ type: 'spring', stiffness: 240, damping: 28 }}
+            >
+            {layoutMode === "analysis_prep" ? (
+              <IconRail />
+            ) : (
+              <>
             {/* Brief Card - Always visible */}
             <Card className="rounded-xl border bg-card overflow-hidden relative">
               <CardHeader className="flex flex-row items-center justify-between gap-2 p-5 sm:p-6">
@@ -401,12 +568,42 @@ export default function AssistantPage() {
                 </CardContent>
               </Card>
             )}
-          </section>
+              </>
+            )}
+            </motion.section>
+          )}
+
+          {/* Portal container */}
+          {isPortalMode && (
+            <motion.main className="col-span-12 lg:col-span-8" initial={false} animate={{ opacity: 1 }} transition={{ type:'spring', stiffness:240, damping:28 }}>
+              {useUI.getState().layoutMode === 'analysis_running' ? (
+                (() => {
+                  const uid = (useAnalyzer.getState().uploadId || '') as string;
+                  return uid ? <PortalRunning uploadId={uid} /> : <PortalPrep />;
+                })()
+              ) : (
+                <PortalPrep />
+              )}
+            </motion.main>
+          )}
 
           {/* Right rail: chat */}
-          <aside className="lg:col-span-8">
-            <div
+          <motion.aside className={cn(
+            isPortalMode
+              ? "col-span-12 lg:col-span-4 lg:border-l lg:border-muted lg:pl-6 lg:bg-muted/5"
+              : (layoutMode === "analysis_prep")
+                ? "lg:col-span-11"
+                : "lg:col-span-8"
+          )}
+            initial={false}
+            animate={{ opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 240, damping: 28 }}
+          >
+            <motion.div
               className="rounded-xl border bg-card flex flex-col overflow-hidden h-[70vh] lg:h-[calc(100vh-var(--nav-h)-var(--hdr-h)-24px)] p-0"
+              initial={false}
+              animate={{ opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 240, damping: 28 }}
               // 70vh on small screens; on lg+ we consume viewport height minus navbar+header and a small offset
             >
               {/* Proposal CTA bar */}
@@ -426,8 +623,8 @@ export default function AssistantPage() {
                 mode="embedded"
                 initialSeed={brief && shortlist.length ? { brief, shortlist } : null}
               />
-            </div>
-          </aside>
+            </motion.div>
+          </motion.aside>
           </div>
         </section>
       </div>

@@ -43,5 +43,14 @@ export const telemetry = {
     ANALYZER_RUN_FAILED: 'analyzer_run_failed',
     BRIEF_EDITED: 'brief_edited',
     EMPTY_STATE_CLICKED: 'empty_state_clicked',
+    ANALYZER_NOTE_ADDED: 'analyzer_note_added',
+    ANALYZER_FOCUS_TOGGLED: 'analyzer_focus_toggled',
+    ANALYZER_START: 'analyzer_start',
+    LAYOUT_MODE_CHANGED: 'layout_mode_changed',
+    ANALYZER_CANCELLED: 'analyzer_cancelled',
+    PORTAL_OPENED: 'portal_opened',
+    RUN_STARTED: 'run_started',
+    RUN_COMPLETED: 'run_completed',
+    RUN_PROGRESS: 'run_progress',
   }
 };
