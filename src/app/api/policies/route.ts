@@ -5,15 +5,13 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { inferStoragePathFromUrl } from '@/lib/storage';
+import { POLICY_BUCKET } from '@/lib/buckets';
 
 // Force Node.js runtime for NextAuth/Supabase compatibility
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const serverSupabase = createServerSupabaseClient();
 
 // Validation schema for save policy request (final)
 const SavePolicySchema = z.object({
@@ -44,7 +42,7 @@ const SavePolicySchema = z.object({
 async function getAuthUserIdByEmail(email: string): Promise<string | null> {
   try {
     // listUsers paginates; for our small preview env, first page is fine
-    const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const { data, error } = await serverSupabase.auth.admin.listUsers({ page: 1, perPage: 200 });
     if (error) {
       console.error('[policies] admin.listUsers error', error);
       return null;
@@ -86,7 +84,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build query (filter by Supabase auth user id)
-    let query = supabase
+    let query = serverSupabase
       .from("saved_policies")
       .select("*", { count: 'exact' })
       .eq("user_id", authUserId)
@@ -188,7 +186,7 @@ export async function POST(request: NextRequest) {
     let authUserId = await getAuthUserIdByEmail(email);
     if (!authUserId) {
       // Create a corresponding auth user to satisfy FK (preview-friendly). Email confirmed to avoid invites.
-      const { data: created, error: createErr } = await supabase.auth.admin.createUser({ email, email_confirm: true });
+      const { data: created, error: createErr } = await serverSupabase.auth.admin.createUser({ email, email_confirm: true });
       if (createErr || !created?.user?.id) {
         console.error('[policies.save] create auth user failed', createErr);
         return NextResponse.json({ error: 'auth_user_missing' }, { status: 401 });
@@ -252,7 +250,7 @@ export async function POST(request: NextRequest) {
       if (storage_path) {
         try {
           const { data: signed } = await serverSupabase.storage
-            .from('policy-documents')
+            .from(POLICY_BUCKET)
             .createSignedUrl(storage_path, 60 * 60 * 24 * 30);
           pdf_url = signed?.signedUrl || uploadRow.pdf_url;
           if (process.env.NODE_ENV !== 'production') {
@@ -292,7 +290,7 @@ export async function POST(request: NextRequest) {
         storage_path = providedStoragePath;
         try {
           const { data: signed } = await serverSupabase.storage
-            .from('policy-documents')
+            .from(POLICY_BUCKET)
             .createSignedUrl(storage_path, 60 * 60 * 24 * 30);
           pdf_url = signed?.signedUrl || providedPdfUrl || null;
           if (process.env.NODE_ENV !== 'production') {
@@ -355,15 +353,28 @@ export async function POST(request: NextRequest) {
         const filename = `${session.user.id}/${Date.now()}_${custom_name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
         
         // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("policy-documents")
+        if (process.env.NODE_ENV !== 'production') {
+          try {
+            const { data } = await serverSupabase.storage.listBuckets();
+            console.log('[policies] Available buckets:', data?.map((b: any) => b.name));
+          } catch (e: any) {
+            console.log('[policies] listBuckets error:', e?.message || String(e));
+          }
+        }
+
+        const { data: uploadData, error: uploadError } = await serverSupabase.storage
+          .from(POLICY_BUCKET)
           .upload(filename, buffer, {
             contentType: "application/pdf",
             upsert: false
           });
 
         if (uploadError) {
-          console.error("Error uploading PDF:", uploadError);
+          console.error('[policies] Storage upload failed', {
+            bucket: POLICY_BUCKET,
+            isServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+            error: uploadError
+          });
           const code = (uploadError as any)?.statusCode ?? (uploadError as any)?.code ?? 'storage_upload_error';
           const message = (uploadError as any)?.message ?? 'Unknown storage error';
           return NextResponse.json(
@@ -375,13 +386,13 @@ export async function POST(request: NextRequest) {
         storage_path = uploadData.path as string;
         // Prefer signed URL, fallback to public
         try {
-          const { data: signed } = await supabase.storage
-            .from('policy-documents')
+          const { data: signed } = await serverSupabase.storage
+            .from(POLICY_BUCKET)
             .createSignedUrl(storage_path, 60 * 60);
           pdf_url = signed?.signedUrl ?? null;
         } catch {
-          const { data: urlData } = supabase.storage
-            .from('policy-documents')
+          const { data: urlData } = await serverSupabase.storage
+            .from(POLICY_BUCKET)
             .getPublicUrl(storage_path);
           pdf_url = urlData.publicUrl;
         }
@@ -412,7 +423,7 @@ export async function POST(request: NextRequest) {
         : null;
 
     // Insert policy record (omit 'analysis' column)
-    const { data: policy, error: insertError } = await supabase
+    const { data: policy, error: insertError } = await serverSupabase
       .from("saved_policies")
       .insert({
         user_id: authUserId,
@@ -431,7 +442,7 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error("[policies.save] insert error (full payload)", { code: insertError.code, message: insertError.message });
       // Fallback: insert minimal shape for DBs missing JSON columns (preview envs)
-      const { data: policy2, error: insertError2 } = await supabase
+      const { data: policy2, error: insertError2 } = await serverSupabase
         .from('saved_policies')
         .insert({
           user_id: authUserId,

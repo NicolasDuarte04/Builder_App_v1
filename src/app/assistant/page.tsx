@@ -148,7 +148,7 @@ export default function AssistantPage() {
         }
         // Set phase to analyzing
         setUiPhase('analyzing_pdf');
-        // Optional: flip layout to running/focus
+        // Immediate optimistic UI update - flip layout before making request
         try {
           telemetry.track(telemetry.events.LAYOUT_MODE_CHANGED || 'layout_mode_changed', {
             from: useUI.getState().layoutMode,
@@ -334,7 +334,7 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-build-id={process.env.NEXT_PUBLIC_BUILD_ID || ''}>
       <BootOverlay show={boot} />
 
       {/* Main workspace */}

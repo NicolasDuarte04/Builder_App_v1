@@ -3,15 +3,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { POLICY_BUCKET } from '@/lib/buckets';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const serverSupabase = createServerSupabaseClient();
 
 async function getAuthUserIdByEmail(email: string): Promise<string | null> {
   try {
-    const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const { data, error } = await serverSupabase.auth.admin.listUsers({ page: 1, perPage: 200 });
     if (error) return null;
     const match = data.users.find((u: any) => (u.email || '').toLowerCase() === email.toLowerCase());
     return match?.id ?? null;
@@ -43,7 +42,7 @@ export async function GET(
       );
     }
 
-    const { data: policy, error } = await supabase
+    const { data: policy, error } = await serverSupabase
       .from("saved_policies")
       .select("id, custom_name, insurer_name, policy_type, created_at, pdf_url, storage_path, extracted_data")
       .eq("id", params.id)
@@ -107,8 +106,8 @@ export async function DELETE(
 
     // Delete from storage if exists
     if (policy.storage_path) {
-      const { error: storageError } = await supabase.storage
-        .from("policy-documents")
+      const { error: storageError } = await serverSupabase.storage
+        .from(POLICY_BUCKET)
         .remove([policy.storage_path]);
 
       if (storageError) {
@@ -118,7 +117,7 @@ export async function DELETE(
     }
 
     // Delete the policy record
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await serverSupabase
       .from("saved_policies")
       .delete()
       .eq("id", params.id)

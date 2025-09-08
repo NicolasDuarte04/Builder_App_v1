@@ -8,6 +8,7 @@ export interface PolicyUpload {
   storage_path: string | null;
   pdf_url: string | null;
   extraction_method?: string | null;
+  extracted_text?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
   // Optional fields referenced by UI (PolicyHistory)
@@ -15,6 +16,19 @@ export interface PolicyUpload {
   status?: string | null;
   ai_summary?: string | null;
   error_message?: string | null;
+  // Enhanced optional metadata used by analyzer route
+  insurer_name?: string;
+  insurer_contact?: string;
+  emergency_lines?: string[];
+  policy_start_date?: string | null;
+  policy_end_date?: string | null;
+  policy_link?: string | null;
+  renewal_reminders?: boolean;
+  legal_obligations?: string[];
+  compliance_notes?: string[];
+  coverage_geography?: string;
+  claim_instructions?: string[];
+  analysis_language?: string;
 }
 
 export async function getPolicyUploadById(client: SupabaseClient, id: string) {

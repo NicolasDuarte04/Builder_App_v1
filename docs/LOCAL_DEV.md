@@ -43,3 +43,13 @@ brew install poppler
 ```
 
 If native errors persist, keep thumbnails disabled (default) — OCR and analysis still work.
+
+## Assistant route (dev) — handling ChunkLoadError
+
+- `app/assistant/error.tsx` must be a Client Component (starts with `'use client';`). Keep it minimal and self-contained.
+- If you see `ChunkLoadError` for `/_next/static/chunks/app/assistant/*.js` during development:
+  1. Hard reload with cache disabled (Cmd/Ctrl+Shift+R)
+  2. Bump `NEXT_PUBLIC_BUILD_ID` in `.env.local`, then restart `npm run dev`
+  3. As a last resort: `rm -rf .next && npm run dev`
+
+The assistant page root includes `data-build-id` so you can force a fresh chunk request by changing `NEXT_PUBLIC_BUILD_ID`.

@@ -16,7 +16,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { parseCopMoney } from '@/lib/money';
-import { createHmac } from 'crypto';
+import { signUploadId } from '@/lib/status-signature';
+import { POLICY_BUCKET } from '@/lib/buckets';
 
 // Force Node.js runtime for NextAuth/Supabase compatibility
 export const runtime = 'nodejs';
@@ -112,10 +113,18 @@ export async function POST(request: NextRequest) {
     // Initialize server Supabase client
     try {
       serverSupabase = createServerSupabaseClient();
+      if (process.env.NODE_ENV !== 'production') {
+        try {
+          const { data: buckets } = await serverSupabase.storage.listBuckets();
+          console.log('[analyze-policy] Available buckets:', buckets?.map((b: any) => b.name));
+        } catch (e: any) {
+          console.log('[analyze-policy] listBuckets error:', e?.message || String(e));
+        }
+      }
     } catch (error: any) {
       console.error('❌ Failed to create server Supabase client:', error?.message || error);
       return NextResponse.json(
-        { error: 'server_db_not_configured', message: String(error?.message || 'Missing envs') },
+        { error: 'server_db_not_configured', message: String(error?.message || error) },
         { status: 500 }
       );
     }
@@ -213,21 +222,25 @@ export async function POST(request: NextRequest) {
         const buffer = Buffer.from(arrayBuffer);
         const safeName = `${userId || 'guest'}/${Date.now()}_${(file.name || 'policy').replace(/[^a-zA-Z0-9._-]/g, '_')}`;
         const { data: uploadData, error: storageError } = await serverSupabase.storage
-          .from('policy-documents')
+          .from(POLICY_BUCKET)
           .upload(safeName, buffer, { contentType: 'application/pdf', upsert: false });
         if (storageError) {
-          console.warn('⚠️ Failed to upload PDF to storage:', storageError);
+          console.error('[analyze-policy] Storage upload failed', {
+            bucket: POLICY_BUCKET,
+            isServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+            error: storageError
+          });
         } else {
           storagePath = uploadData.path;
           try {
             const { data: signed } = await serverSupabase.storage
-              .from('policy-documents')
+              .from(POLICY_BUCKET)
               .createSignedUrl(storagePath, 60 * 60 * 24 * 7);
             pdfPublicUrl = signed?.signedUrl || null;
           } catch (sigErr) {
             console.warn('⚠️ Could not create signed URL, falling back to public URL (if bucket is public)', sigErr);
             const { data: urlData } = serverSupabase.storage
-              .from('policy-documents')
+              .from(POLICY_BUCKET)
               .getPublicUrl(storagePath);
             pdfPublicUrl = urlData.publicUrl;
           }
@@ -244,6 +257,11 @@ export async function POST(request: NextRequest) {
       } catch (e) {
         console.warn('⚠️ Exception while uploading original PDF to storage (continuing):', e);
       }
+
+      // Update status to extracting
+      await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
+        status: 'extracting' as any,
+      });
 
       // Extract text from PDF with OCR fallback
       console.log('📄 Extracting text from PDF...');
@@ -275,16 +293,21 @@ export async function POST(request: NextRequest) {
         console.log('✅ PDF text extracted using standard method, length:', pdfText.length);
       }
 
-      // Update record with extracted text
+      // Update record with extracted text and move to analyzing phase
       await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
         extracted_text: pdfText,
-        status: 'processing',
+        status: 'analyzing' as any,
         extraction_method: extractionMethod,
       } as any);
 
       // Analyze with AI using generateObject for structured output (supports chunking + merge)
       console.log('🤖 Starting AI analysis...');
       const analysis = await analyzePolicyWithAIMultiChunk(pdfText, oai);
+
+      // Update status to summarizing
+      await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
+        status: 'summarizing' as any,
+      });
 
       // Post-process and validate
       const finalAnalysis = postProcessAnalysis(pdfText, analysis, {
@@ -337,8 +360,7 @@ export async function POST(request: NextRequest) {
       } : undefined;
 
       // Compute guest status signature (HMAC) so guests can poll /status
-      const statusSecret = process.env.UPLOAD_STATUS_SECRET || '';
-      const statusSig = createHmac('sha256', statusSecret).update(uploadRecord.id).digest('hex');
+      const statusSig = signUploadId(uploadRecord.id);
 
       if (process.env.NODE_ENV !== 'production') {
         console.log(`[analyze] uploadId=${uploadRecord.id}, uploaderUserId=${userId}`);

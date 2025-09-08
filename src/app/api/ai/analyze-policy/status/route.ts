@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { getPolicyUploadById } from '@/lib/supabase-policy';
-import { createHmac } from 'crypto';
+import { verifyUploadSig } from '@/lib/status-signature';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,8 +12,14 @@ function mapDbStatus(dbStatus?: string | null): { status: 'queued'|'extracting'|
   switch ((dbStatus || '').toLowerCase()) {
     case 'uploading':
       return { status: 'queued', progress: 10 };
+    case 'extracting':
+      return { status: 'extracting', progress: 30 };
+    case 'analyzing':
+      return { status: 'analyzing', progress: 60 };
+    case 'summarizing':
+      return { status: 'summarizing', progress: 85 };
     case 'processing':
-      // coarse mapping; client will smooth Extracting→Analyzing→Summarizing
+      // legacy fallback
       return { status: 'analyzing', progress: 60 };
     case 'completed':
       return { status: 'done', progress: 100 };
@@ -48,12 +54,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'not_found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
     }
 
-    const statusSecret = process.env.UPLOAD_STATUS_SECRET || '';
-    const expectedSig = createHmac('sha256', statusSecret).update(uploadId).digest('hex');
-    const sigOk = !!sig && sig === expectedSig;
-
-    const ownerOk = !!authedUserId && (row.user_id as string | null) === authedUserId;
-    if (!ownerOk && !sigOk) {
+    const isOwner = row.user_id && authedUserId && (row.user_id === authedUserId);
+    const isSigned = verifyUploadSig(uploadId, sig);
+    if (!isOwner && !isSigned) {
       return NextResponse.json({ error: 'forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
     }
 
