@@ -11,4 +11,25 @@ export const ENABLE_PDF_VERIFY: boolean =
     ? String(process.env.NEXT_PUBLIC_ENABLE_PDF_VERIFY || '').toLowerCase() === 'true'
     : false;
 
+export const ENABLE_BRC_PORTAL: boolean =
+  typeof process !== "undefined" &&
+  typeof process.env !== "undefined" &&
+  process.env.NEXT_PUBLIC_BRC_PORTAL_ENABLED === "true";
+
+// Debug flag for portal development
+export const DEBUG_PORTAL: boolean =
+  typeof process !== "undefined" &&
+  typeof process.env !== "undefined" &&
+  String(process.env.NEXT_PUBLIC_DEBUG_PORTAL || '').toLowerCase() === 'true';
+
+// PDF thumbnail generation (requires native modules)
+// Disabled by default on Vercel to avoid build failures
+export const PDF_THUMBS_ENABLED: boolean = (() => {
+  const env = (process?.env?.NEXT_PUBLIC_PDF_THUMBS || '').toLowerCase();
+  if (env === 'off' || env === 'false' || env === '0') return false;
+  // Disable by default on Vercel to avoid native module load
+  if (process?.env?.VERCEL === '1' && env !== 'on' && env !== 'true') return false;
+  return true; // default on in local dev
+})();
+
 

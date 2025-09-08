@@ -1,4 +1,5 @@
 import { PolicyAnalysis } from './pdf-analyzer';
+import { PDF_THUMBS_ENABLED } from '@/lib/featureFlags';
 
 export interface EnhancedPolicyAnalysis extends PolicyAnalysis {
   sourceQuotes: Record<string, string>;
@@ -123,6 +124,12 @@ async function performOCR(file: File): Promise<{ text: string; method: 'ocr' }> 
 async function convertPDFToImages(file: File): Promise<Buffer[]> {
   try {
     console.log('🔄 Converting PDF to images for OCR...');
+    
+    // Check feature flag first
+    if (!PDF_THUMBS_ENABLED) {
+      console.warn('[pdf-thumbs] disabled by flag; skipping image conversion');
+      return [];
+    }
     
     // Try to import pdf-to-png-converter, but handle if it's not available
     try {
