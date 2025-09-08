@@ -111,11 +111,10 @@ export async function POST(request: NextRequest) {
     // Initialize server Supabase client
     try {
       serverSupabase = createServerSupabaseClient();
-    } catch (error) {
-      console.error('❌ Failed to create server Supabase client:', error);
-      console.error('Supabase server env missing. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local');
+    } catch (error: any) {
+      console.error('❌ Failed to create server Supabase client:', error?.message || error);
       return NextResponse.json(
-        { error: 'Database configuration error. Please check server logs.' },
+        { error: 'server_db_not_configured', message: String(error?.message || 'Missing envs') },
         { status: 500 }
       );
     }
