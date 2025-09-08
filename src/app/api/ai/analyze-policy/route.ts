@@ -145,10 +145,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const oai = createOpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const forceOcr = (formData.get('forceOcr') as string) === 'true';
@@ -182,7 +178,7 @@ export async function POST(request: NextRequest) {
 
     // Create initial upload record
     console.log('💾 Creating upload record in database...');
-    // Insert initial upload row directly
+    // Insert initial upload row directly (status: uploading)
     const { data: uploadRecord, error: createErr } = await serverSupabase
       .from('policy_uploads')
       .insert({
@@ -191,6 +187,7 @@ export async function POST(request: NextRequest) {
         storage_path: null,
         pdf_url: null,
         extraction_method: null,
+        status: 'uploading'
       })
       .select()
       .single();
@@ -214,181 +211,143 @@ export async function POST(request: NextRequest) {
     console.log('✅ Upload record created:', uploadRecord.id);
     uploadId = uploadRecord.id;
 
+    // Upload original PDF to Supabase Storage immediately (for traceability)
+    // Keep this before early return so background job can reopen the file via storage
     try {
-      // Upload original PDF to Supabase Storage immediately (for traceability)
+      // Convert File to Buffer
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const safeName = `${userId || 'guest'}/${Date.now()}_${(file.name || 'policy').replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { data: uploadData, error: storageError } = await serverSupabase.storage
+        .from(POLICY_BUCKET)
+        .upload(safeName, buffer, { contentType: 'application/pdf', upsert: false });
+      if (storageError) {
+        console.error('[analyze-policy] Storage upload failed', {
+          bucket: POLICY_BUCKET,
+          isServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+          error: storageError
+        });
+        await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
+          status: 'error',
+          error_message: storageError?.message || 'upload_failed'
+        } as any);
+        return NextResponse.json({ error: 'Storage upload failed' }, { status: 500 });
+      }
+      storagePath = uploadData.path;
       try {
-        // Convert File to Buffer
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const safeName = `${userId || 'guest'}/${Date.now()}_${(file.name || 'policy').replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-        const { data: uploadData, error: storageError } = await serverSupabase.storage
+        const { data: signed } = await serverSupabase.storage
           .from(POLICY_BUCKET)
-          .upload(safeName, buffer, { contentType: 'application/pdf', upsert: false });
-        if (storageError) {
-          console.error('[analyze-policy] Storage upload failed', {
-            bucket: POLICY_BUCKET,
-            isServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-            error: storageError
-          });
-        } else {
-          storagePath = uploadData.path;
-          try {
-            const { data: signed } = await serverSupabase.storage
-              .from(POLICY_BUCKET)
-              .createSignedUrl(storagePath, 60 * 60 * 24 * 7);
-            pdfPublicUrl = signed?.signedUrl || null;
-          } catch (sigErr) {
-            console.warn('⚠️ Could not create signed URL, falling back to public URL (if bucket is public)', sigErr);
-            const { data: urlData } = serverSupabase.storage
-              .from(POLICY_BUCKET)
-              .getPublicUrl(storagePath);
-            pdfPublicUrl = urlData.publicUrl;
-          }
-          // Best-effort: update policy_uploads with pdf_url if column exists
-          try {
-            await serverSupabase
-              .from('policy_uploads')
-              .update({ pdf_url: pdfPublicUrl, storage_path: storagePath, user_id: userId })
-              .eq('id', uploadRecord.id);
-          } catch (e) {
-            console.warn('⚠️ Could not set pdf_url/storage_path (missing columns?):', e);
-          }
-        }
-      } catch (e) {
-        console.warn('⚠️ Exception while uploading original PDF to storage (continuing):', e);
+          .createSignedUrl(storagePath, 60 * 60 * 24 * 7);
+        pdfPublicUrl = signed?.signedUrl || null;
+      } catch (sigErr) {
+        console.warn('⚠️ Could not create signed URL, falling back to public URL (if bucket is public)', sigErr);
+        const { data: urlData } = serverSupabase.storage
+          .from(POLICY_BUCKET)
+          .getPublicUrl(storagePath);
+        pdfPublicUrl = urlData.publicUrl;
       }
-
-      // Update status to extracting
-      await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
-        status: 'extracting' as any,
-      });
-
-      // Extract text from PDF with OCR fallback
-      console.log('📄 Extracting text from PDF...');
-      let pdfText: string;
-      
+      // Best-effort: update policy_uploads with pdf_url if column exists
       try {
-        const enh = await ensureEnhanced();
-        if (forceOcr && enh?.extractTextFromPDFOCROnly) {
-          console.log('🧾 Force OCR is enabled by user');
-          const extractionResult = await enh.extractTextFromPDFOCROnly(file);
-          pdfText = extractionResult.text;
-          extractionMethod = extractionResult.method;
-        } else if (enh?.extractTextFromPDFWithOCR) {
-          // Try enhanced extraction with OCR fallback
-          const extractionResult = await enh.extractTextFromPDFWithOCR(file);
-          pdfText = extractionResult.text;
-          extractionMethod = extractionResult.method;
-        } else {
-          // Fallback to standard analyzer
-          const text = await extractTextFromPDF(file);
-          pdfText = text;
-          extractionMethod = 'text';
-        }
-        console.log(`✅ PDF text extracted using ${extractionMethod}, length: ${pdfText.length}`);
-      } catch (enhancedError) {
-        // If enhanced extraction fails, fall back to standard extraction
-        console.log('⚠️ Enhanced extraction failed, trying standard method...');
-        pdfText = await extractTextFromPDF(file);
-        console.log('✅ PDF text extracted using standard method, length:', pdfText.length);
+        await serverSupabase
+          .from('policy_uploads')
+          .update({ pdf_url: pdfPublicUrl, storage_path: storagePath, user_id: userId })
+          .eq('id', uploadRecord.id);
+      } catch (e) {
+        console.warn('⚠️ Could not set pdf_url/storage_path (missing columns?):', e);
       }
 
-      // Update record with extracted text and move to analyzing phase
-      await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
-        extracted_text: pdfText,
-        status: 'analyzing' as any,
-        extraction_method: extractionMethod,
-      } as any);
+      // Fire-and-forget background job for extraction/analysis/summarization
+      const bgUserId = userId;
+      const bgForceOcr = forceOcr;
+      const bgStoragePath = storagePath;
+      const bgPdfUrl = pdfPublicUrl;
+      setImmediate(async () => {
+        try {
+          // Move to extracting
+          await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, { status: 'extracting' } as any);
 
-      // Analyze with AI using generateObject for structured output (supports chunking + merge)
-      console.log('🤖 Starting AI analysis...');
-      const analysis = await analyzePolicyWithAIMultiChunk(pdfText, oai);
+          // Extract text
+          console.log('📄 [bg] Extracting text from PDF...');
+          let pdfText: string;
+          try {
+            const enh = await ensureEnhanced();
+            if (bgForceOcr && enh?.extractTextFromPDFOCROnly) {
+              const extractionResult = await enh.extractTextFromPDFOCROnly(file);
+              pdfText = extractionResult.text;
+              extractionMethod = extractionResult.method;
+            } else if (enh?.extractTextFromPDFWithOCR) {
+              const extractionResult = await enh.extractTextFromPDFWithOCR(file);
+              pdfText = extractionResult.text;
+              extractionMethod = extractionResult.method;
+            } else {
+              const text = await extractTextFromPDF(file);
+              pdfText = text;
+              extractionMethod = 'text';
+            }
+          } catch (e) {
+            console.log('⚠️ [bg] Enhanced extraction failed, trying standard method...');
+            pdfText = await extractTextFromPDF(file);
+          }
 
-      // Update status to summarizing
-      await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
-        status: 'summarizing' as any,
-      });
+          await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
+            extracted_text: pdfText,
+            status: 'analyzing',
+            extraction_method: extractionMethod,
+          } as any);
 
-      // Post-process and validate
-      const finalAnalysis = postProcessAnalysis(pdfText, analysis, {
-        extractionMethod,
-        pdfPublicUrl,
-      });
-      console.log('✅ AI analysis completed');
-      
-      // Detect language for metadata
-      const isSpanish = /[áéíóúñü]/i.test(pdfText) || 
-                       /\b(el|la|los|las|de|del|con|por|para|en|es|son|está|están|tiene|tienen|puede|pueden|debe|deben|ser|estar|hacer|tener|ir|venir|dar|ver|saber|querer|poder|deber|hay|está|están|muy|más|menos|bien|mal|bueno|buena|malo|mala|grande|pequeño|nuevo|viejo|alto|bajo|largo|corto|ancho|estrecho|fuerte|débil|rico|pobre|feliz|triste|contento|enojado|cansado|despierto|limpio|sucio|caliente|frío|caluroso|fresco|seco|mojado|lleno|vacío|abierto|cerrado|nuevo|usado|caro|barato|fácil|difícil|importante|necesario|posible|imposible|correcto|incorrecto|verdadero|falso|cierto|seguro|claro|oscuro|brillante|opaco|transparente|visible|invisible|público|privado|nacional|internacional|local|global|especial|general|particular|común|raro|normal|extraño|usual|habitual|frecuente|ocasional|siempre|nunca|a veces|a menudo|raramente|casi|apenas|exactamente|aproximadamente|cerca|lejos|dentro|fuera|arriba|abajo|adelante|atrás|izquierda|derecha|centro|medio|mitad|parte|todo|nada|algo|nadie|alguien|cualquiera|cada|cual|cuál|qué|quién|dónde|cuándo|cómo|por qué|cuánto|cuánta|cuántos|cuántas)\b/i.test(pdfText);
-      
-      // Update record with AI summary and enhanced metadata
-      await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
-        ai_summary: JSON.stringify(finalAnalysis),
-        status: 'completed' as const,
-        // Enhanced fields (these will be added by the migration)
-        insurer_name: finalAnalysis.insurer?.name || '',
-        insurer_contact: finalAnalysis.insurer?.contact || '',
-        emergency_lines: finalAnalysis.insurer?.emergencyLines || [],
-        policy_start_date: finalAnalysis.policyManagement?.startDate || null,
-        policy_end_date: finalAnalysis.policyManagement?.endDate || null,
-        policy_link: finalAnalysis.policyManagement?.policyLink || null,
-        renewal_reminders: finalAnalysis.policyManagement?.renewalReminders || false,
-        legal_obligations: finalAnalysis.legal?.obligations || [],
-        compliance_notes: finalAnalysis.legal?.complianceNotes || [],
-        coverage_geography: finalAnalysis.coverage?.geography || 'Colombia',
-        claim_instructions: finalAnalysis.coverage?.claimInstructions || [],
-        analysis_language: isSpanish ? 'Spanish' : 'English'
-      } as any);
+          // AI analysis
+          console.log('🤖 [bg] Starting AI analysis...');
+          const oai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+          const analysis = await analyzePolicyWithAIMultiChunk(pdfText, oai);
 
-      // Debug: summarize extraction & chunk info in dev
-      const debugInfo = process.env.NODE_ENV !== 'production' ? {
-        extraction: {
-          method: extractionMethod,
-          textLength: pdfText.length,
-          head: pdfText.slice(0, 400),
-          tail: pdfText.slice(-400)
-        },
-        chunks: {
-          count: Math.min(splitIntoSemanticChunks(pdfText).length, 5)
-        },
-        analysisStats: {
-          premiumAmount: finalAnalysis?.premium?.amount || 0,
-          premiumTableRows: Array.isArray(finalAnalysis?.premiumTable) ? finalAnalysis.premiumTable.length : 0,
-          quotes: finalAnalysis?.sourceQuotes ? Object.keys(finalAnalysis.sourceQuotes).length : 0,
-          redFlags: Array.isArray(finalAnalysis?.redFlags) ? finalAnalysis.redFlags.length : 0,
-          missingInfo: Array.isArray(finalAnalysis?.missingInfo) ? finalAnalysis.missingInfo.length : 0
+          await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, { status: 'summarizing' } as any);
+
+          const finalAnalysis = postProcessAnalysis(pdfText, analysis, {
+            extractionMethod,
+            pdfPublicUrl: bgPdfUrl || null,
+          });
+
+          const isSpanish = /[áéíóúñü]/i.test(pdfText) || /\b(el|la|los|las|de|del|con|por|para|en|es|son|está|están|tiene|tienen|puede|pueden|debe|deben|ser|estar|hacer|tener|ir|venir|dar|ver|saber|querer|poder|deber|hay|está|están|muy|más|menos|bien|mal|bueno|buena|malo|mala|grande|pequeño|nuevo|viejo|alto|bajo|largo|corto|ancho|estrecho|fuerte|débil|rico|pobre|feliz|triste|contento|enojado|cansado|despierto|limpio|sucio|caliente|frío|caluroso|fresco|seco|mojado|lleno|vacío|abierto|cerrado|nuevo|usado|caro|barato|fácil|difícil|importante|necesario|posible|imposible|correcto|incorrecto|verdadero|falso|cierto|seguro|claro|oscuro|brillante|opaco|transparente|visible|invisible|público|privado|nacional|internacional|local|global|especial|general|particular|común|raro|normal|extraño|usual|habitual|frecuente|ocasional|siempre|nunca|a veces|a menudo|raramente|casi|apenas|exactamente|aproximadamente|cerca|lejos|dentro|fuera|arriba|abajo|adelante|atrás|izquierda|derecha|centro|medio|mitad|parte|todo|nada|algo|nadie|alguien|cualquiera|cada|cual|cuál|qué|quién|dónde|cuándo|cómo|por qué|cuánto|cuánta|cuántos|cuántas)\b/i.test(pdfText);
+
+          await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
+            ai_summary: JSON.stringify(finalAnalysis),
+            status: 'completed' as const,
+            insurer_name: finalAnalysis.insurer?.name || '',
+            insurer_contact: finalAnalysis.insurer?.contact || '',
+            emergency_lines: finalAnalysis.insurer?.emergencyLines || [],
+            policy_start_date: finalAnalysis.policyManagement?.startDate || null,
+            policy_end_date: finalAnalysis.policyManagement?.endDate || null,
+            policy_link: finalAnalysis.policyManagement?.policyLink || null,
+            renewal_reminders: finalAnalysis.policyManagement?.renewalReminders || false,
+            legal_obligations: finalAnalysis.legal?.obligations || [],
+            compliance_notes: finalAnalysis.legal?.complianceNotes || [],
+            coverage_geography: finalAnalysis.coverage?.geography || 'Colombia',
+            claim_instructions: finalAnalysis.coverage?.claimInstructions || [],
+            analysis_language: isSpanish ? 'Spanish' : 'English'
+          } as any);
+        } catch (error: any) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error during analysis';
+          console.error('❌ [bg] Error during analysis:', errorMessage);
+          await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
+            status: 'error',
+            error_message: errorMessage,
+          } as any);
         }
-      } : undefined;
+      });
 
-      // Compute guest status signature (HMAC) so guests can poll /status
+      // Early return 202 with id + signature so client can start polling
       const statusSig = signUploadId(uploadRecord.id);
-
       if (process.env.NODE_ENV !== 'production') {
-        console.log(`[analyze] uploadId=${uploadRecord.id}, uploaderUserId=${userId}`);
+        console.log(`[analyze] early-202 uploadId=${uploadRecord.id}, uploaderUserId=${userId}`);
       }
-      return NextResponse.json({
-        success: true,
-        analysis: finalAnalysis,
-        fileName: file.name,
-        uploadId: uploadRecord.id,
-        statusSig,
-        uploaderUserId: userId,
-        storagePath: storagePath || undefined,
-        extractionMethod: extractionMethod,
-        pdfUrl: pdfPublicUrl || undefined,
-        ...(debugInfo ? { debug: debugInfo } : {})
-      });
-
-    } catch (error) {
-      // Update record with error
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error during analysis';
-      console.error('❌ Error during analysis:', errorMessage);
-      
+      return NextResponse.json({ uploadId: uploadRecord.id, statusSig, status: 'queued' }, { status: 202 });
+    } catch (e) {
+      console.warn('⚠️ Exception during early storage/upload phase:', e);
       await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
         status: 'error',
-        error_message: errorMessage,
+        error_message: (e as any)?.message || 'upload_phase_failed'
       } as any);
-
-      throw error;
+      return NextResponse.json({ error: 'upload_phase_failed' }, { status: 500 });
     }
 
   } catch (error: any) {
