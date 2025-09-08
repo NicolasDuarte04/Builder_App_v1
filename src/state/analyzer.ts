@@ -7,11 +7,13 @@ type AnalyzerState = {
   note: string;
   focusAreas: string[];
   uploadId?: string | null;
+  statusSig?: string | null;
   abortController?: AbortController | null;
   setFile: (f: File | null) => void;
   setNote: (note: string) => void;
   toggleFocusArea: (key: string) => void;
   setUploadId: (id: string | null) => void;
+  setStatusSig: (s: string | null) => void;
   setAbortController: (c: AbortController | null) => void;
   clear: () => void;
 };
@@ -22,6 +24,7 @@ export const useAnalyzer = create<AnalyzerState>((set, get) => ({
   note: '',
   focusAreas: [],
   uploadId: null,
+  statusSig: null,
   abortController: null,
   setFile: (f) => {
     const old = get().previewUrl;
@@ -38,10 +41,11 @@ export const useAnalyzer = create<AnalyzerState>((set, get) => ({
     } as Partial<AnalyzerState> as AnalyzerState;
   }),
   setUploadId: (id) => set({ uploadId: id }),
+  setStatusSig: (s) => set({ statusSig: s }),
   setAbortController: (c) => set({ abortController: c }),
   clear: () => {
     const old = get().previewUrl;
     if (old) URL.revokeObjectURL(old);
-    set({ file: null, previewUrl: undefined, note: '', focusAreas: [], uploadId: null, abortController: null });
+    set({ file: null, previewUrl: undefined, note: '', focusAreas: [], uploadId: null, statusSig: null, abortController: null });
   },
 }));

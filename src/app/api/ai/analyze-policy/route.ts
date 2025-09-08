@@ -16,6 +16,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { parseCopMoney } from '@/lib/money';
+import { createHmac } from 'crypto';
 
 // Force Node.js runtime for NextAuth/Supabase compatibility
 export const runtime = 'nodejs';
@@ -119,19 +120,10 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Get the authenticated session (required in all environments)
+    // Optional session: allow guest analysis
     const session = await getServerSession(authOptions);
     console.log('🔐 Session check:', session ? 'Authenticated' : 'Not authenticated');
-
-    if (!session || !session.user || !(session.user as any).id) {
-      console.log('❌ No valid session found - returning 401');
-      return NextResponse.json(
-        { error: 'unauthorized', message: 'Sign in required to analyze policies', where: 'session-check' },
-        { status: 401 }
-      );
-    }
-
-    const userId: string = (session.user as any).id;
+    const userId: string | null = (session?.user as any)?.id ?? null;
     const isDevelopment = process.env.NODE_ENV !== 'production';
     console.log('🔐 Using user ID:', userId, isDevelopment ? '(development mode)' : '(production mode)');
     
@@ -219,7 +211,7 @@ export async function POST(request: NextRequest) {
         // Convert File to Buffer
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        const safeName = `${userId}/${Date.now()}_${(file.name || 'policy').replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+        const safeName = `${userId || 'guest'}/${Date.now()}_${(file.name || 'policy').replace(/[^a-zA-Z0-9._-]/g, '_')}`;
         const { data: uploadData, error: storageError } = await serverSupabase.storage
           .from('policy-documents')
           .upload(safeName, buffer, { contentType: 'application/pdf', upsert: false });
@@ -288,8 +280,7 @@ export async function POST(request: NextRequest) {
         extracted_text: pdfText,
         status: 'processing',
         extraction_method: extractionMethod,
-        user_id: userId
-      });
+      } as any);
 
       // Analyze with AI using generateObject for structured output (supports chunking + merge)
       console.log('🤖 Starting AI analysis...');
@@ -310,7 +301,6 @@ export async function POST(request: NextRequest) {
       await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
         ai_summary: JSON.stringify(finalAnalysis),
         status: 'completed' as const,
-        user_id: userId,
         // Enhanced fields (these will be added by the migration)
         insurer_name: finalAnalysis.insurer?.name || '',
         insurer_contact: finalAnalysis.insurer?.contact || '',
@@ -324,7 +314,7 @@ export async function POST(request: NextRequest) {
         coverage_geography: finalAnalysis.coverage?.geography || 'Colombia',
         claim_instructions: finalAnalysis.coverage?.claimInstructions || [],
         analysis_language: isSpanish ? 'Spanish' : 'English'
-      });
+      } as any);
 
       // Debug: summarize extraction & chunk info in dev
       const debugInfo = process.env.NODE_ENV !== 'production' ? {
@@ -346,6 +336,10 @@ export async function POST(request: NextRequest) {
         }
       } : undefined;
 
+      // Compute guest status signature (HMAC) so guests can poll /status
+      const statusSecret = process.env.UPLOAD_STATUS_SECRET || '';
+      const statusSig = createHmac('sha256', statusSecret).update(uploadRecord.id).digest('hex');
+
       if (process.env.NODE_ENV !== 'production') {
         console.log(`[analyze] uploadId=${uploadRecord.id}, uploaderUserId=${userId}`);
       }
@@ -354,6 +348,7 @@ export async function POST(request: NextRequest) {
         analysis: finalAnalysis,
         fileName: file.name,
         uploadId: uploadRecord.id,
+        statusSig,
         uploaderUserId: userId,
         storagePath: storagePath || undefined,
         extractionMethod: extractionMethod,
@@ -369,8 +364,7 @@ export async function POST(request: NextRequest) {
       await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
         status: 'error',
         error_message: errorMessage,
-        user_id: (session?.user as any)?.id || null
-      });
+      } as any);
 
       throw error;
     }

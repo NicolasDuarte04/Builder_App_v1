@@ -74,7 +74,10 @@ export default function PortalRunning({ uploadId }: Props) {
     if (pollRef.current != null) return;
     pollRef.current = window.setInterval(async () => {
       try {
-        const res = await fetch(`/api/ai/analyze-policy/status?uploadId=${encodeURIComponent(uploadId)}`, { cache: 'no-store' });
+        const { statusSig } = useAnalyzer.getState() as any;
+        const qs = new URLSearchParams({ uploadId: String(uploadId) });
+        if (statusSig) qs.set('sig', String(statusSig));
+        const res = await fetch(`/api/ai/analyze-policy/status?${qs.toString()}`, { cache: 'no-store' });
         if (!res.ok) {
           stopPolling();
           telemetry.track(telemetry.events.RUN_FAILED || 'run_failed', { uploadId, status: res.status });

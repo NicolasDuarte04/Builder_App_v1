@@ -189,7 +189,9 @@ export default function AssistantPage() {
           const data = await res.json();
           // Store uploadId for polling
           const uid = (data && data.uploadId) ? String(data.uploadId) : null;
+          const sig = data?.statusSig ? String(data.statusSig) : null;
           if (uid) { try { useAnalyzer.getState().setUploadId(uid); } catch {} }
+          if (sig) { try { useAnalyzer.getState().setStatusSig(sig); } catch {} }
           // Start polling status in portal mode
           if (ENABLE_BRC_PORTAL && uid) {
             // Immediate flip to running already happened; emit first tick
