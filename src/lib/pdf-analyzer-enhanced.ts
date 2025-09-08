@@ -133,7 +133,9 @@ async function convertPDFToImages(file: File): Promise<Buffer[]> {
     
     // Try to import pdf-to-png-converter, but handle if it's not available
     try {
-      const { pdf } = await import('pdf-to-png-converter');
+      // Use computed module name to avoid bundler resolution in environments where it's not installed
+      const moduleName = 'pdf-to-png-converter';
+      const { pdf } = await import(moduleName as any);
       
       // Convert File to Buffer
       const arrayBuffer = await file.arrayBuffer();

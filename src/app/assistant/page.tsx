@@ -172,7 +172,21 @@ export default function AssistantPage() {
         try { useAnalyzer.getState().setAbortController(controller); } catch {}
         try {
           const res = await fetch('/api/ai/analyze-policy', { method: 'POST', body: fd, signal: controller.signal });
-          const data = res.ok ? await res.json() : { analysisSummary: 'Análisis completado.' };
+          if (!res.ok) {
+            let reason: any = `(${res.status})`;
+            try { const j = await res.json(); reason = j?.message || j?.error || reason; } catch {}
+            try {
+              const { toast } = await import('@/hooks/use-toast');
+              toast({
+                title: 'No se pudo iniciar el análisis',
+                description: typeof reason === 'string' ? reason : 'Error del servidor',
+                variant: 'destructive',
+              });
+            } catch {}
+            useUI.getState().setLayoutMode('analysis_portal_prep');
+            return;
+          }
+          const data = await res.json();
           // Store uploadId for polling
           const uid = (data && data.uploadId) ? String(data.uploadId) : null;
           if (uid) { try { useAnalyzer.getState().setUploadId(uid); } catch {} }
