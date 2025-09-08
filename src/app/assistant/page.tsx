@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import IconRail from '@/components/assistant/IconRail';
 import PortalPrep from '@/components/assistant/portal/PortalPrep';
 import PortalRunning from '@/components/assistant/portal/PortalRunning';
+import { flushSync } from 'react-dom';
 
 export default function AssistantPage() {
   const router = useRouter();
@@ -149,19 +150,24 @@ export default function AssistantPage() {
         // Set phase to analyzing
         setUiPhase('analyzing_pdf');
         // Immediate optimistic UI update - flip layout before making request
+        const runningMode = ENABLE_BRC_PORTAL ? 'analysis_running' : 'analysis_focus';
+        if (DEBUG_PORTAL) { try { performance.mark('click.start'); } catch {} }
         try {
           telemetry.track(telemetry.events.LAYOUT_MODE_CHANGED || 'layout_mode_changed', {
             from: useUI.getState().layoutMode,
-            to: ENABLE_BRC_PORTAL ? 'analysis_running' : 'analysis_focus'
+            to: runningMode
           });
           if (ENABLE_BRC_PORTAL && (telemetry as any)?.events?.RUN_STARTED) {
             telemetry.track((telemetry as any).events.RUN_STARTED, {});
           }
         } catch {}
-        const runningMode = ENABLE_BRC_PORTAL ? 'analysis_running' : 'analysis_focus';
-        useUI.getState().setLayoutMode(runningMode);
+        try {
+          flushSync(() => useUI.getState().setLayoutMode(runningMode));
+        } catch {
+          useUI.getState().setLayoutMode(runningMode);
+        }
         if (DEBUG_PORTAL) {
-          console.log('[DEBUG_PORTAL] Layout mode changed to:', runningMode);
+          console.log('[perf] layout flipped →', runningMode);
         }
 
         const fd = new FormData();

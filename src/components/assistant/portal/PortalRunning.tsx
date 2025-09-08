@@ -37,6 +37,19 @@ export default function PortalRunning({ uploadId }: Props) {
   }), [t]);
 
   useEffect(() => { headingRef.current?.focus(); }, []);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        // perf: first mount of running UI
+        if ((window as any).DEBUG_PORTAL) {
+          performance.mark('ui.running-mounted');
+          const m = performance.measure('click→ui', 'click.start', 'ui.running-mounted');
+          // eslint-disable-next-line no-console
+          console.log('[perf] click→ui(ms)=', (m as any)?.duration?.toFixed?.(1));
+        }
+      } catch {}
+    }
+  }, []);
 
   useEffect(() => {
     const onProgress = (e: Event) => {
@@ -61,6 +74,10 @@ export default function PortalRunning({ uploadId }: Props) {
       const statusLabel = labels[mappedPhase as StepKey] || 'Running';
       const live = liveRef.current; 
       if (live) live.textContent = labels.aria(statusLabel, progress);
+      if ((window as any)?.DEBUG_PORTAL) {
+        // eslint-disable-next-line no-console
+        console.log('[status] →', { status: detail.status, progress: detail.progress });
+      }
     };
     window.addEventListener('analysis:progress', onProgress);
     return () => window.removeEventListener('analysis:progress', onProgress);
