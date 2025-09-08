@@ -10,7 +10,7 @@ async function ensureEnhanced() {
 }
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
-import { updatePolicyUpload } from '@/lib/supabase-policy';
+import { updatePolicyUploadWithClient } from '@/lib/supabase-policy';
 import { z } from 'zod';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -285,7 +285,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Update record with extracted text
-      await updatePolicyUpload(uploadRecord.id, {
+      await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
         extracted_text: pdfText,
         status: 'processing',
         extraction_method: extractionMethod,
@@ -308,7 +308,7 @@ export async function POST(request: NextRequest) {
                        /\b(el|la|los|las|de|del|con|por|para|en|es|son|está|están|tiene|tienen|puede|pueden|debe|deben|ser|estar|hacer|tener|ir|venir|dar|ver|saber|querer|poder|deber|hay|está|están|muy|más|menos|bien|mal|bueno|buena|malo|mala|grande|pequeño|nuevo|viejo|alto|bajo|largo|corto|ancho|estrecho|fuerte|débil|rico|pobre|feliz|triste|contento|enojado|cansado|despierto|limpio|sucio|caliente|frío|caluroso|fresco|seco|mojado|lleno|vacío|abierto|cerrado|nuevo|usado|caro|barato|fácil|difícil|importante|necesario|posible|imposible|correcto|incorrecto|verdadero|falso|cierto|seguro|claro|oscuro|brillante|opaco|transparente|visible|invisible|público|privado|nacional|internacional|local|global|especial|general|particular|común|raro|normal|extraño|usual|habitual|frecuente|ocasional|siempre|nunca|a veces|a menudo|raramente|casi|apenas|exactamente|aproximadamente|cerca|lejos|dentro|fuera|arriba|abajo|adelante|atrás|izquierda|derecha|centro|medio|mitad|parte|todo|nada|algo|nadie|alguien|cualquiera|cada|cual|cuál|qué|quién|dónde|cuándo|cómo|por qué|cuánto|cuánta|cuántos|cuántas)\b/i.test(pdfText);
       
       // Update record with AI summary and enhanced metadata
-      await updatePolicyUpload(uploadRecord.id, {
+      await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
         ai_summary: JSON.stringify(finalAnalysis),
         status: 'completed' as const,
         user_id: userId,
@@ -367,7 +367,7 @@ export async function POST(request: NextRequest) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error during analysis';
       console.error('❌ Error during analysis:', errorMessage);
       
-      await updatePolicyUpload(uploadRecord.id, {
+      await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
         status: 'error',
         error_message: errorMessage,
         user_id: (session?.user as any)?.id || null

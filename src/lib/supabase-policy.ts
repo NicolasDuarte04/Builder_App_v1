@@ -25,6 +25,15 @@ export async function updatePolicyUpload(id: string, patch: Partial<PolicyUpload
   return supabase.from('policy_uploads').update(patch).eq('id', id);
 }
 
+// Server-side variant: use a provided Supabase client (service role) to bypass RLS
+export async function updatePolicyUploadWithClient(
+  client: SupabaseClient,
+  id: string,
+  patch: Partial<PolicyUpload>
+) {
+  return client.from('policy_uploads').update(patch).eq('id', id);
+}
+
 // --- Temporary no-op stubs for UI imports (do not call Supabase) ---
 // These keep the chat app running when policy history is not used.
 

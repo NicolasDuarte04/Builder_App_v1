@@ -34,3 +34,12 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1...
 
 ## Optional: PDF Thumbnails
 If you install `pdf-to-png-converter` locally, enable thumbnails by setting `NEXT_PUBLIC_PDF_THUMBS=on`. In serverless/preview environments, leave it unset/off to avoid native module issues.
+
+### Native dependencies (macOS)
+`pdf-to-png-converter` may require native PDF rendering libraries. On macOS, install Poppler:
+
+```
+brew install poppler
+```
+
+If native errors persist, keep thumbnails disabled (default) — OCR and analysis still work.
