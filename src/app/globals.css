@@ -29,6 +29,10 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    
+    /* Briki brand colors for portal mode */
+    --briki-from: #2F7DF4;
+    --briki-to: #06B6D4;
   }
 
   .dark {

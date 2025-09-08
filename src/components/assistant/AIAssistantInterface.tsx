@@ -70,6 +70,9 @@ import { useUIOverlay } from "@/state/uiOverlay";
 import { ResultsToggle } from "./ResultsToggle";
 import { useProposal, useUiPhase } from "@/state/proposal";
 import { QuickActionBar } from "./QuickActionBar";
+import { useUI } from "@/state/ui";
+import { useAnalyzer } from "@/state/analyzer";
+import { telemetry } from "@/lib/telemetry";
 
 interface AIAssistantInterfaceProps {
   isLoading?: boolean;
@@ -283,6 +286,7 @@ function AIAssistantInterfaceInner({
     error: chatError,
     clearChat,
     appendAssistantMessage,
+    setMessages,
   } = useBrikiChat(initialMessages);
 
   // Safe, one-time seeding (fixes "setState during render")
@@ -306,6 +310,84 @@ function AIAssistantInterfaceInner({
       onAppendMessage(appendAssistantMessage);
     }
   }, [onAppendMessage, appendAssistantMessage]);
+
+  // Handle briki:analysis-prep event to inject prelude message
+  useEffect(() => {
+    const onPrep = () => {
+      // If portal flag is enabled, never inject legacy prep card
+      try {
+        const { ENABLE_BRC_PORTAL } = require('@/lib/featureFlags');
+        if (ENABLE_BRC_PORTAL) return;
+      } catch {}
+      // ⛔️ In portal modes, the Portal UI owns the prep; skip legacy chat card
+      try {
+        const lm = useUI.getState().layoutMode;
+        if (lm === 'analysis_portal_prep' || lm === 'analysis_running' || lm === 'analysis_results') {
+          return; // do nothing in portal modes
+        }
+      } catch {}
+
+      const { file } = useAnalyzer.getState();
+      // Replace any existing analysis_prep message to avoid stacking
+      setMessages((prev: any[]) => {
+        const filtered = prev.filter((m: any) => {
+          if (m.role !== 'assistant') return true;
+          try {
+            const p = JSON.parse(m.content || '{}');
+            return p?.type !== 'analysis_prep';
+          } catch { return true; }
+        });
+        return [
+          ...filtered,
+          {
+            id: `assistant-${Date.now()}`,
+            role: 'assistant' as const,
+            content: JSON.stringify({ type: 'analysis_prep', fileName: file?.name, fileSize: file?.size })
+          }
+        ];
+      });
+      // Scroll to bottom to reveal the prep card
+      try {
+        requestAnimationFrame(() => scrollRegionRef.current?.scrollTo({ top: scrollRegionRef.current.scrollHeight, behavior: 'smooth' }));
+      } catch {}
+    };
+    window.addEventListener("briki:analysis-prep", onPrep);
+    return () => window.removeEventListener("briki:analysis-prep", onPrep);
+  }, [appendAssistantMessage, setMessages]);
+
+  // Handle briki:portal-prep-narration event to inject minimal narration message
+  useEffect(() => {
+    const onPortalNarration = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail?.fileName) return;
+      
+      // Check if we already have a portal prep narration for this file
+      const hasNarration = messages.some(m => {
+        if (m.role !== "assistant") return false;
+        try {
+          const parsed = JSON.parse(m.content as string);
+          return parsed?.type === "portal_prep_narration" && parsed?.fileName === detail.fileName;
+        } catch {
+          return false;
+        }
+      });
+      
+      if (!hasNarration) {
+        const narrationMessage = {
+          id: `narration-${Date.now()}`,
+          role: "assistant" as const,
+          content: JSON.stringify({
+            type: "portal_prep_narration",
+            fileName: detail.fileName,
+            fileSize: detail.fileSize
+          })
+        };
+        setMessages(prev => [...prev, narrationMessage]);
+      }
+    };
+    window.addEventListener("briki:portal-prep-narration", onPortalNarration);
+    return () => window.removeEventListener("briki:portal-prep-narration", onPortalNarration);
+  }, [setMessages, messages]);
 
   // Detect comparison messages to allow wider chat area when sidebar is open
   // Declare this BEFORE any early returns to preserve hook order
@@ -436,6 +518,31 @@ function AIAssistantInterfaceInner({
   const handleSmartSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Gate composer during analysis prep
+    const { layoutMode } = useUI.getState();
+    if (layoutMode === 'analysis_prep' || layoutMode === 'analysis_portal_prep') {
+      const text = (input || '').trim();
+      if (!text) return;
+
+      // Persist note into analyzer store
+      useAnalyzer.getState().setNote(text);
+
+      // Telemetry for note added
+      try {
+        telemetry.track(telemetry.events.ANALYZER_NOTE_ADDED || 'analyzer_note_added', {
+          length: text.length,
+          wordCount: text.split(/\s+/).filter(Boolean).length,
+        });
+      } catch {}
+
+      // Append a local user bubble (no network)
+      appendAssistantMessage(JSON.stringify({ type: 'user_note', content: text }));
+
+      // Clear composer input
+      handleInputChange({ target: { value: '' } } as React.ChangeEvent<HTMLInputElement>);
+      return; // Do not call handleSubmit (prevents /api/ai/chat)
+    }
 
     if (input.trim()) {
       // Check if this is an affirmative response and we have onboarding data
@@ -591,11 +698,14 @@ function AIAssistantInterfaceInner({
       >
         {/* LEFT PANEL: Chat Area */}
         <div
-          className={`flex flex-col transition-all duration-300 ${
-            isDualPanelMode && isRightPanelOpen
-              ? "w-[calc(100%-28rem)] lg:w-[calc(100%-32rem)]" // Compressed when panel open
-              : "w-full" // Full width when panel closed
-          }`}
+          className={`flex flex-col transition-all duration-300 ${(() => {
+            const lm = useUI.getState().layoutMode;
+            const isPortalMode = lm === 'analysis_portal_prep' || lm === 'analysis_running' || lm === 'analysis_results';
+            if (isPortalMode) return 'w-full';
+            return isDualPanelMode && isRightPanelOpen
+              ? 'w-[calc(100%-28rem)] lg:w-[calc(100%-32rem)]'
+              : 'w-full';
+          })()}`}
         >
           {/* Main Content Area */}
           <div
@@ -649,7 +759,11 @@ function AIAssistantInterfaceInner({
                 </div>
               </div>
             )}
-            {showWelcome !== false && messages.length === 0 && uiPhase === 'welcome' ? (
+            {showWelcome !== false && messages.length === 0 && uiPhase === 'welcome' && (() => {
+              const lm = useUI.getState().layoutMode;
+              const isPortalMode = lm === 'analysis_portal_prep' || lm === 'analysis_running' || lm === 'analysis_results';
+              return !isPortalMode;
+            })() ? (
               <WelcomeHero
                 onStartBrief={() => {
                   // open the left brief or focus the brief section
@@ -665,7 +779,12 @@ function AIAssistantInterfaceInner({
             ) : showWelcome !== false &&
               messages.length === 0 &&
               uiPhase === 'welcome' &&
-              !isEmbedded ? (
+              !isEmbedded &&
+              (() => {
+                const lm = useUI.getState().layoutMode;
+                const isPortalMode = lm === 'analysis_portal_prep' || lm === 'analysis_running' || lm === 'analysis_results';
+                return !isPortalMode;
+              })() ? (
               <div className="flex flex-col items-center justify-center h-full px-6 pt-8">
                 {/* Welcome message */}
                 <motion.div
@@ -831,6 +950,12 @@ function AIAssistantInterfaceInner({
                   onChange={handleInputChange}
                   className="w-full text-gray-700 dark:text-gray-200 text-sm outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-transparent"
                 />
+                {/* Hint while in analysis prep mode */}
+                {(useUI.getState().layoutMode === 'analysis_prep' || useUI.getState().layoutMode === 'analysis_portal_prep') && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {t('assistant.analysis_prep.note_hint')}
+                  </p>
+                )}
               </div>
               <div className="px-4 py-2 border-t border-gray-100 dark:border-neutral-700 flex items-center justify-between">
                 {!isEmbedded && (

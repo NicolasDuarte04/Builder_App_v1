@@ -235,5 +235,6 @@ export function useBrikiChat(initialMessages?: any[]) {
     clearChat,
     toolInvocations: currentToolInvocations,
     appendAssistantMessage,
+    setMessages,
   };
 } 

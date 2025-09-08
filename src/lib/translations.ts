@@ -10,7 +10,7 @@ export const translations = {
 
 export function getTranslation(language: 'es' | 'en', key: string) {
   const keys = key.split('.');
-  let value: any = translations[language];
+  let value: any = translations[language] || translations['en'];
   
   for (const k of keys) {
     if (value && typeof value === 'object' && k in value) {

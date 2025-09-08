@@ -6,6 +6,9 @@ import { useProposal } from '@/state/proposal';
 import { Loader2, CheckCircle, AlertTriangle, Shield, FileText } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { telemetry } from '@/lib/telemetry';
+import { useAnalyzer } from '@/state/analyzer';
+import { useUI } from '@/state/ui';
+import { ENABLE_BRC_PORTAL } from '@/lib/featureFlags';
 
 // Lazy load the existing analyzer display
 const PolicyAnalysisDisplay = dynamic(
@@ -45,6 +48,16 @@ export function AnalyzerCore({ plan, onAnalysisComplete, variant = 'panel' }: An
     if (f.type !== 'application/pdf') { setFileError('Por favor sube un archivo PDF.'); return; }
     setFileError(null);
     setFile(f);
+    
+    // NEW: store globally + event for layout transition
+    useAnalyzer.getState().setFile(f);
+    // Belt-and-suspenders: ensure portal mode immediately if flag is on
+    if (ENABLE_BRC_PORTAL) {
+      try { useUI.getState().setLayoutMode('analysis_portal_prep'); } catch {}
+    }
+    window.dispatchEvent(new CustomEvent("briki:pdf-selected", {
+      detail: { name: f.name, size: f.size, type: f.type }
+    }));
     
     // Telemetry for file selection
     telemetry.track(telemetry.events.ANALYZER_FILE_SELECTED, {

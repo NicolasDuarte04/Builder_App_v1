@@ -2,22 +2,47 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { type NextAuthOptions } from "next-auth";
-import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
 
-// Create Supabase client for user management
-// Use service key server-side only
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Safe environment checks
+const hasSupabase =
+  !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+function getSupabaseAdmin() {
+  if (!hasSupabase) return null;
+  try {
+    // Require inside to avoid module-scope throws if env broken
+    const { createClient } = require('@supabase/supabase-js');
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+      process.env.SUPABASE_SERVICE_ROLE_KEY as string
+    );
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[auth] Supabase init failed:', err);
+    }
+    return null;
+  }
+}
+
+const hasGoogle =
+  !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
+
+const devLog = (...args: any[]) => {
+  if (process.env.NODE_ENV !== 'production') console.log('[auth]', ...args);
+};
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
+    // Include Google only when both secrets exist
+    ...(hasGoogle
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID as string,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+          }),
+        ]
+      : (devLog('Google provider disabled: missing env'), [])),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -25,10 +50,16 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log("Authorize called with email:", credentials?.email);
+        devLog("Authorize called with email:", credentials?.email);
         
         if (!credentials?.email || !credentials?.password) {
-          console.log("Missing credentials");
+          devLog("Missing credentials");
+          return null;
+        }
+        
+        const supabase = getSupabaseAdmin();
+        if (!supabase) {
+          devLog('Credentials authorize without Supabase — returning null (unauth).');
           return null;
         }
         
@@ -41,11 +72,11 @@ export const authOptions: NextAuthOptions = {
             .single();
           
           if (error || !user) {
-            console.log("User not found:", error);
+            devLog("User not found:", error);
             return null;
           }
           
-          console.log("User found:", user.email);
+          devLog("User found:", user.email);
 
           // Verify password
           const isPasswordValid = await bcrypt.compare(
@@ -54,11 +85,11 @@ export const authOptions: NextAuthOptions = {
           );
           
           if (!isPasswordValid) {
-            console.log("Invalid password for user:", user.email);
+            devLog("Invalid password for user:", user.email);
             return null;
           }
 
-          console.log("Password valid, returning user");
+          devLog("Password valid, returning user");
           
           // Return user object (without password)
           return {
@@ -78,6 +109,12 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
+      const supabase = getSupabaseAdmin();
+      if (!supabase) {
+        devLog('signIn: Supabase unavailable — skipping DB ops.');
+        return true; // Don't block sign-in flow
+      }
+      
       if (account?.provider === "google" && profile) {
         try {
           // Check if user exists
@@ -104,9 +141,9 @@ export const authOptions: NextAuthOptions = {
               return false;
             }
 
-            console.log("Created new user:", newUser);
+            devLog("Created new user:", newUser);
           } else {
-            console.log("User already exists:", existingUser);
+            devLog("User already exists:", existingUser);
           }
         } catch (error) {
           console.error("Error in signIn callback:", error);
@@ -125,10 +162,16 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async jwt({ token, user, account }) {
-      console.log("JWT callback - user:", user, "account:", account?.provider);
+      devLog("JWT callback - user:", user, "account:", account?.provider);
+      
+      const supabase = getSupabaseAdmin();
+      if (!supabase) {
+        devLog('jwt: Supabase unavailable — passthrough token.');
+        return token;
+      }
       
       // When user signs in, store their database ID
-      if (user && account) {
+      if (user && account && user.email) {
         try {
           // Fetch the actual database user ID
           const { data: dbUser } = await supabase
@@ -147,13 +190,17 @@ export const authOptions: NextAuthOptions = {
         }
       }
       
-      console.log("JWT token after update:", token);
+      devLog("JWT token after update:", token);
       return token;
     },
     async redirect({ url, baseUrl }) {
-      // Handle Vercel preview URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      else if (new URL(url).origin === baseUrl) return url;
+      try {
+        if (url.startsWith('/')) return `${baseUrl}${url}`;
+        const parsed = new URL(url);
+        if (parsed.origin === baseUrl) return url;
+      } catch (e) {
+        devLog('redirect: bad url:', url, e);
+      }
       return baseUrl;
     },
   },
@@ -163,6 +210,7 @@ export const authOptions: NextAuthOptions = {
   },
   debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET,
+  // @ts-ignore - trustHost is a valid option but not in type definition
   trustHost: true, // Allow localhost and preview URLs
 };
 
