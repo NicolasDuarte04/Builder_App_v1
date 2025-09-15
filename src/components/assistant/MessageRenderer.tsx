@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo } from 'react';
+import { telemetry } from '@/lib/telemetry';
 import { useRightPanelTrigger } from '@/contexts/PlanResultsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ComparisonMessage } from './ComparisonMessage';
@@ -15,6 +16,7 @@ interface MessageRendererProps {
   onAnalyzePlan?: (plan: any) => void;
   onToggleSelect?: (plan: any) => void;
   isSelected?: (planId: string) => boolean;
+  lastPolicyContext?: any;
 }
 
 export const MessageRenderer = React.memo(function MessageRenderer({
@@ -25,34 +27,71 @@ export const MessageRenderer = React.memo(function MessageRenderer({
   onAnalyzePlan,
   onToggleSelect,
   isSelected,
+  lastPolicyContext,
 }: MessageRendererProps) {
   const { t } = useTranslation();
   const { showPanelWithPlans, isDualPanelMode } = useRightPanelTrigger();
 
-  const parsed = useMemo(() => {
-    const raw = content ?? '';
-    try {
-      const json = JSON.parse(raw);
-      return { isJSON: true as const, payload: json };
-    } catch {
-      return { isJSON: false as const, payload: null };
+  // Debug: confirm we're on the right file (avoid import.meta to silence Next warning)
+  console.info('[MR] mount', { role, len: (content || '').length });
+
+  // Defense in depth: hide policy context messages
+  if (name === 'policy_section_context') {
+    return null;
+  }
+
+  // --- parse content robustly ---
+  function parseMaybeJSON(raw: string): { json: any; source: 'json' | 'fenced' | null } {
+    // Try strict JSON
+    try { return { json: JSON.parse(raw), source: 'json' as any }; } catch {}
+    // Try fenced JSON at the end of the message
+    const m = raw.match(/```(?:json)?\s*\n([\s\S]*?)\n```/);
+    if (m && m[1]) {
+      try { return { json: JSON.parse(m[1]), source: 'fenced' as any }; } catch {}
     }
+    return { json: null, source: null as any };
+  }
+
+  const parsed = useMemo(() => {
+    const { json, source } = parseMaybeJSON(content || '');
+    return { isJSON: !!json, payload: json, source };
   }, [content]);
+
+  // Debug: log parsing result
+  console.info('[MR] parsed', { isJSON: !!parsed.isJSON, type: parsed.payload?.type, source: parsed.source });
 
   // Side-effect hook: runs every render (unconditional)
   useEffect(() => {
     if (!parsed.isJSON) return;
     const p: any = parsed.payload;
+    
+    // Handle insurance plans
     if (p?.type === 'insurance_plans' && Array.isArray(p.plans)) {
       console.log('[MessageRenderer] emitting plan data', p.plans.length);
       showPanelWithPlans({
-        title: t('plans.recommendedTitle', { category: p.insuranceType || '' }),
+        title: (t as any)('plans.recommendedTitle', { category: p.insuranceType || '' }),
         plans: p.plans,
         category: p.insuranceType,
         query: p.originalQuery,
       });
     }
-  }, [parsed, showPanelWithPlans, t]);
+    
+    // Handle templates
+    if (p?.type === 'templates' && Array.isArray(p.items) && isDualPanelMode) {
+      console.log('[MessageRenderer] emitting template data', p.items.length);
+      showPanelWithPlans({
+        title: p.title || 'Plantillas Sugeridas',
+        plans: [], // No plans for templates
+        templates: p.items,
+        category: p.insuranceType,
+        query: p.originalQuery,
+        hasRealPlans: false,
+        isExactMatch: p.isExactMatch,
+        noExactMatchesFound: p.noExactMatchesFound,
+        dataSource: p.dataSource
+      });
+    }
+  }, [parsed, showPanelWithPlans, isDualPanelMode, t]);
 
   // Determine if this is a blank meaningless message.
   const isBlankText = !parsed.isJSON && !String(content || '').trim();
@@ -104,6 +143,93 @@ export const MessageRenderer = React.memo(function MessageRenderer({
   
   if (role === 'assistant' && parsed.isJSON && parsed.payload?.type === 'comparison' && parsed.payload?.plans) {
     return <ComparisonMessage plans={parsed.payload.plans} />;
+  }
+
+  // Render templates/cards when no catalog plans are available
+  if (role === 'assistant' && parsed.isJSON && parsed.payload?.type === 'templates' && Array.isArray(parsed.payload?.items)) {
+    const items = parsed.payload.items as Array<{ id: string; title: string; summary?: string }>;
+    const header = (t('assistant.templates.header') as any) || 'Sugerencias';
+    return (
+      <div className="space-y-3">
+        <div className="text-[11px] text-muted-foreground">{header}</div>
+        <div className="space-y-2">
+          {items.map((tpl) => (
+            <div key={tpl.id} className="p-3 rounded-lg border border-gray-200 dark:border-neutral-700 bg-white/70 dark:bg-neutral-900/50">
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{tpl.title}</div>
+              {tpl.summary && (
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap break-words">{tpl.summary}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Force policy_insight card render - must be before any generic text fallback
+  if (role === 'assistant' && parsed.isJSON && parsed.payload?.type === 'policy_insight') {
+    const pi = parsed.payload;
+    let hints: any[] = Array.isArray(pi.actionHints) ? pi.actionHints : [];
+    
+    // Fallback from lastPolicyContext / pageRefs
+    if (!hints.length && lastPolicyContext) {
+      const pageFromCtx =
+        lastPolicyContext.page ??
+        lastPolicyContext.context?.pageRefs?.[0]?.page;
+      const rectsFromCtx =
+        lastPolicyContext.rects ??
+        lastPolicyContext.context?.pageRefs?.[0]?.rects;
+      if (Number.isFinite(pageFromCtx)) {
+        hints = [{ type: 'pdfJump', page: pageFromCtx, rects: rectsFromCtx, __synthetic: true }];
+      }
+    }
+    
+    console.info('[MR] policy_insight', {
+      hasButton: hints.some(h=>h?.type==='pdfJump' && Number.isFinite(h.page)),
+      from: hints[0]?.__synthetic ? 'fallback' : 'actionHints'
+    });
+    
+    return (
+      <div className="space-y-2">
+        {pi.summary && <p className="text-sm whitespace-pre-wrap break-words">{pi.summary}</p>}
+        {Array.isArray(pi.bullets) && (
+          <ul className="space-y-1 ml-4">{pi.bullets.map((b: string, i: number)=> <li key={i} className="text-sm list-disc">{b}</li>)}</ul>
+        )}
+        {hints.filter(h=>h?.type==='pdfJump' && Number.isFinite(h.page)).map((h,i)=>(
+          <button
+            key={i}
+            type="button"
+            onClick={()=>{
+              console.info('[MR] click pdfJump', { page: h.page, rects: Array.isArray(h.rects)?h.rects.length:0, synthetic: !!h.__synthetic });
+              telemetry?.track?.('CHAT_INSIGHT_ACTION_CLICKED', { type:'pdfJump', sectionKey: pi.sectionKey, hasRects: Array.isArray(h.rects)&&h.rects.length>0, synthetic: !!h.__synthetic });
+              window.dispatchEvent(new CustomEvent('pdf:jump', { detail: { page: h.page, rects: h.rects, autoClearMs: 5000 } }));
+            }}
+            className="px-2 py-1 text-xs rounded border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800"
+            aria-label={(t('portal.actions.view_in_pdf') as any) || (t('openInPdf') as any) || 'Ver en PDF'}
+          >
+            {(t('portal.actions.view_in_pdf') as any) || (t('openInPdf') as any) || 'Ver en PDF'}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  // Handle empty section guide
+  if (role === 'assistant' && parsed.isJSON && parsed.payload?.type === 'empty_section_guide') {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm">{parsed.payload.guide}</p>
+        <button
+          type="button"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('pdf:jump', { detail: { page: 1 } }));
+          }}
+          className="inline-flex items-center px-3 py-1.5 text-xs bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+        >
+          {t('searchInPdf') || 'Buscar en PDF'}
+        </button>
+      </div>
+    );
   }
 
   // Handle analysis prep

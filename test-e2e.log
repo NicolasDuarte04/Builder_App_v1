@@ -1,0 +1,209 @@
+
+> briki-ai-project-builder-app@0.1.0 test:e2e
+> playwright test
+
+
+Running 7 tests using 6 workers
+
+[1A[2K[1/7] [chromium] › tests/e2e/step11/paste-brief.spec.ts:92:7 › Paste → Brief Flow › should handle parse errors gracefully
+[1A[2K[2/7] [chromium] › tests/e2e/step11/templates-proposal.spec.ts:18:7 › No-Catalog → Templates → Proposal Flow › should generate templates and create proposal
+[1A[2K[3/7] [chromium] › tests/e2e/step11/pdf-brief.spec.ts:71:7 › PDF → Brief Flow › should handle PDF upload errors gracefully
+[1A[2K[4/7] [chromium] › tests/e2e/step11/paste-brief.spec.ts:43:7 › Paste → Brief Flow › should complete paste to brief flow with telemetry
+[1A[2K[5/7] [chromium] › tests/e2e/step11/pdf-brief.spec.ts:21:7 › PDF → Brief Flow › should complete PDF upload to brief flow
+[1A[2K[6/7] [chromium] › tests/e2e/step11/templates-proposal.spec.ts:65:7 › No-Catalog → Templates → Proposal Flow › should handle no templates gracefully
+[1A[2K  1) [chromium] › tests/e2e/step11/paste-brief.spec.ts:43:7 › Paste → Brief Flow › should complete paste to brief flow with telemetry 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m failed
+
+    Locator:  locator('[data-testid="chat-input"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  15000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 15000ms[22m
+    [2m  - waiting for locator('[data-testid="chat-input"]')[22m
+
+
+      44 |     // Step 1: Focus chat input
+      45 |     const chatInput = page.locator('[data-testid="chat-input"]');
+    > 46 |     await expect(chatInput).toBeVisible({ timeout: 15000 });
+         |                             ^
+      47 |
+      48 |     // Step 2: Paste sample text via ClipboardEvent (triggers extract chip)
+      49 |     const samplePolicy = `Número de póliza: TEST-123. Busco un seguro de salud para mi familia. Presupuesto máximo COP 500,000 mensuales. Coberturas imprescindibles: consultas, hospitalización, medicamentos, maternidad y odontología. Vivimos en Bogotá y queremos una red amplia de clínicas y atención rápida. También nos interesa cobertura internacional básica y asistencia médica en viajes. Preferimos pagos mensuales. Información adicional: hijos en edad escolar.`;
+        at /Users/nicolasduarte/Briki Co Pilot /briki-clean/tests/e2e/step11/paste-brief.spec.ts:46:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-step11-paste-brief-Pas-80d53-o-brief-flow-with-telemetry-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-step11-paste-brief-Pas-80d53-o-brief-flow-with-telemetry-chromium/error-context.md
+
+
+[1A[2K  2) [chromium] › tests/e2e/step11/paste-brief.spec.ts:92:7 › Paste → Brief Flow › should handle parse errors gracefully 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m failed
+
+    Locator:  locator('[data-testid="chat-input"]')
+    Expected: visible
+    Received: <element(s) not found>
+    Timeout:  15000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 15000ms[22m
+    [2m  - waiting for locator('[data-testid="chat-input"]')[22m
+
+
+      92 |   test('should handle parse errors gracefully', async ({ page }) => {
+      93 |     const chatInput = page.locator('[data-testid="chat-input"]');
+    > 94 |     await expect(chatInput).toBeVisible({ timeout: 15000 });
+         |                             ^
+      95 |
+      96 |     // Intercept parse API to simulate error
+      97 |     await page.route('**/api/briefs/parse-from-text**', async (route) => {
+        at /Users/nicolasduarte/Briki Co Pilot /briki-clean/tests/e2e/step11/paste-brief.spec.ts:94:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-step11-paste-brief-Pas-095db-dle-parse-errors-gracefully-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-step11-paste-brief-Pas-095db-dle-parse-errors-gracefully-chromium/error-context.md
+
+
+[1A[2K[7/7] [chromium] › tests/e2e/step11/templates-proposal.spec.ts:86:7 › No-Catalog → Templates → Proposal Flow › should track template selection metrics
+[1A[2K  3) [chromium] › tests/e2e/step11/templates-proposal.spec.ts:18:7 › No-Catalog → Templates → Proposal Flow › should generate templates and create proposal 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="category-health"]')[22m
+
+
+      18 |   test('should generate templates and create proposal', async ({ page }) => {
+      19 |     // Step 1: Navigate to a category that yields templates
+    > 20 |     await page.click('[data-testid="category-health"]'); // Health insurance category
+         |                ^
+      21 |     
+      22 |     // Step 2: Wait for templates to be generated
+      23 |     await expect(page.locator('[data-testid="template-card"]').first()).toBeVisible({
+        at /Users/nicolasduarte/Briki Co Pilot /briki-clean/tests/e2e/step11/templates-proposal.spec.ts:20:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-step11-templates-propo-3293a-mplates-and-create-proposal-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-step11-templates-propo-3293a-mplates-and-create-proposal-chromium/error-context.md
+
+
+[1A[2K  4) [chromium] › tests/e2e/step11/pdf-brief.spec.ts:71:7 › PDF → Brief Flow › should handle PDF upload errors gracefully 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="pdf-analyzer-chip"]')[22m
+
+
+      70 |
+      71 |   test('should handle PDF upload errors gracefully', async ({ page }) => {
+    > 72 |     await page.click('[data-testid="pdf-analyzer-chip"]');
+         |                ^
+      73 |     await expect(page.locator('[data-testid="pdf-analyzer-modal"]')).toBeVisible();
+      74 |     
+      75 |     // Try to upload non-PDF file
+        at /Users/nicolasduarte/Briki Co Pilot /briki-clean/tests/e2e/step11/pdf-brief.spec.ts:72:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-step11-pdf-brief-PDF-→-dcba4-DF-upload-errors-gracefully-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-step11-pdf-brief-PDF-→-dcba4-DF-upload-errors-gracefully-chromium/error-context.md
+
+
+[1A[2K  5) [chromium] › tests/e2e/step11/pdf-brief.spec.ts:21:7 › PDF → Brief Flow › should complete PDF upload to brief flow 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="pdf-analyzer-chip"]')[22m
+
+
+      21 |   test('should complete PDF upload to brief flow', async ({ page }) => {
+      22 |     // Step 1: Click on PDF analyzer chip
+    > 23 |     await page.click('[data-testid="pdf-analyzer-chip"]');
+         |                ^
+      24 |     
+      25 |     // Step 2: Wait for analyzer to open
+      26 |     await expect(page.locator('[data-testid="pdf-analyzer-modal"]')).toBeVisible();
+        at /Users/nicolasduarte/Briki Co Pilot /briki-clean/tests/e2e/step11/pdf-brief.spec.ts:23:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-step11-pdf-brief-PDF-→-4d6ad-te-PDF-upload-to-brief-flow-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-step11-pdf-brief-PDF-→-4d6ad-te-PDF-upload-to-brief-flow-chromium/error-context.md
+
+
+[1A[2K  6) [chromium] › tests/e2e/step11/templates-proposal.spec.ts:65:7 › No-Catalog → Templates → Proposal Flow › should handle no templates gracefully 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="category-other"]')[22m
+
+
+      65 |   test('should handle no templates gracefully', async ({ page }) => {
+      66 |     // Navigate to a category that might not have templates
+    > 67 |     await page.click('[data-testid="category-other"]');
+         |                ^
+      68 |     
+      69 |     // Wait a bit for potential templates
+      70 |     await page.waitForTimeout(3000);
+        at /Users/nicolasduarte/Briki Co Pilot /briki-clean/tests/e2e/step11/templates-proposal.spec.ts:67:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-step11-templates-propo-7f0ef-dle-no-templates-gracefully-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-step11-templates-propo-7f0ef-dle-no-templates-gracefully-chromium/error-context.md
+
+
+[1A[2K  7) [chromium] › tests/e2e/step11/templates-proposal.spec.ts:86:7 › No-Catalog → Templates → Proposal Flow › should track template selection metrics 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="category-health"]')[22m
+
+
+      86 |   test('should track template selection metrics', async ({ page }) => {
+      87 |     // Navigate to health category
+    > 88 |     await page.click('[data-testid="category-health"]');
+         |                ^
+      89 |     
+      90 |     // Wait for templates
+      91 |     await expect(page.locator('[data-testid="template-card"]').first()).toBeVisible();
+        at /Users/nicolasduarte/Briki Co Pilot /briki-clean/tests/e2e/step11/templates-proposal.spec.ts:88:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-step11-templates-propo-8a758--template-selection-metrics-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-step11-templates-propo-8a758--template-selection-metrics-chromium/error-context.md
+
+
+[1A[2K  7 failed
+    [chromium] › tests/e2e/step11/paste-brief.spec.ts:43:7 › Paste → Brief Flow › should complete paste to brief flow with telemetry 
+    [chromium] › tests/e2e/step11/paste-brief.spec.ts:92:7 › Paste → Brief Flow › should handle parse errors gracefully 
+    [chromium] › tests/e2e/step11/pdf-brief.spec.ts:21:7 › PDF → Brief Flow › should complete PDF upload to brief flow 
+    [chromium] › tests/e2e/step11/pdf-brief.spec.ts:71:7 › PDF → Brief Flow › should handle PDF upload errors gracefully 
+    [chromium] › tests/e2e/step11/templates-proposal.spec.ts:18:7 › No-Catalog → Templates → Proposal Flow › should generate templates and create proposal 
+    [chromium] › tests/e2e/step11/templates-proposal.spec.ts:65:7 › No-Catalog → Templates → Proposal Flow › should handle no templates gracefully 
+    [chromium] › tests/e2e/step11/templates-proposal.spec.ts:86:7 › No-Catalog → Templates → Proposal Flow › should track template selection metrics 
+
+[36m  Serving HTML report at http://localhost:9323. Press Ctrl+C to quit.[39m

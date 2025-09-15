@@ -9,6 +9,7 @@ import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar"
 import AuthProvider from "@/components/AuthProvider"
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider"
 import ChunkRecovery from "./_components/ChunkRecovery"
+import { ToastLiveRegion } from "../hooks/use-toast"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -58,6 +59,8 @@ export default function RootLayout({
         >
           {/* Stale chunk auto-reload safety */}
           <ChunkRecovery />
+          {/* Screen reader announcements for toasts */}
+          <ToastLiveRegion />
           <LanguageProvider>
             <AuthProvider>
               <OnboardingProvider>

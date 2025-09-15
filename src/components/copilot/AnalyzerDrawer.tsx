@@ -27,7 +27,7 @@ interface AnalyzerDrawerProps {
 }
 
 export function AnalyzerDrawer({ open, onClose, plan }: AnalyzerDrawerProps) {
-  const { attachAnalysis } = useProposal();
+  const attachAnalysis = useProposal((s) => s.attachAnalysis);
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
 

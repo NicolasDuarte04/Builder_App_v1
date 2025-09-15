@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useProposal } from '@/state/proposal';
 import { Send, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { telemetry } from '@/lib/telemetry';
 
 interface Message {
   id: string;
@@ -21,7 +22,7 @@ interface AssistantChatProps {
 }
 
 export function AssistantChat({ initialMessages, context, onAnalyzePlan }: AssistantChatProps) {
-  const { toggleSelect } = useProposal();
+  const toggleSelect = useProposal((s) => s.toggleSelect);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -169,6 +170,32 @@ export function AssistantChat({ initialMessages, context, onAnalyzePlan }: Assis
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onPaste={(e) => {
+              try {
+                const text = e.clipboardData?.getData('text') || '';
+                if (text && text.length > 0) {
+                  const w = window as any;
+                  w.__pasteToBriefStartTs = Date.now();
+                  w.__pasteToBriefChars = text.length;
+                  if (w.__pasteToBriefTimeoutId) {
+                    clearTimeout(w.__pasteToBriefTimeoutId);
+                  }
+                  // Emit started immediately
+                  telemetry.track(telemetry.events.PASTE_TO_BRIEF_STARTED, { chars: text.length });
+                  // Failsafe timeout: if no completion within 12s, mark failed
+                  w.__pasteToBriefTimeoutId = window.setTimeout(() => {
+                    try {
+                      const start = w.__pasteToBriefStartTs;
+                      const ms = typeof start === 'number' ? Math.max(0, Date.now() - start) : undefined;
+                      telemetry.track(telemetry.events.PASTE_TO_BRIEF_FAILED, { chars: w.__pasteToBriefChars, message: 'timeout', ms });
+                    } catch {}
+                    w.__pasteToBriefStartTs = null;
+                    w.__pasteToBriefChars = null;
+                    w.__pasteToBriefTimeoutId = null;
+                  }, 12000);
+                }
+              } catch {}
+            }}
             placeholder="Escribe tu pregunta..."
             disabled={loading}
           />

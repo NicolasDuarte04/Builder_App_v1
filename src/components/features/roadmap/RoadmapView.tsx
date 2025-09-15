@@ -121,7 +121,9 @@ export function RoadmapView() {
   const [expandedTasks, setExpandedTasks] = useState<string[]>([]);
   const [expandedSubtasks, setExpandedSubtasks] = useState<Record<string, boolean>>({});
   
-  const { roadmap, updatePhase, toggleTaskComplete } = useRoadmapStore();
+  const roadmap = useRoadmapStore(s => s.roadmap);
+  const updatePhase = useRoadmapStore(s => s.updatePhase);
+  const toggleTaskComplete = useRoadmapStore(s => s.toggleTaskComplete);
 
   // Handle task expansion
   const handleTaskExpand = (taskId: string) => {

@@ -12,7 +12,7 @@ interface ShortlistPanelProps {
 }
 
 export function ShortlistPanel({ plans, selectedIds, onAnalyze }: ShortlistPanelProps) {
-  const { toggleSelect } = useProposal();
+  const toggleSelect = useProposal((s) => s.toggleSelect);
 
   return (
     <div className="space-y-4">

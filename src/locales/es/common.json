@@ -52,6 +52,21 @@
         "casual_input": "¡Estoy aquí para ayudarte a crear una hoja de ruta de proyecto! Por favor, cuéntame sobre tu idea de proyecto: ¿qué quieres construir?",
         "unclear_input": "Quiero asegurarme de entender correctamente. ¿Podrías decirme el nombre de tu proyecto y qué hará?"
       }
+    },
+    "roadmap": {
+      "phases": "Fases del Proyecto",
+      "phase": "Fase",
+      "tasks": "Tareas",
+      "complete": "Completar",
+      "depends_on": "Depende de",
+      "total_time": "Tiempo Total",
+      "export_pdf": "Exportar a PDF",
+      "export_csv": "Exportar a CSV",
+      "chat_history": "Historial de Chat",
+      "you": "Tú",
+      "tooltip_edit_title": "Clic para editar título del proyecto",
+      "tooltip_edit_phase": "Clic para editar título de fase",
+      "tooltip_check_task": "Clic para marcar tarea como completa"
     }
   },
   "projects": {
@@ -65,9 +80,62 @@
     }
   },
   "portal": {
+    "title": "Análisis de Póliza",
+    "subtitle": "Analizando tu póliza",
+    "cta": {
+      "start": "Iniciar análisis",
+      "cancel": "Cancelar"
+    },
+    "progress": {
+      "queued": "Inicializando",
+      "extracting": "Extrayendo",
+      "analyzing": "Analizando",
+      "summarizing": "Resumiendo",
+      "done": "Listo",
+      "error": "Error"
+    },
+    "section": {
+      "premium": "Prima",
+      "limits": "Límites de Cobertura",
+      "deductibles": "Deducibles",
+      "features": "Características Principales",
+      "exclusions": "Exclusiones",
+      "benefits": "Beneficios",
+      "risk": "Evaluación de Riesgo",
+      "recommendations": "Recomendaciones",
+      "details": "Detalles de la Póliza",
+      "alerts": "Señales de Alerta"
+    },
+    "actions": {
+      "ask_briki": "Preguntar a Briki",
+      "view_in_pdf": "Ver en PDF",
+      "view_original_pdf": "Ver PDF original",
+      "split": "Dividir",
+      "collapse_viewer": "Contraer visor",
+      "expand_pdf": "Expandir"
+    },
+    "trust": {
+      "source": "Fuente",
+      "last_updated": "Última actualización"
+    },
+    "empty_state": {
+      "title": "No pudimos analizar por límite de cuota",
+      "body": "Cambia el modelo o la clave de OpenAI y vuelve a intentar."
+    },
     "prep": {
+      "title": "Preparar análisis",
+      "subtitle": "Selecciona áreas de enfoque y comienza el análisis.",
       "narration": "Voy a analizar {fileName}. Elige áreas de enfoque y presiona Iniciar análisis.",
-      "focus_label": "Áreas de enfoque"
+      "focus_label": "Áreas de enfoque",
+      "instructions": "Selecciona las áreas que quieres analizar y luego inicia el análisis.",
+      "pill": {
+        "selected_aria": "{label} seleccionado",
+        "unselected_aria": "{label} no seleccionado"
+      }
+    },
+    "sidebar": {
+      "title": "Briki · Preparando análisis",
+      "progress_label": "Listo"
     },
     "chips": ["exclusiones","deducibles","límites","carencias","cobertura internacional","cláusulas específicas"],
     "cta_analyze": "Iniciar análisis",
@@ -81,6 +149,12 @@
       "cancel": "Cancelar",
       "progress_aria": "{status} {progress}%"
     }
+  },
+  "placeholders": {
+    "whatToBuild": "¿Qué quieres construir con Briki AI?",
+    "describeIdea": "Describe tu idea y te ayudaré a crear una hoja de ruta...",
+    "example1": "Por ejemplo: Una app de gestión de tareas impulsada por IA...",
+    "example2": "O: Un comercio electrónico con recomendaciones personalizadas..."
   },
   "features": {
     "section_title": "Búsqueda inteligente de seguros. Planes reales. Respuestas instantáneas.",
@@ -142,33 +216,77 @@
       "description": "Navega opciones de Medicare, cobertura complementaria y seguros de cuidado a largo plazo con explicaciones claras y recomendaciones."
     }
   },
+  "comparator": {
+    "header": "Comparación de Planes",
+    "price": "Precio mensual",
+    "price_est": "(est.)",
+    "deductibles": "Deducibles",
+    "waitingTimes": "Tiempos de espera",
+    "exclusions": "Exclusiones",
+    "source": "Fuente",
+    "updated": "Última actualización",
+    "remove": "Quitar de comparación",
+    "criticalDifferences": "Diferencias críticas",
+    "coverageTypes": {
+      "asistencia": "Asistencia",
+      "robo": "Robo",
+      "vidrios": "Vidrios"
+    },
+    "ticks": {
+      "included": "incluido",
+      "partial": "cobertura parcial",
+      "notIncluded": "no incluido"
+    },
+    "proposal": {
+      "button": {
+        "text": "Generar Propuesta",
+        "generating": "Generando...",
+        "ariaLabel": "Generar propuesta PDF con planes comparados"
+      },
+      "success": {
+        "title": "Propuesta generada",
+        "description": "Tu propuesta PDF se ha generado exitosamente"
+      },
+      "error": {
+        "title": "Error al generar propuesta",
+        "description": "No se pudo generar la propuesta. Inténtalo de nuevo."
+      }
+    },
+    "disclaimer": {
+      "sourced": "Los datos de fuentes externas son aproximados."
+    },
+    "sources": {
+      "catalog": "Catálogo",
+      "template": "Plantilla",
+      "pdf": "PDF",
+      "url": "Sitio web",
+      "text": "Texto"
+    }
+  },
   "assistant": {
     "title": "Asistente IA",
     "subtitle": "Tu asistente de seguros personalizado",
     "welcome_title": "¡Hola! Soy Briki",
     "welcome_subtitle": "Tu asistente de seguros personalizado. ¿En qué puedo ayudarte hoy?",
     "inputPlaceholder": "Pregunta sobre coberturas, compara pólizas o analiza documentos...",
+    "multimodalPlaceholder": "¡Hola! Soy Briki. Pega un mensaje de cliente, suelta un PDF o escribe lo que necesiten. Llenaré el brief por ti.",
     "uploadButton": "Subir archivo",
     "sendButton": "Enviar",
     "thinking": "Pensando...",
     "analyze_policy": "Analizar Póliza PDF",
     "search_insurance": "Buscar Seguros",
-    "action_search": "Buscar Seguros",
     "context": "Contexto",
     "restart_chat": "Reiniciar Chat",
     "compare_selected": "Comparar seleccionados",
     "add_to_proposal": "Añadir a propuesta",
     "generate_proposal": "Generar propuesta",
+    "quick_actions": "Acciones rápidas",
     "auth": {
       "title": "Acceso exclusivo para usuarios",
       "description": "Inicia sesión para acceder a tu asistente de seguros personalizado con IA.",
       "signIn": "Iniciar sesión",
       "createAccount": "Crear cuenta"
     },
-    "compare_policies": "Comparar Pólizas",
-    "analyze_coverage": "Analizar Cobertura",
-    "compare_suggestions": "Sugerencias de comparación de pólizas",
-    "analyze_suggestions": "Sugerencias de análisis de cobertura",
     "suggestions": {
       "compare": [
         "Comparar pólizas de seguro de salud",
@@ -189,7 +307,127 @@
     "checkRightPanel": "Revisa el panel derecho para comparar planes y obtener cotizaciones.",
     "comparingPlans": "Aquí está la comparación detallada de los planes seleccionados:",
     "pinToCompare": "Fija planes para compararlos lado a lado",
-    "comparisonSummary": "Resumen de Comparación"
+    "comparisonSummary": "Resumen de Comparación",
+    "show_brief": "Mostrar brief",
+    "filter_plans": "Filtrar planes",
+    "insurance_results": "Resultados de seguros",
+    "pin": "Fijar",
+    "pin_toast_desc": "{planName} agregado a fijados",
+    "pin_toast_title": "Fijado",
+    "pinned": "Fijados",
+    "pinned_plans": "Planes fijados",
+    "plans": "Planes",
+    "unpin": "Desfijar",
+    "unpin_toast_desc": "{planName} quitado de la comparación",
+    "unpin_toast_title": "Desfijado",
+    "view_comparison_in_chat": "Ver comparación en el chat",
+    "price": {
+      "converted_label": "Precio convertido (COP/mes)",
+      "original_label": "Precio original",
+      "original_value": "Precio original {amount} {currency}",
+      "assumed_period": "Periodo asumido: {period}",
+      "rate_used": "Tasa utilizada: {rate}",
+      "why": "¿Por qué?"
+    },
+    "trust": {
+      "source": "Fuente",
+      "updated": "Última actualización"
+    },
+    "brief_context_banner": "Mostrando resultados según tu brief{details}.",
+    "brief_context_details": " ({details})",
+    "brief_context_notes": "con notas",
+    "context": {
+      "insuranceType": "Tipo de seguro",
+      "coverage": "Cobertura",
+      "budget": "Presupuesto mensual",
+      "city": "Ciudad",
+      "prefix": "Contexto del usuario",
+      "suffix": "Usa esta información para proporcionar recomendaciones más precisas y relevantes."
+    },
+    "search_templates": {
+      "search_plans": "Buscar planes de {category}",
+      "show_insurance": "Mostrar seguros de {category}",
+      "view_options": "Ver opciones de {category}",
+      "available_plans": "Planes de {category} disponibles"
+    },
+    "waiting_confirmation": "¿Busco planes ahora?",
+    "results_title": "Resultados",
+    "suggestions_title": "Sugerencias"
+  },
+  "brief": {
+    "reparse": {
+      "title": "¿Cómo procesar el nuevo texto?",
+      "description": "Ya hay información en el brief. ¿Prefieres fusionar el nuevo contenido con lo existente o reemplazar todo?",
+      "merge": "Re-extraer y fusionar",
+      "replace": "Reemplazar todo"
+    },
+    "source": {
+      "paste": "Fuente: Texto pegado",
+      "upload": "Fuente: Archivo subido",
+      "url": "Fuente: URL"
+    },
+    "documents": {
+      "title": "Documentos",
+      "empty": "No hay documentos adjuntos",
+      "pdf_added": "PDF agregado a documentos",
+      "pdf_removed": "PDF eliminado de documentos",
+      "type": {
+        "pdf": "PDF",
+        "url": "URL",
+        "text": "Texto"
+      }
+    },
+    "categoryChooser": {
+      "title": "Elige el tipo de seguro",
+      "description": "Selecciona una categoría para buscar planes"
+    },
+    "longPasteGuard": {
+      "title": "Texto largo detectado",
+      "description": "Primero resumiremos y luego extraeremos tu brief."
+    },
+    "extractChip": "¿Extraer brief?",
+    "title": "Brief del cliente",
+    "category_label": "Categoría de seguro",
+    "select_category": "Selecciona una categoría",
+    "budget_label": "Presupuesto máximo (COP)",
+    "budget_placeholder": "300000",
+    "budget_hint": "Valor mensual máximo que el cliente está dispuesto a pagar",
+    "must_have_label": "Coberturas imprescindibles",
+    "add_coverage": "Añadir cobertura",
+    "add_coverage_placeholder": "Añadir cobertura...",
+    "aria": {
+      "expand": "Expandir brief",
+      "collapse": "Colapsar brief"
+    },
+    "common_coverages": "Coberturas comunes:",
+    "select_category_for_coverages_hint": "Selecciona una categoría para ver coberturas comunes.",
+    "persona_label": "Perfil del cliente",
+    "persona_placeholder": "ej. Familia joven con 2 hijos, vive en Bogotá...",
+    "persona_hint": "Información adicional sobre el cliente para personalizar recomendaciones",
+    "notes_label": "Notas adicionales",
+    "notes_placeholder": "Requisitos especiales, preferencias, observaciones...",
+    "search": "Buscar planes",
+    "apply_to_assistant": "Aplicar al asistente",
+    "select_category_to_search_hint": "Selecciona una categoría para buscar planes",
+    "actions": {
+      "discard": "Descartar",
+      "edit": "Editar brief"
+    },
+    "badge": {
+      "saving": "Guardando...",
+      "saved": "Guardado",
+      "error": "Error"
+    },
+    "toggle": {
+      "apply": "Aplicar al asistente",
+      "applyDescription": "Usar este brief como contexto en las conversaciones"
+    },
+    "docs": {
+      "preview": "Previsualizar",
+      "delete": "Eliminar",
+      "attachedDocuments": "Documentos adjuntos",
+      "defaultTitle": "Documento"
+    }
   },
   "plans": {
     "notFound": "No se encontraron planes recomendados para tu solicitud.",
@@ -202,17 +440,29 @@
     "planNotFoundError": "No se pudo encontrar el plan seleccionado.",
     "viewAllToastTitle": "Mostrando Todos los Planes",
     "viewAllToastDescription": "Viendo todos los planes de {category}",
-    "recommendedTitle": "Planes de {category} recomendados para ti",
-    "defaultCategory": "seguro",
+    "recommendedTitle": "Planes Recomendados:",
     "viewAllButton": "Ver Todos los Planes",
     "quoteButton": "Cotizar",
     "cheapestTag": "Más Económico",
     "recommendedTag": "Recomendado",
     "bestValueTag": "Mejor Precio",
-    "tags": {
-      "recommended": "Recomendado",
-      "bestValue": "Mejor Precio"
-    }
+    "templateApplied": "Plantilla aplicada",
+    "searchLabel": "Búsqueda",
+    "results": "Resultados",
+    "viewOnWebsite": "Ver en el sitio",
+    "details": "Detalles",
+    "quote": "Cotizar",
+    "brochure": "Folleto",
+    "showLess": "Mostrar menos",
+    "more": "más"
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "error": "Error",
+    "minimize": "Minimizar",
+    "retry": "Reintentar"
   },
   "about": {
     "hero": {
@@ -490,7 +740,26 @@
     "status": {
       "collecting_brief": "Recopilando información del cliente…",
       "analyzing_pdf": "Analizando póliza (PDF)…",
-      "processing": "Generando resultados…"
+      "processing": "Generando resultados…",
+      "uploading": "Subiendo archivo...",
+      "analyzing": "Analizando contenido...",
+      "success": "Análisis completado",
+      "error": "Error en el análisis"
+    },
+    "analysis_completed": "Análisis completado con éxito",
+    "pdf_added_to_brief": "PDF agregado a documentos del brief",
+    "error_messages": {
+      "analysis_failed": "Error al analizar el PDF",
+      "pdfOnly": "Solo se permiten archivos PDF",
+      "tooLarge": "El archivo es demasiado grande. Máximo 10MB",
+      "unknown": "Error desconocido",
+      "ocrFailed": "No se pudo extraer texto del PDF. Por favor, sube un PDF con texto seleccionable en lugar de una imagen escaneada."
+    },
+    "status_messages": {
+      "uploading": "Subiendo archivo...",
+      "analyzing": "Analizando contenido...",
+      "success": "Análisis completado",
+      "error": "Error en el análisis"
     },
     "analysis_prep": {
       "title": "Preparado para analizar tu póliza",
@@ -507,7 +776,8 @@
     "errors": {
       "pdfOnly": "Solo se permiten archivos PDF",
       "tooLarge": "El archivo es demasiado grande. Máximo 10MB",
-      "unknown": "Error desconocido"
+      "unknown": "Error desconocido",
+      "ocrFailed": "No se pudo extraer texto del PDF. Por favor, sube un PDF con texto seleccionable en lugar de una imagen escaneada."
     }
   },
   "history": {
@@ -521,15 +791,17 @@
     "pageAbbr": "p.",
     "noPdf": "No hay PDF disponible para verificación.",
     "pageLocationsHint": "Las ubicaciones por página aparecerán cuando estén disponibles."
-  }
-  ,
+  },
   "pdf": {
     "header": "PDF",
     "page": "Página",
     "jumpHere": "Ir aquí",
     "viewOriginal": "Ver PDF original",
     "backToTop": "Volver arriba",
-    "announcedJump": "Saltaste a la página {{page}}"
+    "announcedJump": "Saltaste a la página {{page}}",
+    "analyzing": "Analizando...",
+    "error": "Error al cargar el PDF",
+    "upload_prompt": "Sube un PDF para analizar"
   },
   "analysis": {
     "premium": "Prima",
@@ -546,5 +818,101 @@
     "exportAnnotated": "Exportar PDF anotado (beta)",
     "copyLink": "Copiar enlace",
     "share": "Compartir"
+  },
+  "openInPdf": "Ver en PDF",
+  "searchInPdf": "Buscar en PDF",
+  "emptySectionGuide": "No encontramos elementos en \"{{section}}\". ¿Quieres que busque en el PDF o revisar una sección relacionada?",
+  "askAboutSection": "¿Pregúntame por «{{section}}»?",
+  "prefillExplainSection": "Explícame esta sección ({{section}}).",
+  "useSuggestion": "Usar",
+  "section": {
+    "premium": "Prima",
+    "limits": "Límites de cobertura",
+    "deductibles": "Deducibles",
+    "features": "Beneficios",
+    "exclusions": "Exclusiones",
+    "risk": "Riesgos",
+    "recommendations": "Recomendaciones",
+    "details": "Detalles",
+    "alerts": "Alertas"
+  },
+  "comparison": {
+    "title": "Comparación de planes",
+    "add": "Agregar a comparación",
+    "inComparison": "En comparación",
+    "remove": "Quitar",
+    "removeAriaLabel": "Quitar {name} de la comparación",
+    "fields": {
+      "price": "Precio",
+      "priceEstimated": "(est.)",
+      "perMonth": "/mes",
+      "deductibles": "Deducibles",
+      "assistance": "Asistencia",
+      "theft": "Robo",
+      "windows": "Vidrios",
+      "waitingTimes": "Tiempos",
+      "exclusions": "Exclusiones",
+      "source": "Fuente",
+      "lastUpdated": "Última actualización",
+      "noData": "—"
+    },
+    "footer": {
+      "criticalDifferences": "Diferencias críticas",
+      "whyTheseOptions": "Por qué estas opciones"
+    },
+    "tickStates": {
+      "included": "incluido",
+      "partial": "cobertura parcial",
+      "notIncluded": "no incluido"
+    },
+    "tooltip": {
+      "moreExclusions": "y {count} más exclusiones"
+    }
+  },
+  "proposal": {
+    "create": "Crear propuesta",
+    "generating": "Generando…",
+    "open": "Abrir",
+    "copyLink": "Copiar enlace",
+    "created": "Propuesta creada",
+    "ready": "Tu PDF está listo para compartir",
+    "sections": { "cover": "Portada" },
+    "disclaimers": "Avisos",
+    "sources": "Fuentes",
+    "estimated": "(est.)",
+    "error": "No se pudo generar la propuesta"
+  },
+  "paste": {
+    "summarizationFailed": "Falló el resumen",
+    "tryingDirectExtraction": "Intentaré extraer directamente."
+  },
+  "l13": {
+    "paste_guard": {
+      "title": "Contenido extenso detectado",
+      "body": "Este contenido es demasiado grande para procesarlo de una vez. ¿Deseas dividirlo en partes más pequeñas?",
+      "confirm": "Dividir contenido",
+      "cancel": "Mantener como está"
+    },
+    "category": {
+      "title": "Elige categoría de seguro",
+      "health": "Seguro de Salud",
+      "life": "Seguro de Vida",
+      "auto": "Seguro de Auto",
+      "home": "Seguro de Hogar",
+      "travel": "Seguro de Viaje",
+      "business": "Seguro Empresarial"
+    },
+    "multi_pdf": {
+      "attached_files": "Archivos adjuntos",
+      "set_primary": "Establecer como principal",
+      "remove": "Eliminar",
+      "primary_badge": "Principal"
+    },
+    "ocr": {
+      "error": "No se pudo leer el texto de este PDF. Por favor, sube un PDF con texto seleccionable."
+    },
+    "price": {
+      "conversion": "Convertido de {amount} {currency} {period} a {rate}"
+    }
   }
 } 

@@ -80,9 +80,62 @@
     }
   },
   "portal": {
+    "title": "Policy Analysis",
+    "subtitle": "Analyzing your policy",
+    "cta": {
+      "start": "Start analysis",
+      "cancel": "Cancel"
+    },
+    "progress": {
+      "queued": "Initializing",
+      "extracting": "Extracting",
+      "analyzing": "Analyzing",
+      "summarizing": "Summarizing",
+      "done": "Done",
+      "error": "Error"
+    },
+    "section": {
+      "premium": "Premium",
+      "limits": "Coverage Limits",
+      "deductibles": "Deductibles",
+      "features": "Main Features",
+      "exclusions": "Exclusions",
+      "benefits": "Benefits",
+      "risk": "Risk Assessment",
+      "recommendations": "Recommendations",
+      "details": "Details",
+      "alerts": "Alerts"
+    },
+    "actions": {
+      "ask_briki": "Ask Briki",
+      "view_in_pdf": "View in PDF",
+      "view_original_pdf": "View original PDF",
+      "split": "Split",
+      "collapse_viewer": "Collapse viewer",
+      "expand_pdf": "Expand"
+    },
+    "trust": {
+      "source": "Source",
+      "last_updated": "Last updated"
+    },
+    "empty_state": {
+      "title": "We couldn’t analyze due to quota limits",
+      "body": "Change the model or OpenAI key and try again."
+    },
     "prep": {
+      "title": "Prepare analysis",
+      "subtitle": "Select focus areas and start the analysis.",
       "narration": "I'll analyze {fileName}. Choose focus areas and press Start analysis.",
-      "focus_label": "Focus areas"
+      "focus_label": "Focus areas",
+      "instructions": "Select the areas you want me to analyze, then start the analysis.",
+      "pill": {
+        "selected_aria": "{label} selected",
+        "unselected_aria": "{label} not selected"
+      }
+    },
+    "sidebar": {
+      "title": "Briki · Preparing analysis",
+      "progress_label": "Ready"
     },
     "chips": ["exclusions","deductibles","limits","waiting periods","international coverage","specific clauses"],
     "cta_analyze": "Start analysis",
@@ -163,12 +216,60 @@
       "description": "Navigate Medicare options, supplemental coverage, and long-term care insurance with clear explanations and recommendations."
     }
   },
+  "comparator": {
+    "header": "Plan Comparison",
+    "price": "Monthly price",
+    "price_est": "(est.)",
+    "deductibles": "Deductibles",
+    "waitingTimes": "Waiting times",
+    "exclusions": "Main exclusions",
+    "source": "Source",
+    "updated": "Updated",
+    "remove": "Remove from comparison",
+    "criticalDifferences": "Critical differences",
+    "coverageTypes": {
+      "asistencia": "Assistance",
+      "robo": "Theft",
+      "vidrios": "Glass"
+    },
+    "ticks": {
+      "included": "included",
+      "partial": "partial coverage",
+      "notIncluded": "not included"
+    },
+    "proposal": {
+      "button": {
+        "text": "Generate Proposal",
+        "generating": "Generating...",
+        "ariaLabel": "Generate PDF proposal with compared plans"
+      },
+      "success": {
+        "title": "Proposal generated",
+        "description": "Your PDF proposal has been generated successfully"
+      },
+      "error": {
+        "title": "Error generating proposal",
+        "description": "Could not generate the proposal. Please try again."
+      }
+    },
+    "disclaimer": {
+      "sourced": "Data from external sources is approximate."
+    },
+    "sources": {
+      "catalog": "Catalog",
+      "template": "Template",
+      "pdf": "PDF",
+      "url": "Website",
+      "text": "Text"
+    }
+  },
   "assistant": {
     "title": "AI Assistant",
     "subtitle": "Your personalized insurance assistant",
     "welcome_title": "Hello! I'm Briki",
     "welcome_subtitle": "Your personalized insurance assistant. How can I help you today?",
     "inputPlaceholder": "Ask about coverage, compare policies or analyze documents...",
+    "multimodalPlaceholder": "Hello! I'm Briki. Paste a client message, drop a PDF, or just type what they need. I'll fill the brief for you.",
     "uploadButton": "Upload file",
     "sendButton": "Send",
     "thinking": "Thinking...",
@@ -179,6 +280,7 @@
     "compare_selected": "Compare selected",
     "add_to_proposal": "Add to proposal",
     "generate_proposal": "Generate proposal",
+    "quick_actions": "Quick actions",
     "auth": {
       "title": "Exclusive access for users",
       "description": "Sign in to access your personalized AI insurance assistant.",
@@ -205,7 +307,127 @@
     "checkRightPanel": "Check the right panel to compare plans and get quotes.",
     "comparingPlans": "Here's a detailed comparison of the selected plans:",
     "pinToCompare": "Pin plans to compare them side by side",
-    "comparisonSummary": "Comparison Summary"
+    "comparisonSummary": "Comparison Summary",
+    "show_brief": "Show brief",
+    "filter_plans": "Filter plans",
+    "insurance_results": "Insurance results",
+    "pin": "Pin",
+    "pin_toast_desc": "{planName} added to pinned plans",
+    "pin_toast_title": "Pinned",
+    "pinned": "Pinned",
+    "pinned_plans": "Pinned plans",
+    "plans": "Plans",
+    "unpin": "Unpin",
+    "unpin_toast_desc": "{planName} removed from pinned plans",
+    "unpin_toast_title": "Unpinned",
+    "view_comparison_in_chat": "View comparison in chat",
+    "price": {
+      "converted_label": "Converted price (COP/month)",
+      "original_label": "Original price",
+      "original_value": "Original price {amount} {currency}",
+      "assumed_period": "Assumed period: {period}",
+      "rate_used": "Rate used: {rate}",
+      "why": "Why?"
+    },
+    "trust": {
+      "source": "Source",
+      "updated": "Updated"
+    },
+    "brief_context_banner": "Showing results with your brief{details}.",
+    "brief_context_details": " ({details})",
+    "brief_context_notes": "with notes",
+    "context": {
+      "insuranceType": "Insurance type",
+      "coverage": "Coverage",
+      "budget": "Monthly budget",
+      "city": "City",
+      "prefix": "User context",
+      "suffix": "Use this information to provide more accurate and relevant recommendations."
+    },
+    "search_templates": {
+      "search_plans": "Search {category} plans",
+      "show_insurance": "Show {category} insurance",
+      "view_options": "View {category} options",
+      "available_plans": "{category} plans available"
+    },
+    "waiting_confirmation": "Would you like me to search for plans now?",
+    "results_title": "Results",
+    "suggestions_title": "Suggestions"
+  },
+  "brief": {
+    "reparse": {
+      "title": "How to process new text?",
+      "description": "There's already information in the brief. Would you prefer to merge the new content with existing or replace everything?",
+      "merge": "Re-extract and merge",
+      "replace": "Replace everything"
+    },
+    "source": {
+      "paste": "Source: Pasted Text",
+      "upload": "Source: Uploaded File",
+      "url": "Source: URL"
+    },
+    "documents": {
+      "title": "Documents",
+      "empty": "No documents attached",
+      "pdf_added": "PDF added to documents",
+      "pdf_removed": "PDF removed from documents",
+      "type": {
+        "pdf": "PDF",
+        "url": "URL",
+        "text": "Text"
+      }
+    },
+    "categoryChooser": {
+      "title": "Choose insurance type",
+      "description": "Select a category to search for plans"
+    },
+    "longPasteGuard": {
+      "title": "Large paste detected",
+      "description": "We'll summarize first, then extract your brief."
+    },
+    "extractChip": "Extract brief?",
+    "title": "Client brief",
+    "category_label": "Insurance category",
+    "select_category": "Select a category",
+    "budget_label": "Max budget (COP)",
+    "budget_placeholder": "300000",
+    "budget_hint": "Maximum monthly amount the client is willing to pay",
+    "must_have_label": "Must-have coverages",
+    "add_coverage": "Add coverage",
+    "add_coverage_placeholder": "Add coverage...",
+    "aria": {
+      "expand": "Expand brief",
+      "collapse": "Collapse brief"
+    },
+    "common_coverages": "Common coverages:",
+    "select_category_for_coverages_hint": "Select a category to see common coverages.",
+    "persona_label": "Client persona",
+    "persona_placeholder": "e.g. Young family with 2 kids, lives in Bogotá...",
+    "persona_hint": "Additional info about the client to personalize recommendations",
+    "notes_label": "Additional notes",
+    "notes_placeholder": "Special requirements, preferences, observations...",
+    "search": "Search plans",
+    "apply_to_assistant": "Apply to assistant",
+    "select_category_to_search_hint": "Select a category to search plans",
+    "actions": {
+      "discard": "Discard",
+      "edit": "Edit brief"
+    },
+    "badge": {
+      "saving": "Saving...",
+      "saved": "Saved",
+      "error": "Error"
+    },
+    "toggle": {
+      "apply": "Apply to assistant",
+      "applyDescription": "Use this brief as context in conversations"
+    },
+    "docs": {
+      "preview": "Preview",
+      "delete": "Delete",
+      "attachedDocuments": "Attached documents",
+      "defaultTitle": "Document"
+    }
   },
   "plans": {
     "notFound": "No recommended plans found for your request.",
@@ -223,10 +445,24 @@
     "quoteButton": "Get Quote",
     "cheapestTag": "Most Affordable",
     "recommendedTag": "Recommended",
-    "bestValueTag": "Best Value"
+    "bestValueTag": "Best Value",
+    "templateApplied": "Template applied",
+    "searchLabel": "Search",
+    "results": "Results",
+    "viewOnWebsite": "See on website",
+    "details": "Details",
+    "quote": "Quote",
+    "brochure": "Brochure",
+    "showLess": "Show less",
+    "more": "more"
   },
   "common": {
-    "error": "Error"
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "error": "Error",
+    "minimize": "Minimize",
+    "retry": "Retry"
   },
   "about": {
     "hero": {
@@ -519,7 +755,8 @@
     "errors": {
       "pdfOnly": "Only PDF files are allowed",
       "tooLarge": "File is too large. Maximum 10MB",
-      "unknown": "Unknown error"
+      "unknown": "Unknown error",
+      "ocrFailed": "Could not extract text from PDF. Please upload a PDF with selectable text instead of a scanned image."
     }
   },
   "history": {
@@ -540,7 +777,10 @@
     "jumpHere": "Jump here",
     "viewOriginal": "View original PDF",
     "backToTop": "Back to top",
-    "announcedJump": "Jumped to page {{page}}"
+    "announcedJump": "Jumped to page {{page}}",
+    "analyzing": "Analyzing...",
+    "error": "Failed to load PDF",
+    "upload_prompt": "Upload a PDF to analyze"
   },
   "analysis": {
     "premium": "Premium",
@@ -557,5 +797,101 @@
     "exportAnnotated": "Export annotated PDF (beta)",
     "copyLink": "Copy link",
     "share": "Share"
+  },
+  "openInPdf": "Open in PDF",
+  "searchInPdf": "Search in PDF",
+  "emptySectionGuide": "We didn’t find items in \"{{section}}\". Want me to search the PDF or review a related section?",
+  "askAboutSection": "Ask me about \"{{section}}\"?",
+  "prefillExplainSection": "Explain this section ({{section}}).",
+  "useSuggestion": "Use",
+  "section": {
+    "premium": "Premium",
+    "limits": "Coverage limits",
+    "deductibles": "Deductibles",
+    "features": "Benefits",
+    "exclusions": "Exclusions",
+    "risk": "Risks",
+    "recommendations": "Recommendations",
+    "details": "Details",
+    "alerts": "Alerts"
+  },
+  "comparison": {
+    "title": "Plan comparison",
+    "add": "Add to compare",
+    "inComparison": "In comparison",
+    "remove": "Remove",
+    "removeAriaLabel": "Remove {name} from comparison",
+    "fields": {
+      "price": "Price",
+      "priceEstimated": "(est.)",
+      "perMonth": "/month",
+      "deductibles": "Deductibles",
+      "assistance": "Assistance",
+      "theft": "Theft",
+      "windows": "Windows",
+      "waitingTimes": "Waiting times",
+      "exclusions": "Exclusions",
+      "source": "Source",
+      "lastUpdated": "Last updated",
+      "noData": "—"
+    },
+    "footer": {
+      "criticalDifferences": "Critical differences",
+      "whyTheseOptions": "Why these options"
+    },
+    "tickStates": {
+      "included": "included",
+      "partial": "partial coverage",
+      "notIncluded": "not included"
+    },
+    "tooltip": {
+      "moreExclusions": "and {count} more exclusions"
+    }
+  },
+  "proposal": {
+    "create": "Create proposal",
+    "generating": "Generating…",
+    "open": "Open",
+    "copyLink": "Copy link",
+    "created": "Proposal created",
+    "ready": "Your PDF is ready to share",
+    "sections": { "cover": "Cover" },
+    "disclaimers": "Disclaimers",
+    "sources": "Sources",
+    "estimated": "(est.)",
+    "error": "Failed to generate proposal"
+  },
+  "paste": {
+    "summarizationFailed": "Summarization failed",
+    "tryingDirectExtraction": "Trying direct extraction instead."
+  },
+  "l13": {
+    "paste_guard": {
+      "title": "Large paste detected",
+      "body": "This content is too large to process at once. Would you like to split it into smaller chunks?",
+      "confirm": "Split content",
+      "cancel": "Keep as is"
+    },
+    "category": {
+      "title": "Choose insurance category",
+      "health": "Health Insurance",
+      "life": "Life Insurance",
+      "auto": "Auto Insurance",
+      "home": "Home Insurance",
+      "travel": "Travel Insurance",
+      "business": "Business Insurance"
+    },
+    "multi_pdf": {
+      "attached_files": "Attached files",
+      "set_primary": "Set as primary",
+      "remove": "Remove",
+      "primary_badge": "Primary"
+    },
+    "ocr": {
+      "error": "Could not read text from this PDF. Please upload a PDF with selectable text."
+    },
+    "price": {
+      "conversion": "Converted from {amount} {currency} {period} at {rate}"
+    }
   }
 } 

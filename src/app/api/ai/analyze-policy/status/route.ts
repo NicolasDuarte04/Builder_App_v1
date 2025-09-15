@@ -62,9 +62,10 @@ export async function GET(request: NextRequest) {
 
     const mapped = mapDbStatus(row.status as string | null | undefined);
     const updatedAt: string = row.updated_at || row.upload_time || row.created_at || new Date().toISOString();
+    const reason = mapped.status === 'error' ? (row.error_code || null) : null;
 
     return NextResponse.json(
-      { status: mapped.status, progress: mapped.progress, updatedAt },
+      { status: mapped.status, progress: mapped.progress, updatedAt, reason },
       { status: 200, headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (e: any) {

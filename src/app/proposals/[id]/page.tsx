@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Share2, FileText, CheckCircle, ExternalLink } from 'lucide-react';
 import { telemetry } from '@/lib/telemetry';
 import { supabase } from '@/lib/supabase-client';
@@ -11,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProposalPage() {
   const params = useParams();
+  const { t } = useTranslation();
   const [proposal, setProposal] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -92,16 +94,16 @@ export default function ProposalPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
-            Propuesta #{proposal.id.slice(0, 8)}
+            {String((t as any)('proposal.sections.cover') || 'Portada')} #{proposal.id.slice(0, 8)}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Generada el {new Date(proposal.created_at).toLocaleDateString()} por Briki Co‑Pilot
+            {`Generada el ${new Date(proposal.created_at).toLocaleDateString()} por Briki Co‑Pilot`}
           </p>
         </div>
         
         <Badge variant="outline" className="gap-1">
           <CheckCircle className="h-3 w-3" />
-          Lista para enviar
+          {String((t as any)('proposal.ready') || 'Tu PDF está listo para compartir')}
         </Badge>
       </div>
 
@@ -182,7 +184,7 @@ export default function ProposalPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Compartir propuesta</CardTitle>
+          <CardTitle>{String((t as any)('proposal.disclaimers') || 'Avisos')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
@@ -198,7 +200,7 @@ export default function ProposalPage() {
                   Copiado
                 </>
               ) : (
-                'Copiar enlace'
+                String((t as any)('proposal.copyLink') || 'Copiar enlace')
               )}
             </Button>
           </div>
@@ -211,6 +213,7 @@ export default function ProposalPage() {
       </Card>
 
       <div className="text-xs text-muted-foreground text-center">
+        {/* Static disclaimer could be localized later or sourced from t('proposal.disclaimers') */}
         Esta propuesta fue generada con datos disponibles al momento de la consulta.
         Los precios y coberturas están sujetos a confirmación con la aseguradora.
       </div>

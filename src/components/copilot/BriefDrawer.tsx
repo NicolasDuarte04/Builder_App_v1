@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { X } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BriefDrawerProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface BriefDrawerProps {
 }
 
 export function BriefDrawer({ open, onOpenChange, onSubmit, defaultValues }: BriefDrawerProps) {
+  const { t, language } = useTranslation();
   const [formData, setFormData] = useState({
     category_code: defaultValues?.category_code || 'auto',
     budget_high: defaultValues?.budget_high || '',
@@ -38,7 +40,7 @@ export function BriefDrawer({ open, onOpenChange, onSubmit, defaultValues }: Bri
       budget_high: Number(formData.budget_high),
       must_haves: formData.must_haves
         .split(',')
-        .map(s => s.trim())
+        .map((s: string) => s.trim())
         .filter(Boolean),
     };
     onSubmit(brief);
@@ -61,6 +63,7 @@ export function BriefDrawer({ open, onOpenChange, onSubmit, defaultValues }: Bri
               variant="ghost"
               size="icon"
               onClick={() => onOpenChange(false)}
+              aria-label={t('brief.actions.discard') as any}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -145,7 +148,7 @@ export function BriefDrawer({ open, onOpenChange, onSubmit, defaultValues }: Bri
                         size="sm"
                         className="flex-1"
                         onClick={() => {
-                          const mustHaves = formData.must_haves.split(',').map(s => s.trim()).filter(Boolean);
+                          const mustHaves = formData.must_haves.split(',').map((s: string) => s.trim()).filter(Boolean);
                           setFormData(prev => ({
                             ...prev,
                             must_haves: mustHaves.slice(0, -1).join(', '),

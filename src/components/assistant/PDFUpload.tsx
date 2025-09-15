@@ -173,17 +173,28 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
     }
   };
 
+  const [isDragging, setIsDragging] = useState(false);
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    if (!isDragging) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setIsDragging(false);
     const file = e.dataTransfer.files[0];
     if (file && file.type === 'application/pdf') {
       setUploadedFile(file);
     } else {
-      onError('Solo se permiten archivos PDF');
+      onError(t('upload.errors.pdfOnly'));
     }
   };
 
@@ -199,17 +210,32 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
 
       <AnimatePresence mode="wait">
         {!uploadedFile ? (
-          <motion.div
+          <motion.button
+            type="button"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer"
+            className={`w-full border-2 border-dashed ${
+              isDragging 
+                ? 'border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/10' 
+                : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'
+            } rounded-lg p-6 text-center transition-colors`}
             onClick={() => fileInputRef.current?.click()}
             onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
+            aria-label={t('upload.ctaTitle')}
+            aria-describedby="pdf-drop-hint"
+            data-drag-active={false}
+            aria-dropeffect="copy"
           >
-
-            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" aria-hidden="true" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               {t('upload.ctaTitle')}
             </h3>
@@ -219,7 +245,10 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
             <p className="text-xs text-gray-500 dark:text-gray-500">
               {t('upload.fileRequirements')}
             </p>
-          </motion.div>
+            <p id="pdf-drop-hint" className="sr-only">
+              {t('upload.fileRequirements')}
+            </p>
+          </motion.button>
         ) : (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -271,9 +300,11 @@ export function PDFUpload({ onAnalysisComplete, onError, userId }: PDFUploadProp
                     transition={{ duration: 0.3 }}
                   />
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                  {t('upload.analyzing')} {uploadProgress}%
-                </p>
+                <div role="status" aria-live="polite" aria-atomic="true">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                    {t('upload.analyzing')} {uploadProgress}%
+                  </p>
+                </div>
               </div>
             ) : (
               <Button

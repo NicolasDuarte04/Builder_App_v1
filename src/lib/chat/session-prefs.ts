@@ -1,25 +1,4 @@
-// Lightweight cookie helpers to persist the last used category & country
-import { cookies } from "next/headers";
-
-const CAT_KEY = "briki.activeCategory";
-const COUNTRY_KEY = "briki.country";
-
-export async function readPrefs() {
-  const c = await cookies();
-  return {
-    category: c.get(CAT_KEY)?.value || null,
-    country: c.get(COUNTRY_KEY)?.value || null,
-  };
-}
-
-export async function writePrefs(next: { category?: string | null; country?: string | null }) {
-  const c = await cookies();
-  if (typeof next.category !== "undefined") {
-    if (next.category) c.set(CAT_KEY, next.category, { httpOnly: false, sameSite: "lax", path: "/" });
-    else c.delete(CAT_KEY);
-  }
-  if (typeof next.country !== "undefined") {
-    if (next.country) c.set(COUNTRY_KEY, next.country, { httpOnly: false, sameSite: "lax", path: "/" });
-    else c.delete(COUNTRY_KEY);
-  }
-}
+// ⚠️ WARNING: This is a shim kept for backward-compat. Do NOT import this from client components. ⚠️
+// Server-only re-exports:
+export { getSessionIdFromCookies, readPrefs, writePrefs } from './session-prefs-server';
+// Intentionally no client exports here.

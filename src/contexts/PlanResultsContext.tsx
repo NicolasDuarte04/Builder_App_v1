@@ -1,7 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useRef } from 'react';
 import { InsurancePlan } from '@/components/briki-ai-assistant/NewPlanCard';
+import type { TemplatePlan } from '@/types/results';
+import { telemetry, getUserContext } from '@/lib/telemetry';
+import { useProposal } from '@/state/proposal';
 
 interface PlanResultsData {
   title: string;
@@ -9,9 +12,21 @@ interface PlanResultsData {
   category?: string;
   query?: string;
   timestamp?: Date;
+  // Template support
+  templates?: TemplatePlan[];
+  hasRealPlans?: boolean;
+  isExactMatch?: boolean;
+  noExactMatchesFound?: boolean;
+  dataSource?: string;
+  // Context source (e.g., 'chat_tool')
+  source?: string;
   // Analysis results support
   analysis?: any;
   analysisType?: 'policy_analysis';
+  // Sources support (normalized plans from documents/text)
+  sources?: any[];
+  // Telemetry tracking
+  requestId?: string;
 }
 
 interface PlanResultsContextType {
@@ -45,27 +60,90 @@ interface PlanResultsProviderProps {
 
 export function PlanResultsProvider({ 
   children, 
-  defaultDualPanelMode = true // Default to Gemini-style dual panel
+  defaultDualPanelMode = false // Default: start in single panel; open right panel explicitly when needed
 }: PlanResultsProviderProps) {
   const [currentResults, setCurrentResults] = useState<PlanResultsData | null>(null);
   const [isRightPanelOpen, setRightPanelOpen] = useState(false);
   const [isDualPanelMode, setDualPanelMode] = useState(defaultDualPanelMode);
+  
+  // De-duplication guard for telemetry
+  const processedRequestIds = useRef<Set<string>>(new Set());
 
   // CORE GEMINI-STYLE METHODS
-  const showPanelWithPlans = (results: PlanResultsData) => {
+  const showPanelWithPlans = async (results: PlanResultsData) => {
+    // Generate requestId if not provided
+    const requestId = results.requestId || `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
     const newResults = {
       ...results,
+      requestId,
       timestamp: new Date()
     };
     
+    // [AUDIT] Context injection
+    const uiPhaseBefore = (() => { try { return useProposal.getState().uiPhase; } catch { return 'unknown'; } })();
+    console.log('[AUDIT] Context injection:', {
+      plansCount: results.plans?.length || 0,
+      templatesCount: results.templates?.length || 0,
+      sourcesCount: results.sources?.length || 0,
+      uiPhaseBefore,
+      requestId
+    });
+    
     console.log('🎯 GEMINI-STYLE: Auto-opening right panel with plans:', newResults);
+    
+    // Fire consolidated telemetry (with de-duplication)
+    if (!processedRequestIds.current.has(requestId)) {
+      processedRequestIds.current.add(requestId);
+      
+      try {
+        const { sessionId, userId } = await getUserContext();
+        const planCount = results.plans?.length || 0;
+        const templateCount = results.templates?.length || 0;
+        const hasRealPlans = results.hasRealPlans !== false && planCount > 0;
+        const dataSource = results.dataSource || (templateCount > 0 && planCount === 0 ? 'templates' : planCount > 0 ? 'plans_v2' : 'mixed');
+        
+        // RESULTS_INJECTED - fired when results are provided to the panel
+        telemetry.track(telemetry.events.RESULTS_INJECTED, {
+          requestId,
+          category: results.category,
+          dataSource,
+          planCount,
+          templateCount,
+          hasRealPlans,
+          sessionId,
+          userId
+        });
+        
+        // If only templates are being shown (no plans, no sources)
+        const sourcesCount = results.sources?.length || 0;
+        if (templateCount > 0 && planCount === 0 && sourcesCount === 0) {
+          telemetry.track(telemetry.events.TEMPLATES_GENERATED, {
+            reason: 'no_catalog_results',
+            templateCount,
+            category: results.category,
+            sessionId,
+            userId
+          });
+        }
+      } catch (err) {
+        console.error('Telemetry error:', err);
+      }
+    }
     
     setCurrentResults(newResults);
     
-    // AUTO-OPEN the right panel when plans are detected
-    if (results.plans.length > 0) {
+    // AUTO-OPEN the right panel and enable dual-panel mode when items are present
+    const hasPlans = (results.plans?.length || 0) > 0;
+    const hasTemplates = (results.templates?.length || 0) > 0;
+    const hasSources = (results.sources?.length || 0) > 0;
+    if (hasPlans || hasTemplates || hasSources) {
+      setDualPanelMode(true);
       setRightPanelOpen(true);
-      console.log('✅ Right panel auto-opened with', results.plans.length, 'plans');
+      try { useProposal.getState().setUiPhase('results'); } catch {}
+      const itemCount = (results.plans?.length || 0) || (results.templates?.length || 0) || (results.sources?.length || 0);
+      const itemType = hasPlans ? 'plans' : hasTemplates ? 'templates' : 'sources';
+      console.log(`✅ Right panel auto-opened with ${itemCount} ${itemType}`);
     }
   };
 

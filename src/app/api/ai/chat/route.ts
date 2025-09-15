@@ -3,13 +3,17 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { queryInsurancePlans, hasDatabaseUrl } from '@/lib/render-db';
 import { searchPlans } from '@/lib/plans-client';
 import { InsurancePlan } from '@/types/project';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSystemPrompt, logPromptVersion, PROMPT_VERSION } from '@/config/systemPrompt';
 import { franc } from 'franc-min';
 import { logToolError } from '@/lib/ai-error-handler';
-import { readPrefs, writePrefs } from '@/lib/chat/session-prefs';
+import { readPrefs, writePrefs } from '@/lib/chat/session-prefs-server';
 import { normalizeCategory } from '@/lib/category-alias';
+import { getInsurancePlans } from '@/lib/tools/getInsurancePlans';
+import { getCurrentBrief } from '@/lib/server/brief-helpers';
+import { validateAndNormalizeBrief } from '@/lib/validate/brief';
+import { telemetry } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
 
@@ -66,8 +70,8 @@ function createMockStream(reply: string) {
 // Remove the getSamplePlans function entirely - we don't want any mock data
 // const getSamplePlans = (category: string) => { ... } - REMOVED
 
-export async function POST(req: Request) {
-  const { messages, preferredLanguage } = await req.json();
+export async function POST(req: NextRequest) {
+  const { messages, preferredLanguage, clientBrief } = await req.json();
   const encoder = new TextEncoder();
 
   console.log('🔵 Chat API called with:', {
@@ -287,141 +291,123 @@ export async function POST(req: Request) {
                 benefits_contain,
               });
 
-              console.log('🔍 Database connection status:', {
-                hasDatabaseUrl,
-                envVarSet: !!process.env.RENDER_POSTGRES_URL,
-                envVarLength: process.env.RENDER_POSTGRES_URL?.length || 0
-              });
+              // Get current brief from session, fallback to client brief
+              const serverBrief = await getCurrentBrief();
+              const brief = serverBrief ?? clientBrief ?? null;
+              const briefSource: 'server' | 'client' | 'none' = serverBrief ? 'server' : (clientBrief ? 'client' : 'none');
+              console.log('📋 Brief source:', briefSource);
 
-              // Infer include/exclude categories from latest user messages
-              const userText = messages
-                .filter((m: any) => m.role === 'user')
-                .slice(-3)
-                .map((m: any) => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)))
-                .join(' \n ')
-                .toLowerCase();
-              const includeCategories: string[] = [];
-              const excludeCategories: string[] = [];
-              if (/\b(salud|health)\b/.test(userText)) includeCategories.push('salud');
-              if (/(no\s+dental|sin\s+dental|\bno\s+odont|\bsin\s+odont)/.test(userText)) excludeCategories.push('dental');
-              // Education detection → canonical input key 'educacion'
-              if (/(educacion|educativa|educativo|estudios|universidad|colegio|education|tuition|school)/.test(userText)) {
-                includeCategories.push('educacion');
+              // Track assistant context applied
+              if (briefSource !== 'none') {
+                telemetry.track(telemetry.events.ASSISTANT_CONTEXT_APPLIED, { source: briefSource });
               }
 
-              // Get session preferences and detect user-intended category
+              // Validate and normalize brief before tools build filters
+              const { brief: normalizedBrief } = validateAndNormalizeBrief(brief || {});
+
+              // Get session preferences for fallback
               const prefs = await readPrefs();
               
-              // Try to detect a user-intended category from last user message or chip
-              const detectedCategoryFromMessage = category || includeCategories[0];
-              const hintedCategory = normalizeCategory(detectedCategoryFromMessage ?? null) || prefs.category;
-              const countryPref = prefs.country || "CO"; // sensible default
-              
-              // Persist what we're about to use
-              await writePrefs({ category: hintedCategory, country: countryPref });
-
-              // Normalize category: map education synonyms to 'educacion' input key
-              const categoryInput =
-                category && /(educacion|educativa|educativo|estudios|universidad|colegio|education|tuition|school)/i.test(category)
-                  ? 'educacion'
-                  : category;
-
-              // Normalize to stored category and ensure country default
-              const normalizedCategory = categoryInput === 'educacion' ? 'educativa' : categoryInput;
-              const normalizedCountry = country || countryPref;
-
-              // Feature-flag aware search path
-              const anyPlans = await searchPlans({
-                category: normalizedCategory,
+              // Prepare override parameters from tool call
+              const override = {
+                category,
                 max_price,
-                country: normalizedCountry,
-                tags,
                 benefits_contain: (typeof benefits_contain === 'string' && benefits_contain.trim())
                   ? benefits_contain.split(',').map((s: string) => s.trim()).filter(Boolean).join(',')
                   : undefined,
                 limit: 4,
-                includeCategories: includeCategories.length ? includeCategories : undefined,
-                excludeCategories: excludeCategories.length ? excludeCategories : undefined,
-              });
-
-              // Normalize to legacy-like shape expected below
-              const plans = anyPlans.map((p: any) => ({
-                id: p.id,
-                name: p.name,
-                provider: p.provider,
-                base_price: p.base_price ?? p.basePrice ?? 0,
-                base_price_formatted: p.base_price_formatted ?? null,
-                currency: p.currency ?? 'COP',
-                benefits: Array.isArray(p.benefits) ? p.benefits : [],
-                category: p.category,
-                rating: p.rating ?? null,
-                external_link: p.external_link ?? p.website ?? null,
-                brochure_link: p.brochure_link ?? p.brochure ?? null,
-                is_external: p._schema === 'v2' ? true : (p.is_external ?? true),
-              }));
-              
-              // Check if we got fuzzy matches (different categories)
-              const isExactMatch = plans.length > 0 && plans.every((plan: any) => 
-                plan.category.toLowerCase() === (normalizedCategory || '').toLowerCase()
-              );
-              
-              // STRICT VALIDATION: Allow priced plans OR quote-flow plans with link
-              const validPlans = plans.filter((plan: any) => 
-                plan && 
-                plan.name && 
-                plan.name !== 'No hay planes disponibles públicamente' &&
-                plan.name !== 'Plan de Seguro' &&
-                plan.provider &&
-                plan.provider !== 'Proveedor' &&
-                (
-                  (plan.base_price > 0) || !!plan.external_link
-                )
-              );
-
-              // Transform for UI
-              const finalPlans = validPlans.map((plan: any, index: number) => ({
-                id: plan.id,
-                name: plan.name,
-                provider: plan.provider,
-                base_price: plan.base_price,
-                base_price_formatted: plan.base_price_formatted,
-                currency: plan.currency,
-                benefits: Array.isArray(plan.benefits) ? plan.benefits : [],
-                category: plan.category,
-                rating: plan.rating,
-                external_link: plan.external_link,
-                brochure_link: (plan as any).brochure_link ?? null,
-                is_external: plan.is_external
-              }));
-              
-              const toolResult = { 
-                type: "insurance_plans",
-                plans: finalPlans,
-                insuranceType: normalizedCategory,
-                hasRealPlans: finalPlans.length > 0,
-                isExactMatch: isExactMatch && finalPlans.length > 0,
-                noExactMatchesFound: !isExactMatch && finalPlans.length > 0,
-                categoriesFound: [...new Set(finalPlans.map((p: any) => p.category))],
-                filters: { includeCategories, excludeCategories, country: normalizedCountry },
-                dataSource: 'plans_v2'
               };
-              console.log('[plans] datasource used', { datasource: 'plans_v2' });
-              
-              console.log('✅✅✅ TOOL EXECUTION FINISHED ✅✅✅');
-              console.log('Returning to AI:', {
-                planCount: finalPlans.length,
-                hasRealPlans: finalPlans.length > 0,
-                insuranceType: normalizedCategory,
-                isExactMatch: toolResult.isExactMatch,
-                noExactMatchesFound: toolResult.noExactMatchesFound,
-                categoriesFound: toolResult.categoriesFound,
-                samplePlanName: finalPlans[0]?.name
+
+              // Use centralized plan fetching logic
+              const result = await getInsurancePlans({
+                brief: normalizedBrief as any,
+                base: req.nextUrl.origin,
+                override
               });
-              
-              // Re-persist the category (keeps it sticky across turns)
-              await writePrefs({ category: hintedCategory });
-              
-              return toolResult;
+
+              console.log('📊 getInsurancePlans result:', { type: result.type });
+
+              if (result.type === 'plans') {
+                // Transform plans to expected format
+                const finalPlans = result.plans.map((p: any) => ({
+                  id: p.id,
+                  name: p.name,
+                  provider: p.provider,
+                  base_price: p.base_price ?? p.basePrice ?? 0,
+                  base_price_formatted: p.base_price_formatted ?? null,
+                  currency: p.currency ?? 'COP',
+                  benefits: Array.isArray(p.benefits) ? p.benefits : [],
+                  category: p.category,
+                  rating: p.rating ?? null,
+                  external_link: p.external_link ?? p.website ?? null,
+                  brochure_link: p.brochure_link ?? p.brochure ?? null,
+                  is_external: p._schema === 'v2' ? true : (p.is_external ?? true),
+                }));
+
+                const normalizedCategory = category || (normalizedBrief as any)?.category || prefs.category;
+                const normalizedCountry = country || prefs.country || 'CO';
+
+                // Persist preferences
+                const prefsUpdate: any = { country: normalizedCountry };
+                if (normalizedCategory) {
+                  prefsUpdate.category = normalizeCategory(normalizedCategory);
+                }
+                await writePrefs(prefsUpdate);
+
+                const toolResult = {
+                  type: "insurance_plans",
+                  plans: finalPlans,
+                  insuranceType: normalizedCategory,
+                  hasRealPlans: finalPlans.length > 0,
+                  isExactMatch: true, // getInsurancePlans handles exact matching
+                  noExactMatchesFound: false,
+                  categoriesFound: [...new Set(finalPlans.map((p: any) => p.category))],
+                  filters: { country: normalizedCountry },
+                  dataSource: 'plans_v2'
+                };
+
+                console.log('✅✅✅ TOOL EXECUTION FINISHED - PLANS ✅✅✅');
+                console.log('Returning to AI:', {
+                  planCount: finalPlans.length,
+                  hasRealPlans: true,
+                  insuranceType: normalizedCategory,
+                  samplePlanName: finalPlans[0]?.name
+                });
+
+                return toolResult;
+              } else {
+                // Templates fallback
+                const normalizedCategory = category || (normalizedBrief as any)?.category || prefs.category;
+                const normalizedCountry = country || prefs.country || 'CO';
+
+                // Persist preferences
+                const prefsUpdate: any = { country: normalizedCountry };
+                if (normalizedCategory) {
+                  prefsUpdate.category = normalizeCategory(normalizedCategory);
+                }
+                await writePrefs(prefsUpdate);
+
+                const toolResult = {
+                  type: "insurance_templates",
+                  templates: result.templates,
+                  insuranceType: normalizedCategory,
+                  hasRealPlans: false,
+                  isExactMatch: false,
+                  noExactMatchesFound: true,
+                  categoriesFound: [],
+                  filters: { country: normalizedCountry },
+                  dataSource: 'templates'
+                };
+
+                console.log('✅✅✅ TOOL EXECUTION FINISHED - TEMPLATES ✅✅✅');
+                console.log('Returning to AI:', {
+                  templateCount: result.templates.length,
+                  hasRealPlans: false,
+                  insuranceType: normalizedCategory
+                });
+
+                return toolResult;
+              }
             } catch (error) {
               console.error('❌ Error executing get_insurance_plans tool:', error);
               logToolError({ 

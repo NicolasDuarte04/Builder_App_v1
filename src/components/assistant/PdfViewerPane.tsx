@@ -1,43 +1,132 @@
 "use client";
 
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { telemetry } from '@/lib/telemetry';
 
 // Types for dynamic pdfjs imports
 type PdfJsModule = typeof import("pdfjs-dist");
 type GetDocumentParams = Parameters<PdfJsModule["getDocument"]>[0];
+type NormalizedRect = [number, number, number, number]; // [x,y,w,h] in 0..1 (page space)
 
-export type PdfViewerHandle = { scrollToPage: (page: number, highlight?: boolean) => void };
+export type PdfViewerHandle = { 
+    scrollToPage: (page: number, smooth?: boolean) => void;
+    highlightRects: (page: number, rects: NormalizedRect[], opts?: { autoClearMs?: number }) => void;
+    clearHighlights: () => void;
+};
 
 type Props = {
     url?: string;
     height?: number; // optional container height; if omitted, rely on CSS classes
     className?: string;
     onVisiblePageChange?: (page: number) => void;
+    onPageChange?: (page: number) => void;
     labels?: { pdf: string; page: string };
 };
 
 const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
-    { url, height, className, onVisiblePageChange, labels },
+    { url, height, className, onVisiblePageChange, onPageChange, labels },
 	ref
 ) {
 	const hostRef = useRef<HTMLDivElement>(null);
 	const [numPages, setNumPages] = useState<number>(0);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
+	const overlaysRef = useRef<Map<number, HTMLDivElement>>(new Map());
+	const clearTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const lastVisiblePageRef = useRef<number | null>(null);
 
     useImperativeHandle(ref, () => ({
-        scrollToPage(page: number, highlight?: boolean) {
+        scrollToPage(page: number, smooth?: boolean) {
             const node = hostRef.current?.querySelector(`[data-pdf-page="${page}"]`);
             const el = node as HTMLElement | null;
-            el?.scrollIntoView({ behavior: "smooth", block: "center" });
-            if (highlight && el) {
-                el.classList.add('ring-2','ring-blue-400');
-                setTimeout(() => {
-                    el.classList.remove('ring-2','ring-blue-400');
-                }, 900);
+            el?.scrollIntoView({ behavior: smooth === false ? "auto" : "smooth", block: "center" });
+        },
+        highlightRects(page: number, rects: NormalizedRect[], opts?: { autoClearMs?: number }) {
+            const pageWrap = hostRef.current?.querySelector(`[data-pdf-page="${page}"]`) as HTMLElement;
+            if (!pageWrap) return;
+
+            // Clear existing highlights
+            clearHighlights();
+
+            // Create overlay if not exists
+            let overlay = overlaysRef.current.get(page);
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.style.position = 'absolute';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                overlay.style.width = '100%';
+                overlay.style.height = '100%';
+                overlay.style.pointerEvents = 'none';
+                overlay.style.zIndex = '10';
+                pageWrap.style.position = 'relative';
+                pageWrap.appendChild(overlay);
+                overlaysRef.current.set(page, overlay);
+            }
+
+            // Draw rects (support normalized 0..1 and pixel coords)
+            const canvas = pageWrap.querySelector('canvas');
+            if (!canvas) return;
+            const canvasWidth = canvas.clientWidth;
+            const canvasHeight = canvas.clientHeight;
+
+            const isNormalized = Array.isArray(rects) && rects.length > 0
+              ? rects.every((r: any) => Array.isArray(r) && r.length === 4 && r.every((n: any) => typeof n === 'number' && n >= 0 && n <= 1))
+              : true;
+
+            rects.forEach((r: any) => {
+                const [rx, ry, rw, rh] = r as number[];
+                let left: number, top: number, width: number, height: number;
+
+                if (isNormalized) {
+                    left = rx * canvasWidth;
+                    top = ry * canvasHeight;
+                    width = rw * canvasWidth;
+                    height = rh * canvasHeight;
+                } else {
+                    left = rx;
+                    top = ry;
+                    width = rw;
+                    height = rh;
+                }
+
+                const div = document.createElement('div');
+                div.className = 'highlight-rect';
+                div.style.position = 'absolute';
+                div.style.left = `${left}px`;
+                div.style.top = `${top}px`;
+                div.style.width = `${width}px`;
+                div.style.height = `${height}px`;
+                div.style.backgroundColor = 'rgba(59, 130, 246, 0.28)';
+                div.style.border = '2px solid rgb(59, 130, 246)';
+                div.style.borderRadius = '4px';
+                div.style.pointerEvents = 'none';
+                overlay.appendChild(div);
+            });
+
+            // Auto-clear: cancel previous timeout first, then set new one
+            const ms = opts?.autoClearMs ?? 5000;
+            if (ms > 0) {
+                if (clearTimeoutRef.current) clearTimeout(clearTimeoutRef.current);
+                clearTimeoutRef.current = setTimeout(() => clearHighlights(), ms);
             }
         },
+        clearHighlights,
     }));
+
+    function clearHighlights() {
+        // Clear ALL overlays including active page
+        overlaysRef.current.forEach(overlay => {
+            overlay.innerHTML = '';
+        });
+        // Cancel any pending timeout
+        if (clearTimeoutRef.current) {
+            clearTimeout(clearTimeoutRef.current);
+            clearTimeoutRef.current = null;
+        }
+        // Telemetry
+        try { telemetry.track('PDF_HIGHLIGHTS_CLEARED'); } catch {}
+    }
 
 	useEffect(() => {
 		let cancelled = false;
@@ -129,6 +218,19 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
                         if (top && Number.isFinite(top.page)) {
                             stickyHeader.textContent = `${labels?.pdf ?? 'PDF'} • ${labels?.page ?? 'Page'} ${top.page}`;
                             onVisiblePageChange?.(top.page);
+                            onPageChange?.(top.page);
+                            
+                            // Clear highlights when page changes
+                            if (top.page !== lastVisiblePageRef.current) {
+                                clearHighlights();
+                                try { telemetry.track('PDF_PAGE_CHANGED', { page: top.page }); } catch {}
+                                lastVisiblePageRef.current = top.page;
+                            }
+                            
+                            // Legacy: Clear highlights on non-active pages (redundant but kept for safety)
+                            overlaysRef.current.forEach((overlay, pageNum) => {
+                                if (pageNum !== top.page) overlay.innerHTML = '';
+                            });
                         }
                     }, { root: rootEl, threshold: [0.6] });
                     pageWraps.forEach(w => io.observe(w));
@@ -143,14 +245,15 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
         renderPdf();
 		return () => {
 			cancelled = true;
+			clearHighlights();
 		};
     }, [url]);
 
-	return (
+		return (
 		<div className={className}>
             <div
                 ref={hostRef}
-                className="overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-neutral-950"
+                className="relative overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-neutral-950"
                 style={typeof height === 'number' ? { height } : undefined}
                 aria-label="PDF viewer"
             />

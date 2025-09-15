@@ -4,9 +4,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { shallow } from 'zustand/shallow';
-import { eventBus, BrikiEvents } from '@/lib/event-bus';
+import { eventBus } from '@/lib/event-bus';
 import { usePlanResults } from '@/contexts/PlanResultsContext';
 import { useLanguage } from '@/components/LanguageProvider';
+import { telemetry, getUserContext } from '@/lib/telemetry';
+import { useBriefStore } from '@/state/briefStore';
 
 export function useBrikiChat(initialMessages?: any[]) {
   const setChatHistory = useProjectStore((state) => state.setChatHistory);
@@ -17,12 +19,14 @@ export function useBrikiChat(initialMessages?: any[]) {
   const { language } = useLanguage();
 
   const [currentToolInvocations, setCurrentToolInvocations] = useState<any[]>([]);
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, error: chatError, setMessages } = useChat({
     api: '/api/ai/chat',
     initialMessages: initialMessages || [],
     body: {
-      preferredLanguage: language // Pass the navbar language preference
+      preferredLanguage: language, // Pass the navbar language preference
+      clientBrief: useBriefStore.getState().brief
     },
     onFinish: (message) => {
         console.log('🎯 Chat message finished:', message.content?.substring(0, 50) + '...');
@@ -31,8 +35,91 @@ export function useBrikiChat(initialMessages?: any[]) {
         if (message.toolInvocations && message.toolInvocations.length > 0) {
             message.toolInvocations.forEach((invocation: any) => {
                 if (invocation.toolName === 'get_insurance_plans' && invocation.result) {
-                    // Pre-check for category mismatch before handling
                     const result = invocation.result;
+
+                    // Handle smart templates (fallback when no catalog plans)
+                    if (result?.type === 'templates' || result?.type === 'insurance_templates') {
+                        try {
+                          const templateData = {
+                            type: 'templates',
+                            items: Array.isArray(result.templates) ? result.templates : [],
+                            insuranceType: result.insuranceType || result.category || undefined,
+                            title: result.title || 'Plantillas Sugeridas',
+                            hasRealPlans: false,
+                            isExactMatch: result.isExactMatch,
+                            noExactMatchesFound: result.noExactMatchesFound,
+                            dataSource: result.dataSource || 'templates'
+                          };
+                          
+                          // Generate a requestId once to reuse in audit + UI injection
+                          const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+                          // [AUDIT] Chat finish: templates received
+                          console.log('[AUDIT] Chat finish: templates received', {
+                            count: templateData.items.length,
+                            category: templateData.insuranceType,
+                            requestId
+                          });
+                          
+                          // Guard against double-render during streaming
+                          if (streamingMessageId) {
+                            console.log('🚫 Skipping duplicate template render during streaming');
+                            return;
+                          }
+                          setStreamingMessageId(`template-data-${Date.now()}`);
+                          
+                          // Push templates directly to the right panel (no chat bubble),
+                          // passing context info
+                          showPanelWithPlans({
+                            title: templateData.title,
+                            plans: [],
+                            templates: templateData.items,
+                            category: templateData.insuranceType,
+                            hasRealPlans: false,
+                            isExactMatch: templateData.isExactMatch,
+                            noExactMatchesFound: templateData.noExactMatchesFound,
+                            dataSource: templateData.dataSource,
+                            requestId,
+                            source: 'chat_tool',
+                          });
+                          
+                          // Emit structured data event for templates
+                          const structuredTemplateData = {
+                            type: 'templates' as const,
+                            data: {
+                              title: templateData.title,
+                              templates: templateData.items,
+                              category: templateData.insuranceType,
+                              hasRealPlans: false,
+                              isExactMatch: templateData.isExactMatch,
+                              noExactMatchesFound: templateData.noExactMatchesFound,
+                              dataSource: templateData.dataSource,
+                            },
+                            metadata: {
+                              timestamp: new Date(),
+                              source: 'chat',
+                              query: result.query,
+                            }
+                          };
+                          
+                          // Emit via event bus for any listeners (non-rendering)
+                          eventBus.emit('STRUCTURED_DATA_RECEIVED', structuredTemplateData);
+                          eventBus.emit('INSURANCE_TEMPLATES_RECEIVED', structuredTemplateData.data);
+                          
+                          // Already pushed to panel above; no chat bubble rendering
+                          
+                          // Note: TEMPLATES_GENERATED telemetry is now handled in showPanelWithPlans
+                          
+                          // Clear streaming guard after a short delay
+                          setTimeout(() => setStreamingMessageId(null), 1000);
+                          
+                        } catch (e) {
+                          console.warn('⚠️ Failed to append templates structured message', e);
+                        }
+                        return; // Do not emit plans UI in this case
+                    }
+
+                    // Pre-check for category mismatch before handling
                     const isCategoryMismatch = result.noExactMatchesFound && 
                                                result.insuranceType && 
                                                result.categoriesFound && 
@@ -96,6 +183,8 @@ export function useBrikiChat(initialMessages?: any[]) {
         // Clear tool invocations when a new assistant message is added
         if (newMessages.some(m => m.role === 'assistant')) {
           setCurrentToolInvocations([]);
+          // Also clear streaming guard
+          setStreamingMessageId(null);
         }
       } else {
         // Handle message deletion/clearing
@@ -117,6 +206,13 @@ export function useBrikiChat(initialMessages?: any[]) {
   // Handle structured data from tool invocations
   const handleStructuredData = useCallback((data: any) => {
     console.log('🎯 GEMINI-STYLE: Handling structured data:', data);
+    
+    // Global streaming guard to prevent duplicate processing
+    if (streamingMessageId) {
+      console.log('🚫 Skipping duplicate structured data processing during streaming');
+      return;
+    }
+    setStreamingMessageId(`structured-data-${Date.now()}`);
     
     if (!data || !data.plans) return;
 
@@ -200,19 +296,18 @@ export function useBrikiChat(initialMessages?: any[]) {
     };
 
     // Emit via event bus (for any listeners)
-    eventBus.emit(BrikiEvents.STRUCTURED_DATA_RECEIVED, structuredData);
-    eventBus.emit(BrikiEvents.INSURANCE_PLANS_RECEIVED, structuredData.data);
+    eventBus.emit('STRUCTURED_DATA_RECEIVED', structuredData);
+    eventBus.emit('INSURANCE_PLANS_RECEIVED', structuredData.data);
 
-    // Also emit directly to context if in dual panel mode
-    if (isDualPanelMode) {
-      showPanelWithPlans(structuredData.data);
-    }
-  }, [isDualPanelMode, showPanelWithPlans]);
+    // Always push to the right panel; no chat bubble rendering
+    showPanelWithPlans(structuredData.data);
+  }, [isDualPanelMode, showPanelWithPlans, streamingMessageId, setStreamingMessageId]);
 
   const clearChat = useCallback(() => {
     clearStoreHistory();
     setMessages([]);
     setCurrentToolInvocations([]);
+    setStreamingMessageId(null);
   }, [clearStoreHistory, setMessages]);
 
   // Add assistant message programmatically

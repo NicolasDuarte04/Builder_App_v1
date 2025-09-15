@@ -59,6 +59,11 @@ const config: Config = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
+  			},
+  			briki: {
+  				50: 'hsl(var(--briki-50))',
+  				500: 'hsl(var(--briki-500))',
+  				600: 'hsl(var(--briki-600))'
   			}
   		},
   		animation: {

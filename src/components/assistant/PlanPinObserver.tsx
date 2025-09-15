@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from 'react';
-import { useBrikiEvent, eventBus } from '@/lib/event-bus';
+import { BrikiEvents, useBrikiEvent, eventBus, emit } from '@/lib/event-bus';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface PlanPinObserverProps {
@@ -21,7 +21,7 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
   const { language } = useTranslation();
   
   // Listen for plan pinned events
-  useBrikiEvent('plan-pinned', (event: any) => {
+  useBrikiEvent(BrikiEvents.PLAN_PINNED, (event: any) => {
     console.log('📌 Plan pinned:', event);
     
     const currentTime = Date.now();
@@ -75,7 +75,7 @@ export function PlanPinObserver({ appendAssistantMessage }: PlanPinObserverProps
   });
   
   // Listen for plan unpinned events
-  useBrikiEvent('plan-unpinned', (event: any) => {
+  useBrikiEvent(BrikiEvents.PLAN_UNPINNED, (event: any) => {
     console.log('📌 Plan unpinned:', event);
     
     const currentTime = Date.now();

@@ -120,7 +120,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
     <motion.div
       onMouseLeave={() => setHovered(null)}
       className={cn(
-        "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium text-zinc-600 transition duration-200 hover:text-zinc-800 lg:flex lg:space-x-2",
+        "absolute inset-0 hidden flex-row items-center justify-center space-x-2 text-sm font-medium text-zinc-600 transition duration-200 hover:text-zinc-800 lg:flex lg:space-x-2",
         className,
       )}
     >
@@ -225,9 +225,33 @@ export const MobileNavToggle = ({
   onClick: () => void;
 }) => {
   return isOpen ? (
-    <IconX className="text-black dark:text-white" onClick={onClick} />
+    <IconX 
+      className="text-black dark:text-white cursor-pointer" 
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-label="Cerrar menú de navegación"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    />
   ) : (
-    <IconMenu2 className="text-black dark:text-white" onClick={onClick} />
+    <IconMenu2 
+      className="text-black dark:text-white cursor-pointer" 
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-label="Abrir menú de navegación"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    />
   );
 };
  
@@ -242,6 +266,15 @@ export const NavbarLogo = () => {
   );
 };
  
+interface NavbarButtonProps {
+  href?: string;
+  as?: React.ElementType;
+  children: React.ReactNode;
+  className?: string;
+  variant?: "primary" | "secondary" | "dark" | "gradient";
+  visible?: boolean;
+}
+
 export const NavbarButton = ({
   href,
   as,
@@ -250,21 +283,11 @@ export const NavbarButton = ({
   variant = "primary",
   visible,
   ...props
-}: {
-  href?: string;
-  as?: React.ElementType;
-  children: React.ReactNode;
-  className?: string;
-  variant?: "primary" | "secondary" | "dark" | "gradient";
-  visible?: boolean;
-} & (
-  | React.ComponentPropsWithoutRef<"a">
-  | React.ComponentPropsWithoutRef<"button">
-)) => {
+}: NavbarButtonProps & (React.ComponentPropsWithoutRef<"button"> | React.ComponentPropsWithoutRef<"a">)) => {
   if (visible) return null;
 
   const baseStyles =
-    "px-4 py-2 rounded-md bg-white button bg-white text-black text-sm font-bold relative cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center whitespace-nowrap";
+    "px-4 py-2 rounded-md bg-white text-black text-sm font-bold relative cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center whitespace-nowrap";
 
   const variantStyles = {
     primary:
@@ -274,15 +297,27 @@ export const NavbarButton = ({
     gradient:
       "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]",
   };
+  
   const Tag = as || (href ? Link : "button");
 
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={cn(baseStyles, variantStyles[variant], className)}
+        {...(props as React.ComponentPropsWithoutRef<"a">)}
+      >
+        {children}
+      </Link>
+    );
+  }
+
   return (
-    <Tag
-      href={href || undefined}
+    <button
       className={cn(baseStyles, variantStyles[variant], className)}
-      {...props}
+      {...(props as React.ComponentPropsWithoutRef<"button">)}
     >
       {children}
-    </Tag>
+    </button>
   );
 }; 

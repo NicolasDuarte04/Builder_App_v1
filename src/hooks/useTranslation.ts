@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useLanguage } from "@/components/LanguageProvider";
-import { getTranslation } from "@/lib/translations";
+import { useLanguage } from '@/components/LanguageProvider';
+import { getTranslation } from '@/lib/translations';
 
 function normalizeLang(code?: string): 'es' | 'en' {
   const c = (code || 'en').toLowerCase();

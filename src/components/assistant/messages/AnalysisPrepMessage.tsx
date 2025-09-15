@@ -82,7 +82,7 @@ export default function AnalysisPrepMessage({ payload }: { payload: Payload }) {
           onClick={() => {
             useAnalyzer.getState().clear();
             useUI.getState().setLayoutMode("normal");
-            window.dispatchEvent(new CustomEvent("briki:open-analyzer-panel"));
+            try { (require('@/state/analyzerUI') as any).useAnalyzerUI.getState().open('sidebarCTA'); } catch {}
           }}
         >
           {t('assistant.analysis_prep.cta_change')}

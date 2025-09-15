@@ -1,6 +1,6 @@
 "use client";
 
-import { useBrikiEvent } from '@/lib/event-bus';
+import { BrikiEvents, useBrikiEvent, eventBus, emit } from '@/lib/event-bus';
 
 interface CategoryFallbackObserverProps {
   appendAssistantMessage: (content: string) => void;
@@ -12,7 +12,7 @@ interface CategoryFallbackObserverProps {
 export function CategoryFallbackObserver({ appendAssistantMessage }: CategoryFallbackObserverProps) {
   
   // Listen for category not found events
-  useBrikiEvent('insurance-category-not-found', (event: any) => {
+  useBrikiEvent(BrikiEvents.CATEGORY_FALLBACK_SUGGESTED, (event: any) => {
     console.log('❌ Category not found:', event);
     
     const categoryNames: Record<string, string> = {

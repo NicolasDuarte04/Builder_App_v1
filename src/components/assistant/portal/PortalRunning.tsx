@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useUI } from "@/state/ui";
 import { useAnalyzer } from "@/state/analyzer";
-import { telemetry } from "@/lib/telemetry";
+import { telemetry, getUserContext } from "@/lib/telemetry";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAnalysisProgress } from "@/hooks/use-analysis-progress";
 import { ProgressBar, StepDots, PhaseLabel } from "./ProgressBar";
@@ -20,6 +20,7 @@ export default function PortalRunning({ uploadId }: Props) {
   const [serverStatus, setServerStatus] = useState<"queued"|"extracting"|"analyzing"|"summarizing"|"done"|"error">("queued");
   const pollRef = useRef<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const startedAtRef = useRef<number>(Date.now());
   
   // Start optimistic progress immediately on mount
   useEffect(() => {
@@ -27,16 +28,27 @@ export default function PortalRunning({ uploadId }: Props) {
   }, [startOptimistic]);
 
   const labels = useMemo(() => ({
-    initializing: String((t as any)("portal.running.initializing") || "Initializing"),
-    extracting: String((t as any)("portal.running.extracting") || "Extracting"),
-    analyzing: String((t as any)("portal.running.analyzing") || "Analyzing"),
-    summarizing: String((t as any)("portal.running.summarizing") || "Summarizing"),
-    done: String((t as any)("portal.running.done") || "Done"),
-    cancel: String((t as any)("portal.running.cancel") || "Cancel"),
+    initializing: String((t as any)("portal.progress.queued") || (t as any)("portal.running.initializing") || "Initializing"),
+    extracting: String((t as any)("portal.progress.extracting") || (t as any)("portal.running.extracting") || "Extracting"),
+    analyzing: String((t as any)("portal.progress.analyzing") || (t as any)("portal.running.analyzing") || "Analyzing"),
+    summarizing: String((t as any)("portal.progress.summarizing") || (t as any)("portal.running.summarizing") || "Summarizing"),
+    done: String((t as any)("portal.progress.done") || (t as any)("portal.running.done") || "Done"),
+    cancel: String((t as any)("portal.cta.cancel") || (t as any)("portal.running.cancel") || "Cancel"),
     aria: (status: string, p: number) => String((t as any)("portal.running.progress_aria") || "{status} {progress}%").replace("{status}", status).replace("{progress}", String(p)),
   }), [t]);
 
-  useEffect(() => { headingRef.current?.focus(); }, []);
+  useEffect(() => {
+    // Enter running phase focus to live status region for SR users
+    try { (require('@/state/ui') as any).useUI.getState().setUiPhase?.('running'); } catch {}
+    try { startedAtRef.current = (typeof performance !== 'undefined' ? performance.now() : Date.now()); } catch {}
+    const node = liveRef.current;
+    if (node) {
+      try { node.focus(); } catch {}
+      try { telemetry.track(telemetry.events.A11Y_FOCUS_MOVED, { phase: 'running', target: 'status_live' }); } catch {}
+    } else {
+      headingRef.current?.focus();
+    }
+  }, []);
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -69,6 +81,7 @@ export default function PortalRunning({ uploadId }: Props) {
       
       const mappedPhase = phaseMap[detail.status] || 'analyzing';
       bindServerPhase(mappedPhase, detail.progress);
+      try { telemetry.track(telemetry.events.PORTAL_PROGRESS, { uploadId, phase: mappedPhase, percent: detail.progress }); } catch {}
 
       // polite announcement
       const statusLabel = labels[mappedPhase as StepKey] || 'Running';
@@ -107,23 +120,39 @@ export default function PortalRunning({ uploadId }: Props) {
         const res = await fetch(`/api/ai/analyze-policy/status?${qs.toString()}`, { cache: 'no-store' });
         if (!res.ok) {
           stopPolling();
-          telemetry.track(telemetry.events.RUN_FAILED || 'run_failed', { uploadId, status: res.status });
+          telemetry.track(((telemetry as any).events?.RUN_FAILED) || 'run_failed', { uploadId, status: res.status });
           try { (await import('@/hooks/use-toast')).toast({ title: 'Error', description: `Status check failed (${res.status})`, variant: 'destructive' }); } catch {}
           useUI.getState().setLayoutMode('analysis_portal_prep');
           return;
         }
         const data = await res.json();
-        const detail = { uploadId, status: data.status, progress: data.progress };
+        const detail = { uploadId, status: data.status, progress: data.progress, reason: data.reason } as any;
         window.dispatchEvent(new CustomEvent('analysis:progress', { detail }));
         try { telemetry.track(telemetry.events.RUN_PROGRESS || 'run_progress', detail as any); } catch {}
         if (data.status === 'done') {
           stopPolling();
           try { telemetry.track(telemetry.events.RUN_COMPLETED, { uploadId }); } catch {}
+          try {
+            const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+            const durationMs = Math.max(0, now - (startedAtRef.current || now));
+            telemetry.track(telemetry.events.PORTAL_COMPLETED, { uploadId, durationMs });
+          } catch {}
           useUI.getState().setLayoutMode('analysis_results');
+          try { (require('@/state/ui') as any).useUI.getState().setUiPhase?.('results'); } catch {}
         } else if (data.status === 'error') {
           stopPolling();
-          try { (await import('@/hooks/use-toast')).toast({ title: 'Error', description: 'Analysis failed', variant: 'destructive' }); } catch {}
-          useUI.getState().setLayoutMode('analysis_portal_prep');
+          // Step-2 analytics: BRIEF_PARSED_FAILED
+          getUserContext().then(({ sessionId, userId }) => {
+            telemetry.track(telemetry.events.BRIEF_PARSED_FAILED, {
+              reason: data.reason || 'unknown_error',
+              sessionId,
+              userId
+            });
+          });
+          // Flip to results view even on error so quota UI can render
+          useAnalyzer.getState().setLastErrorReason?.(data.reason || null);
+          useUI.getState().setLayoutMode('analysis_results');
+          try { (require('@/state/ui') as any).useUI.getState().setUiPhase?.('results'); } catch {}
         }
       } catch (e: any) {
         stopPolling();
@@ -145,7 +174,12 @@ export default function PortalRunning({ uploadId }: Props) {
   }
 
   function cancelRun() {
-    try { telemetry.track(telemetry.events.ANALYZER_CANCELLED, { uploadId }); } catch {}
+    try {
+      telemetry.track(telemetry.events.ANALYZER_CANCELLED, { uploadId });
+      telemetry.track(telemetry.events.ANALYSIS_ABORTED, { uploadId, reason: 'user_cancelled' });
+    } catch {}
+    try { useAnalyzer.getState().abortController?.abort(); } catch {}
+    try { useAnalyzer.getState().setAbortController(null); } catch {}
     stopPolling();
     useAnalyzer.getState().setUploadId(null);
     useUI.getState().setLayoutMode('analysis_portal_prep');
@@ -154,8 +188,8 @@ export default function PortalRunning({ uploadId }: Props) {
   return (
     <section className="rounded-xl border bg-card shadow-sm flex flex-col overflow-hidden h-[calc(100vh-var(--nav-h)-var(--hdr-h)-24px)]" role="region" aria-label="Portal running">
       <div className="p-4 sm:p-5 space-y-4 overflow-auto flex-1">
-        <h2 ref={headingRef} tabIndex={-1} className="text-sm font-medium">Analizando tu póliza</h2>
-        <div className="sr-only" aria-live="polite" ref={liveRef}></div>
+        <h2 ref={headingRef} tabIndex={-1} className="text-sm font-medium">{String((t as any)("portal.subtitle") || "Analizando tu póliza")}</h2>
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" tabIndex={-1} ref={liveRef}></div>
         
         {/* Progress bar with shimmer effect */}
         <div className="space-y-3">

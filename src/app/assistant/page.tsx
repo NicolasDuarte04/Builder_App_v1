@@ -1,52 +1,127 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlanResultCard } from '@/components/PlanResultCard';
 import { AnalyzerPanel } from '@/components/copilot/AnalyzerPanel';
 import { AIAssistantInterface } from '@/components/assistant/AIAssistantInterface';
+import { PlanResultsProvider } from '@/contexts/PlanResultsContext';
 import { BootOverlay } from '@/components/BootOverlay';
+import { BriefPanel } from '@/components/brief/BriefPanel';
 import { useProposal } from '@/state/proposal';
 import { useUI } from '@/state/ui';
 import { useAnalyzer } from '@/state/analyzer';
+import { useAnalyzerUI, isValidAnalyzerSource } from '@/state/analyzerUI';
+import { useBriefStore } from '@/state/briefStore';
 import { useRouter } from 'next/navigation';
 import { FileText, Sparkles, AlertCircle } from 'lucide-react';
-import { telemetry } from '@/lib/telemetry';
+import { telemetry, getUserContext } from '@/lib/telemetry';
 import { ENABLE_BRC_PORTAL, DEBUG_PORTAL } from '@/lib/featureFlags';
+import { assignIncredibleBrief } from '@/lib/flags';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import IconRail from '@/components/assistant/IconRail';
 import PortalPrep from '@/components/assistant/portal/PortalPrep';
 import PortalRunning from '@/components/assistant/portal/PortalRunning';
+import PortalResults from '@/components/assistant/portal/PortalResults';
 import { flushSync } from 'react-dom';
+import { useTranslation } from '@/hooks/useTranslation';
+import { getOrCreateSessionId } from '@/lib/chat/session-prefs-client';
+import { toast } from '@/hooks/use-toast';
+import { useIsBriefCollapsed, useUILayoutStore } from '@/state/uiLayoutStore';
+import { useUiPhase } from '@/state/proposal';
 
 export default function AssistantPage() {
   const router = useRouter();
-  const { brief, shortlist, selected, setBrief, setShortlist, isSelected, toggleSelect, setUiPhase } = useProposal();
-  const { layoutMode } = useUI();
+  const { t } = useTranslation();
+  const brief = useProposal((s) => s.brief);
+  const shortlist = useProposal((s) => s.shortlist);
+  const selected = useProposal((s) => s.selected);
+  const setBrief = useProposal((s) => s.setBrief);
+  const setShortlist = useProposal((s) => s.setShortlist);
+  const isSelected = useProposal((s) => s.isSelected);
+  const toggleSelect = useProposal((s) => s.toggleSelect);
+  const setUiPhase = useProposal((s) => s.setUiPhase);
+  const layoutMode = useUI((s) => s.layoutMode);
+  const loadFromServer = useBriefStore((s) => s.loadFromServer);
+  const briefCategory = useBriefStore((s) => s.brief?.category);
+  const setBriefInStore = useBriefStore((s) => s.setBrief);
   const isPortalMode = layoutMode === 'analysis_portal_prep' || layoutMode === 'analysis_running' || layoutMode === 'analysis_results';
   const [loading, setLoading] = useState(false);
-  const [briefOpen, setBriefOpen] = useState(false);
-  const [isAnalyzerExpanded, setIsAnalyzerExpanded] = useState(false);
+  const isAnalyzerExpanded = useAnalyzerUI((s) => s.isOpen);
+  const setIsAnalyzerExpanded = useAnalyzerUI((s) => s.setOpen);
   const [analyzingPlan, setAnalyzingPlan] = useState<any>(null);
+  const isBriefCollapsed = useIsBriefCollapsed();
+  const setBriefCollapsed = useUILayoutStore((s) => s.setBriefCollapsed);
+  const setBriefManualOpen = useUILayoutStore((s) => s.setBriefManualOpen);
+  const setBriefManualClosed = useUILayoutStore((s) => s.setBriefManualClosed);
+  const uiPhase = useUiPhase();
+  const isResultsPhase = uiPhase === 'results';
+  const flowStarted = uiPhase !== 'welcome';
+  const collapseMode: 'inplace' | 'window' = uiPhase === 'welcome' ? 'inplace' : 'window';
+  const handleToggleBriefPanel = useCallback(() => {
+    if (isBriefCollapsed) {
+      setBriefManualOpen();
+      setBriefCollapsed(false);
+    } else {
+      setBriefManualClosed();
+      setBriefCollapsed(true);
+    }
+  }, [isBriefCollapsed, setBriefManualOpen, setBriefManualClosed, setBriefCollapsed]);
   const [, setChatSeed] = useState<{ brief: any; shortlist: any[] } | null>(null);
   const [boot, setBoot] = useState(true);
   const briefSectionRef = useRef<HTMLDivElement | null>(null);
-  const [formData, setFormData] = useState({
-    category_code: brief?.category_code || 'auto',
-    budget_high: brief?.budget_high || '',
-    must_haves: brief?.must_haves?.join(', ') || '',
-  });
+  const didLoadBriefRef = useRef(false);
+  const [portalAnalysis, setPortalAnalysis] = useState<any>(null);
+  const [portalViewerUrl, setPortalViewerUrl] = useState<string | null>(null);
   
   useEffect(() => {
     const t = setTimeout(() => setBoot(false), 1200);
     return () => clearTimeout(t);
+  }, []);
+
+  // Client-side session hydration
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (didLoadBriefRef.current) return;
+      didLoadBriefRef.current = true;
+      const loadSession = async () => {
+        try {
+          const sessionId = await getOrCreateSessionId();
+          // For now, use a placeholder userId - in production this would come from auth
+          const userId = 'guest-user';
+          await loadFromServer(userId, sessionId);
+        } catch (error) {
+          console.warn('Failed to load session data:', error);
+        }
+      };
+      
+      void loadSession();
+    }
+  }, []);
+
+  // Feature flag assignment for ff_incredible_brief
+  useEffect(() => {
+    (async () => {
+      try {
+        const { sessionId, userId } = await getUserContext();
+        const force = new URLSearchParams(window.location.search).get('ff_incredible_brief') === '1' ? 'on' : undefined;
+        const variant = assignIncredibleBrief(sessionId, force);
+        telemetry.track(telemetry.events.FF_ASSIGNMENT, {
+          flag: 'ff_incredible_brief',
+          variant,
+          method: force ? 'forced' : 'hash(sessionId)',
+          pct: Number(process.env.NEXT_PUBLIC_FF_INCREDIBLE_BRIEF_PCT ?? '10'),
+          sessionId, 
+          userId,
+        });
+        // If you actually gate UI/logic, set a local state or context here
+      } catch (error) {
+        console.warn('Failed to assign feature flag:', error);
+      }
+    })();
   }, []);
 
   // Auto-advance to results when shortlist arrives
@@ -54,13 +129,51 @@ export default function AssistantPage() {
     if (shortlist && shortlist.length > 0) {
       setUiPhase('results');
     }
-  }, [shortlist?.length, setUiPhase]);
+  }, [shortlist.length, setUiPhase]);
+
+  // Sync useProposal brief with briefStore when brief changes
+  useEffect(() => {
+    const computedCategory = brief ? getCategoryFromCode(brief.category_code) : undefined;
+    if (brief && (briefCategory !== computedCategory)) {
+      // Convert useProposal brief format to briefStore format
+      const briefStoreFormat = {
+        id: `brief-${Date.now()}`,
+        userId: 'guest-user',
+        sessionId: 'temp-session',
+        locale: 'es' as const,
+        source: 'manual' as const,
+        category: getCategoryFromCode(brief.category_code),
+        maxBudgetCop: brief.budget_high,
+        mustHaveCoverages: brief.must_haves || [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        version: 1,
+        isApplied: true,
+      };
+      setBriefInStore(briefStoreFormat);
+    }
+  }, [brief, briefCategory, setBriefInStore]);
+
+  // Helper function to convert category code to Spanish name
+  const getCategoryFromCode = (code: string): 'Vehículos'|'Salud'|'Viajes'|'Vida'|'Hogar'|'Otro' => {
+    const categoryMap: Record<string, 'Vehículos'|'Salud'|'Viajes'|'Vida'|'Hogar'|'Otro'> = {
+      auto: 'Vehículos',
+      health: 'Salud',
+      life: 'Vida', 
+      travel: 'Viajes',
+      home: 'Hogar',
+    };
+    return categoryMap[code] || 'Otro';
+  };
 
   // Handle briki:open-brief event from WelcomeHero
   useEffect(() => {
     const handler = () => {
-      setBriefOpen(true); // ensure expanded
-      // small delay to let layout expand before scrolling
+      // Telemetry: Brief panel opened
+      getUserContext().then(({ sessionId, userId }) => {
+        telemetry.track(telemetry.events.BRIEF_PANEL_OPENED || 'brief_panel_opened', { sessionId, userId });
+      });
+      // Scroll to brief panel
       requestAnimationFrame(() => {
         briefSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
@@ -69,14 +182,21 @@ export default function AssistantPage() {
     return () => window.removeEventListener('briki:open-brief', handler);
   }, []);
 
-  // Handle briki:open-analyzer-panel event from WelcomeHero
+  // Handle briki:open-analyzer-panel (legacy) with strict source gating
   useEffect(() => {
-    const handler = () => {
+    const handler = (e: Event) => {
+      const source = (e as CustomEvent)?.detail?.source;
+      if (!isValidAnalyzerSource(source)) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[ANALYZER] blocked: unknown source');
+        }
+        return;
+      }
       setAnalyzingPlan(null);
-      setIsAnalyzerExpanded(true);
+      try { useAnalyzerUI.getState().open(source); } catch {}
     };
-    window.addEventListener('briki:open-analyzer-panel', handler);
-    return () => window.removeEventListener('briki:open-analyzer-panel', handler);
+    window.addEventListener('briki:open-analyzer-panel', handler as EventListener);
+    return () => window.removeEventListener('briki:open-analyzer-panel', handler as EventListener);
   }, []);
 
   // Handle briki:pdf-selected event for layout transition
@@ -95,6 +215,19 @@ export default function AssistantPage() {
         if (ENABLE_BRC_PORTAL && (telemetry as any)?.events?.PORTAL_OPENED) {
           telemetry.track((telemetry as any).events.PORTAL_OPENED, {});
         }
+        // Track oversize files if size is available (soft signal; UI handles UX)
+        try {
+          const detail = (e as CustomEvent).detail as any;
+          const size = Number(detail?.size || 0);
+          const MAX_BYTES = 10 * 1024 * 1024; // 10MB soft limit for portal UX
+          if (size > MAX_BYTES) {
+            telemetry.track(telemetry.events.FILE_SIZE_REJECTED || 'file_size_rejected', {
+              size,
+              maxBytes: MAX_BYTES,
+              fileName: detail?.name || undefined,
+            });
+          }
+        } catch {}
       } catch {}
       // Collapse left rail and expand chat
       if (ENABLE_BRC_PORTAL) {
@@ -110,8 +243,9 @@ export default function AssistantPage() {
         useUI.getState().setLayoutMode(newMode);
         if (DEBUG_PORTAL) console.log('[DEBUG_PORTAL] Layout mode changed to:', newMode);
       }
-      // If brief panel is open, close it (optional, maintain your existing state)
-      setBriefOpen(false);
+      // Brief panel is now always visible - no need to close
+      // Enter prep phase for portal
+      try { setUiPhase('prep' as any); } catch {}
       // Inject prelude message via event (chat handles rendering) unless portal is enabled
       if (!ENABLE_BRC_PORTAL) {
         window.dispatchEvent(new CustomEvent("briki:analysis-prep"));
@@ -147,8 +281,23 @@ export default function AssistantPage() {
           console.log('[DEBUG_PORTAL] Starting analysis with file:', file.name);
           console.log('[DEBUG_PORTAL] Focus areas:', focusAreas);
         }
-        // Set phase to analyzing
-        setUiPhase('analyzing_pdf');
+        // Client-side size guard (10MB)
+        const LIMIT = 10 * 1024 * 1024;
+        if (typeof file.size === 'number' && file.size > LIMIT) {
+          const sizeMB = Number((file.size / (1024 * 1024)).toFixed(1));
+          try { telemetry.track('FILE_SIZE_REJECTED', { sizeMB, limitMB: 10 }); } catch {}
+          try {
+            const { toast } = await import('@/hooks/use-toast');
+            const title = String((t as any)("portal.file_too_large") || 'Archivo demasiado grande');
+            const body = String((t as any)("portal.empty_state.body") || `El archivo supera el límite permitido (máx 10 MB).`);
+            toast({ title, description: `${body} (${sizeMB} MB > 10 MB)`, variant: 'default' });
+          } catch {}
+          // Stay in prep; do not enter running phase
+          try { useUI.getState().setLayoutMode('analysis_portal_prep'); } catch {}
+          return;
+        }
+        // Enter running phase for portal
+        try { setUiPhase('running' as any); } catch {}
         // Immediate optimistic UI update - flip layout before making request
         const runningMode = ENABLE_BRC_PORTAL ? 'analysis_running' : 'analysis_focus';
         if (DEBUG_PORTAL) { try { performance.mark('click.start'); } catch {} }
@@ -179,12 +328,26 @@ export default function AssistantPage() {
         try {
           const res = await fetch('/api/ai/analyze-policy', { method: 'POST', body: fd, signal: controller.signal });
           if (!res.ok) {
+            // Handle server 413 specifically
+            if (res.status === 413) {
+              let limitMB = 10;
+              try { const j = await res.json(); if (j?.limitMB) limitMB = Number(j.limitMB) || 10; } catch {}
+              try {
+                const { toast } = await import('@/hooks/use-toast');
+                const title = String((t as any)("portal.file_too_large") || 'Archivo demasiado grande');
+                const body = String((t as any)("portal.empty_state.body") || `El archivo supera el límite permitido`);
+                toast({ title, description: `${body} (máx ${limitMB} MB)`, variant: 'default' });
+              } catch {}
+              useUI.getState().setLayoutMode('analysis_portal_prep');
+              return;
+            }
             let reason: any = `(${res.status})`;
             try { const j = await res.json(); reason = j?.message || j?.error || reason; } catch {}
             try {
               const { toast } = await import('@/hooks/use-toast');
+              const title = String((t as any)("portal.error_start") || 'No se pudo iniciar el análisis');
               toast({
-                title: 'No se pudo iniciar el análisis',
+                title,
                 description: typeof reason === 'string' ? reason : 'Error del servidor',
                 variant: 'destructive',
               });
@@ -207,7 +370,10 @@ export default function AssistantPage() {
         } catch (e: any) {
           // aborted or failed
           if (e?.name === 'AbortError') {
-            try { telemetry.track(telemetry.events.ANALYZER_CANCELLED, {}); } catch {}
+            try {
+              telemetry.track(telemetry.events.ANALYZER_CANCELLED, {});
+              telemetry.track(telemetry.events.ANALYSIS_ABORTED, { reason: 'abort_signal' });
+            } catch {}
           } else {
             console.error('Error starting analysis', e);
           }
@@ -215,8 +381,7 @@ export default function AssistantPage() {
           try { useAnalyzer.getState().setAbortController(null); } catch {}
         }
 
-        // Move to processing after request sent
-        setUiPhase('processing');
+        // Keep uiPhase as 'running' during processing in portal
 
         // In portal mode, transition to results is handled by poller in PortalRunning
 
@@ -243,10 +408,19 @@ export default function AssistantPage() {
   const handleCreateProposal = useCallback(async () => {
     if (selected.length === 0) return;
     
+    const startTime = Date.now();
+    const { sessionId, userId } = await getUserContext();
+    
+    try {
+      toast({ title: String((t as any)('proposal.generating') || 'Generando…') });
+    } catch {}
+
     telemetry.track(telemetry.events.PROPOSAL_CREATED, {
       planCount: selected.length,
       hasAnalysis: selected.some(p => p.analysis),
       category: brief?.category_code,
+      sessionId,
+      userId
     });
     
     const payload = {
@@ -261,9 +435,33 @@ export default function AssistantPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+
+    if (!res.ok) {
+      let message: any = `(${res.status})`;
+      try { const j = await res.json(); message = j?.error || j?.message || message; } catch {}
+      try {
+        toast({ title: String((t as any)('proposal.error') || 'No se pudo generar la propuesta'), description: String(message || ''), variant: 'destructive' });
+      } catch {}
+      return;
+    }
     
     const data = await res.json();
     if (data?.id) {
+      const latencyMs = Date.now() - startTime;
+      // Track successful proposal creation with additional metrics
+      telemetry.track('PROPOSAL_CREATED_SUCCESS', {
+        proposalId: data.id,
+        latencyMs,
+        planCount: selected.length,
+        hasAnalysis: selected.some(p => p.analysis),
+        sessionId,
+        userId
+      });
+      
+      try {
+        toast({ title: String((t as any)('proposal.created') || 'Propuesta creada'), description: String((t as any)('proposal.ready') || 'Tu PDF está listo para compartir') });
+      } catch {}
+
       // Navigate after creation
       router.push(`/proposals/${data.id}`);
     }
@@ -276,48 +474,57 @@ export default function AssistantPage() {
     return () => window.removeEventListener('briki:create-proposal', onCreate);
   }, [handleCreateProposal]);
 
-  const handleInlineBriefSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const brief = {
-      category_code: formData.category_code,
-      budget_high: Number(formData.budget_high),
-      must_haves: formData.must_haves
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean),
-    };
-    handleBriefSubmit(brief);
-    setBriefOpen(false);
-  };
 
   // Fetch shortlist when brief is submitted
   async function handleBriefSubmit(formBrief: any) {
     setBrief(formBrief);
     setLoading(true);
-    setBriefOpen(false);
     setUiPhase('processing');
     
+    let sessionId: string = 'unknown';
+    try {
+      const ctx = await getUserContext();
+      sessionId = ctx?.sessionId || 'unknown';
+    } catch {}
+
     telemetry.track(telemetry.events.INTAKE_SUBMITTED, {
       category: formBrief.category_code,
       budget: formBrief.budget_high,
-      mustHaves: formBrief.must_haves.length,
+      mustHaves: formBrief?.must_haves?.length ?? 0,
     });
     
     try {
+      const payload = {
+        category: formBrief.category_code,
+        country: 'CO',
+        maxPrice: formBrief.budget_high,
+        mustHaves: formBrief.must_haves,
+        sessionId,
+      };
+
       const res = await fetch('/api/copilot/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formBrief),
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      setShortlist(data || []);
-      
-      // Set chat seed once when results arrive
-      if (data && data.length > 0) {
-        setChatSeed({ brief: formBrief, shortlist: data });
+
+      if (res.ok) {
+        const data = await res.json();
+        const plans = data?.plans;
+        setShortlist(plans ?? []);
+        telemetry.track(telemetry.events.SHORTLIST_FETCHED, { count: plans?.length ?? 0, sessionId });
+        // Set chat seed once when results arrive
+        if (plans && plans.length > 0) {
+          setChatSeed({ brief: formBrief, shortlist: plans });
+        }
+      } else {
+        setShortlist([]);
+        telemetry.track(telemetry.events.SHORTLIST_FAILED, { status: res.status, sessionId });
       }
     } catch (error) {
       console.error('Error fetching shortlist:', error);
+      setShortlist([]);
+      telemetry.track(telemetry.events.SHORTLIST_FAILED, { status: 'network_error', sessionId });
     } finally {
       setLoading(false);
     }
@@ -354,11 +561,11 @@ export default function AssistantPage() {
         <section className="relative">
           {/* header + grid go inside here */}
           <div className={cn(
-            "grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[calc(100vh-var(--nav-h)-var(--hdr-h))]",
+            "grid grid-cols-1 md:grid-cols-12 gap-4 min-h-[calc(100vh-var(--nav-h)-var(--hdr-h))]",
             isPortalMode && "bg-gradient-to-b from-[var(--briki-from)]/6 via-transparent to-[var(--briki-to)]/8"
           )}>
-          {/* Left rail: results */}
-          {!isPortalMode && (
+          {/* Left rail: brief & analyzer (hidden when results + collapsed; shown again if user expands) */}
+          {!isPortalMode && !(isResultsPhase && isBriefCollapsed) && (
             <motion.section 
               ref={briefSectionRef} 
               className={cn(
@@ -368,110 +575,19 @@ export default function AssistantPage() {
               style={(layoutMode === "analysis_prep") ? { width: 48 } : undefined}
               aria-hidden={(layoutMode === "analysis_prep") ? "true" : "false"}
               initial={false}
-              animate={layoutMode === 'analysis_prep' ? { opacity: 1, x: 0 } : { opacity: 1, x: 0 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ type: 'spring', stiffness: 240, damping: 28 }}
             >
             {layoutMode === "analysis_prep" ? (
               <IconRail />
             ) : (
               <>
-            {/* Brief Card - Always visible */}
-            <Card className="rounded-xl border bg-card overflow-hidden relative">
-              <CardHeader className="flex flex-row items-center justify-between gap-2 p-5 sm:p-6">
-                <CardTitle>Brief del cliente</CardTitle>
-                {!brief && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (!briefOpen) {
-                        setUiPhase('collecting_brief');
-                      } else {
-                        setUiPhase('welcome');
-                      }
-                      setBriefOpen(!briefOpen);
-                    }}
-                  >
-                    {briefOpen ? 'Cerrar' : 'Iniciar brief'}
-                  </Button>
-                )}
-              </CardHeader>
-              
-              <AnimatePresence initial={false}>
-                {briefOpen && !brief && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <form onSubmit={handleInlineBriefSubmit} className="p-4 space-y-4 border-t">
-                      <div className="space-y-2">
-                        <Label htmlFor="category">Categoría de seguro</Label>
-                        <Select
-                          value={formData.category_code}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, category_code: value as "auto" | "health" | "life" | "travel" }))}
-                        >
-                          <SelectTrigger id="category">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="auto">Vehículos</SelectItem>
-                            <SelectItem value="health">Salud</SelectItem>
-                            <SelectItem value="life">Vida</SelectItem>
-                            <SelectItem value="travel">Viajes</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="budget">Presupuesto máximo (COP)</Label>
-                        <Input
-                          id="budget"
-                          type="number"
-                          placeholder="300000"
-                          value={formData.budget_high}
-                          onChange={(e) => setFormData(prev => ({ ...prev, budget_high: e.target.value }))}
-                          required
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Valor mensual máximo que el cliente está dispuesto a pagar
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="must_haves">Coberturas imprescindibles</Label>
-                        <Input
-                          id="must_haves"
-                          placeholder="asistencia, vidrios, robo"
-                          value={formData.must_haves}
-                          onChange={(e) => setFormData(prev => ({ ...prev, must_haves: e.target.value }))}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Separa cada cobertura con comas
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col gap-3 pt-2">
-                        <Button type="submit" size="sm" className="w-full">
-                          Buscar mejores opciones
-                        </Button>
-                      </div>
-                    </form>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              
-              {/* Show description when not editing */}
-              {!briefOpen && !brief && (
-                <CardContent className="p-5 sm:p-6 pt-0">
-                  <p className="text-sm text-muted-foreground">
-                    Comienza ingresando los detalles del seguro que busca tu cliente
-                  </p>
-                </CardContent>
-              )}
-            </Card>
+            {/* Brief Panel - Replaces inline brief card */}
+            <BriefPanel 
+              isCollapsed={isBriefCollapsed}
+              onToggleCollapse={handleToggleBriefPanel}
+              collapseMode={collapseMode}
+            />
             
             {/* Analyze Policy (PDF) Button - Separate full-width action */}
             <div className="mt-3">
@@ -485,13 +601,13 @@ export default function AssistantPage() {
                     console.log('[ANALYZE_BTN] Clicked - toggling analyzer panel');
                   }
                   setAnalyzingPlan(null);
-                  setIsAnalyzerExpanded((v) => !v);
+                  try { useAnalyzerUI.getState().open('sidebarCTA'); } catch {}
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     setAnalyzingPlan(null);
-                    setIsAnalyzerExpanded((v) => !v);
+                    try { useAnalyzerUI.getState().open('sidebarCTA'); } catch {}
                   }
                 }}
                 aria-expanded={isAnalyzerExpanded}
@@ -558,37 +674,33 @@ export default function AssistantPage() {
             
             {/* Empty State */}
             {!loading && brief && shortlist.length === 0 && (
-              <Card className="rounded-xl border bg-card">
-                <CardContent className="p-5 sm:p-6 py-12 text-center">
-                  <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-medium mb-2">No encontramos opciones</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Intenta ajustar los criterios de búsqueda
-                  </p>
-                  <div className="flex gap-2 justify-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setBriefOpen(true);
-                        telemetry.track(telemetry.events.EMPTY_STATE_CLICKED, { action: 'increase_budget' });
-                      }}
-                    >
-                      Ampliar presupuesto
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setBriefOpen(true);
-                        telemetry.track(telemetry.events.EMPTY_STATE_CLICKED, { action: 'fewer_requirements' });
-                      }}
-                    >
-                      Menos requisitos
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="rounded-xl border bg-card p-5 sm:p-6 py-12 text-center">
+                <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="font-medium mb-2">No encontramos opciones</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Intenta ajustar los criterios de búsqueda
+                </p>
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      telemetry.track(telemetry.events.EMPTY_STATE_CLICKED, { action: 'increase_budget' });
+                    }}
+                  >
+                    Ampliar presupuesto
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      telemetry.track(telemetry.events.EMPTY_STATE_CLICKED, { action: 'fewer_requirements' });
+                    }}
+                  >
+                    Menos requisitos
+                  </Button>
+                </div>
+              </div>
             )}
               </>
             )}
@@ -597,25 +709,50 @@ export default function AssistantPage() {
 
           {/* Portal container */}
           {isPortalMode && (
-            <motion.main className="col-span-12 lg:col-span-8" initial={false} animate={{ opacity: 1 }} transition={{ type:'spring', stiffness:240, damping:28 }}>
-              {useUI.getState().layoutMode === 'analysis_running' ? (
-                (() => {
+            <motion.main className="col-span-12 md:col-span-8" initial={false} animate={{ opacity: 1 }} transition={{ type:'spring', stiffness:240, damping:28 }}>
+              {(() => {
+                const currentMode = useUI.getState().layoutMode;
+                
+                if (currentMode === 'analysis_results') {
+                  // Fetch analysis if not already loaded
+                  if (!portalAnalysis) {
+                    const uploadId = useAnalyzer.getState().uploadId;
+                    if (uploadId) {
+                      fetch(`/api/ai/analyze-policy/result?uploadId=${uploadId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                          if (data.analysis) {
+                            setPortalAnalysis(data.analysis);
+                          }
+                          if (data.viewerUrl) {
+                            setPortalViewerUrl(data.viewerUrl);
+                          }
+                        })
+                        .catch(err => console.error('[portal] Failed to fetch results:', err));
+                    }
+                    return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>;
+                  }
+                  const reason = useAnalyzer.getState().lastErrorReason;
+                  return <PortalResults analysis={portalAnalysis} pdfUrl={portalAnalysis?._pdfData?.pdfUrl} viewerUrl={portalViewerUrl} reason={reason || undefined} />;
+                }
+                
+                if (currentMode === 'analysis_running') {
                   const uid = (useAnalyzer.getState().uploadId || '') as string;
                   return uid ? <PortalRunning uploadId={uid} /> : <PortalPrep />;
-                })()
-              ) : (
-                <PortalPrep />
-              )}
+                }
+                
+                return <PortalPrep />;
+              })()}
             </motion.main>
           )}
 
           {/* Right rail: chat */}
           <motion.aside className={cn(
             isPortalMode
-              ? "col-span-12 lg:col-span-4 lg:border-l lg:border-muted lg:pl-6 lg:bg-muted/5"
+              ? "col-span-12 md:col-span-4 md:border-l md:border-muted md:pl-1 md:bg-muted/5"
               : (layoutMode === "analysis_prep")
-                ? "lg:col-span-11"
-                : "lg:col-span-8"
+                ? "md:col-span-11"
+                : (isResultsPhase ? (isBriefCollapsed ? "md:col-span-12" : "md:col-span-8") : "md:col-span-8")
           )}
             initial={false}
             animate={{ opacity: 1 }}
@@ -628,23 +765,12 @@ export default function AssistantPage() {
               transition={{ type: 'spring', stiffness: 240, damping: 28 }}
               // 70vh on small screens; on lg+ we consume viewport height minus navbar+header and a small offset
             >
-              {/* Proposal CTA bar */}
-              {selected.length > 0 && (
-                <div className="px-4 py-2 border-b bg-muted/30 flex justify-end">
-                  <Button
-                    onClick={handleCreateProposal}
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Generar propuesta ({selected.length})
-                  </Button>
-                </div>
-              )}
-              <AIAssistantInterface
-                mode="embedded"
-                initialSeed={brief && shortlist.length ? { brief, shortlist } : null}
-              />
+              <PlanResultsProvider defaultDualPanelMode={false}>
+                <AIAssistantInterface
+                  mode="embedded"
+                  initialSeed={brief && shortlist.length ? { brief, shortlist } : null}
+                />
+              </PlanResultsProvider>
             </motion.div>
           </motion.aside>
           </div>

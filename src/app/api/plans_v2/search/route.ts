@@ -4,9 +4,13 @@ import { normalizeIncludeExclude, normalizeList, normalizeCategory } from '@/lib
 import { getDomainFromRequest } from '@/lib/server/base-url';
 import { writeReport } from '@/lib/observability/reports';
 import { FLAGS } from '@/lib/flags';
+import { normalizePriceToCOP } from '@/lib/currency-normalization';
 import { normalizeCarrier } from '@/lib/catalog/normalize';
+import { createHash } from 'crypto';
 
 export const runtime = 'nodejs';
+
+// currency normalization logic moved to '@/lib/currency-normalization' for reuse
 
 export async function POST(req: Request) {
   const start = Date.now();
@@ -108,6 +112,22 @@ export async function POST(req: Request) {
     rows = res.rows;
   }
 
+  // Add normalized prices if flag is enabled
+  if (FLAGS.currencyNorm && Array.isArray(rows)) {
+    rows = rows.map(row => {
+      const normalizedPrice = normalizePriceToCOP(
+        row.base_price,
+        row.currency,
+        row.price_period || 'monthly'
+      );
+      
+      return {
+        ...row,
+        normalizedPrice
+      };
+    });
+  }
+
   try {
     console.info('[plans_v2/search]', {
       includeCategories: includeNorm,
@@ -115,6 +135,7 @@ export async function POST(req: Request) {
       count: Array.isArray(rows) ? rows.length : 0,
       runtime: process.env.NEXT_RUNTIME || 'nodejs',
       limit,
+      currencyNormEnabled: FLAGS.currencyNorm,
     });
   } catch {}
 
@@ -168,11 +189,28 @@ export async function POST(req: Request) {
         const needle = lc(q);
         filtered = filtered.filter((r: any) => lc(r.name).includes(needle) || lc(r.name_en || '').includes(needle) || lc(r.provider).includes(needle));
       }
-      const limited = filtered.slice(0, Math.min(Number(limit) || 20, 100));
+      let limited = filtered.slice(0, Math.min(Number(limit) || 20, 100));
+      
+      // Add normalized prices to fallback data if flag is enabled
+      if (FLAGS.currencyNorm) {
+        limited = limited.map((row: any) => {
+          const normalizedPrice = normalizePriceToCOP(
+            row.base_price,
+            row.currency,
+            row.price_period || 'monthly'
+          );
+          
+          return {
+            ...row,
+            normalizedPrice
+          };
+        });
+      }
+      
       try {
-        console.info('[plans_v2/search:fallback]', { includeCategories: includeNorm, country: country || null, count: limited.length });
+        console.info('[plans_v2/search:fallback]', { includeCategories: includeNorm, country: country || null, count: limited.length, currencyNormEnabled: FLAGS.currencyNorm });
       } catch {}
-      return NextResponse.json(limited, { status: 200 });
+      rows = limited;
     } catch (e) {
       try { console.error('[plans_v2/search:fallback] failed', e); } catch {}
     }
@@ -197,7 +235,42 @@ export async function POST(req: Request) {
     }
   } catch {}
 
-  return NextResponse.json(rows, { status: 200 });
+  // Compute server-authoritative PRICE_NORMALIZED metadata and attach headers
+  try {
+    const normalizedCount = Array.isArray(rows)
+      ? rows.reduce((acc: number, r: any) => acc + (r?.normalizedPrice ? 1 : 0), 0)
+      : 0;
+    const safeRows = Array.isArray(rows) ? rows : [];
+    // Deterministic searchId using request filters (order-insensitive where applicable)
+    const searchKey = JSON.stringify({
+      country,
+      include: Array.isArray(includeNorm) ? [...includeNorm].sort() : [],
+      exclude: Array.isArray(excludeNorm) ? [...excludeNorm].sort() : [],
+      tags: Array.isArray(tags) ? [...tags].sort() : [],
+      q: String(q || ''),
+      provider: providerRaw ? normalizeCarrier(String(providerRaw).trim()) : undefined,
+      minPrice: typeof minPrice === 'number' ? minPrice : undefined,
+      maxPrice: typeof maxPrice === 'number' ? maxPrice : undefined,
+      benefitsContains: (Array.isArray((body as any)?.benefitsContains) ? (body as any).benefitsContains : String((body as any)?.benefitsContains || '')).toString(),
+      sort: (body as any)?.sort || 'price_asc',
+      limit: Math.min(Number(limit) || 20, 100),
+    });
+    const searchId = createHash('sha1').update(searchKey).digest('hex').slice(0, 12);
+    const resultsSig = safeRows.map((r: any) => `${String(r.id ?? r.name ?? '')}|${String(r.provider ?? '')}|${String(r.category ?? '')}|${String(r?.normalizedPrice?.amountCOPMonthly ?? '')}`).join('|');
+    const resultsHash = createHash('sha1').update(resultsSig).digest('hex').slice(0, 12);
+    const runKey = `${searchId}|${resultsHash}`;
+
+    const resp = NextResponse.json(rows, { status: 200 });
+    try {
+      resp.headers.set('x-price-normalized-count', String(normalizedCount));
+      resp.headers.set('x-price-normalized-origin', 'server');
+      resp.headers.set('x-price-normalized-runkey', runKey);
+      resp.headers.set('x-search-id', searchId);
+    } catch {}
+    return resp;
+  } catch {
+    return NextResponse.json(rows, { status: 200 });
+  }
 }
 
 export async function GET(req: Request) {

@@ -1,7 +1,9 @@
 "use client";
 import { FileText, ClipboardList } from "lucide-react";
+import { useAnalyzerUI } from "@/state/analyzerUI";
 
 export default function IconRail() {
+  const openAnalyzer = useAnalyzerUI((s) => s.open);
   return (
     <div className="sticky top-4 flex flex-col items-center gap-4 py-4 border-r bg-card">
       <button 
@@ -16,7 +18,7 @@ export default function IconRail() {
         title="Analizar PDF" 
         aria-label="Abrir analizador de PDF"
         className="p-2 rounded-lg hover:bg-muted" 
-        onClick={() => window.dispatchEvent(new CustomEvent("briki:open-analyzer-panel"))}
+        onClick={() => openAnalyzer('sidebarCTA')}
       >
         <FileText className="h-5 w-5" />
       </button>

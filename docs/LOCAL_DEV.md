@@ -44,12 +44,18 @@ brew install poppler
 
 If native errors persist, keep thumbnails disabled (default) — OCR and analysis still work.
 
-## Assistant route (dev) — handling ChunkLoadError
+## Fixing ChunkLoadError for app/assistant/error.js in dev
+
+If you encounter `ChunkLoadError: Loading chunk app/assistant/error failed` during development:
+
+1. **Close any old tabs** pointing to localhost:3000
+2. **Stop the dev server** (Ctrl+C)
+3. **Run the clean script**: `npm run dev:clean` (o `pnpm dev:clean`) — limpia `.next` y reinicia
+4. **In DevTools → Network**: Enable "Disable cache" and hard reload (Cmd/Ctrl+Shift+R)
+
+**Root cause**: HMR stale chunk for the segment error boundary; not a code error. The boundary file exists and exports properly, but Next.js tries to load an outdated chunk path.
+
+## Assistant route (dev) notes
 
 - `app/assistant/error.tsx` must be a Client Component (starts with `'use client';`). Keep it minimal and self-contained.
-- If you see `ChunkLoadError` for `/_next/static/chunks/app/assistant/*.js` during development:
-  1. Hard reload with cache disabled (Cmd/Ctrl+Shift+R)
-  2. Bump `NEXT_PUBLIC_BUILD_ID` in `.env.local`, then restart `npm run dev`
-  3. As a last resort: `rm -rf .next && npm run dev`
-
-The assistant page root includes `data-build-id` so you can force a fresh chunk request by changing `NEXT_PUBLIC_BUILD_ID`.
+- The assistant page root includes `data-build-id` so you can force a fresh chunk request by changing `NEXT_PUBLIC_BUILD_ID` if needed.

@@ -1,29 +1,12 @@
-import { InsurancePlan } from '@/types/project';
-import { queryInsurancePlans as localQuery } from './render-db';
-import type { AnyPlan, PlanLegacy, PlanV2 } from '@/types/plan';
-// DO NOT import fetchSelf at module scope; it pulls in next/headers into client bundles
-import { normalizeIncludeExclude, toStoredCategory } from '@/lib/category-alias';
+import { toStoredCategory } from '@/lib/category-alias';
+import { telemetry, getUserContext } from '@/lib/telemetry';
+
 
 async function doFetch(url: string, init?: RequestInit) {
-  const isServer = typeof window === 'undefined';
-  if (isServer) {
-    const { fetchSelf } = await import('@/lib/server/fetch-self');
-    const res = await fetchSelf(url, init);
-    if (res.ok) return res;
-    if ([429, 500, 502, 503, 504].includes(res.status)) {
-      await new Promise(r => setTimeout(r, 200));
-      const res2 = await fetchSelf(url, init);
-      if (res2.ok) return res2;
-      console.error('[plans-client] error body', await res2.text());
-      throw new Error(`plans fetch failed: ${res2.status}`);
-    }
-    console.error('[plans-client] error body', await res.text());
-    throw new Error(`plans fetch failed: ${res.status}`);
-  }
-  // Client-side: use native fetch
   const res = await fetch(url, init);
   if (res.ok) return res;
   if ([429, 500, 502, 503, 504].includes(res.status)) {
+    console.info(`[plans-client] transient ${res.status} → retrying once for`, url);
     await new Promise(r => setTimeout(r, 200));
     const res2 = await fetch(url, init);
     if (res2.ok) return res2;
@@ -45,34 +28,56 @@ export async function searchPlans(opts: {
   min_price?: number;
   tags?: string[];
   benefits_contain?: string;
+  base?: string;
 }) {
-  const include = (opts.includeCategories ?? (opts.category ? [opts.category] : [])).filter(Boolean);
-  const params = new URLSearchParams();
-  if (include.length) params.set('includeCategories', include.join(','));
-  params.set('country', (opts.country || 'CO').toUpperCase());
-  params.set('limit', String(opts.limit ?? 12));
+  const path = '/api/plans_v2/search';
+  const url = opts.base ? new URL(path, opts.base).toString() : path;
+  console.info('[plans-client] request', opts, '→', url);
 
-  const url = `/api/plans_v2/search?${params.toString()}`;
-  console.info('[plans-client] request', Object.fromEntries(params), '→', url);
+  const body = {
+    category: toStoredCategory(opts.category),
+    country: opts.country ?? 'CO',
+    maxPrice: opts.max_price,
+    benefitsContains: typeof opts.benefits_contain === 'string' && opts.benefits_contain.trim()
+      ? opts.benefits_contain
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .join(',')
+      : undefined,
+    sort: 'price_asc',
+    limit: opts.limit ?? 3
+  };
 
-  const body: any = { includeCategories: include, country: opts.country };
-  if (Array.isArray(opts.tags) && opts.tags.length) body.tags = opts.tags;
-  // Price window
-  if (typeof opts.min_price === 'number') body.minPrice = opts.min_price;
-  if (typeof opts.max_price === 'number') body.maxPrice = opts.max_price;
-  // Benefits contains CSV
-  if (typeof opts.benefits_contain === 'string' && opts.benefits_contain.trim()) {
-    body.benefitsContains = opts.benefits_contain
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .join(',');
-  }
-  // Default sort: price asc
-  body.sort = 'price_asc';
+  const res = await doFetch(url, { 
+    method: 'POST', 
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body) 
+  });
+  // Read server-authoritative normalization headers
+  try {
+    const normalizedCountHeader = res.headers.get('x-price-normalized-count');
+    const originHeader = res.headers.get('x-price-normalized-origin');
+    const runKeyHeader = res.headers.get('x-price-normalized-runkey');
+    const searchIdHeader = res.headers.get('x-search-id');
+    const normalizedCount = normalizedCountHeader != null ? Number(normalizedCountHeader) : undefined;
+    if (originHeader === 'server' && runKeyHeader && (Number(normalizedCount) || 0) > 0) {
+      // Emit single authoritative event with dedupe key
+      try {
+        const { sessionId, userId } = await getUserContext();
+        telemetry.trackWithDedupe(telemetry.events.PRICE_NORMALIZED, {
+          origin: 'server',
+          runKey: runKeyHeader,
+          searchId: searchIdHeader || undefined,
+          normalizedCount,
+          sessionId,
+          userId,
+        }, runKeyHeader);
+      } catch {}
+    }
+  } catch {}
 
-  const res = await doFetch(url, { method: 'POST', body: JSON.stringify(body) });
   const data = await res.json();
   console.info('[plans-client] response', { count: Array.isArray(data) ? data.length : data?.length ?? 0 });
-  return data;
+  return Array.isArray(data) ? data : [];
 }

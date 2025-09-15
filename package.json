@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:clean": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint 'src/app/page.tsx' 'src/app/api/copilot/**/*.{ts,tsx}' 'src/app/proposals/**/*.{ts,tsx}' 'src/components/{SmartIntakeForm,Shortlist,AnalyzerPanel}.tsx' 'src/lib/{env,supabase-client}.ts'",
@@ -24,7 +25,11 @@
     "db:v2:load": "psql \"$DATABASE_URL\" -f scripts/etl/dist/plans_v2.sql",
     "db:v2:verify": "node scripts/db/verify-plans-v2.js",
     "publish:v2": "npm run db:v2:create && npm run db:v2:load && npm run db:v2:verify",
-    "diagnostics:coverage": "tsx scripts/diagnostics/coverage.ts"
+    "diagnostics:coverage": "tsx scripts/diagnostics/coverage.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:edge": "playwright test -c tests/e2e/edge-cases/playwright.config.edge.ts",
+    "test:unit": "vitest run",
+    "test": "npm run test:unit && npm run test:e2e"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
@@ -38,6 +43,7 @@
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-toggle": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
@@ -91,7 +97,9 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.55.0",
     "@types/dagre": "^0.7.53",
     "@types/node": "^20.19.7",
     "@types/pg": "^8.15.4",
@@ -103,9 +111,12 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "ignore-loader": "^0.1.2",
+    "pdfkit": "^0.17.2",
+    "playwright": "^1.55.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   }
 }

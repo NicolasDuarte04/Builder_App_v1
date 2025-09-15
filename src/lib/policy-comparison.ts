@@ -372,14 +372,10 @@ function generateRecommendations(
 /**
  * Format currency values for display
  */
-export function formatCurrency(amount: number, currency: string = 'COP'): string {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount);
-}
+// Re-export formatCurrency from utils for backward compatibility
+export { formatCurrency } from './utils';
+
+// Legacy formatCurrency implementation removed in favor of the shared one in utils.ts
 
 /**
  * Export comparison results to a structured format

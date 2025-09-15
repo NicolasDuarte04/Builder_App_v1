@@ -6,6 +6,9 @@ UI-only enhancements below: optional page chips, glossary tooltips, risk flags, 
 */
 
 import React, { useRef, useState } from 'react';
+import { MessageSquare } from 'lucide-react';
+import { telemetry } from '@/lib/telemetry';
+import type { AnalysisItem } from '@/types/analysis';
 // motion removed to unblock build
 import { Shield, DollarSign, AlertTriangle, CheckCircle, TrendingUp, Calendar, XCircle, ChevronDown, ChevronUp, Share2, Link as LinkIcon } from 'lucide-react';
 import { Badge } from '../ui/badge';
@@ -19,6 +22,7 @@ import { translateListIfEnglish } from '@/lib/text-translation';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../ui/tooltip';
+import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import type { PdfViewerHandle } from './PdfViewerPane';
 const PdfViewerPane = dynamic(() => import('./PdfViewerPane'), { ssr: false });
@@ -65,9 +69,15 @@ interface PolicyAnalysisDisplayProps {
   rawAnalysisData?: any;
   hideSave?: boolean;
   hidePdfViewer?: boolean;
+  uploadId?: string;
+  onJumpToPage?: (page: number, rects?: [number,number,number,number][]) => void;
+  // Optional scroll root provided by PortalResults for split/expanded modes
+  scrollRoot?: HTMLElement | null;
+  // First section heading ref for external focus choreography
+  firstSectionHeadingRef?: React.RefObject<HTMLHeadingElement | null>;
 }
 
-export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData, hideSave, hidePdfViewer }: PolicyAnalysisDisplayProps) {
+export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisData, hideSave, hidePdfViewer, uploadId, onJumpToPage, scrollRoot, firstSectionHeadingRef }: PolicyAnalysisDisplayProps) {
   const { t, language } = useTranslation();
   const router = useRouter();
   const { data: session } = useSession();
@@ -93,8 +103,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
   // Local render-only types (backward compatible)
   type Locator = {
     page?: number;
-    // stretch: phrase?: string;
-    // stretch: bbox?: [number, number, number, number];
+    rects?: [number, number, number, number][];
   };
   type AnalysisBullet = {
     text: string;
@@ -108,24 +117,80 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
 
   const keyFeaturesBullets = toBullets(translateListIfEnglish(analysis.keyFeatures as any, language) as any);
   const exclusionsBullets = toBullets(translateListIfEnglish(analysis.coverage?.exclusions as any, language) as any);
+  // Sticky TOC + Scrollspy wiring
+  const tocRef = useRef<HTMLDivElement | null>(null);
+  const [stickyH, setStickyH] = useState<number>(0);
+  const [activeId, setActiveId] = useState<string>('sec-premium');
+
+  // Measure TOC height and publish CSS var on scrollRoot
+  useEffect(() => {
+    const root = scrollRoot ?? (tocRef.current ? tocRef.current.closest('[data-results-scroll-root="1"]') as HTMLElement | null : null);
+    const measure = () => {
+      const h = tocRef.current?.offsetHeight ?? 0;
+      setStickyH(h);
+      if (root) root.style.setProperty('--toc-h', `${h + 8}px`);
+    };
+    measure();
+    // Observe size changes
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && tocRef.current) {
+      ro = new ResizeObserver(measure);
+      ro.observe(tocRef.current);
+    }
+    return () => { ro?.disconnect(); };
+  }, [scrollRoot]);
+
+  // IntersectionObserver for scrollspy
+  useEffect(() => {
+    const rootEl = scrollRoot ?? (tocRef.current ? tocRef.current.closest('[data-results-scroll-root="1"]') as HTMLElement | null : null);
+    if (!rootEl) return;
+    const ids = ['sec-premium','sec-limits','sec-deductibles','sec-features','sec-exclusions','sec-risk','sec-recommendations','sec-details','sec-alerts'];
+    const targets = ids.map(id => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    if (targets.length === 0) return;
+    const io = new IntersectionObserver((entries) => {
+      // prefer the one nearest to top / highest ratio
+      let best: IntersectionObserverEntry | null = null;
+      for (const e of entries) {
+        if (!best) best = e;
+        else if ((e.isIntersecting && !best.isIntersecting) || (e.intersectionRatio > best.intersectionRatio)) best = e;
+      }
+      if (best) {
+        const id = (best.target as HTMLElement).id;
+        if (id && id !== activeId) setActiveId(id);
+      }
+    }, { root: rootEl, threshold: [0, 0.25, 0.5, 1], rootMargin: `-${Math.max(0, stickyH)}px 0px -40% 0px` });
+    targets.forEach(t => io.observe(t));
+    return () => io.disconnect();
+  }, [scrollRoot, stickyH]);
+
+  // Smooth scroll handler for TOC
+  const onTocClick = (ev: React.MouseEvent<HTMLAnchorElement, MouseEvent>, id: string) => {
+    ev.preventDefault();
+    const rootEl = scrollRoot ?? (tocRef.current ? tocRef.current.closest('[data-results-scroll-root="1"]') as HTMLElement | null : null);
+    const target = document.getElementById(id);
+    if (!rootEl || !target) return;
+    const top = rootEl.scrollTop + target.getBoundingClientRect().top - (rootEl.getBoundingClientRect().top) - stickyH - 8;
+    rootEl.scrollTo({ top, behavior: 'smooth' });
+    setActiveId(id);
+  };
 
   // i18n labels for section headers and actions
   const L = {
-    premium: t('analysis.premium') || 'Prima',
-    limits: t('analysis.limits') || 'Límites de Cobertura',
-    deductibles: t('analysis.deductibles') || 'Deducibles',
-    features: t('analysis.features') || 'Características Principales',
-    exclusions: t('analysis.exclusions') || 'Exclusiones',
-    risk: t('analysis.risk') || 'Evaluación de Riesgo',
-    recommendations: t('analysis.recommendations') || 'Recomendaciones',
-    details: t('analysis.details') || 'Detalles de la Póliza',
-    alerts: t('analysis.alerts') || 'Señales de Alerta',
+    premium: (t('portal.section.premium') as any) || t('analysis.premium') || 'Prima',
+    limits: (t('portal.section.limits') as any) || t('analysis.limits') || 'Límites de Cobertura',
+    deductibles: (t('portal.section.deductibles') as any) || t('analysis.deductibles') || 'Deducibles',
+    features: (t('portal.section.features') as any) || t('analysis.features') || 'Características Principales',
+    exclusions: (t('portal.section.exclusions') as any) || t('analysis.exclusions') || 'Exclusiones',
+    risk: (t('portal.section.risk') as any) || t('analysis.risk') || 'Evaluación de Riesgo',
+    recommendations: (t('portal.section.recommendations') as any) || t('analysis.recommendations') || 'Recomendaciones',
+    details: (t('portal.section.details') as any) || t('analysis.details') || 'Detalles de la Póliza',
+    alerts: (t('portal.section.alerts') as any) || t('analysis.alerts') || 'Señales de Alerta',
     exportAnnotated: t('analysis.exportAnnotated') || 'Exportar PDF anotado (beta)',
     share: t('analysis.share') || 'Compartir',
     copyLink: t('analysis.copyLink') || 'Copiar enlace',
     summary: t('analysis.summary') || 'Resumen',
     full: t('analysis.full') || 'Completo',
-    viewOriginal: t('pdf.viewOriginal') || 'Ver PDF original',
+    viewOriginal: (t('portal.actions.view_original_pdf') as any) || t('pdf.viewOriginal') || 'Ver PDF original',
     pdf: t('pdf.header') || 'PDF',
     page: t('pdf.page') || 'Página',
     backToTop: t('pdf.backToTop') || 'Volver arriba',
@@ -134,13 +199,26 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
   // PDF viewer ref for scrolling to pages
   const pdfRef = useRef<PdfViewerHandle>(null);
   // Page chip that scrolls the viewer when clicked and announces
-  function PageChip({ page }: { page?: number }) {
+  function PageChip({ page, rects }: { page?: number; rects?: [number,number,number,number][] }) {
     if (!page) return null;
     const isActive = activePage === page;
     return (
       <button
         type="button"
-        onClick={() => { pdfRef.current?.scrollToPage(page, true); const live = liveRef.current; if (live) live.textContent = (t('pdf.announcedJump') || 'Saltaste a la página {{page}}').replace('{{page}}', String(page)); }}
+        onClick={() => { 
+          if (onJumpToPage) {
+            onJumpToPage(page, rects);
+          } else {
+            pdfRef.current?.scrollToPage(page, true);
+            if (rects && pdfRef.current) {
+              (pdfRef.current as any).highlightRects?.(page, rects, { autoClearMs: 3000 });
+            }
+          }
+          const live = liveRef.current; 
+          if (live) live.textContent = (t('pdf.announcedJump') || 'Saltaste a la página {{page}}').replace('{{page}}', String(page)); 
+          telemetry.track('RESULTS_JUMP_TO_PAGE', { page });
+          try { telemetry.track(telemetry.events.A11Y_FOCUS_MOVED, { phase: 'results', target: 'pdf_page', page }); } catch {}
+        }}
         className={`ml-2 text-[11px] ${isActive ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-blue-600'} focus:underline`}
         aria-label={`${t('pdf.jumpHere') || 'Ir aquí'}: ${L.page} ${page}`}
       >
@@ -209,7 +287,7 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     keyFeaturesBullets.some(b => typeof (b.page ?? b.locator?.page) === 'number') ||
     exclusionsBullets.some(b => typeof (b.page ?? b.locator?.page) === 'number');
 
-  // Collapse defaults: premium open (not collapsible). Others: collapsed if >=10 items, else open. Risk/Recommendations collapsed.
+  // Collapse defaults: premium open; others collapsed. Persist per uploadId.
   const limitsCount = Object.keys(analysis.coverage?.limits || {}).length;
   const deductiblesCount = Object.keys(analysis.coverage?.deductibles || {}).length;
   const featuresCount = keyFeaturesBullets.length;
@@ -226,26 +304,175 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
     ((analysis.coverage?.claimInstructions || []).length > 0 ? 1 : 0)
   );
 
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-    premium: false, // always open
-    limits: limitsCount >= 10,
-    deductibles: deductiblesCount >= 10,
-    features: featuresCount >= 10,
-    exclusions: exclusionsCount >= 10,
+  // Helper to compute item count per section for RESULTS_SECTION_OPEN dispatch
+  function getCountForSection(
+    k: 'premium'|'limits'|'deductibles'|'features'|'exclusions'|'risk'|'recommendations'|'details'|'alerts'
+  ): number {
+    switch (k) {
+      case 'premium':
+        return 1;
+      case 'limits':
+        return Object.keys(analysis?.coverage?.limits ?? {}).length;
+      case 'deductibles':
+        return Object.keys(analysis?.coverage?.deductibles ?? {}).length;
+      case 'features':
+        return keyFeaturesBullets?.length ?? 0;
+      case 'exclusions':
+        return exclusionsBullets?.length ?? 0;
+      case 'risk':
+        return analysis?.redFlags?.length ?? 0;
+      case 'recommendations':
+        return Array.isArray(analysis?.recommendations) ? analysis.recommendations.length : 0;
+      case 'details':
+        return detailsCount ?? 0;
+      case 'alerts':
+        return analysis?.redFlags?.length ?? 0;
+      default:
+        return 0;
+    }
+  }
+
+  const defaultCollapsed: Record<string, boolean> = {
+    premium: false,
+    limits: true,
+    deductibles: true,
+    features: true,
+    exclusions: true,
     risk: true,
     recommendations: true,
-    details: detailsCount >= 10,
-    alerts: alertsCount >= 10,
+    details: true,
+    alerts: true,
+  };
+  const storageKey = uploadId ? `briki:analysisUI:${uploadId}` : null;
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    try {
+      if (storageKey) {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) return { ...defaultCollapsed, ...JSON.parse(raw) };
+      }
+    } catch {}
+    return defaultCollapsed;
   });
-  const toggle = (k: keyof typeof collapsed) => setCollapsed((s) => ({ ...s, [k]: !s[k] }));
+  // Track collapsed state transitions for section-open events
+  const prevCollapsed = useRef(collapsed);
+  useEffect(() => {
+    try {
+      (Object.keys(collapsed) as (keyof typeof collapsed)[]).forEach((k) => {
+        if (prevCollapsed.current[k] === true && collapsed[k] === false && uploadId) {
+          const count = getCountForSection(k as any);
+          // We are already in an effect; dispatch directly post-commit
+          window.dispatchEvent(new CustomEvent('results:section-open', { detail: { uploadId, sectionId: k, count } }));
+          try { telemetry.track('RESULTS_SECTION_OPEN', { uploadId, sectionId: k, count }); } catch {}
+        }
+      });
+    } finally {
+      prevCollapsed.current = collapsed;
+    }
+  }, [collapsed, uploadId, analysis, keyFeaturesBullets, exclusionsBullets, detailsCount]);
+
+  const toggle = (k: keyof typeof collapsed) => {
+    setCollapsed((s) => {
+      const next = { ...s, [k]: !s[k] };
+      try { if (storageKey) localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
 
   // Mapping / sync status for locating bullets in PDF
   const [mappingStatus] = useState<'loading' | 'none' | 'partial' | 'complete'>(() => (hasAnyPageRefs ? 'partial' : 'none'));
 
   const [activePage, setActivePage] = useState<number>(1);
   const liveRef = useRef<HTMLDivElement>(null);
+
+  // Ask Briki about section with structured context
+  function askBriki(
+    sectionKey: 'premium'|'limits'|'deductibles'|'features'|'exclusions'|'risk'|'recommendations'|'details'|'alerts',
+    sectionLabel: string,
+    item?: { text: string; page?: number; locator?: Locator }
+  ) {
+    if (!uploadId) return;
+    // Build count per section
+    const getCount = (key: typeof sectionKey): number => {
+      switch (key) {
+        case 'premium': return 1;
+        case 'limits': return Object.keys(analysis.coverage?.limits || {}).length;
+        case 'deductibles': return Object.keys(analysis.coverage?.deductibles || {}).length;
+        case 'features': return keyFeaturesBullets.length;
+        case 'exclusions': return exclusionsBullets.length;
+        case 'risk': return Array.isArray(analysis.redFlags) ? analysis.redFlags.length : 0;
+        case 'recommendations': return Array.isArray(analysis.recommendations) ? analysis.recommendations.length : 0;
+        case 'details': return detailsCount;
+        case 'alerts': return Array.isArray(analysis.redFlags) ? analysis.redFlags.length : 0;
+      }
+    };
+    const count = getCount(sectionKey);
+
+    // Build items for context
+    type CtxItem = { id?: string; text: string; page?: number; rects?: any };
+    let items: CtxItem[] = [];
+    let pageRefs: Array<{ page: number; rects?: any }> = [];
+    if (sectionKey === 'features') {
+      items = keyFeaturesBullets.map((b: any, i: number) => ({ id: String(i), text: b.text, page: b.page ?? b.locator?.page, rects: (b.locator as any)?.rects }));
+      pageRefs = items.filter(i => typeof i.page === 'number').map(i => ({ page: i.page as number, rects: i.rects })).slice(0, 8);
+    } else if (sectionKey === 'exclusions') {
+      items = exclusionsBullets.map((b: any, i: number) => ({ id: String(i), text: b.text, page: b.page ?? b.locator?.page, rects: (b.locator as any)?.rects }));
+      pageRefs = items.filter(i => typeof i.page === 'number').map(i => ({ page: i.page as number, rects: i.rects })).slice(0, 8);
+    } else if (sectionKey === 'limits') {
+      items = Object.entries(analysis.coverage?.limits || {}).map(([k, v]) => ({ text: `${k}: ${formatCurrency(Number(v), analysis.premium.currency)}` }));
+    } else if (sectionKey === 'deductibles') {
+      items = Object.entries(analysis.coverage?.deductibles || {}).map(([k, v]) => ({ text: `${k}: ${formatCurrency(Number(v), analysis.premium.currency)}` }));
+    } else if (sectionKey === 'recommendations') {
+      items = (analysis.recommendations || []).map((r, i) => ({ id: String(i), text: r }));
+    } else if (sectionKey === 'details') {
+      const d: CtxItem[] = [];
+      if (analysis.policyDetails.effectiveDate) d.push({ text: `Start: ${analysis.policyDetails.effectiveDate}` });
+      if (analysis.policyDetails.expirationDate) d.push({ text: `End: ${analysis.policyDetails.expirationDate}` });
+      if ((analysis.policyDetails.insured || []).length) d.push({ text: `Insured: ${(analysis.policyDetails.insured || []).join(', ')}` });
+      if (analysis.insurer?.contact) d.push({ text: `Insurer contact: ${analysis.insurer.contact}` });
+      items = d;
+    } else if (sectionKey === 'risk') {
+      items = [{ text: `riskScore: ${analysis.riskScore}` }, ...(analysis.redFlags || []).map((f, i) => ({ id: String(i), text: f }))];
+    } else if (sectionKey === 'premium') {
+      items = [{ text: `${formatCurrency(Number(analysis?.premium?.amount || 0), analysis?.premium?.currency || 'COP')} / ${analysis?.premium?.frequency || ''}` }];
+    } else if (sectionKey === 'alerts') {
+      items = (analysis.redFlags || []).map((f, i) => ({ id: String(i), text: f }));
+    }
+
+    // Extract page and rects from item.locator if available
+    const pageFromItem  = item?.page ?? item?.locator?.page;
+    const rectsFromItem = item?.locator?.rects;
+
+    const detail = {
+      uploadId,
+      sectionKey,
+      sectionLabel,
+      count,
+      page: pageFromItem,
+      rects: Array.isArray(rectsFromItem) ? rectsFromItem : undefined,
+      itemText: item?.text,
+      context: {
+        premium: analysis?.premium ? { amount: analysis.premium.amount, currency: analysis.premium.currency, frequency: analysis.premium.frequency } : undefined,
+        riskScore: analysis?.riskScore,
+        items,
+        pageRefs,
+      },
+    };
+
+    try { telemetry.track('RESULTS_ASK_BRIKI', { sectionKey, uploadId, count }); } catch {}
+    try {
+      const payloadSize = JSON.stringify(detail.context).length;
+      telemetry.track('RESULTS_ASK_CONTEXT_ATTACHED', {
+        sectionKey,
+        uploadId,
+        payloadSize,
+        rectCount: Array.isArray(detail.rects) ? detail.rects.length : 0,
+      });
+    } catch {}
+
+    window.dispatchEvent(new CustomEvent('chat:ask-about-section', { detail }));
+  }
   const AnalysisBody = (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Primary actions */}
       <div className="inline-flex items-center gap-2">
         {/* Guardar análisis (primary) */}
@@ -257,8 +484,8 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
               const structured = toSavedAnalysis(analysis);
               return {
                 custom_name: customName,
-                insurer_name: analysis?.insurer?.name || null,
-                policy_type: analysis?.policyType || null,
+                insurer_name: analysis?.insurer?.name || undefined,
+                policy_type: analysis?.policyType || undefined,
                 // Prefer server artifacts; avoid base64 for payload size
                 pdf_url: safePdfUrl || undefined,
                 storage_path: meta?.storagePath || undefined,
@@ -280,18 +507,31 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
         {/* Hidden unfinished actions for now */}
       </div>
 
-      {/* Table of contents */}
-      <nav className="text-sm text-gray-600 dark:text-gray-400 space-x-3 overflow-x-auto py-1" aria-label={t('common.contents') || 'Contenido'}>
+      {/* Table of contents - sticky within scroll container */}
+      <nav ref={tocRef as any} className="text-sm text-gray-600 dark:text-gray-400 space-x-3 overflow-x-auto py-2 sticky top-0 z-10 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/70 border-b border-muted" aria-label={t('common.contents') || 'Contenido'}>
         {[
           ['premium',L.premium],['limits',L.limits],['deductibles',L.deductibles],['features',L.features],['exclusions',L.exclusions],['risk',L.risk],['recommendations',L.recommendations],['details',L.details],['alerts',L.alerts]
-        ].map(([k,label]) => (
-          <a key={k} href={`#sec-${k}`} className="hover:underline">{label}</a>
-        ))}
+        ].map(([k,label]) => {
+          const id = `sec-${k}`;
+          const isActive = activeId === id;
+          return (
+            <a
+              key={k}
+              href={`#${id}`}
+              onClick={(e) => onTocClick(e, id)}
+              className="hover:underline data-[active=true]:text-blue-600"
+              data-active={isActive ? 'true' : 'false'}
+              aria-current={isActive ? 'true' : 'false'}
+            >
+              {label}
+            </a>
+          );
+        })}
       </nav>
 
       {/* Premium Section (always open, not collapsible) */}
       <section id="sec-premium" className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-3 shadow-sm border border-gray-200 dark:border-gray-800">
-        <div className="flex items-center gap-2 mb-1"><DollarSign className="w-5 h-5 text-blue-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{language === 'es' ? 'Prima' : L.premium}</h4></div>
+        <div className="flex items-center gap-2 mb-1"><DollarSign className="w-5 h-5 text-blue-600" /><h4 ref={firstSectionHeadingRef as any} tabIndex={-1} className="font-semibold text-gray-900 dark:text-white">{language === 'es' ? 'Prima' : L.premium}</h4></div>
         <div className="text-gray-900 dark:text-white">
           <div className="text-xl font-bold">
             {typeof analysis?.premium?.amount === 'number' ? formatCurrency(analysis.premium.amount, analysis.premium.currency) : `${language === 'es' ? 'Prima' : L.premium}: No especificada`}
@@ -306,15 +546,15 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       </section>
 
       {/* Coverage Limits */}
-      <section id="sec-limits" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
-        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('limits')}>
-          <div className="flex items-center gap-2"><Shield className="w-5 h-5 text-green-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{L.limits} ({Object.keys(analysis.coverage.limits).length})</h4></div>
+      <section id="sec-limits" className="scroll-mt-16 bg-white dark:bg-gray-800 rounded-xl p-3 border border-muted">
+        <button type="button" aria-expanded={!collapsed.limits} aria-controls="content-limits" className="w-full flex items-center justify-between" onClick={() => toggle('limits')}>
+          <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-green-600" /><h4 className="text-base font-semibold text-gray-900 dark:text-white">{L.limits} <span className="text-muted-foreground">({Object.keys(analysis.coverage.limits).length})</span></h4></div>
           {collapsed.limits ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
         </button>
-        {!collapsed.limits && <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+        {!collapsed.limits && <div id="content-limits" className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
           {Object.entries(analysis.coverage.limits).map(([key, value]) => (
-            <div key={key} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-400">{withGlossary(String(key))}</p>
+            <div key={key} className="rounded-lg p-3 border border-muted">
+              <p className="text-sm leading-6 text-gray-600 dark:text-gray-400 line-clamp-2">{withGlossary(String(key))}</p>
               <p className="font-semibold text-gray-900 dark:text-white">
                 {formatCurrency(value, analysis.premium.currency)}
               </p>
@@ -324,15 +564,15 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       </section>
 
       {/* Deductibles */}
-      <section id="sec-deductibles" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
-        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('deductibles')}>
-          <div className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-yellow-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{L.deductibles} ({Object.keys(analysis.coverage.deductibles).length})</h4></div>
+      <section id="sec-deductibles" className="scroll-mt-16 bg-white dark:bg-gray-800 rounded-xl p-3 border border-muted">
+        <button type="button" aria-expanded={!collapsed.deductibles} aria-controls="content-deductibles" className="w-full flex items-center justify-between" onClick={() => toggle('deductibles')}>
+          <div className="flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-yellow-600" /><h4 className="text-base font-semibold text-gray-900 dark:text-white">{L.deductibles} <span className="text-muted-foreground">({Object.keys(analysis.coverage.deductibles).length})</span></h4></div>
           {collapsed.deductibles ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
         </button>
-        {!collapsed.deductibles && <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+        {!collapsed.deductibles && <div id="content-deductibles" className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
           {Object.entries(analysis.coverage.deductibles).map(([key, value]) => (
-            <div key={key} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-400">{withGlossary(String(key))}</p>
+            <div key={key} className="rounded-lg p-3 border border-muted">
+              <p className="text-sm leading-6 text-gray-600 dark:text-gray-400 line-clamp-2">{withGlossary(String(key))}</p>
               <p className="font-semibold text-gray-900 dark:text-white">
                 {formatCurrency(value, analysis.premium.currency)}
               </p>
@@ -342,19 +582,29 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       </section>
 
       {/* Key Features */}
-      <section id="sec-features" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
-        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('features')}>
-          <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{L.features} ({keyFeaturesBullets.length})</h4></div>
+      <section id="sec-features" className="scroll-mt-16 bg-white dark:bg-gray-800 rounded-xl p-3 border border-muted">
+        <button type="button" aria-expanded={!collapsed.features} aria-controls="content-features" className="w-full flex items-center justify-between" onClick={() => toggle('features')}>
+          <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-600" /><h4 className="text-base font-semibold text-gray-900 dark:text-white">{L.features} <span className="text-muted-foreground">({keyFeaturesBullets.length})</span></h4></div>
           {collapsed.features ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
         </button>
-         {!collapsed.features && <ul className="mt-2 divide-y divide-gray-100 dark:divide-gray-800">
+         {!collapsed.features && <ul id="content-features" className="mt-2 space-y-2">
           {keyFeaturesBullets.map((bullet, index) => (
-            <li key={index} className="flex gap-2 items-start px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-900/40">
+            <li key={index} className="flex gap-2 items-start px-2 py-2 rounded-md hover:bg-muted/40 group">
               <RiskDot risk={inferRisk(bullet.text)} />
-              <div className="leading-6 text-[13px] text-gray-800 dark:text-gray-200">
-                {withGlossary(bullet.text)}
-                <PageChip page={bullet.page ?? bullet.locator?.page} />
+              <div className="flex-1">
+                <div className="leading-relaxed text-sm text-gray-800 dark:text-gray-200 line-clamp-2">
+                  {withGlossary(bullet.text)}
+                  <PageChip page={bullet.page ?? bullet.locator?.page} rects={(bullet.locator as any)?.rects} />
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => askBriki('features', L.features, bullet)}
+                className="ml-2 p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors transition-opacity opacity-0 group-hover:opacity-100 focus:opacity-100"
+                aria-label={(t('portal.actions.ask_briki') as any) || t('results.ask_briki') || 'Preguntar a Briki'}
+              >
+                <MessageSquare className="w-4 h-4" />
+              </button>
             </li>
           ))}
         </ul>}
@@ -362,19 +612,30 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
 
       {/* Exclusions */}
       {analysis.coverage.exclusions.length > 0 && (
-        <section id="sec-exclusions" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
-          <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('exclusions')}>
-          <div className="flex items-center gap-2"><XCircle className="w-5 h-5 text-red-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{L.exclusions} ({exclusionsBullets.length})</h4></div>
+        <section id="sec-exclusions" className="scroll-mt-16 bg-white dark:bg-gray-800 rounded-xl p-3 border border-muted">
+          <button type="button" aria-expanded={!collapsed.exclusions} aria-controls="content-exclusions" className="w-full flex items-center justify-between" onClick={() => toggle('exclusions')}>
+          <div className="flex items-center gap-2"><XCircle className="w-4 h-4 text-red-600" /><h4 className="text-base font-semibold text-gray-900 dark:text-white">{L.exclusions} <span className="text-muted-foreground">({exclusionsBullets.length})</span></h4></div>
             {collapsed.exclusions ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
           </button>
-          {!collapsed.exclusions && <ul className="mt-2 divide-y divide-gray-100 dark:divide-gray-800">
+          {!collapsed.exclusions && <ul id="content-exclusions" className="mt-2 space-y-2">
             {exclusionsBullets.map((bullet, index) => (
-              <li key={index} className="flex gap-2 items-start px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-900/40">
+              <li key={index} className="flex gap-2 items-start px-2 py-2 rounded-md hover:bg-muted/40 group">
                 <RiskDot risk={inferRisk(bullet.text)} />
-                <div className="leading-6 text-[13px] text-gray-800 dark:text-gray-200">
-                {withGlossary(bullet.text)}
-                <PageChip page={bullet.page ?? bullet.locator?.page} />
+                <div className="flex-1">
+                  <div className="leading-relaxed text-sm text-gray-800 dark:text-gray-200 line-clamp-2">
+                    {withGlossary(bullet.text)}
+                    <PageChip page={bullet.page ?? bullet.locator?.page} rects={(bullet.locator as any)?.rects} />
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => askBriki('exclusions', L.exclusions, bullet)}
+                  className="ml-2 p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors transition-opacity opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  aria-label={(t('portal.actions.ask_briki') as any) || t('results.ask_briki') || 'Preguntar a Briki'}
+                  title={(t('portal.actions.ask_briki') as any) || t('results.ask_briki') || 'Preguntar a Briki'}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                </button>
               </li>
             ))}
           </ul>}
@@ -383,13 +644,13 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
 
       {/* Risk Assessment */}
       <section id="sec-risk" className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-3 shadow-sm border border-gray-200 dark:border-gray-800">
-        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('risk')}>
+        <button type="button" aria-expanded={!collapsed.risk} aria-controls="content-risk" className="w-full flex items-center justify-between" onClick={() => toggle('risk')}>
           <div className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-purple-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{L.risk}</h4></div>
-          <Badge label={`${analysis.riskScore}/10`} variant="neutral" className={getRiskColor(analysis.riskScore)} />
+          <Badge className={getRiskColor(analysis.riskScore)}>{analysis.riskScore}/10</Badge>
           {collapsed.risk ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
         </button>
         {!collapsed.risk && (
-          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <div id="content-risk" className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             <p>
               {analysis.riskScore <= 3 ? 'Riesgo bajo' : analysis.riskScore <= 6 ? 'Riesgo moderado' : 'Riesgo alto'}
             </p>
@@ -400,17 +661,17 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
 
       {/* Recommendations */}
       {analysis.recommendations.length > 0 && (
-        <section id="sec-recommendations" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
-          <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('recommendations')}>
-            <div className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-blue-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{L.recommendations} ({analysis.recommendations.length})</h4></div>
+        <section id="sec-recommendations" className="scroll-mt-16 bg-white dark:bg-gray-800 rounded-xl p-3 border border-muted">
+          <button type="button" aria-expanded={!collapsed.recommendations} aria-controls="content-recommendations" className="w-full flex items-center justify-between" onClick={() => toggle('recommendations')}>
+            <div className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-blue-600" /><h4 className="text-base font-semibold text-gray-900 dark:text-white">{L.recommendations} <span className="text-muted-foreground">({analysis.recommendations.length})</span></h4></div>
             {collapsed.recommendations ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
           </button>
           {!collapsed.recommendations && (
-            <div className="mt-2 space-y-2">
+            <div id="content-recommendations" className="mt-2 space-y-2">
               {analysis.recommendations.map((recommendation, index) => (
-                <div key={index} className="flex items-start gap-2">
+                <div key={index} className="group flex items-start gap-2 px-2 py-2 rounded-md hover:bg-muted/40">
                   <TrendingUp className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{recommendation}</span>
+                  <span className="text-sm leading-relaxed text-gray-700 dark:text-gray-300 line-clamp-2" title={recommendation}>{recommendation}</span>
                 </div>
               ))}
             </div>
@@ -419,12 +680,12 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       )}
 
       {/* Policy Details */}
-      <section id="sec-details" className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-sm">
-        <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('details')}>
-          <div className="flex items-center gap-2"><Calendar className="w-5 h-5 text-gray-600" /><h4 className="font-semibold text-gray-900 dark:text-white">{L.details}</h4></div>
+      <section id="sec-details" className="scroll-mt-16 bg-white dark:bg-gray-800 rounded-xl p-3 border border-muted">
+        <button type="button" aria-expanded={!collapsed.details} aria-controls="content-details" className="w-full flex items-center justify-between" onClick={() => toggle('details')}>
+          <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-gray-600" /><h4 className="text-base font-semibold text-gray-900 dark:text-white">{L.details}</h4></div>
           {collapsed.details ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
         </button>
-        {!collapsed.details && <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        {!collapsed.details && <div id="content-details" className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm leading-6">
           {analysis.policyDetails.effectiveDate && (
             <div>
               <p className="text-gray-600 dark:text-gray-400">Fecha de inicio</p>
@@ -494,13 +755,13 @@ export function PolicyAnalysisDisplay({ analysis, pdfUrl, fileName, rawAnalysisD
       )}
 
       {(analysis.redFlags && analysis.redFlags.length > 0) && (
-        <section id="sec-alerts" className="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 border border-red-200 dark:border-red-800">
-          <button type="button" className="w-full flex items-center justify-between" onClick={() => toggle('alerts')}>
+        <section id="sec-alerts" className="scroll-mt-16 bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
+          <button type="button" aria-expanded={!collapsed.alerts} aria-controls="content-alerts" className="w-full flex items-center justify-between" onClick={() => toggle('alerts')}>
             <h4 className="font-semibold text-red-800 dark:text-red-200">{L.alerts} ({analysis.redFlags.length})</h4>
             {collapsed.alerts ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
           </button>
           {!collapsed.alerts && (
-            <ul className="mt-2 list-disc ml-5 text-sm text-red-900 dark:text-red-100">
+            <ul id="content-alerts" className="mt-2 list-disc ml-5 text-sm text-red-900 dark:text-red-100">
               {analysis.redFlags.map((f, i) => (
                 <li key={i}>{f}</li>
               ))}

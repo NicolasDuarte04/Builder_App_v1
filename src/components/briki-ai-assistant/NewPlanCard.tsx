@@ -23,6 +23,16 @@ export interface InsurancePlan {
   features?: string[];
   rating?: number;
   tags?: string[];
+  normalizedPrice?: {
+    amountCOPMonthly: number;
+    originalAmount: number;
+    originalCurrency: string;
+    originalPeriod?: string;
+    assumptions: string[];
+  };
+  // Trust metadata (optional)
+  source?: { kind?: 'catalog'|'template'|'pdf'|'url'|'text'|'unknown'; updatedAt?: string };
+  updatedAt?: string;
 }
 
 

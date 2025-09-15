@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractTextFromPDF } from '@/lib/pdf-analyzer';
+import { assignOcrFallback } from '@/lib/flags';
+import { telemetry, getSafeFileMetadata, normalizeError } from '@/lib/telemetry';
 // Lazy import to avoid optional dependency at build time
 let enhanced: any = null;
 async function ensureEnhanced() {
@@ -148,12 +150,25 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const forceOcr = (formData.get('forceOcr') as string) === 'true';
+    
+    // Check OCR fallback feature flag
+    const sessionId = (session?.user as any)?.id || 'anonymous';
+    const ocrFallbackVariant = assignOcrFallback(sessionId);
+    const isOcrEnabled = ocrFallbackVariant === 'treatment' || forceOcr;
+    
+    // Track feature flag exposure
+    if (!forceOcr) {
+      telemetry.track(telemetry.events.FF_ASSIGNMENT, {
+        flag: 'ff_ocr_fallback',
+        variant: ocrFallbackVariant,
+        userId,
+        sessionId
+      });
+    }
 
     console.log('📋 Request details:', {
       hasFile: !!file,
-      fileName: file?.name,
-      fileSize: file?.size,
-      fileType: file?.type,
+      fileMetadata: file ? getSafeFileMetadata(file) : null,
       userId: userId,
       userIdType: typeof userId,
       userIdLength: userId?.length,
@@ -174,7 +189,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('📄 Analyzing PDF policy:', file.name, 'for user:', userId);
+    // Server-side file size guard (10MB)
+    const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+    if (typeof file.size === 'number' && file.size > MAX_UPLOAD_BYTES) {
+      console.warn('[analyze-policy] file too large', { size: file.size, limit: MAX_UPLOAD_BYTES });
+      return NextResponse.json({ code: 'file_too_large', limitMB: 10 }, { status: 413 });
+    }
+
+    // Telemetry timing start
+    const telemetryStartTs = Date.now();
+
+    console.log('📄 Analyzing PDF policy for user:', userId);
 
     // Create initial upload record
     console.log('💾 Creating upload record in database...');
@@ -210,6 +235,18 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Upload record created:', uploadRecord.id);
     uploadId = uploadRecord.id;
+
+    // Telemetry: BRIEF_PARSE_STARTED
+    try {
+      telemetry.track(telemetry.events.BRIEF_PARSE_STARTED, {
+        source: 'upload',
+        kind: 'pdf',
+        bytes: typeof file.size === 'number' ? file.size : null,
+        fileMeta: getSafeFileMetadata(file),
+        uploadId,
+        userId
+      });
+    } catch {}
 
     // Upload original PDF to Supabase Storage immediately (for traceability)
     // Keep this before early return so background job can reopen the file via storage
@@ -261,46 +298,287 @@ export async function POST(request: NextRequest) {
       const bgForceOcr = forceOcr;
       const bgStoragePath = storagePath;
       const bgPdfUrl = pdfPublicUrl;
+      const bgOcrEnabled = isOcrEnabled;
       setImmediate(async () => {
+        const DEBUG_ANALYZE_STATUS = process.env.DEBUG_ANALYZE_STATUS === '1';
+        const setStatus = async (patch: any, label: string) => {
+          const id = uploadRecord.id;
+          if (DEBUG_ANALYZE_STATUS) console.log('[status→TRY]', label, { id, patch });
+          const { data, error } = await serverSupabase
+            .from('policy_uploads')
+            .update(patch)
+            .eq('id', id)
+            .select('id,status,updated_at')
+            .maybeSingle();
+
+          if (!error) {
+            if (DEBUG_ANALYZE_STATUS) console.log('[status→OK]', label, data);
+            return;
+          }
+
+          console.error('[status→FAIL]', label, error);
+
+          // CHECK constraint → retry with 'processing'
+          if (error.code === '23514' && patch.status && patch.status !== 'processing') {
+            const fallbackPatch = { ...patch, status: 'processing' };
+            const { data: fdata, error: ferr } = await serverSupabase
+              .from('policy_uploads')
+              .update(fallbackPatch)
+              .eq('id', id)
+              .select('id,status,updated_at')
+              .maybeSingle();
+            if (ferr) console.error('[status→FAIL] fallback processing', ferr);
+            else if (DEBUG_ANALYZE_STATUS) console.log('[status→OK] fallback processing', fdata);
+            return;
+          }
+
+          // Unknown column → retry with safe subset
+          if (error.code === '42703') {
+            const safe: any = { status: patch.status };
+            if ('ai_summary' in patch) safe.ai_summary = patch.ai_summary;
+            const { data: sdata, error: serr } = await serverSupabase
+              .from('policy_uploads')
+              .update(safe)
+              .eq('id', id)
+              .select('id,status,updated_at')
+              .maybeSingle();
+            if (serr) console.error('[status→FAIL] safe fallback', serr);
+            else if (DEBUG_ANALYZE_STATUS) console.log('[status→OK] safe fallback', sdata);
+          }
+        };
         try {
+
+          // Mock path for smoke test
+          if (process.env.USE_MOCK_ANALYSIS === '1') {
+            await setStatus({ status: 'extracting' }, 'extracting');
+            await setStatus({ status: 'analyzing' }, 'analyzing');
+            await setStatus({ status: 'summarizing' }, 'summarizing');
+            const mockAnalysis = {
+              policyType: 'Salud',
+              premium: { amount: 120000, currency: 'COP', frequency: 'monthly' },
+              policyDetails: { insured: ['Titular'] },
+              insurer: { name: 'Aseguradora Demo', contact: 'soporte@demo.co', emergencyLines: ['123'] },
+              coverage: { limits: { 'Gastos médicos': 50000000 }, deductibles: { 'Consulta': 30000 }, exclusions: ['Preexistencias en 6 meses'], geography: 'Colombia', claimInstructions: ['Llama a la línea 123'] },
+              keyFeatures: ['Cobertura nacional 24/7', 'Red amplia de clínicas'],
+              recommendations: ['Aumentar cobertura de accidentes'],
+              riskScore: 4,
+              redFlags: [],
+              missingInfo: []
+            };
+            await setStatus({ status: 'completed', ai_summary: JSON.stringify(mockAnalysis) }, 'completed');
+            // Telemetry: BRIEF_PARSE_COMPLETED (mock path)
+            try {
+              const latencyMs = Date.now() - telemetryStartTs;
+              const counts = {
+                limitsCount: Object.keys((mockAnalysis as any)?.coverage?.limits || {}).length,
+                deductiblesCount: Object.keys((mockAnalysis as any)?.coverage?.deductibles || {}).length,
+                exclusionsCount: ((mockAnalysis as any)?.coverage?.exclusions || []).length,
+                claimInstructionsCount: ((mockAnalysis as any)?.coverage?.claimInstructions || []).length,
+                emergencyLinesCount: ((mockAnalysis as any)?.insurer?.emergencyLines || []).length,
+                insuredCount: ((mockAnalysis as any)?.policyDetails?.insured || []).length,
+                keyFeaturesCount: ((mockAnalysis as any)?.keyFeatures || []).length,
+                recommendationsCount: ((mockAnalysis as any)?.recommendations || []).length,
+                redFlagsCount: ((mockAnalysis as any)?.redFlags || []).length,
+                missingInfoCount: ((mockAnalysis as any)?.missingInfo || []).length,
+                premiumTableRows: ((mockAnalysis as any)?.premiumTable || []).length,
+                sourceQuotesCount: Object.keys((mockAnalysis as any)?.sourceQuotes || {}).length,
+              };
+              const extractedFields: string[] = [];
+              if ((mockAnalysis as any)?.policyType) extractedFields.push('policyType');
+              if ((mockAnalysis as any)?.premium?.amount > 0) extractedFields.push('premium');
+              if ((mockAnalysis as any)?.policyDetails?.policyNumber) extractedFields.push('policyDetails.policyNumber');
+              if ((mockAnalysis as any)?.policyDetails?.effectiveDate) extractedFields.push('policyDetails.effectiveDate');
+              if ((mockAnalysis as any)?.policyDetails?.expirationDate) extractedFields.push('policyDetails.expirationDate');
+              if (((mockAnalysis as any)?.policyDetails?.insured || []).length > 0) extractedFields.push('policyDetails.insured');
+              if ((mockAnalysis as any)?.insurer?.name) extractedFields.push('insurer.name');
+              if ((mockAnalysis as any)?.insurer?.contact) extractedFields.push('insurer.contact');
+              if (((mockAnalysis as any)?.insurer?.emergencyLines || []).length > 0) extractedFields.push('insurer.emergencyLines');
+              if (Object.keys((mockAnalysis as any)?.coverage?.limits || {}).length > 0) extractedFields.push('coverage.limits');
+              if (Object.keys((mockAnalysis as any)?.coverage?.deductibles || {}).length > 0) extractedFields.push('coverage.deductibles');
+              if (((mockAnalysis as any)?.coverage?.exclusions || []).length > 0) extractedFields.push('coverage.exclusions');
+              if (((mockAnalysis as any)?.coverage?.claimInstructions || []).length > 0) extractedFields.push('coverage.claimInstructions');
+              if (((mockAnalysis as any)?.keyFeatures || []).length > 0) extractedFields.push('keyFeatures');
+              if (((mockAnalysis as any)?.recommendations || []).length > 0) extractedFields.push('recommendations');
+              if ((mockAnalysis as any)?.riskScore) extractedFields.push('riskScore');
+              if ((mockAnalysis as any)?.riskJustification) extractedFields.push('riskJustification');
+              if (((mockAnalysis as any)?.premiumTable || []).length > 0) extractedFields.push('premiumTable');
+              telemetry.track(telemetry.events.BRIEF_PARSE_COMPLETED, {
+                source: 'upload',
+                uploadId: uploadRecord.id,
+                userId: bgUserId,
+                latencyMs,
+                extractionMethod,
+                extractedFields,
+                counts,
+              });
+            } catch {}
+            return;
+          }
+
           // Move to extracting
-          await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, { status: 'extracting' } as any);
+          await setStatus({ status: 'extracting' }, 'extracting');
 
           // Extract text
           console.log('📄 [bg] Extracting text from PDF...');
           let pdfText: string;
+          let ocrWasUsed = false;
+          
           try {
             const enh = await ensureEnhanced();
-            if (bgForceOcr && enh?.extractTextFromPDFOCROnly) {
-              const extractionResult = await enh.extractTextFromPDFOCROnly(file);
-              pdfText = extractionResult.text;
-              extractionMethod = extractionResult.method;
-            } else if (enh?.extractTextFromPDFWithOCR) {
-              const extractionResult = await enh.extractTextFromPDFWithOCR(file);
-              pdfText = extractionResult.text;
-              extractionMethod = extractionResult.method;
+            
+            // First try standard text extraction unless OCR is forced
+            if (!bgForceOcr) {
+              try {
+                const text = await extractTextFromPDF(file);
+                // Check if we got meaningful text (more than 100 chars)
+                if (text && text.trim().length > 100) {
+                  pdfText = text;
+                  extractionMethod = 'text';
+                } else if (bgOcrEnabled && enh?.extractTextFromPDFOCROnly) {
+                  // Low confidence in text extraction, try OCR if enabled
+                  console.log('⚠️ [bg] Low text confidence, attempting OCR fallback...');
+                  telemetry.track(telemetry.events.PDF_OCR_STARTED, {
+                    uploadId: uploadRecord.id,
+                    userId: bgUserId,
+                    reason: 'low_text_confidence',
+                    textLength: text?.length || 0
+                  });
+                  
+                  ocrWasUsed = true;
+                  const ocrResult = await enh.extractTextFromPDFOCROnly(file);
+                  pdfText = ocrResult.text;
+                  extractionMethod = ocrResult.method;
+                  
+                  telemetry.track(telemetry.events.PDF_OCR_COMPLETED, {
+                    uploadId: uploadRecord.id,
+                    userId: bgUserId,
+                    textLength: pdfText.length,
+                    pageCount: ocrResult.pageCount
+                  });
+                } else {
+                  // OCR not enabled or not available, use what we have
+                  pdfText = text || '';
+                  extractionMethod = 'text';
+                }
+              } catch (textError) {
+                if (isOcrEnabled && enh?.extractTextFromPDFOCROnly) {
+                  console.log('⚠️ [bg] Text extraction failed, attempting OCR fallback...');
+                  telemetry.track(telemetry.events.PDF_OCR_STARTED, {
+                    uploadId: uploadRecord.id,
+                    userId: bgUserId,
+                    reason: 'text_extraction_failed'
+                  });
+                  
+                  ocrWasUsed = true;
+                  const ocrResult = await enh.extractTextFromPDFOCROnly(file);
+                  pdfText = ocrResult.text;
+                  extractionMethod = ocrResult.method;
+                  
+                  telemetry.track(telemetry.events.PDF_OCR_COMPLETED, {
+                    uploadId: uploadRecord.id,
+                    userId: bgUserId,
+                    textLength: pdfText.length,
+                    pageCount: ocrResult.pageCount
+                  });
+                } else {
+                  throw textError;
+                }
+              }
             } else {
-              const text = await extractTextFromPDF(file);
-              pdfText = text;
-              extractionMethod = 'text';
+              // OCR forced by user
+              if (enh?.extractTextFromPDFOCROnly) {
+                telemetry.track(telemetry.events.PDF_OCR_STARTED, {
+                  uploadId: uploadRecord.id,
+                  userId: bgUserId,
+                  reason: 'user_forced'
+                });
+                
+                ocrWasUsed = true;
+                const ocrResult = await enh.extractTextFromPDFOCROnly(file);
+                pdfText = ocrResult.text;
+                extractionMethod = ocrResult.method;
+                
+                telemetry.track(telemetry.events.PDF_OCR_COMPLETED, {
+                  uploadId: uploadRecord.id,
+                  userId: bgUserId,
+                  textLength: pdfText.length,
+                  pageCount: ocrResult.pageCount
+                });
+              } else {
+                throw new Error('OCR requested but not available');
+              }
             }
           } catch (e) {
-            console.log('⚠️ [bg] Enhanced extraction failed, trying standard method...');
-            pdfText = await extractTextFromPDF(file);
+            console.error('❌ [bg] PDF extraction failed:', e);
+            
+            // Track OCR failure if it was attempted
+            if (ocrWasUsed) {
+              const error = normalizeError(e, 'ocr_extraction');
+              telemetry.track(telemetry.events.PDF_OCR_FAILED, {
+                uploadId: uploadRecord.id,
+                userId: bgUserId,
+                ...error
+              });
+            }
+            
+            // Return a specific error for OCR failures
+            const isOcrError = ocrWasUsed || (e instanceof Error && e.message.includes('OCR'));
+            const error = normalizeError(e, 'pdf_extraction');
+            await setStatus({
+              status: 'error',
+              error_code: isOcrError ? 'OCR_FAILED' : 'EXTRACTION_FAILED',
+              error_message: isOcrError 
+                ? 'No se pudo extraer texto del PDF. Por favor, sube un PDF con texto seleccionable en lugar de una imagen escaneada.'
+                : 'Error al extraer texto del PDF'
+            }, 'error');
+            
+            telemetry.track(telemetry.events.BRIEF_PARSE_FAILED, {
+              source: 'upload',
+              uploadId: uploadRecord.id,
+              userId: bgUserId,
+              ...error
+            });
+            
+            return;
           }
 
-          await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
-            extracted_text: pdfText,
+          await setStatus({
+            extracted_text: `<len=${pdfText.length}>`,
             status: 'analyzing',
             extraction_method: extractionMethod,
-          } as any);
+          }, 'analyzing');
 
           // AI analysis
           console.log('🤖 [bg] Starting AI analysis...');
           const oai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-          const analysis = await analyzePolicyWithAIMultiChunk(pdfText, oai);
+          const analysis = await analyzePolicyWithAIMultiChunk(pdfText, oai).catch(async (err: any) => {
+            // Quota handling
+            const code = (err?.status || err?.code || '').toString();
+            const isQuota = code === '429' || /insufficient_quota|quota/i.test(String(err?.message || err));
+            if (isQuota) {
+              console.warn('⚠️ Quota exceeded during analysis, marking upload as error/quota');
+              await setStatus({
+                status: 'error',
+                error_code: 'quota',
+                error_message: 'OpenAI quota exceeded'
+              }, 'error');
+              // Telemetry: BRIEF_PARSE_FAILED (quota)
+              try {
+                const latencyMs = Date.now() - telemetryStartTs;
+                const error = normalizeError({ message: 'quota exceeded' }, 'ai_analysis');
+                telemetry.track(telemetry.events.BRIEF_PARSE_FAILED, { source: 'upload', uploadId: uploadRecord.id, userId: bgUserId, ...error, latencyMs });
+              } catch {}
+              return null;
+            }
+            throw err;
+          });
 
-          await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, { status: 'summarizing' } as any);
+          if (!analysis) {
+            // early exit on quota error already written
+            return;
+          }
+
+          await setStatus({ status: 'summarizing' }, 'summarizing');
 
           const finalAnalysis = postProcessAnalysis(pdfText, analysis, {
             extractionMethod,
@@ -309,29 +587,71 @@ export async function POST(request: NextRequest) {
 
           const isSpanish = /[áéíóúñü]/i.test(pdfText) || /\b(el|la|los|las|de|del|con|por|para|en|es|son|está|están|tiene|tienen|puede|pueden|debe|deben|ser|estar|hacer|tener|ir|venir|dar|ver|saber|querer|poder|deber|hay|está|están|muy|más|menos|bien|mal|bueno|buena|malo|mala|grande|pequeño|nuevo|viejo|alto|bajo|largo|corto|ancho|estrecho|fuerte|débil|rico|pobre|feliz|triste|contento|enojado|cansado|despierto|limpio|sucio|caliente|frío|caluroso|fresco|seco|mojado|lleno|vacío|abierto|cerrado|nuevo|usado|caro|barato|fácil|difícil|importante|necesario|posible|imposible|correcto|incorrecto|verdadero|falso|cierto|seguro|claro|oscuro|brillante|opaco|transparente|visible|invisible|público|privado|nacional|internacional|local|global|especial|general|particular|común|raro|normal|extraño|usual|habitual|frecuente|ocasional|siempre|nunca|a veces|a menudo|raramente|casi|apenas|exactamente|aproximadamente|cerca|lejos|dentro|fuera|arriba|abajo|adelante|atrás|izquierda|derecha|centro|medio|mitad|parte|todo|nada|algo|nadie|alguien|cualquiera|cada|cual|cuál|qué|quién|dónde|cuándo|cómo|por qué|cuánto|cuánta|cuántos|cuántas)\b/i.test(pdfText);
 
-          await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
-            ai_summary: JSON.stringify(finalAnalysis),
-            status: 'completed' as const,
-            insurer_name: finalAnalysis.insurer?.name || '',
-            insurer_contact: finalAnalysis.insurer?.contact || '',
-            emergency_lines: finalAnalysis.insurer?.emergencyLines || [],
-            policy_start_date: finalAnalysis.policyManagement?.startDate || null,
-            policy_end_date: finalAnalysis.policyManagement?.endDate || null,
-            policy_link: finalAnalysis.policyManagement?.policyLink || null,
-            renewal_reminders: finalAnalysis.policyManagement?.renewalReminders || false,
-            legal_obligations: finalAnalysis.legal?.obligations || [],
-            compliance_notes: finalAnalysis.legal?.complianceNotes || [],
-            coverage_geography: finalAnalysis.coverage?.geography || 'Colombia',
-            claim_instructions: finalAnalysis.coverage?.claimInstructions || [],
-            analysis_language: isSpanish ? 'Spanish' : 'English'
-          } as any);
+          await setStatus({
+            status: 'completed',
+            ai_summary: JSON.stringify(finalAnalysis)
+          }, 'completed');
+          // Telemetry: BRIEF_PARSE_COMPLETED
+          try {
+            const latencyMs = Date.now() - telemetryStartTs;
+            const counts = {
+              limitsCount: Object.keys(finalAnalysis?.coverage?.limits || {}).length,
+              deductiblesCount: Object.keys(finalAnalysis?.coverage?.deductibles || {}).length,
+              exclusionsCount: (finalAnalysis?.coverage?.exclusions || []).length,
+              claimInstructionsCount: (finalAnalysis?.coverage?.claimInstructions || []).length,
+              emergencyLinesCount: (finalAnalysis?.insurer?.emergencyLines || []).length,
+              insuredCount: (finalAnalysis?.policyDetails?.insured || []).length,
+              keyFeaturesCount: (finalAnalysis?.keyFeatures || []).length,
+              recommendationsCount: (finalAnalysis?.recommendations || []).length,
+              redFlagsCount: (finalAnalysis?.redFlags || []).length,
+              missingInfoCount: (finalAnalysis?.missingInfo || []).length,
+              premiumTableRows: (finalAnalysis?.premiumTable || []).length,
+              sourceQuotesCount: Object.keys(finalAnalysis?.sourceQuotes || {}).length,
+            };
+            const extractedFields: string[] = [];
+            if (finalAnalysis?.policyType) extractedFields.push('policyType');
+            if (finalAnalysis?.premium?.amount > 0) extractedFields.push('premium');
+            if (finalAnalysis?.policyDetails?.policyNumber) extractedFields.push('policyDetails.policyNumber');
+            if (finalAnalysis?.policyDetails?.effectiveDate) extractedFields.push('policyDetails.effectiveDate');
+            if (finalAnalysis?.policyDetails?.expirationDate) extractedFields.push('policyDetails.expirationDate');
+            if ((finalAnalysis?.policyDetails?.insured || []).length > 0) extractedFields.push('policyDetails.insured');
+            if (finalAnalysis?.insurer?.name) extractedFields.push('insurer.name');
+            if (finalAnalysis?.insurer?.contact) extractedFields.push('insurer.contact');
+            if ((finalAnalysis?.insurer?.emergencyLines || []).length > 0) extractedFields.push('insurer.emergencyLines');
+            if (Object.keys(finalAnalysis?.coverage?.limits || {}).length > 0) extractedFields.push('coverage.limits');
+            if (Object.keys(finalAnalysis?.coverage?.deductibles || {}).length > 0) extractedFields.push('coverage.deductibles');
+            if ((finalAnalysis?.coverage?.exclusions || []).length > 0) extractedFields.push('coverage.exclusions');
+            if ((finalAnalysis?.coverage?.claimInstructions || []).length > 0) extractedFields.push('coverage.claimInstructions');
+            if ((finalAnalysis?.keyFeatures || []).length > 0) extractedFields.push('keyFeatures');
+            if ((finalAnalysis?.recommendations || []).length > 0) extractedFields.push('recommendations');
+            if (finalAnalysis?.riskScore) extractedFields.push('riskScore');
+            if (finalAnalysis?.riskJustification) extractedFields.push('riskJustification');
+            if ((finalAnalysis?.premiumTable || []).length > 0) extractedFields.push('premiumTable');
+            telemetry.track(telemetry.events.BRIEF_PARSE_COMPLETED, {
+              source: 'upload',
+              uploadId: uploadRecord.id,
+              userId: bgUserId,
+              latencyMs,
+              extractionMethod,
+              extractedFields,
+              counts,
+            });
+          } catch {}
         } catch (error: any) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error during analysis';
           console.error('❌ [bg] Error during analysis:', errorMessage);
-          await updatePolicyUploadWithClient(serverSupabase, uploadRecord.id, {
+          const telemetryError = normalizeError(error, 'background_job');
+          await setStatus({
             status: 'error',
+            error_code: 'internal',
             error_message: errorMessage,
-          } as any);
+          }, 'error');
+          console.error('[bg job ERROR]', error);
+          // Telemetry: BRIEF_PARSE_FAILED
+          try {
+            const latencyMs = Date.now() - telemetryStartTs;
+            telemetry.track(telemetry.events.BRIEF_PARSE_FAILED, { source: 'upload', uploadId: uploadRecord.id, userId: bgUserId, ...telemetryError, latencyMs });
+          } catch {}
         }
       });
 
@@ -347,6 +667,10 @@ export async function POST(request: NextRequest) {
         status: 'error',
         error_message: (e as any)?.message || 'upload_phase_failed'
       } as any);
+      try {
+        const error = normalizeError(e, 'upload_phase');
+        telemetry.track(telemetry.events.BRIEF_PARSE_FAILED, { source: 'upload', uploadId: uploadRecord.id, userId, ...error });
+      } catch {}
       return NextResponse.json({ error: 'upload_phase_failed' }, { status: 500 });
     }
 
@@ -355,6 +679,10 @@ export async function POST(request: NextRequest) {
     
     // Return more detailed error information
     const errorMessage = error instanceof Error ? error.message : String(error);
+    const telemetryError = normalizeError(error, 'request_handler');
+    try {
+      telemetry.track(telemetry.events.BRIEF_PARSE_FAILED, { source: 'upload', uploadId, ...telemetryError });
+    } catch {}
     return NextResponse.json(
       { 
         error: 'internal', 
@@ -370,6 +698,7 @@ export async function POST(request: NextRequest) {
 
 // Split long documents by headings and chunk length, analyze per chunk, and merge results
 async function analyzePolicyWithAIMultiChunk(pdfText: string, oai: any) {
+  const MODEL = process.env.ANALYZE_MODEL ?? 'gpt-4o-mini';
   try {
     // Detect language from the PDF text
     const isSpanish = /[áéíóúñü]/i.test(pdfText) || 
@@ -457,7 +786,7 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
     if (selectedChunks.length <= 1 && pdfText.length <= 7000) {
       try {
         const result = await generateObject({
-          model: oai('gpt-4-turbo-preview'),
+          model: oai(MODEL),
           system: systemPrompt,
           prompt: `Please analyze this document and provide a structured analysis. If premiums/tariffs appear in tables, extract them into premiumTable and infer main premium if applicable. Be specific and avoid hallucinations.\n\n${pdfText.substring(0, 8000)}`,
           schema: PolicyAnalysisSchema,
@@ -469,7 +798,7 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
       } catch (schemaError) {
         console.error('⚠️ Single-chunk schema validation failed, trying fallback:', schemaError);
         const fallbackResult = await generateObject({
-          model: oai('gpt-3.5-turbo'),
+          model: oai(MODEL),
           system: systemPrompt,
           prompt: `Analyze this document and return structured data faithfully. If premiums/tariffs appear in tables, extract them into premiumTable.\n\n${pdfText.substring(0, 4000)}`,
           schema: PolicyAnalysisSchema,
@@ -482,7 +811,7 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
     }
 
     // Multi-chunk: analyze in parallel and merge
-    const prompts = selectedChunks.map((chunk, idx) => (
+    const prompts = selectedChunks.slice(0, 3).map((chunk, idx) => (
       `Section ${idx + 1}/${selectedChunks.length} — ${chunk.title || 'Untitled section'}\n\n` +
       `Analyze ONLY this section faithfully. DO NOT invent details not present in this section. ` +
       `If a field is not present in this section, leave it empty and add a descriptive message to missingInfo indicating it was not found in section ${idx + 1}.\n\n` +
@@ -492,7 +821,7 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
     const calls = prompts.map(async (prompt) => {
       try {
         const r = await generateObject({
-          model: oai('gpt-4-turbo-preview'),
+          model: oai(MODEL),
           system: systemPrompt,
           prompt,
           schema: PolicyAnalysisSchema,
@@ -501,9 +830,9 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
         });
         return r.object;
       } catch (err) {
-        console.warn('⚠️ Chunk analysis failed, using gpt-3.5 fallback for this chunk');
+        console.warn('⚠️ Chunk analysis failed, retrying with same model');
         const r = await generateObject({
-          model: oai('gpt-3.5-turbo'),
+          model: oai(MODEL),
           system: systemPrompt,
           prompt,
           schema: PolicyAnalysisSchema,

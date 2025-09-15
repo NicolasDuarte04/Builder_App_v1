@@ -11,7 +11,7 @@ import { LayoutGroup } from "framer-motion"
 
 export function RoadmapTabs() {
   const [activeTab, setActiveTab] = useState("visual");
-  const { currentProject } = useProjectStore();
+  const currentProject = useProjectStore(state => state.currentProject);
   
   const phaseRefs = useRef<Record<string, RefObject<HTMLDivElement | null>>>({});
   if (currentProject) {

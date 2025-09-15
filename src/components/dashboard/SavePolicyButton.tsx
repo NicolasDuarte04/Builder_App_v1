@@ -103,16 +103,26 @@ export function SavePolicyButton({ policyData, onSuccess, onBeforeSave }: SavePo
     }
   };
 
+  // Handle unauthenticated state
+  const handleAuthClick = () => {
+    if (!session) {
+      signIn();
+    } else {
+      handleSave();
+    }
+  };
+
   return (
     <>
       <div className="flex items-center gap-2">
         <Button
-          onClick={handleSave}
+          onClick={handleAuthClick}
           disabled={isSaving || !!savedId}
           className="gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
+          title={!session ? "Inicia sesión para guardar" : undefined}
         >
           {savedId ? <Check className="h-4 w-4" /> : isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {savedId ? "Guardado ✓" : isSaving ? "Guardando..." : "Guardar análisis"}
+          {savedId ? "Guardado ✓" : isSaving ? "Guardando..." : !session ? "Iniciar sesión para guardar" : "Guardar análisis"}
         </Button>
         {savedId && (
           <Button variant="outline" onClick={() => { window.location.href = '/dashboard/insurance'; }}>

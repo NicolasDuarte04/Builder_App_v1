@@ -1,0 +1,12 @@
+
+> briki-ai-project-builder-app@0.1.0 dev:clean
+> rm -rf .next && next dev
+
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.11:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1177ms
+[?25h

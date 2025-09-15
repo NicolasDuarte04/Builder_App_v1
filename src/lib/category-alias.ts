@@ -12,12 +12,12 @@ export type CanonicalCategory =
   | 'otros';
 
 const SYNONYM_TO_CANONICAL: Record<string, CanonicalCategory> = {
-  auto: 'auto', car: 'auto', carro: 'auto', vehiculo: 'auto',
+  auto: 'auto', car: 'auto', carro: 'auto', vehiculo: 'auto', vehiculos: 'auto', 'vehículos': 'auto',
   salud: 'salud', health: 'salud', medico: 'salud', medicina: 'salud', 'plan de salud': 'salud', eps: 'salud', 'popular options': 'salud', 'opciones populares': 'salud',
   vida: 'vida', life: 'vida', 'seguro de vida': 'vida', todas: 'vida',
   hogar: 'hogar', home: 'hogar', casa: 'hogar',
-  viaje: 'viaje', travel: 'viaje',
-  empresarial: 'empresarial', empresa: 'empresarial', negocio: 'empresarial', otros: 'otros', other: 'otros', others: 'otros',
+  viaje: 'viaje', travel: 'viaje', viajes: 'viaje',
+  empresarial: 'empresarial', empresa: 'empresarial', negocio: 'empresarial', pyme: 'empresarial', otros: 'otros', other: 'otros', others: 'otros',
   mascotas: 'mascotas', pet: 'mascotas', pets: 'mascotas',
   educacion: 'educacion', educativa: 'educacion', educativo: 'educacion', estudios: 'educacion', universidad: 'educacion', colegio: 'educacion', 'ahorro universitario': 'educacion', 'plan educativo': 'educacion',
   education: 'educacion', tuition: 'educacion', school: 'educacion', university: 'educacion', college: 'educacion',

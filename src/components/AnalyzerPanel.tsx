@@ -20,7 +20,7 @@ export function AnalyzerPanel({
 }: AnalyzerPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const firstFocusableRef = useRef<HTMLButtonElement>(null);
-  const { setUiPhase } = useProposal();
+  const setUiPhase = useProposal((s) => s.setUiPhase);
 
   // Focus management
   useEffect(() => {
