@@ -9,6 +9,7 @@ export interface Brief {
   source: BriefSource;
   category: 'Vehículos'|'Salud'|'Viajes'|'Vida'|'Hogar'|'Otro'|null;
   maxBudgetCop: number|null;
+  budgetCurrency?: 'COP'|'USD';
   mustHaveCoverages: string[];
   exclusions?: string[];
   clientPersona?: string;

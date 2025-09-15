@@ -1,12 +1,58 @@
 {
   "home": {
+    "simple": {
+      "eyebrow": "BRIKI",
+      "headline": "Analiza pólizas, compara opciones y cierra más rápido",
+      "subhead": "Briki es tu co-piloto de seguros con IA: extrae coberturas, detecta exclusiones y genera entregables en minutos.",
+      "cta": "Empieza gratis",
+      "see_how": "Ver cómo funciona",
+      "demo_title": "Demo interactiva",
+      "demo_caption": "La demo estará disponible pronto. Prueba las funciones abajo.",
+      "how_it_works_title": "Así funciona Briki",
+      "how_it_works_description": "Herramientas conectadas y datos integrados hacen más fácil conocer, analizar y conectar todo en tu negocio de seguros."
+    },
+    "why": {
+      "title": "¿Por qué Briki?",
+      "bullets": [
+        "Extrae detalles de cobertura en minutos",
+        "Detecta exclusiones y alertas automáticamente",
+        "Genera entregables más rápido"
+      ],
+      "tutorial": "Ver tutorial"
+    },
+    "hero": {
+      "overline": "Briki",
+      "title": "Analiza pólizas, compara opciones y cierra más rápido",
+      "subtitle": "Briki es tu co-piloto de seguros con IA: extrae coberturas, detecta exclusiones y genera entregables en minutos.",
+      "cta_primary": "Analizar póliza (PDF)",
+      "cta_secondary": "Ver cómo funciona"
+    },
     "title": "Bienvenido a Briki",
     "subtitle": "Tu co-piloto de seguros con IA",
     "actions": {
       "upload_pdf": "Analizar póliza (PDF)",
       "new_brief": "Crear un brief",
       "demo": "Explorar demo",
-      "tutorial": "Ver tutorial"
+      "tutorial": "Ver tutorial",
+      "cards": {
+        "analyze": {
+          "eyebrow": "Análisis de Póliza",
+          "question": "¿Ya tienes una póliza?",
+          "helper": "Sube un PDF para extraer coberturas y exclusiones.",
+          "secondary": {
+            "drop": "Arrastra y suelta un PDF",
+            "demo": "Explorar demo"
+          }
+        },
+        "brief": {
+          "eyebrow": "Nuevo Proyecto",
+          "question": "¿Empezando desde cero?",
+          "helper": "Cuéntale a Briki sobre el cliente y sus requisitos.",
+          "secondary": {
+            "template": "Comenzar con una plantilla"
+          }
+        }
+      }
     },
     "help": {
       "title": "Consejos rápidos",
@@ -19,7 +65,8 @@
     "recent": {
       "title": "Actividad reciente",
       "empty_title": "Aún no hay actividad",
-      "empty_body": "Aquí verás tus pólizas y briefs analizados."
+      "empty_body": "Aquí verás tus pólizas y briefs analizados.",
+      "explore_demo": "Explorar demo"
     }
   },
   "nav": {
@@ -28,7 +75,7 @@
     "about": "Acerca de",
     "contact": "Contacto",
     "assistant": "Asistente IA",
-    "myInsurance": "Mis Seguros",
+    "myInsurance": "Análisis Guardados",
     "login": "Iniciar sesión",
     "signup": "Registrarse"
   },
@@ -377,6 +424,13 @@
     "results_title": "Resultados",
     "suggestions_title": "Sugerencias"
   },
+  "toolbar": {
+    "density": {
+      "label": "Densidad",
+      "compact": "Compacta",
+      "comfortable": "Cómoda"
+    }
+  },
   "brief": {
     "reparse": {
       "title": "¿Cómo procesar el nuevo texto?",
@@ -412,7 +466,7 @@
     "title": "Brief del cliente",
     "category_label": "Categoría de seguro",
     "select_category": "Selecciona una categoría",
-    "budget_label": "Presupuesto máximo (COP)",
+    "budget_label": "Presupuesto máximo",
     "budget_placeholder": "300000",
     "budget_hint": "Valor mensual máximo que el cliente está dispuesto a pagar",
     "must_have_label": "Coberturas imprescindibles",
@@ -640,7 +694,7 @@
   },
   "dashboard": {
     "insurance": {
-      "title": "Mis Seguros",
+      "title": "Análisis Guardados",
       "subtitle": "Gestiona tus pólizas analizadas y planes de seguros rastreados",
       "tabs": {
         "savedAnalyses": "Análisis Guardados",
@@ -938,6 +992,22 @@
     },
     "price": {
       "conversion": "Convertido de {amount} {currency} {period} a {rate}"
+    }
+  },
+  "results": {
+    "empty": {
+      "title": "No hay planes que coincidan con tu criterio",
+      "helper": "Prueba ajustando el presupuesto o las coberturas para ver más opciones.",
+      "tryAdjustments": [
+        "Aumenta el presupuesto máximo",
+        "Reduce el número de imprescindibles",
+        "Cambia la categoría o ciudad si aplica"
+      ]
+    }
+  },
+  "chat": {
+    "noResults": {
+      "notice": "No encontré planes con esos criterios. Puedes intentar aumentar el presupuesto o flexibilizar coberturas."
     }
   }
 } 

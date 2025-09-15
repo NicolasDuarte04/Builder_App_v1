@@ -15,7 +15,7 @@ export class StorageError extends Error {
 export interface ProposalStorageResult {
   path: string;
   url: string | null;
-  urlKind: 'signed' | 'public';
+  urlKind: 'signed' | 'public' | 'none';
 }
 
 async function ensureBucketExists(supabase: any, bucketName: string): Promise<void> {
@@ -60,6 +60,18 @@ async function ensureBucketExists(supabase: any, bucketName: string): Promise<vo
 }
 
 export async function uploadProposal(buffer: Buffer): Promise<ProposalStorageResult> {
+  // Dev fallback: if Supabase env is missing, return a data URL
+  const missingEnv = !process.env.NEXT_PUBLIC_SUPABASE_URL || (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_SERVICE_KEY && !process.env.SERVICE_ROLE_KEY);
+  if (process.env.NODE_ENV !== 'production' && missingEnv) {
+    try {
+      const base64 = buffer.toString('base64');
+      const dataUrl = `data:application/pdf;base64,${base64}`;
+      return { path: 'memory://dev.pdf', url: dataUrl, urlKind: 'none' };
+    } catch (e) {
+      // Fall through to attempt supabase if conversion somehow fails
+    }
+  }
+
   const supabase = createServerSupabaseClient();
   
   // Determine bucket name and TTL
@@ -110,10 +122,11 @@ export async function uploadProposal(buffer: Buffer): Promise<ProposalStorageRes
       .from(bucketName)
       .getPublicUrl(filename);
     
+    const publicUrl = publicUrlData?.publicUrl || null;
     return {
       path: filename,
-      url: publicUrlData?.publicUrl || null,
-      urlKind: 'public'
+      url: publicUrl,
+      urlKind: publicUrl ? 'public' : 'none'
     };
   } catch (error) {
     if (error instanceof StorageError) {

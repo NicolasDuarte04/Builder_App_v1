@@ -10,6 +10,7 @@ import AuthProvider from "@/components/AuthProvider"
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider"
 import ChunkRecovery from "./_components/ChunkRecovery"
 import { ToastLiveRegion } from "../hooks/use-toast"
+// Removed next-intl provider usage
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -32,11 +33,13 @@ export const viewport: Viewport = {
   maximumScale: 1,
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Language is handled by LanguageProvider and our custom hook
+  const locale = 'es'
   // Non-blocking build banner (server-side only)
   // Logs once on server start to help identify build in prod logs
   console.log('Briki build', {
@@ -46,33 +49,33 @@ export default function RootLayout({
   // Note: The html lang is statically set to 'es' server-side.
   // For accessibility, we set it client-side based on LanguageProvider after hydration.
   return (
-    <html lang="es" suppressHydrationWarning className="scroll-smooth">
+    <html lang={locale} suppressHydrationWarning className="scroll-smooth">
       <body className={inter.className}>
         {/* Soft console.error interceptor (non-throwing) */}
         <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `(()=>{try{var o=console.error.bind(console);console.error=function(){try{o.apply(console,arguments)}catch{} } }catch{}})();` }} />
         <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-          storageKey="briki-theme"
-        >
-          {/* Stale chunk auto-reload safety */}
-          <ChunkRecovery />
-          {/* Screen reader announcements for toasts */}
-          <ToastLiveRegion />
-          <LanguageProvider>
-            <AuthProvider>
-              <OnboardingProvider>
-                <ScrollProgressBar />
-                <MainNavbar />
-                <main className="min-h-screen">
-                  {children}
-                </main>
-                <Footer />
-              </OnboardingProvider>
-            </AuthProvider>
-          </LanguageProvider>
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+            storageKey="briki-theme"
+          >
+            {/* Stale chunk auto-reload safety */}
+            <ChunkRecovery />
+            {/* Screen reader announcements for toasts */}
+            <ToastLiveRegion />
+            <LanguageProvider>
+              <AuthProvider>
+                <OnboardingProvider>
+                  <ScrollProgressBar />
+                  <MainNavbar />
+                  <main className="content-frame pt-[calc(var(--nav-h)-8px)] pb-12 min-h-screen">
+                    {children}
+                  </main>
+                  <Footer />
+                </OnboardingProvider>
+              </AuthProvider>
+            </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

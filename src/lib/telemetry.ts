@@ -203,13 +203,16 @@ export interface TelemetryEventMap {
   HOME_CTA_BRIEF_CLICKED: SessionContext;
   HOME_CTA_DEMO_CLICKED: SessionContext;
   HOME_CTA_TUTORIAL_CLICKED: SessionContext;
+  HOME_SEGMENT_CARD_VIEWED: SessionContext & { card: 'analyze' | 'brief' };
 
   // Proposal events
-  PROPOSAL_GENERATION_STARTED: { itemCount: number; hasBrief: boolean } & SessionContext;
-  PROPOSAL_GENERATION_COMPLETED: { itemCount: number; hasBrief: boolean; pages?: number; bytes?: number; urlKind: 'http' | 'https' | 'blob' | 'data' | 'unknown' } & DurationFields & SessionContext;
-  PROPOSAL_GENERATION_FAILED: { itemCount: number; hasBrief: boolean } & TelemetryError & SessionContext;
-  PROPOSAL_OPENED: { url: string; id: string | null } & SessionContext;
-  PROPOSAL_LINK_COPIED: { url: string; id: string | null } & SessionContext;
+  PROPOSAL_GENERATION_STARTED: { itemCount: number; hasBrief: boolean } & SessionContext & { requestId?: string };
+  PROPOSAL_GENERATION_PDF_START: { itemCount: number } & SessionContext & { requestId?: string };
+  PROPOSAL_GENERATION_UPLOAD_START: { size: number; pages: number } & SessionContext & { requestId?: string };
+  PROPOSAL_GENERATION_COMPLETED: { itemCount: number; hasBrief: boolean; pages?: number; bytes?: number; urlKind: 'http' | 'https' | 'blob' | 'data' | 'unknown' | 'signed' | 'public' | 'none' } & DurationFields & SessionContext & { requestId?: string };
+  PROPOSAL_GENERATION_FAILED: { itemCount: number; hasBrief: boolean } & TelemetryError & SessionContext & { requestId?: string };
+  PROPOSAL_OPENED: { url: string; id: string | null } & SessionContext & { requestId?: string };
+  PROPOSAL_LINK_COPIED: { url: string; id: string | null } & SessionContext & { requestId?: string };
   TIME_TO_PROPOSAL_MS: { durationMs: number };
 
   ASSISTANT_CONTEXT_APPLIED: { fields: string[] } & SessionContext;
@@ -227,6 +230,7 @@ export interface TelemetryEventMap {
   // Result set telemetry (consolidated)
   RESULTS_INJECTED: { requestId: string; category?: string; dataSource: 'plans_v2' | 'templates' | 'mixed'; planCount: number; templateCount: number; hasRealPlans: boolean } & SessionContext;
   RESULTS_DRAWN: { requestId: string; category?: string; dataSource: 'plans_v2' | 'templates' | 'mixed'; displayedCount: number; viewMode: 'dual' | 'single' } & SessionContext;
+  NO_RESULTS_SHOWN: { requestId: string; fallbackDisabled: boolean } & SessionContext;
 
   FEATURE_FLAG_EXPOSURE: { flag: string; value: boolean } & SessionContext;
   BRIEF_PARSE_REQUESTED: { source: 'paste' | 'upload'; chars?: number; v2?: boolean; userAction?: 'merge' | 'replace'; uploadId?: string } & SessionContext;
@@ -249,7 +253,7 @@ export interface TelemetryEventMap {
   PDF_PRIMARY_SET: { fileCount: number; file: TelemetryFileMetadata } & SessionContext;
   FILE_SIZE_REJECTED: { sizeMB: number; limitMB: number } & TelemetryError & SessionContext;
 
-  COMPARATOR_OPENED: { count: number } & SessionContext;
+  COMPARATOR_OPENED: { count: number; pinnedIds?: string[]; origin?: 'toolbar' | 'sidebar' | string } & SessionContext;
   COMPARATOR_ITEM_ADDED: { id: string; sourceKind: 'template' | 'catalog' | 'normalized'; price: number | null; coverageCount: number; itemCount: number } & SessionContext;
   COMPARATOR_ITEM_REMOVED: { id: string; sourceKind: 'template' | 'catalog' | 'normalized'; price: number | null; coverageCount: number; itemCount: number } & SessionContext;
   COMPARATOR_CLEARED: SessionContext;
@@ -262,13 +266,16 @@ const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly strin
   HOME_CTA_BRIEF_CLICKED: ['sessionId', 'userId'],
   HOME_CTA_DEMO_CLICKED: ['sessionId', 'userId'],
   HOME_CTA_TUTORIAL_CLICKED: ['sessionId', 'userId'],
+  HOME_SEGMENT_CARD_VIEWED: ['sessionId', 'userId', 'card'],
 
   // Proposal events
-  PROPOSAL_GENERATION_STARTED: ['itemCount', 'hasBrief', 'sessionId', 'userId'],
-  PROPOSAL_GENERATION_COMPLETED: ['itemCount', 'hasBrief', 'pages', 'bytes', 'urlKind', 'durationMs', 'latencyMs', 'sessionId', 'userId'],
-  PROPOSAL_GENERATION_FAILED: ['itemCount', 'hasBrief', 'error_code', 'stage', 'retryable', 'http_status', 'sessionId', 'userId'],
-  PROPOSAL_OPENED: ['url', 'id', 'sessionId', 'userId'],
-  PROPOSAL_LINK_COPIED: ['url', 'id', 'sessionId', 'userId'],
+  PROPOSAL_GENERATION_STARTED: ['itemCount', 'hasBrief', 'timestamp', 'locale', 'sourceKinds', 'hasBranding', 'hasCaseId', 'hasProposalId', 'sessionId', 'userId', 'requestId'],
+  PROPOSAL_GENERATION_PDF_START: ['itemCount', 'timestamp', 'locale', 'sourceKinds', 'hasBranding', 'hasCaseId', 'hasProposalId', 'sessionId', 'userId', 'requestId'],
+  PROPOSAL_GENERATION_UPLOAD_START: ['size', 'pages', 'timestamp', 'locale', 'sourceKinds', 'hasBranding', 'hasCaseId', 'hasProposalId', 'sessionId', 'userId', 'requestId'],
+  PROPOSAL_GENERATION_COMPLETED: ['itemCount', 'hasBrief', 'pages', 'bytes', 'urlKind', 'durationMs', 'latencyMs', 'timestamp', 'locale', 'sourceKinds', 'hasBranding', 'hasCaseId', 'hasProposalId', 'sessionId', 'userId', 'requestId'],
+  PROPOSAL_GENERATION_FAILED: ['itemCount', 'hasBrief', 'error_code', 'stage', 'retryable', 'http_status', 'sessionId', 'userId', 'requestId'],
+  PROPOSAL_OPENED: ['url', 'id', 'sessionId', 'userId', 'requestId'],
+  PROPOSAL_LINK_COPIED: ['url', 'id', 'sessionId', 'userId', 'requestId'],
   TIME_TO_PROPOSAL_MS: ['durationMs'],
   ASSISTANT_CONTEXT_APPLIED: ['fields', 'sessionId', 'userId'],
   BRIEF_INJECTED_INTO_TOOL: ['tool', 'fieldCount', 'sessionId', 'userId'],
@@ -279,6 +286,7 @@ const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly strin
   TEMPLATES_GENERATED: ['reason', 'templateCount', 'category', 'sessionId', 'userId'],
   RESULTS_INJECTED: ['requestId', 'category', 'dataSource', 'planCount', 'templateCount', 'hasRealPlans', 'sessionId', 'userId'],
   RESULTS_DRAWN: ['requestId', 'category', 'dataSource', 'displayedCount', 'viewMode', 'sessionId', 'userId'],
+  NO_RESULTS_SHOWN: ['requestId', 'fallbackDisabled', 'sessionId', 'userId'],
   FEATURE_FLAG_EXPOSURE: ['flag', 'value', 'sessionId', 'userId'],
   BRIEF_PARSE_REQUESTED: ['source', 'chars', 'v2', 'userAction', 'uploadId', 'sessionId', 'userId'],
   BRIEF_PARSE_STARTED: ['source', 'chars', 'v2', 'userAction', 'sessionId', 'userId'],
@@ -298,7 +306,7 @@ const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly strin
   PDF_ANALYSIS_FAILED: ['durationMs', 'error_code', 'stage', 'retryable', 'http_status', 'sessionId', 'userId'],
   PDF_PRIMARY_SET: ['fileCount', 'file', 'sessionId', 'userId'],
   FILE_SIZE_REJECTED: ['sizeMB', 'limitMB', 'error_code', 'stage', 'retryable', 'http_status', 'sessionId', 'userId'],
-  COMPARATOR_OPENED: ['count', 'sessionId', 'userId'],
+  COMPARATOR_OPENED: ['count', 'pinnedIds', 'origin', 'sessionId', 'userId'],
   COMPARATOR_ITEM_ADDED: ['id', 'sourceKind', 'price', 'coverageCount', 'itemCount', 'sessionId', 'userId'],
   COMPARATOR_ITEM_REMOVED: ['id', 'sourceKind', 'price', 'coverageCount', 'itemCount', 'sessionId', 'userId'],
   COMPARATOR_CLEARED: ['sessionId', 'userId'],
@@ -306,7 +314,9 @@ const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly strin
 
 const EVENT_REQUIRED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly string[]>> = {
   PROPOSAL_GENERATION_STARTED: ['itemCount', 'hasBrief'],
-  PROPOSAL_GENERATION_COMPLETED: ['itemCount', 'hasBrief', 'urlKind'],
+  PROPOSAL_GENERATION_PDF_START: ['itemCount'],
+  PROPOSAL_GENERATION_UPLOAD_START: ['size', 'pages'],
+  PROPOSAL_GENERATION_COMPLETED: ['itemCount', 'hasBrief', 'urlKind', 'durationMs', 'pages', 'bytes'],
   TIME_TO_PROPOSAL_MS: ['durationMs'],
   ANALYZER_RUN_SUCCEEDED: ['hasPlan', 'success', 'hasSummary', 'durationMs'],
 };
@@ -324,15 +334,21 @@ const EVENT_ALIASES: Record<string, keyof TelemetryEventMap> = {
   home_cta_demo_clicked: 'HOME_CTA_DEMO_CLICKED',
   HOME_CTA_TUTORIAL_CLICKED: 'HOME_CTA_TUTORIAL_CLICKED',
   home_cta_tutorial_clicked: 'HOME_CTA_TUTORIAL_CLICKED',
+  HOME_SEGMENT_CARD_VIEWED: 'HOME_SEGMENT_CARD_VIEWED',
+  home_segment_card_viewed: 'HOME_SEGMENT_CARD_VIEWED',
 
   // Proposals
   PROPOSAL_GENERATION_STARTED: 'PROPOSAL_GENERATION_STARTED',
+  PROPOSAL_GENERATION_PDF_START: 'PROPOSAL_GENERATION_PDF_START',
+  PROPOSAL_GENERATION_UPLOAD_START: 'PROPOSAL_GENERATION_UPLOAD_START',
   PROPOSAL_GENERATION_COMPLETED: 'PROPOSAL_GENERATION_COMPLETED',
   PROPOSAL_GENERATION_FAILED: 'PROPOSAL_GENERATION_FAILED',
   PROPOSAL_OPENED: 'PROPOSAL_OPENED',
   PROPOSAL_LINK_COPIED: 'PROPOSAL_LINK_COPIED',
   // lowercase aliases
   proposal_generation_started: 'PROPOSAL_GENERATION_STARTED',
+  proposal_generation_pdf_start: 'PROPOSAL_GENERATION_PDF_START',
+  proposal_generation_upload_start: 'PROPOSAL_GENERATION_UPLOAD_START',
   proposal_generation_completed: 'PROPOSAL_GENERATION_COMPLETED',
   proposal_generation_failed: 'PROPOSAL_GENERATION_FAILED',
   proposal_opened: 'PROPOSAL_OPENED',
@@ -358,6 +374,8 @@ const EVENT_ALIASES: Record<string, keyof TelemetryEventMap> = {
   RESULTS_INJECTED: 'RESULTS_INJECTED',
   results_injected: 'RESULTS_INJECTED',
   RESULTS_DRAWN: 'RESULTS_DRAWN',
+  no_results_shown: 'NO_RESULTS_SHOWN',
+  NO_RESULTS_SHOWN: 'NO_RESULTS_SHOWN',
   results_drawn: 'RESULTS_DRAWN',
 
   // FF exposure
@@ -460,12 +478,20 @@ export const telemetry = {
     const payload = sanitizeTelemetryPayload(normalizeDurationPayload(eventName, (properties || {})));
     devValidatePayload(eventName, payload);
     const isDev = process.env.NODE_ENV !== 'production';
-    // E2E capture surface (always capture if flag is enabled)
+    // E2E capture surface (always capture if flag is enabled) - client-side
     if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_E2E_CAPTURE === '1') {
       try {
         const w = window as any;
         if (!Array.isArray(w.__captureTelemetry)) w.__captureTelemetry = [];
         w.__captureTelemetry.push({ event: eventName, properties: payload, timestamp: new Date().toISOString() });
+      } catch {}
+    }
+    // E2E capture surface - server-side (opt-in for tests)
+    if (typeof window === 'undefined' && process.env.ENABLE_SERVER_E2E_CAPTURE === '1') {
+      try {
+        const g: any = globalThis as any;
+        if (!Array.isArray(g.__serverTelemetry)) g.__serverTelemetry = [];
+        g.__serverTelemetry.push({ event: eventName, properties: payload, timestamp: new Date().toISOString() });
       } catch {}
     }
     // Dev-only console
@@ -526,6 +552,10 @@ export const telemetry = {
     HOME_CTA_BRIEF_CLICKED: 'home_cta_brief_clicked',
     HOME_CTA_DEMO_CLICKED: 'home_cta_demo_clicked',
     HOME_CTA_TUTORIAL_CLICKED: 'home_cta_tutorial_clicked',
+    HOME_SEGMENT_CARD_VIEWED: 'home_segment_card_viewed',
+    HOME_DEMO_PLAYED: 'home_demo_played',
+    HOME_DEMO_PAUSED: 'home_demo_paused',
+    HOME_CTA_GET_STARTED_CLICKED: 'home_cta_get_started_clicked',
 
     // Legacy events
     INTAKE_SUBMITTED: 'intake_submitted',
@@ -612,6 +642,7 @@ export const telemetry = {
     TEMPLATES_GENERATED: 'templates_generated',
     RESULTS_INJECTED: 'results_injected',
     RESULTS_DRAWN: 'results_drawn',
+    NO_RESULTS_SHOWN: 'no_results_shown',
     SOURCING_ACTION_CLICKED: 'sourcing_action_clicked',
     SOURCE_NORMALIZED_SUCCESS: 'source_normalized_success',
     SOURCE_NORMALIZED_FAIL: 'source_normalized_fail',
@@ -623,6 +654,8 @@ export const telemetry = {
     PLANS_SEARCHED: 'plans_searched',
     // Step-10 analytics events
     PROPOSAL_GENERATION_STARTED: 'PROPOSAL_GENERATION_STARTED',
+    PROPOSAL_GENERATION_PDF_START: 'PROPOSAL_GENERATION_PDF_START',
+    PROPOSAL_GENERATION_UPLOAD_START: 'PROPOSAL_GENERATION_UPLOAD_START',
     PROPOSAL_GENERATION_COMPLETED: 'PROPOSAL_GENERATION_COMPLETED',
     PROPOSAL_GENERATION_FAILED: 'PROPOSAL_GENERATION_FAILED',
     PROPOSAL_OPENED: 'PROPOSAL_OPENED',

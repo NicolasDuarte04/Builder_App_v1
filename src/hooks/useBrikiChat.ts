@@ -7,8 +7,13 @@ import { shallow } from 'zustand/shallow';
 import { eventBus } from '@/lib/event-bus';
 import { usePlanResults } from '@/contexts/PlanResultsContext';
 import { useLanguage } from '@/components/LanguageProvider';
+import { useTranslation } from '@/hooks/useTranslation';
+import { isTemplatesFallbackEnabled, isNoResultsChatNoticeEnabled } from '@/lib/flags';
 import { telemetry, getUserContext } from '@/lib/telemetry';
 import { useBriefStore } from '@/state/briefStore';
+
+// Single-shot guard to avoid duplicate no-results notices per requestId
+const NO_RESULTS_NOTICE_POSTED = new Set<string>();
 
 export function useBrikiChat(initialMessages?: any[]) {
   const setChatHistory = useProjectStore((state) => state.setChatHistory);
@@ -17,6 +22,7 @@ export function useBrikiChat(initialMessages?: any[]) {
   const appendChatHistory = useProjectStore((state) => state.appendChatHistory);
   const { showPanelWithPlans, isDualPanelMode } = usePlanResults();
   const { language } = useLanguage();
+  const { t } = useTranslation();
 
   const [currentToolInvocations, setCurrentToolInvocations] = useState<any[]>([]);
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
@@ -39,6 +45,32 @@ export function useBrikiChat(initialMessages?: any[]) {
 
                     // Handle smart templates (fallback when no catalog plans)
                     if (result?.type === 'templates' || result?.type === 'insurance_templates') {
+                        // Respect flag: optionally disable templates injection and show empty state + notice
+                        const requestId = result?.requestId || `req-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                        if (!isTemplatesFallbackEnabled()) {
+                          try {
+                            showPanelWithPlans({
+                              title: result?.title ?? t('assistant.results_title'),
+                              plans: [],
+                              category: result?.insuranceType ?? result?.category ?? undefined,
+                              hasRealPlans: false,
+                              dataSource: 'plans_v2',
+                              source: 'chat_tool',
+                              requestId,
+                              filters: result?.filters ?? null,
+                            });
+                            if (isNoResultsChatNoticeEnabled()) {
+                              if (!NO_RESULTS_NOTICE_POSTED.has(requestId)) {
+                                appendAssistantMessage(t('chat.noResults.notice'));
+                                NO_RESULTS_NOTICE_POSTED.add(requestId);
+                                if (process.env.NODE_ENV !== 'production') console.log('[AUDIT] Chat no-results notice posted', { requestId });
+                              }
+                            }
+                          } catch (e) {
+                            console.warn('⚠️ Failed to show empty panel for templates-disabled path', e);
+                          }
+                          return;
+                        }
                         try {
                           const templateData = {
                             type: 'templates',
@@ -52,7 +84,8 @@ export function useBrikiChat(initialMessages?: any[]) {
                           };
                           
                           // Generate a requestId once to reuse in audit + UI injection
-                          const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+                          // Use the above requestId if present
+                          
 
                           // [AUDIT] Chat finish: templates received
                           console.log('[AUDIT] Chat finish: templates received', {
@@ -273,7 +306,43 @@ export function useBrikiChat(initialMessages?: any[]) {
       uiCount: uiPlans.length,
     });
 
-    if (uiPlans.length === 0) return;
+    if (uiPlans.length === 0) {
+      // Respect flag: when templates fallback is disabled, open empty right panel and optionally post a notice
+      const requestId = data?.requestId || `req-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      if (!isTemplatesFallbackEnabled()) {
+        try {
+          showPanelWithPlans({
+            title: data?.title || t('assistant.results_title'),
+            plans: [],
+            category: data?.insuranceType || data?.category || data?.filters?.category,
+            hasRealPlans: false,
+            dataSource: 'plans_v2',
+            source: 'chat_tool',
+            requestId,
+            filters: data?.filters ?? null,
+          });
+          if (isNoResultsChatNoticeEnabled()) {
+            if (!NO_RESULTS_NOTICE_POSTED.has(requestId)) {
+              setMessages((prev) => ([
+                ...prev,
+                {
+                  id: `assistant-${Date.now()}`,
+                  role: 'assistant' as const,
+                  content: t('chat.noResults.notice'),
+                },
+              ]));
+              NO_RESULTS_NOTICE_POSTED.add(requestId);
+              if (process.env.NODE_ENV !== 'production') console.log('[AUDIT] Chat no-results notice posted', { requestId });
+            }
+          }
+        } catch (e) {
+          console.warn('⚠️ Failed to show empty panel for zero-uiPlans path', e);
+        }
+        return;
+      }
+      // If fallback is enabled, maintain existing behavior (do nothing)
+      return;
+    }
 
     // Prepare structured data event
     const structuredData = {

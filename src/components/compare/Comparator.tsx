@@ -40,19 +40,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
   const hasTrackedDiffsRef = useRef(false);
   const hasTrackedReasoningRef = useRef(false);
 
-  // Track comparator opened (once)
-  useEffect(() => {
-    if (itemCount >= 2 && !hasTrackedOpenRef.current) {
-      hasTrackedOpenRef.current = true;
-      getUserContext().then(({ sessionId, userId }) => {
-        telemetry.track(telemetry.events.COMPARATOR_OPENED, {
-          itemCount,
-          sessionId,
-          userId
-        });
-      });
-    }
-  }, [itemCount]);
+  // Removed COMPARATOR_OPENED emission here to avoid duplicates; handled by open/scroll triggers.
 
   if (itemCount < 2) return null;
 
@@ -147,6 +135,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
     <section 
       role="region" 
       aria-label={t('header')}
+      id="comparison-panel"
       className="w-full rounded-lg border bg-card p-6 mb-4"
       data-testid="comparator"
     >

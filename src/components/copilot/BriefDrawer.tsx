@@ -90,7 +90,7 @@ export function BriefDrawer({ open, onOpenChange, onSubmit, defaultValues }: Bri
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="budget">Presupuesto máximo (COP)</Label>
+                <Label htmlFor="budget">Presupuesto máximo</Label>
                 <Input
                   id="budget"
                   type="number"

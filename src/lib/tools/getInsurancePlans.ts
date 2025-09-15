@@ -63,7 +63,7 @@ export async function getInsurancePlans(args: GetPlansArgs): Promise<GetPlansRes
     
     // No plans found - fallback to templates
     console.log('📝 getInsurancePlans: no catalog results, generating templates');
-    const templates = buildSmartTemplates(brief || null);
+    const templates = await buildSmartTemplates(brief || null);
     
     // Note: TEMPLATES_GENERATED telemetry is now handled in showPanelWithPlans
     

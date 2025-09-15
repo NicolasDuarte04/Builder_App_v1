@@ -24,7 +24,7 @@ interface TemplatePlanCardProps {
 export function TemplatePlanCard({ template, onUseTemplate, isCompact = false, brief }: TemplatePlanCardProps) {
   const { t, language } = useTranslation();
   const compareCount = useCompareStore(s => s.count);
-  const isInComparison = useCompareStore(s => s.isInCompare(template.id));
+  const isInComparison = useCompareStore(s => s.isInCompare(String(template.id)));
   const isComparisonFull = useCompareStore(s => s.isFull);
   const add = useCompareStore(s => s.add);
   const remove = useCompareStore(s => s.remove);
@@ -38,8 +38,10 @@ export function TemplatePlanCard({ template, onUseTemplate, isCompact = false, b
   
 
   const handleCompareToggle = () => {
+    const nextPressed = !isInComparison;
+    console.debug('[audit][template-compare]', { pressed: nextPressed, id: String(template.id) });
     if (isInComparison) {
-      remove(template.id);
+      remove(String(template.id));
     } else if (!isComparisonFull) {
       const comparedPlan = fromTemplate(template, brief);
       add(comparedPlan);
@@ -51,7 +53,7 @@ export function TemplatePlanCard({ template, onUseTemplate, isCompact = false, b
       <CardHeader className={isCompact ? "pb-2" : "pb-3"}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className={`font-semibold text-gray-900 dark:text-gray-100 ${isCompact ? "text-sm" : "text-base"}`}>
+            <CardTitle className={isCompact ? "font-semibold text-gray-900 dark:text-gray-100 text-sm" : "font-semibold text-gray-900 dark:text-gray-100 text-base"}>
               {template.title}
             </CardTitle>
             <Badge 
@@ -83,19 +85,19 @@ export function TemplatePlanCard({ template, onUseTemplate, isCompact = false, b
         )}
       </CardHeader>
       
-      <CardContent className={`space-y-${isCompact ? "3" : "4"}`}>
+      <CardContent className={isCompact ? "space-y-3" : "space-y-4"}>
         {/* Trust metadata */}
-        {FLAGS.trustMetadata && template.source?.kind && template.source?.updatedAt && (
+        {template.source?.kind && template.source?.updatedAt && (
           <div className="text-[11px] text-gray-500 dark:text-gray-400" data-testid="plan-trust-meta">
             {String(t('assistant.trust.source'))}: {template.source.kind} • {String(t('assistant.trust.updated'))}: {formatTrustDate(template.source.updatedAt, language)}
           </div>
         )}
         {/* Price Range */}
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className={`font-medium text-gray-700 dark:text-gray-300 mb-1 ${isCompact ? "text-xs" : "text-sm"}`}>
+          <div className={isCompact ? "font-medium text-gray-700 dark:text-gray-300 mb-1 text-xs" : "font-medium text-gray-700 dark:text-gray-300 mb-1 text-sm"}>
             Rango de precio estimado
           </div>
-          <div className={`font-bold text-gray-900 dark:text-gray-100 ${isCompact ? "text-base" : "text-lg"}`}>
+          <div className={isCompact ? "font-bold text-gray-900 dark:text-gray-100 text-base" : "font-bold text-gray-900 dark:text-gray-100 text-lg"}>
             {formatCurrency(template.priceRangeCop.min)} - {formatCurrency(template.priceRangeCop.max)}
           </div>
         </div>
@@ -103,7 +105,7 @@ export function TemplatePlanCard({ template, onUseTemplate, isCompact = false, b
         {/* Suggested Coverages */}
         {template.suggestedCoverages.length > 0 && (
           <div>
-            <div className={`font-medium text-gray-700 dark:text-gray-300 mb-2 ${isCompact ? "text-xs" : "text-sm"}`}>
+            <div className={isCompact ? "font-medium text-gray-700 dark:text-gray-300 mb-2 text-xs" : "font-medium text-gray-700 dark:text-gray-300 mb-2 text-sm"}>
               Coberturas incluidas
             </div>
             <div className="flex flex-wrap gap-1">
@@ -139,7 +141,7 @@ export function TemplatePlanCard({ template, onUseTemplate, isCompact = false, b
         {/* Disclaimers */}
         {template.disclaimers.length > 0 && (
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-            <div className={`flex items-center text-blue-700 dark:text-blue-400 font-medium mb-1 ${isCompact ? "text-xs" : "text-sm"}`}>
+            <div className={isCompact ? "flex items-center text-blue-700 dark:text-blue-400 font-medium mb-1 text-xs" : "flex items-center text-blue-700 dark:text-blue-400 font-medium mb-1 text-sm"}>
               <Info className="w-4 h-4 mr-1" />
               Información importante
             </div>
@@ -150,6 +152,24 @@ export function TemplatePlanCard({ template, onUseTemplate, isCompact = false, b
             </ul>
           </div>
         )}
+
+        {/* Compare toggle near CTA */}
+        <div className="flex w-full justify-end">
+          <Button
+            size={isCompact ? "sm" : "default"}
+            variant={isInComparison ? "secondary" : "outline"}
+            onClick={handleCompareToggle}
+            disabled={!isInComparison && isComparisonFull}
+            className="h-9 px-3 gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            data-testid="template-compare-toggle"
+            aria-label={isInComparison ? String((t as any)('comparison.inComparison') || 'En comparación') : String((t as any)('comparison.add') || 'Agregar a comparación')}
+            aria-pressed={isInComparison}
+            title={isInComparison ? String((t as any)('comparison.inComparison') || 'En comparación') : String((t as any)('comparison.add') || 'Agregar a comparación')}
+          >
+            <ArrowLeftRight className="w-4 h-4" />
+            <span className="text-xs">{compareCount}/3</span>
+          </Button>
+        </div>
 
         {/* Action Button */}
         <Button 

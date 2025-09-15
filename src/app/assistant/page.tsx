@@ -76,6 +76,7 @@ export default function AssistantPage() {
   const didLoadBriefRef = useRef(false);
   const [portalAnalysis, setPortalAnalysis] = useState<any>(null);
   const [portalViewerUrl, setPortalViewerUrl] = useState<string | null>(null);
+  const analyzerPanelRef = useRef<HTMLDivElement | null>(null);
   
   useEffect(() => {
     const t = setTimeout(() => setBoot(false), 1200);
@@ -198,6 +199,20 @@ export default function AssistantPage() {
     window.addEventListener('briki:open-analyzer-panel', handler as EventListener);
     return () => window.removeEventListener('briki:open-analyzer-panel', handler as EventListener);
   }, []);
+
+  // Auto-scroll to analyzer panel when it opens
+  useEffect(() => {
+    if (isAnalyzerExpanded && analyzerPanelRef.current) {
+      // Small delay to ensure the panel is rendered
+      setTimeout(() => {
+        analyzerPanelRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+      }, 100);
+    }
+  }, [isAnalyzerExpanded]);
 
   // Handle briki:pdf-selected event for layout transition
   useEffect(() => {
@@ -552,7 +567,7 @@ export default function AssistantPage() {
 
       {/* Main workspace */}
       <div
-        className="container max-w-6xl mx-auto px-4 pb-10 pt-[calc(var(--nav-h,64px)+16px)]"
+        className="mx-auto w-full px-4 pb-10 pt-[calc(var(--nav-h,64px)-8px)] max-w-full xl:max-w-[calc(100vw-300px)]"
         style={{
           ['--nav-h' as any]: '64px',       // keep or compute dynamically
           ['--hdr-h' as any]: '0px',         // no header strip now
@@ -561,7 +576,7 @@ export default function AssistantPage() {
         <section className="relative">
           {/* header + grid go inside here */}
           <div className={cn(
-            "grid grid-cols-1 md:grid-cols-12 gap-4 min-h-[calc(100vh-var(--nav-h)-var(--hdr-h))]",
+            "grid grid-cols-1 md:grid-cols-12 gap-2 min-h-[calc(100vh-var(--nav-h)-var(--hdr-h))]",
             isPortalMode && "bg-gradient-to-b from-[var(--briki-from)]/6 via-transparent to-[var(--briki-to)]/8"
           )}>
           {/* Left rail: brief & analyzer (hidden when results + collapsed; shown again if user expands) */}
@@ -619,26 +634,28 @@ export default function AssistantPage() {
               </Button>
               
               {/* Analyzer Panel - Attached to the button */}
-              <AnalyzerPanel
-                isExpanded={isAnalyzerExpanded}
-                onToggle={setIsAnalyzerExpanded}
-                plan={analyzingPlan}
-                onAnalysisComplete={(payload) => {
-                  // Create structured assistant message for right panel
-                  const structuredMessage = {
-                    role: 'assistant',
-                    content: payload.analysisSummary,
-                    type: 'analysis_results',
-                    analysis: (payload as any).analysis || null,
-                    timestamp: new Date().toISOString()
-                  };
-                  
-                  // Dispatch event to notify the assistant interface
-                  window.dispatchEvent(new CustomEvent('briki:assistant-message', {
-                    detail: structuredMessage
-                  }));
-                }}
-              />
+              <div ref={analyzerPanelRef}>
+                <AnalyzerPanel
+                  isExpanded={isAnalyzerExpanded}
+                  onToggle={setIsAnalyzerExpanded}
+                  plan={analyzingPlan}
+                  onAnalysisComplete={(payload) => {
+                    // Create structured assistant message for right panel
+                    const structuredMessage = {
+                      role: 'assistant',
+                      content: payload.analysisSummary,
+                      type: 'analysis_results',
+                      analysis: (payload as any).analysis || null,
+                      timestamp: new Date().toISOString()
+                    };
+                    
+                    // Dispatch event to notify the assistant interface
+                    window.dispatchEvent(new CustomEvent('briki:assistant-message', {
+                      detail: structuredMessage
+                    }));
+                  }}
+                />
+              </div>
             </div>
             
             {/* Loading State */}

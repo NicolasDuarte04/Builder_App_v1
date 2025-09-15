@@ -1,7 +1,7 @@
 import { PDFDocument, PDFPage, rgb, StandardFonts } from 'pdf-lib';
 import type { Brief } from '@/types/brief';
 import type { ComparedPlan } from '@/types/compare';
-import { FLAGS } from '@/lib/flags';
+import { FLAGS, getFlag } from '@/lib/flags';
 import { formatTrustDate } from '@/lib/utils';
 import { validateAndNormalizeBrief } from '@/lib/validate/brief';
 import { normalizeCoverageList } from '@/lib/coveragesMap';
@@ -337,7 +337,7 @@ export async function generateProposal(input: ProposalInput): Promise<ProposalOu
       maxWidth: 140,
     });
     // Trust metadata under plan name (small gray), gated by flag
-    if (FLAGS.trustMetadata) {
+    if (getFlag(FLAGS.TRUST_METADATA)) {
       const kind = item.source?.kind;
       const updatedAt = item.source?.updatedAt || item.updatedAt;
       const dateText = formatTrustDate(updatedAt, locale === 'es' ? 'es-CO' : 'en-US');

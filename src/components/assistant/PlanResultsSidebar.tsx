@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Pin, BookmarkPlus, ArrowRight, Filter, Search } from 'lucide-react';
 import { InsurancePlan } from '@/components/briki-ai-assistant/NewPlanCard';
@@ -28,10 +28,12 @@ import { useBriefStore } from '@/state/briefStore';
 import { useUILayoutStore } from '@/state/uiLayoutStore';
 import type { AnyPlan } from '@/types/plan';
 import { useAnalyzerUI } from '@/state/analyzerUI';
-import { FLAGS } from '@/lib/flags';
+import { useCompareUI } from '@/state/compareUI';
+import { FLAGS, getFlag, isTemplatesFallbackEnabled } from '@/lib/flags';
 import { formatTrustDate } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Brief } from '@/types/brief';
+import { useUiPhase } from '@/state/proposal';
 
 // Note: Telemetry deduplication is now handled centrally in showPanelWithPlans
 
@@ -72,6 +74,8 @@ interface PlanResultsSidebarProps {
   className?: string;
   activeCategory?: string | null;
   country?: string | null;
+  // New: render mode. overlay (default) keeps fixed drawer; embedded places it inside chat container
+  variant?: 'overlay' | 'embedded';
 }
 
 export function PlanResultsSidebar({ 
@@ -81,14 +85,17 @@ export function PlanResultsSidebar({
   currentResults,
   className = "",
   activeCategory,
-  country
+  country,
+  variant = 'overlay'
 }: PlanResultsSidebarProps) {
   const { t, language } = useTranslation();
   const { toast } = useToast();
   const { hideRightPanel, setDualPanelMode, setSidebarOpen } = usePlanResults();
   const clearBriefManualOverride = useUILayoutStore((s) => s.clearBriefManualOverride);
-  
-  // (CTA moved to QuickActionBar) — no sidebar CTA state needed
+  const uiPhase = useUiPhase();
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+  const isEmbedded = variant === 'embedded';
+  const compareItemsCount = useCompareStore((s) => s.items.length);
   
   // State for plan interactions
   const [selectedPlan, setSelectedPlan] = useState<InsurancePlan | null>(null);
@@ -108,17 +115,41 @@ export function PlanResultsSidebar({
 
   // Fallback logic: if tool result missing, fetch directly
   useEffect(() => {
+    if (!isTemplatesFallbackEnabled()) return;
     let cancelled = false;
     async function maybeFetch() {
       setFallbackPlans(null);
+      
+      // [AUDIT] Log state before fallback decision
+      const hasPlans = (currentResults?.plans?.length || 0) > 0;
+      const hasTemplates = (currentResults?.templates?.length || 0) > 0;
+      const hasSources = (currentResults?.sources?.length || 0) > 0;
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[audit][sidebar] fallback check:', {
+          hasPlans,
+          hasTemplates,
+          hasSources
+        });
+      }
+
       // Return early if we have any content (plans, templates, or sources)
       if (currentResults && (
-        currentResults.plans.length > 0 ||
+        (currentResults.plans && currentResults.plans.length > 0) ||
         (currentResults.templates && currentResults.templates.length > 0) ||
         (currentResults.sources && currentResults.sources.length > 0)
-      )) return;
+      )) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[audit][sidebar] skipping fallback - content exists');
+        }
+        return;
+      }
+
       const cat = normalizeCategory(activeCategory || "");
       if (!cat) return;
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[audit][sidebar] triggering fallback search for category:', cat);
+      }
       const rows = await searchPlans({ category: cat, country: country || "CO", limit: 12 }).catch(() => []);
       if (!cancelled) setFallbackPlans(rows);
     }
@@ -128,19 +159,27 @@ export function PlanResultsSidebar({
 
   // Use fallback plans if tool plans are missing (memoized to avoid new refs each render)
   const effectiveResults = React.useMemo(() => {
-    // Use currentResults if we have any content (plans, templates, or sources)
-    if (currentResults && (
-      currentResults.plans?.length > 0 ||
-      (currentResults.templates && currentResults.templates.length > 0) ||
-      (currentResults.sources && currentResults.sources.length > 0)
-    )) {
+    // [AUDIT] Log effective results state
+    const hasPlans = (currentResults?.plans?.length || 0) > 0;
+    const hasTemplates = (currentResults?.templates?.length || 0) > 0;
+    const hasSources = (currentResults?.sources?.length || 0) > 0;
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[audit][sidebar] effective:', {
+        hasPlans,
+        hasTemplates,
+        hasSources
+      });
+    }
+
+    // Prefer currentResults even if empty
+    if (currentResults) {
       return currentResults;
     }
     
-    // Otherwise use fallback plans if available
-    return fallbackPlans?.length ? {
+    // Otherwise use fallback plans if available and flag enabled
+    return (isTemplatesFallbackEnabled() && (fallbackPlans?.length)) ? {
       title: `Plans for ${activeCategory || 'selected category'}`,
-      plans: fallbackPlans,
+      plans: fallbackPlans!,
       category: activeCategory || undefined,
       timestamp: new Date()
     } : null;
@@ -204,6 +243,7 @@ export function PlanResultsSidebar({
         category: currentResults?.category,
         dataSource,
         displayedCount,
+        fallbackDisabled: !isTemplatesFallbackEnabled(),
         viewMode: 'dual',
         sessionId,
         userId,
@@ -372,11 +412,13 @@ export function PlanResultsSidebar({
   }, [pinnedPlans, stablePlans]);
 
   // [AUDIT] Sidebar render state
-  console.log('[AUDIT] Sidebar render: effective', {
-    hasPlans: (currentResults?.plans?.length || 0) > 0,
-    hasTemplates: (currentResults?.templates?.length || 0) > 0,
-    hasSources: (currentResults?.sources?.length || 0) > 0
-  });
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[AUDIT] Sidebar render: effective', {
+      hasPlans: (currentResults?.plans?.length || 0) > 0,
+      hasTemplates: (currentResults?.templates?.length || 0) > 0,
+      hasSources: (currentResults?.sources?.length || 0) > 0
+    });
+  }
 
   // Dev-only render log to avoid console spam in production
   if (process.env.NODE_ENV !== 'production') {
@@ -398,18 +440,84 @@ export function PlanResultsSidebar({
     prevResultsStateRef.current = null;
   }, [isModalOpen, overlay]);
 
+  // On mobile, focus the first focusable element when the drawer opens (overlay only)
+  useEffect(() => {
+    if (!isOpen || isEmbedded) return;
+    if (typeof window === 'undefined' || window.innerWidth >= 768) return;
+    const root = drawerRef.current;
+    if (!root) return;
+    const focusables = root.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusables.length > 0) {
+      try { focusables[0].focus(); } catch {}
+    }
+  }, [isOpen, isEmbedded]);
+
+  // Temporary audit probe
+  try { console.debug('[audit][layout]', { mode: 'overlay', isRightPanelOpen: isOpen, uiPhase }); } catch {}
+
   if (!isOpen) return null;
 
   return (
     <>
+      {/* Mobile scrim only in overlay mode */}
+      {!isEmbedded && (
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-[69] md:hidden"
+            aria-hidden="true"
+            onClick={() => {
+              onClose();
+              onClosed?.();
+            }}
+          />
+        </AnimatePresence>
+      )}
+
       <AnimatePresence>
         <motion.div
-          initial={{ x: '100%', opacity: 0 }}
+          initial={{ x: '100%', opacity: 1 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: '100%', opacity: 0 }}
-          transition={{ type: 'spring', damping: 24, stiffness: 220 }}
-          className={`fixed right-0 top-0 h-full w-96 lg:w-[28rem] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl z-[70] flex flex-col ${className}`}
+          exit={{ x: '100%', opacity: 1 }}
+          transition={{ type: 'spring', damping: 26, stiffness: 260 }}
+          className={`${isEmbedded ? 'absolute right-0 top-0 h-full w-[92vw] max-w-[20rem]' : 'fixed right-0 top-0 h-full w-[88vw] max-w-[20rem]'} bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl z-[70] flex flex-col ${className}`}
           data-testid="plan-results-sidebar"
+          ref={drawerRef}
+          role={isEmbedded ? 'region' : 'dialog'}
+          aria-modal={isEmbedded ? undefined : true}
+          aria-label={String(t('assistant.insurance_results'))}
+          onKeyDown={(e) => {
+            if (isEmbedded) return; // focus trap & esc only for overlay
+            // ESC closes on mobile
+            if (e.key === 'Escape' && typeof window !== 'undefined' && window.innerWidth < 768) {
+              e.stopPropagation();
+              onClose();
+              onClosed?.();
+              return;
+            }
+            // Basic focus trap (mobile only)
+            if (e.key === 'Tab' && drawerRef.current && typeof window !== 'undefined' && window.innerWidth < 768) {
+              const focusables = drawerRef.current.querySelectorAll<HTMLElement>(
+                'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+              );
+              if (focusables.length === 0) return;
+              const first = focusables[0];
+              const last = focusables[focusables.length - 1];
+              const active = document.activeElement as HTMLElement | null;
+              if (!e.shiftKey && active === last) {
+                e.preventDefault();
+                first.focus();
+              } else if (e.shiftKey && active === first) {
+                e.preventDefault();
+                last.focus();
+              }
+            }
+          }}
         >
           {/* Header */}
           <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
@@ -423,7 +531,7 @@ export function PlanResultsSidebar({
                   variant="ghost"
                   size="sm"
                   onClick={() => { 
-                    overlay.minimizeResults(); 
+                    if (!isEmbedded) { try { overlay.minimizeResults(); } catch {} }
                     clearBriefManualOverride(); // Clear manual override when minimizing
                     onClose(); 
                   }}
@@ -495,10 +603,10 @@ export function PlanResultsSidebar({
             {activeResults && (
               <div className="mt-3 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>{filteredPlans.length} {t('assistant.plans')}</span>
-                {pinnedPlans.size > 0 && (
+                {compareItemsCount > 0 && (
                   <span className="flex items-center gap-1">
                     <Pin className="h-3 w-3" />
-                    {pinnedPlans.size} {t('assistant.pinned')}
+                    {compareItemsCount} {t('assistant.pinned')}
                   </span>
                 )}
               </div>
@@ -506,14 +614,14 @@ export function PlanResultsSidebar({
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto space-y-6">
             {!activeResults ? (
               // Empty state
-              <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+              <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
                   <Search className="h-8 w-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
                   No insurance results yet
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
@@ -522,9 +630,9 @@ export function PlanResultsSidebar({
               </div>
             ) : activeResults.analysisType === 'policy_analysis' ? (
               // Analysis results display
-              <div className="p-4">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              <div className="px-4 py-6 space-y-6">
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {activeResults.title}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -608,7 +716,30 @@ export function PlanResultsSidebar({
                 )}
               </div>
             ) : (
-              <div className="p-4 space-y-6">
+              (() => {
+                const noPlans = (activeResults?.plans?.length ?? 0) === 0;
+                const noTemplates = !activeResults?.templates || activeResults.templates.length === 0;
+                const noSources = !activeResults?.sources || activeResults.sources.length === 0;
+                if (noPlans && noTemplates && noSources) {
+                  return (
+                    <div className="p-4 text-sm">
+                      <h3 className="font-medium">{t('results.empty.title') as string}</h3>
+                      <p className="text-muted-foreground mt-1">{t('results.empty.helper') as string}</p>
+                      {Array.isArray((t as any)('results.empty.tryAdjustments', { returnObjects: true })) && (
+                        <ul className="list-disc pl-5 mt-2 space-y-1">
+                          {((t as any)('results.empty.tryAdjustments', { returnObjects: true }) as string[]).map((s, i) => (
+                            <li key={i}>{s}</li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="mt-4">
+                        <SourcingActions />
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="p-4 space-y-6">
                 {/* Pinned Plans Section */}
                 {pinnedPlansList.length > 0 && (
                   <div>
@@ -631,34 +762,7 @@ export function PlanResultsSidebar({
                         />
                       ))}
                     </div>
-                    {pinnedPlansList.length >= 2 && (
-                      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-                          You have {pinnedPlansList.length} plans pinned for comparison
-                        </p>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              // Step-2 analytics: COMPARATOR_OPENED
-                              getUserContext().then(({ sessionId, userId }) => {
-                                telemetry.track(telemetry.events.COMPARATOR_OPENED, {
-                                  count: pinnedPlansList.length,
-                                  sessionId,
-                                  userId
-                                });
-                              });
-                              
-                              // Trigger comparison event with actual pinned plans
-                              console.log('🔍 PlanResultsSidebar: Comparison button clicked with pinned plans:', pinnedPlansList);
-                              eventBus.emit('comparison:request', { pinnedPlans: pinnedPlansList });
-                            }}
-                            className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded transition-colors"
-                          >
-                            {t('assistant.view_comparison_in_chat')}
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                    
                   </div>
                 )}
 
@@ -687,7 +791,9 @@ export function PlanResultsSidebar({
                       <SourcingActions
                         onSearchPlans={() => {
                           // Trigger search for real plans
-                          console.log('🔍 Search real plans triggered from templates');
+                          if (process.env.NODE_ENV !== 'production') {
+                            console.log('🔍 Search real plans triggered from templates');
+                          }
                           // You can emit an event or call a function here
                         }}
                         onUploadDocument={() => {
@@ -696,7 +802,9 @@ export function PlanResultsSidebar({
                         }}
                         onWebSearch={() => {
                           // Trigger web search
-                          console.log('🌐 Web search triggered from templates');
+                          if (process.env.NODE_ENV !== 'production') {
+                            console.log('🌐 Web search triggered from templates');
+                          }
                           // You can emit an event or call a function here
                         }}
                       />
@@ -719,11 +827,15 @@ export function PlanResultsSidebar({
                           key={`source-${index}`}
                           plan={source}
                           onViewSource={(sourceData) => {
-                            console.log('📄 View source:', sourceData);
+                            if (process.env.NODE_ENV !== 'production') {
+                              console.log('📄 View source:', sourceData);
+                            }
                             // Handle viewing the source document/URL
                           }}
                           onAnalyze={(plan) => {
-                            console.log('🔍 Analyze normalized plan:', plan);
+                            if (process.env.NODE_ENV !== 'production') {
+                              console.log('🔍 Analyze normalized plan:', plan);
+                            }
                             // Handle analyzing the normalized plan
                           }}
                           isCompact={true}
@@ -768,17 +880,9 @@ export function PlanResultsSidebar({
                   </div>
                 )}
                 
-                {/* No results at all */}
-                {filteredPlans.length === 0 && activeResults.plans.length === 0 && 
-                 (!activeResults.templates || activeResults.templates.length === 0) &&
-                 (!activeResults.sources || activeResults.sources.length === 0) && (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      No plans, templates, or sources available.
-                    </p>
-                  </div>
-                )}
               </div>
+                );
+              })()
             )}
           </div>
         </motion.div>
@@ -838,14 +942,14 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
   };
 
   // Use normalized price if available and flag is enabled
-  const hasNormalizedPrice = FLAGS.currencyNorm && plan.normalizedPrice;
+  const hasNormalizedPrice = getFlag(FLAGS.CURRENCY_NORM) && plan.normalizedPrice;
   const displayPrice = hasNormalizedPrice ? plan.normalizedPrice!.amountCOPMonthly : plan.basePrice;
   const displayCurrency = hasNormalizedPrice ? 'COP' : plan.currency;
   
   const priceInfo = getPriceDisplay(displayPrice, displayCurrency, !!plan.external_link);
   const tooltipId = `price-tip-${plan.id}`;
   const perMonthLabel = t('comparison.fields.perMonth');
-  const trustEnabled = FLAGS.trustMetadata;
+  const trustEnabled = getFlag(FLAGS.TRUST_METADATA);
   const trustKind = (plan as any)?.source?.kind || 'catalog';
   const trustUpdatedAt = (plan as any)?.source?.updatedAt || (plan as any)?.updatedAt;
   const trustDateText = formatTrustDate(trustUpdatedAt, language);
@@ -854,11 +958,11 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
+      className="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3.5 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex-1 min-w-0">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1 min-w-0 space-y-1">
           <h4 className="font-medium text-sm text-gray-900 dark:text-white truncate">
             {formatPlanName(translateIfEnglish(plan.name, language), language)}
           </h4>
@@ -881,7 +985,7 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
           data-testid="pin-toggle"
           aria-pressed={isPinned}
           aria-label={isPinned ? t('assistant.unpin') : t('assistant.pin')}
-          className={`p-1 rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-800 ${
+          className={`p-1.5 rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-800 ${
             isPinned 
               ? 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30' 
               : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
@@ -892,7 +996,7 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
       </div>
 
       {/* Price */}
-      <div className="mb-2">
+      <div className="mb-3">
         {!priceInfo.isQuoteOnly ? (
           <>
             {hasNormalizedPrice ? (

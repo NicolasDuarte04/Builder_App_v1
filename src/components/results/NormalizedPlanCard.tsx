@@ -13,7 +13,7 @@ import { fromSource } from '@/lib/comparison/adapters';
 import { telemetry, getUserContext } from '@/lib/telemetry';
 import { Brief } from '@/types/brief';
 import { SourceKind } from '@/types/compare';
-import { FLAGS } from '@/lib/flags';
+import { FLAGS, getFlag } from '@/lib/flags';
 
 interface NormalizedPlanCardProps {
   plan: NormalizedPlan & { fitScore?: number };
@@ -89,7 +89,7 @@ export function NormalizedPlanCard({
                 {plan.provider}
               </p>
             )}
-            {FLAGS.trustMetadata && plan.source?.kind && plan.source?.updatedAt && (
+            {getFlag(FLAGS.TRUST_METADATA) && plan.source?.kind && plan.source?.updatedAt && (
               <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400" data-testid="plan-trust-meta">
                 {String(t('assistant.trust.source'))}: {plan.source.kind} • {String(t('assistant.trust.updated'))}: {formatTrustDate(plan.source.updatedAt, language)}
               </div>

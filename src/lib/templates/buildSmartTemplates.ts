@@ -1,4 +1,5 @@
 import { validateAndNormalizeBrief } from '@/lib/validate/brief';
+import { isTemplatesFallbackEnabled } from '@/lib/flags';
 import { normalizeCoverageList } from '@/lib/coveragesMap';
 import { presetsFor } from '@/lib/coverage-presets';
 import { computeFitScore } from '@/lib/fitScore';
@@ -85,7 +86,8 @@ function computeFitScoreTemplate(brief: Partial<Brief>, template: TemplatePlan):
   return computeFitScore(brief, planLike);
 }
 
-export function buildSmartTemplates(briefInput: Brief | null): TemplatePlan[] {
+export async function buildSmartTemplates(briefInput: Brief | null): Promise<TemplatePlan[]> {
+  if (!isTemplatesFallbackEnabled()) return [];
   const { brief } = validateAndNormalizeBrief(briefInput || {} as any);
   const category = brief.category || undefined;
   const must = normalizeCoverageList(brief.mustHaveCoverages || []);

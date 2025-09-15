@@ -4,7 +4,7 @@ import { uploadProposal } from '@/lib/proposals/storage';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import type { ComparedPlan } from '@/types/compare';
 import type { Brief } from '@/types/brief';
-import { telemetry, getUserContext } from '@/lib/telemetry';
+import { telemetry, getUserContext, normalizeError } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
 
@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
     // Parse request body
     const body: ProposalRequest = await request.json();
     const { brief, items, notes, sources, locale = 'es', branding, caseId } = body;
+    const requestId = (body as any)?.requestId as string | undefined;
 
     // User context (do not throw if it fails)
     let sessionId: string | undefined;
@@ -39,22 +40,14 @@ export async function POST(request: NextRequest) {
       userId = ctx?.userId;
     } catch {}
 
-    // Compute sourceKinds if available
+    // Derived fields
+    const itemCount = Array.isArray(items) ? items.length : 0;
+    const hasBrief = !!brief;
     const sourceKinds = Array.isArray(items)
       ? Array.from(new Set(items.map(i => i?.source?.kind).filter(Boolean)))
       : [];
 
-    // Start event with enriched payload
-    telemetry.track('PROPOSAL_GENERATION_STARTED', {
-      timestamp: new Date().toISOString(),
-      itemCount: Array.isArray(items) ? items.length : 0,
-      locale,
-      sourceKinds,
-      hasBranding: !!branding,
-      hasCaseId: !!caseId,
-      sessionId,
-      userId,
-    });
+    // Client emits PROPOSAL_GENERATION_STARTED; server suppresses duplicate
 
     if (!brief || !items || items.length === 0) {
       return NextResponse.json(
@@ -65,12 +58,15 @@ export async function POST(request: NextRequest) {
 
     // Generate PDF
     telemetry.track('PROPOSAL_GENERATION_PDF_START', {
-      itemCount: items.length,
+      itemCount,
+      timestamp: new Date().toISOString(),
       locale,
+      sourceKinds,
       hasBranding: !!branding,
       hasCaseId: !!caseId,
       sessionId,
       userId,
+      requestId,
     });
 
     let pdfResult;
@@ -84,13 +80,14 @@ export async function POST(request: NextRequest) {
         locale,
       });
     } catch (error) {
+      const err = normalizeError(error, 'generation');
       telemetry.track('PROPOSAL_GENERATION_FAILED', {
-        stage: 'generation',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-        durationMs: Math.max(0, Math.round(Date.now() - startTime)),
+        itemCount,
+        hasBrief,
+        ...err,
         sessionId,
         userId,
+        requestId,
       });
       
       return NextResponse.json(
@@ -106,21 +103,28 @@ export async function POST(request: NextRequest) {
     telemetry.track('PROPOSAL_GENERATION_UPLOAD_START', {
       size: pdfResult.size,
       pages: pdfResult.pages,
+      timestamp: new Date().toISOString(),
+      locale,
+      sourceKinds,
+      hasBranding: !!branding,
+      hasCaseId: !!caseId,
       sessionId,
       userId,
+      requestId,
     });
 
     let uploadResult;
     try {
       uploadResult = await uploadProposal(pdfResult.buffer);
     } catch (error) {
+      const err = normalizeError(error, 'upload');
       telemetry.track('PROPOSAL_GENERATION_FAILED', {
-        stage: 'upload',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-        durationMs: Math.max(0, Math.round(Date.now() - startTime)),
+        itemCount,
+        hasBrief,
+        ...err,
         sessionId,
         userId,
+        requestId,
       });
       
       return NextResponse.json(
@@ -161,64 +165,53 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (error) {
+          const err = normalizeError(error, 'db');
           telemetry.track('PROPOSAL_GENERATION_FAILED', {
-            stage: 'db',
-            message: error?.message || 'DB insert failed',
-            caseId,
-            timestamp: new Date().toISOString(),
-            durationMs: Math.max(0, Math.round(Date.now() - startTime)),
+            itemCount,
+            hasBrief,
+            ...err,
             sessionId,
             userId,
+            requestId,
           });
           // Continue anyway - the PDF is uploaded
         } else if (data) {
           proposalId = data.id;
         }
       } catch (error) {
+        const err = normalizeError(error, 'db');
         telemetry.track('PROPOSAL_GENERATION_FAILED', {
-          stage: 'db',
-          message: error instanceof Error ? error.message : 'Unknown error',
-          caseId,
-          timestamp: new Date().toISOString(),
-          durationMs: Math.max(0, Math.round(Date.now() - startTime)),
+          itemCount,
+          hasBrief,
+          ...err,
           sessionId,
           userId,
+          requestId,
         });
         // Continue anyway - the PDF is uploaded
       }
     }
 
-    // Success
-    const durationMs = Math.max(0, Math.round(Date.now() - startTime));
-    
-    telemetry.track('PROPOSAL_GENERATION_COMPLETED', {
-      timestamp: new Date().toISOString(),
-      durationMs,
-      pages: pdfResult.pages,
-      bytes: pdfResult.size,
-      urlKind: uploadResult.urlKind,
-      hasProposalId: !!proposalId,
-      sessionId,
-      userId,
-    });
+    // Success: client emits PROPOSAL_GENERATION_COMPLETED using response payload
 
     return NextResponse.json({
       url: uploadResult.url,
+      urlKind: uploadResult.urlKind,
       id: proposalId,
       pages: pdfResult.pages,
       bytes: pdfResult.size,
+      requestId,
     });
 
   } catch (error) {
-    const durationMs = Math.max(0, Math.round(Date.now() - startTime));
-    
+    const err = normalizeError(error, 'unknown');
     telemetry.track('PROPOSAL_GENERATION_FAILED', {
-      stage: 'unknown',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString(),
-      durationMs,
+      itemCount: 0,
+      hasBrief: false,
+      ...err,
       sessionId: undefined,
       userId: undefined,
+      requestId: undefined,
     });
 
     return NextResponse.json(

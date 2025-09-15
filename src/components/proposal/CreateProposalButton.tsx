@@ -12,13 +12,15 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { ComparedPlan, SourceKind } from '@/types/compare';
 
 type ButtonSize = 'sm' | 'default' | 'lg' | 'icon';
-type ButtonVariant = 'default' | 'outline' | 'secondary' | 'ghost' | 'link' | 'primary' | 'destructive';
+type ButtonVariant = 'default' | 'outline' | 'secondary' | 'ghost' | 'link' | 'destructive';
+type DensityPreset = 'compact' | 'comfortable';
 
 interface CreateProposalButtonProps {
   className?: string;
   size?: ButtonSize;
   variant?: ButtonVariant;
   disabled?: boolean;
+  density?: DensityPreset;
 }
 
 // Minimal helper to map shortlist plan to ComparedPlan format
@@ -47,8 +49,9 @@ function mapShortlistPlanToCompared(plan: any): ComparedPlan {
 export function CreateProposalButton({
   className = '',
   size = 'default',
-  variant = 'primary',
+  variant = 'default',
   disabled: disabledProp = false,
+  density,
 }: CreateProposalButtonProps) {
   const { t, language } = useTranslation();
   const { toast } = useToast();
@@ -73,6 +76,14 @@ export function CreateProposalButton({
     } catch {
       return 'unknown';
     }
+  };
+
+  const normalizeUrlKind = (fromApi?: string | null, url?: string | null): 'signed' | 'public' | 'none' | 'unknown' => {
+    if (fromApi === 'signed' || fromApi === 'public' || fromApi === 'none') return fromApi;
+    const raw = detectUrlKind(url);
+    if (raw === 'http' || raw === 'https') return 'public';
+    if (raw === 'blob' || raw === 'data') return 'none';
+    return 'none';
   };
 
   const handleGenerate = async () => {
@@ -118,6 +129,7 @@ export function CreateProposalButton({
       let stage: string = 'init';
       const { sessionId, userId } = await getUserContext();
       const { brief } = useBriefStore.getState();
+      const requestId = `req-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       
       // Track proposal generation started
       telemetry.track(telemetry.events.PROPOSAL_GENERATION_STARTED, {
@@ -125,12 +137,14 @@ export function CreateProposalButton({
         hasBrief: !!brief,
         sessionId,
         userId,
+        requestId,
       });
 
       const body = {
         brief: brief || {},
         items,
         locale: (brief?.locale as 'es' | 'en') || language || 'es',
+        requestId,
       };
 
       stage = 'request';
@@ -150,7 +164,7 @@ export function CreateProposalButton({
       }
 
       stage = 'parse';
-      const data: { url: string; id?: string; pages?: number; bytes?: number } = await res.json();
+      const data: { url: string | null; urlKind?: 'signed' | 'public' | 'none' | string; id?: string; pages?: number; bytes?: number; requestId?: string } = await res.json();
 
       const durationMs = typeof startTs === 'number' ? Math.max(0, Math.round(Date.now() - startTs)) : undefined;
       telemetry.track(telemetry.events.PROPOSAL_GENERATION_COMPLETED, {
@@ -158,17 +172,18 @@ export function CreateProposalButton({
         hasBrief: !!brief,
         pages: data.pages,
         bytes: data.bytes,
-        urlKind: detectUrlKind(data?.url),
+        urlKind: normalizeUrlKind(data?.urlKind, data?.url),
         durationMs,
         sessionId,
         userId,
+        requestId: data?.requestId || requestId,
       });
 
       try {
         telemetry.metrics.endTimeToProposalIfStarted();
       } catch {}
 
-      setResultUrl(data.url);
+      setResultUrl(data.url || null);
       setResultId(data.id || null);
 
       // Auto-hide inline action bar after a short delay (no effect loop)
@@ -247,39 +262,56 @@ export function CreateProposalButton({
     }
   };
 
+  const resolvedDensity: DensityPreset = density || 'comfortable';
+  const presetButtonSize: ButtonSize = resolvedDensity === 'compact' ? 'default' : 'lg';
+  const effectiveSize: ButtonSize = size || presetButtonSize;
+  const gapClass = resolvedDensity === 'compact' ? 'gap-1.5' : 'gap-2';
+
   return (
-    <div className="inline-flex items-center gap-2">
+    <div className={`inline-flex items-center ${gapClass}`}>
       <Button
         onClick={handleGenerate}
         disabled={isDisabled}
-        size={size}
+        size={effectiveSize}
         variant={variant}
-        className={className}
+        className={`${className} inline-flex items-center ${gapClass}`}
         aria-label={t('proposal.create')}
         aria-disabled={isDisabled}
         data-testid="create-proposal-button"
       >
         {isGenerating ? (
           <>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            {t('proposal.generating')}
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="hidden md:inline">{t('proposal.generating')}</span>
           </>
         ) : (
           <>
-            <FileText className="h-4 w-4 mr-2" />
-            {t('proposal.create')}
+            <FileText className="h-5 w-5" />
+            <span className="hidden md:inline">{t('proposal.create')}</span>
           </>
         )}
       </Button>
 
       {/* Inline action bar mirrors toast actions (for environments without a Toaster) */}
       {resultUrl && (
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleOpen} aria-label={t('proposal.open')}>
-            <ExternalLink className="h-3 w-3 mr-1" />{t('proposal.open')}
+        <div className={`flex items-center ${gapClass}`}>
+          <Button
+            variant="outline"
+            size={effectiveSize}
+            onClick={handleOpen}
+            aria-label={t('proposal.open')}
+            className={`inline-flex items-center ${gapClass}`}
+          >
+            <ExternalLink className="h-5 w-5" />{t('proposal.open')}
           </Button>
-          <Button variant="ghost" size="sm" onClick={handleCopy} aria-label={t('proposal.copyLink')}>
-            <Copy className="h-3 w-3 mr-1" />{t('proposal.copyLink')}
+          <Button
+            variant="ghost"
+            size={effectiveSize}
+            onClick={handleCopy}
+            aria-label={t('proposal.copyLink')}
+            className={`inline-flex items-center ${gapClass}`}
+          >
+            <Copy className="h-5 w-5" />{t('proposal.copyLink')}
           </Button>
         </div>
       )}

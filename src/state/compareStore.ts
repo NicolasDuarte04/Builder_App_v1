@@ -63,7 +63,7 @@ export const useCompareStore = create<CompareStoreWithDerived>()((set, get) => (
     const newItems = [...state.items, item];
     set({ items: newItems });
     
-    // Side-effects: emit events
+    // Side-effects: emit events (opened event now emitted by open/scroll handlers)
     getUserContext().then(({ sessionId, userId }) => {
       const sourceKindForTelemetry = (() => {
         if (item.source.kind === 'template') return 'template';
@@ -79,16 +79,7 @@ export const useCompareStore = create<CompareStoreWithDerived>()((set, get) => (
         sessionId,
         userId
       });
-
-      // Emit COMPARATOR_OPENED once per session when threshold reached
-      if (newItems.length >= 2 && sessionId && !comparatorOpenedSessions.has(sessionId)) {
-        comparatorOpenedSessions.add(sessionId);
-        telemetry.track(telemetry.events.COMPARATOR_OPENED, {
-          count: newItems.length,
-          sessionId,
-          userId,
-        });
-      }
+      // COMPARATOR_OPENED emission moved to UI handlers to include origin and avoid duplicates.
     });
   },
 

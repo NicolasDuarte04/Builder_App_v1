@@ -112,8 +112,8 @@ export async function POST(req: Request) {
     rows = res.rows;
   }
 
-  // Add normalized prices if flag is enabled
-  if (FLAGS.currencyNorm && Array.isArray(rows)) {
+  // Add normalized prices (always enabled)
+  if (Array.isArray(rows)) {
     rows = rows.map(row => {
       const normalizedPrice = normalizePriceToCOP(
         row.base_price,
@@ -135,7 +135,7 @@ export async function POST(req: Request) {
       count: Array.isArray(rows) ? rows.length : 0,
       runtime: process.env.NEXT_RUNTIME || 'nodejs',
       limit,
-      currencyNormEnabled: FLAGS.currencyNorm,
+      currencyNormEnabled: true,
     });
   } catch {}
 
@@ -191,24 +191,22 @@ export async function POST(req: Request) {
       }
       let limited = filtered.slice(0, Math.min(Number(limit) || 20, 100));
       
-      // Add normalized prices to fallback data if flag is enabled
-      if (FLAGS.currencyNorm) {
-        limited = limited.map((row: any) => {
-          const normalizedPrice = normalizePriceToCOP(
-            row.base_price,
-            row.currency,
-            row.price_period || 'monthly'
-          );
-          
-          return {
-            ...row,
-            normalizedPrice
-          };
-        });
-      }
+      // Add normalized prices to fallback data
+      limited = limited.map((row: any) => {
+        const normalizedPrice = normalizePriceToCOP(
+          row.base_price,
+          row.currency,
+          row.price_period || 'monthly'
+        );
+        
+        return {
+          ...row,
+          normalizedPrice
+        };
+      });
       
       try {
-        console.info('[plans_v2/search:fallback]', { includeCategories: includeNorm, country: country || null, count: limited.length, currencyNormEnabled: FLAGS.currencyNorm });
+        console.info('[plans_v2/search:fallback]', { includeCategories: includeNorm, country: country || null, count: limited.length, currencyNormEnabled: true });
       } catch {}
       rows = limited;
     } catch (e) {
@@ -216,9 +214,9 @@ export async function POST(req: Request) {
     }
   }
 
-  // Lightweight relevance tweak (flagged): boost matches by intent keywords vs plan tags
+  // Lightweight relevance tweak: boost matches by intent keywords vs plan tags
   try {
-    if (Array.isArray(rows) && rows.length > 0 && FLAGS.newSearchRanking) {
+    if (Array.isArray(rows) && rows.length > 0) {
       const needle = String(q || '').toLowerCase();
       const want = new Set<string>([]);
       if (/(grua|grúa|asistencia)/.test(needle)) want.add('asistencia vial');

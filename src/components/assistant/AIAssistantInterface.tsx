@@ -61,7 +61,6 @@ import { PlanResultsSidebar } from "./PlanResultsSidebar";
 import { LayoutModeToggle } from "./LayoutModeToggle";
 import { PlanPinObserver } from "./PlanPinObserver";
 import { CategoryFallbackObserver } from "./CategoryFallbackObserver";
-import { ComparisonObserver } from "./ComparisonObserver";
 import { useUIOverlay } from "@/state/uiOverlay";
 import { ResultsToggle } from "./ResultsToggle";
 import { useProposal, useUiPhase } from "@/state/proposal";
@@ -78,11 +77,12 @@ import { ReparseConfirmDialog } from '@/components/brief/ReparseConfirmDialog';
 import { ResultsStatusBanner } from '@/components/results/ResultsStatusBanner';
 import { Comparator } from '@/components/compare/Comparator';
 import { useCompareStore } from '@/state/compareStore';
+import { useCompareUI } from '@/state/compareUI';
 import { buildPlanFiltersFromBrief } from '@/lib/briefPromptBuilder';
 import { searchPlans } from '@/lib/plans-client';
 import { buildSmartTemplates } from '@/lib/templates/buildSmartTemplates';
 import { useIsBriefCollapsed, useUILayoutStore } from '@/state/uiLayoutStore';
-import { getFFIncredibleBrief, getFFLongPasteGuard } from '@/lib/flags';
+import { getFFIncredibleBrief, getFFLongPasteGuard, isNoResultsChatNoticeEnabled } from '@/lib/flags';
 import { useAnalyzerUI } from '@/state/analyzerUI';
 import { formatCurrency } from "@/lib/utils";
 
@@ -288,6 +288,7 @@ function AIAssistantInterfaceInner({
 
   // Compare store item count (primitive selector to avoid array subscriptions)
   const compareItemsCount = useCompareStore(state => state.items.length);
+  const isComparatorOpen = useCompareUI(s => s.isOpen);
 
   const {
     messages,
@@ -718,6 +719,7 @@ function AIAssistantInterfaceInner({
           });
         }
       } catch {}
+      const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const filters = brief ? buildPlanFiltersFromBrief(brief) : { category: 'auto', country: 'CO' as const, limit: 3 };
       const plans = await searchPlans(filters as any);
       if (Array.isArray(plans) && plans.length > 0) {
@@ -729,14 +731,26 @@ function AIAssistantInterfaceInner({
           }
         } catch {}
       } else {
-        const templates = buildSmartTemplates(brief || null);
-        // Note: TEMPLATES_GENERATED telemetry is now handled in showPanelWithPlans
-        showPanelWithPlans({ title: t('assistant.suggestions_title'), plans: [], templates, category: brief?.category || undefined, dataSource: 'templates', hasRealPlans: false });
+        // No results path: do not build templates. Show empty results payload with metadata.
+        const derivedCategory = (filters as any)?.category || brief?.category || undefined;
+        showPanelWithPlans({
+          title: t('assistant.results_title'),
+          plans: [],
+          category: derivedCategory,
+          hasRealPlans: false,
+          dataSource: 'plans_v2',
+          source: 'cta',
+          requestId,
+          filters: filters as any,
+        });
+
+        // Optionally append a single chat notice about no results, deduped by requestId
         try {
-          if ((templates?.length || 0) > 0) {
-            setBriefCollapsed(true);
-            if (process.env.NODE_ENV !== 'production') {
-              console.debug('[LAYOUT] → window (results: templates ', templates.length, ')');
+          if (isNoResultsChatNoticeEnabled && isNoResultsChatNoticeEnabled()) {
+            const eventName = 'NO_RESULTS_CHAT_NOTICE';
+            const sig = `rid:${requestId}`;
+            if (!markAndShouldSkipAssistant(eventName, sig)) {
+              appendAssistantMessage(String(t('chat.noResults.notice')));
             }
           }
         } catch {}
@@ -916,18 +930,22 @@ function AIAssistantInterfaceInner({
   };
 
   // [AUDIT] Layout snapshot
-  console.log('[AUDIT] Layout snapshot:', {
-    uiPhase,
-    isDualPanelMode,
-    isRightPanelOpen,
-    hasResults: !!currentResults
-  });
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[AUDIT] Layout snapshot:', {
+      uiPhase,
+      isDualPanelMode,
+      isRightPanelOpen,
+      hasResults: !!currentResults
+    });
+  }
 
-  console.log("🎯 GEMINI-STYLE: Layout state:", {
-    isDualPanelMode,
-    isRightPanelOpen,
-    currentResults,
-  });
+  if (process.env.NODE_ENV !== 'production') {
+    console.log("🎯 GEMINI-STYLE: Layout state:", {
+      isDualPanelMode,
+      isRightPanelOpen,
+      currentResults,
+    });
+  }
 
   // State for extract brief chip
   const [showExtractChip, setShowExtractChip] = useState(false);
@@ -1200,8 +1218,7 @@ function AIAssistantInterfaceInner({
         appendAssistantMessage={appendAssistantMessage}
       />
 
-      {/* ComparisonObserver - Listens for comparison requests */}
-      <ComparisonObserver appendAssistantMessage={appendAssistantMessage} />
+      {/* ComparisonObserver removed: comparison flows go to table comparator */}
 
       {/* Layout Mode Toggle hidden per design cleanup */}
       {/* <LayoutModeToggle variant="floating" size="sm" /> */}
@@ -1209,36 +1226,35 @@ function AIAssistantInterfaceInner({
       {/* GEMINI-STYLE: True dual-panel layout with automatic compression */}
       <div
         className={
-          isEmbedded ? "h-full w-full flex" : "h-full w-full flex pt-16"
+          isEmbedded ? "h-full w-full flex" : "h-full w-full flex"
         }
       >
         {/* LEFT PANEL: Chat Area */}
         <div
-          className={`flex flex-col transition-all duration-300 ${(() => {
+          className={`relative flex flex-col transition-all duration-300 ${(() => {
             const lm = useUI.getState().layoutMode;
             const isPortalMode = lm === 'analysis_portal_prep' || lm === 'analysis_running' || lm === 'analysis_results';
+            // In overlay mode, chat should always take full width (no shrink)
             if (isPortalMode) return 'w-full';
-            return isDualPanelMode && isRightPanelOpen
-              ? 'w-[calc(100%-25rem)]'
-              : 'w-full';
+            return 'w-full';
           })()}`}
         >
           {/* Main Content Area */}
           <div
             className={
               isEmbedded
-                ? `flex-1 min-h-0 overflow-y-auto ${railPad}`
-                : "flex-1 overflow-y-auto"
+                ? `flex-1 min-h-0 overflow-y-auto ${railPad} ${isDualPanelMode && isRightPanelOpen ? 'md:pr-[20rem]' : ''}`
+                : `flex-1 overflow-y-auto ${isDualPanelMode && isRightPanelOpen ? 'md:pr-[20rem]' : ''}`
             }
             ref={scrollRegionRef}
           >
             {/* Show brief chip when collapsed (window mode only) */}
             {collapseMode === 'window' && isBriefCollapsed && flowStartedStrict && (
-              <div className="sticky top-2 z-10 mx-auto max-w-2xl px-3 mb-2">
+              <div className="absolute top-4 left-4 z-10">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="bg-background/80 backdrop-blur-sm"
+                  className="bg-background/80 backdrop-blur-sm shadow-lg"
                   onClick={async () => {
                     if (!lastCollapsedRef.current) return;
                     setManualOverride('expanded');
@@ -1306,9 +1322,9 @@ function AIAssistantInterfaceInner({
               <ResultsStatusBanner />
             )}
 
-            {/* Comparator - shows when 2+ items are being compared */}
-            {compareItemsCount >= 2 && (
-              <div className={`${railWidth} ${railPad} mx-auto`}>
+            {/* Comparator - only when explicitly opened and 2+ items */}
+            {isComparatorOpen && compareItemsCount >= 2 && (
+              <div id="comparison-panel" className={`${railWidth} ${railPad} mx-auto`}>
                 <Comparator brief={briefForComparison} locale={language as 'es' | 'en'} />
               </div>
             )}
@@ -1502,12 +1518,14 @@ function AIAssistantInterfaceInner({
           <div
             className={
               isEmbedded
-                ? `border-t bg-white dark:bg-black ${railWidth} ${railPad} pb-[env(safe-area-inset-bottom,12px)]`
+                ? `border-t bg-white dark:bg-black ${railWidth} ${railPad} pb-[env(safe-area-inset-bottom,12px)] ${
+                    isDualPanelMode && isRightPanelOpen ? 'md:pr-[20rem]' : ''
+                  }`
                 : `sticky bottom-0 z-10 border-t bg-white dark:bg-black ${
                     isDualPanelMode && isRightPanelOpen
-                      ? "w-full px-3"
-                      : "max-w-2xl mx-auto px-3"
-                  } transition-all duration-300 pb-[env(safe-area-inset-bottom,12px)]`
+                      ? "w-full px-4"
+                      : "max-w-2xl mx-auto px-4"
+                  } ${isDualPanelMode && isRightPanelOpen ? 'md:pr-[20rem]' : ''} transition-all duration-300 pb-[env(safe-area-inset-bottom,16px)]`
             }
           >
             {/* Quick actions rail above composer */}
@@ -1698,6 +1716,46 @@ function AIAssistantInterfaceInner({
               </div>
             </form>
           </div>
+          {/* Embedded results sidebar */}
+          {isDualPanelMode && isRightPanelOpen && (
+            <PlanResultsSidebar
+              variant="embedded"
+              isOpen={true}
+              onClose={hideRightPanel}
+              onClosed={() => {
+                try {
+                  setDualPanelMode(false);
+                  setSidebarOpen(false);
+                  const override = useUILayoutStore.getState().briefManualOverride;
+                  if (override !== 'manual-closed') {
+                    setBriefCollapsed(false);
+                    lastCollapsedRef.current = false;
+                  }
+                  if (compareItemsCount === 0 && !policyAnalysis) {
+                    setUiPhase('welcome');
+                    if (process.env.NODE_ENV !== 'production') {
+                      console.debug('[LAYOUT] → welcome');
+                    }
+                  }
+                } catch {}
+
+                (async () => {
+                  try {
+                    const { sessionId, userId } = await getUserContext();
+                    telemetry.track(telemetry.events.UI_LAYOUT_CHANGED, {
+                      leftCollapsed: useUILayoutStore.getState().isBriefCollapsed,
+                      rightOpen: false,
+                      dualMode: false,
+                      reason: 'results_closed',
+                      sessionId, userId
+                    });
+                  } catch {}
+                })();
+              }}
+              currentResults={currentResults}
+              className="hidden md:flex"
+            />
+          )}
         </div>
 
         {/* PDF Upload modal removed - analyzer now uses in-card panel */}
@@ -1815,49 +1873,7 @@ function AIAssistantInterfaceInner({
         onConfirm={(action) => handleParseBrief(action)}
       />
 
-        {/* RIGHT PANEL: Insurance Results (Gemini-style) */}
-        {isDualPanelMode && isRightPanelOpen && (
-          <div className="w-[25rem] h-full border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <PlanResultsSidebar
-              isOpen={true}
-              onClose={hideRightPanel}
-              onClosed={() => {
-                // Revert to welcome-mode when safe (no compare modal and no analysis docked)
-                try {
-                  setDualPanelMode(false);
-                  setSidebarOpen(false);
-                  const override = useUILayoutStore.getState().briefManualOverride;
-                  if (override !== 'manual-closed') {
-                    setBriefCollapsed(false);
-                    lastCollapsedRef.current = false;
-                  }
-                  if (compareItemsCount === 0 && !policyAnalysis) {
-                    setUiPhase('welcome');
-                    if (process.env.NODE_ENV !== 'production') {
-                      console.debug('[LAYOUT] → welcome');
-                    }
-                  }
-                } catch {}
-
-                // Telemetry tracking (async, non-blocking)
-                (async () => {
-                  try {
-                    const { sessionId, userId } = await getUserContext();
-                    telemetry.track(telemetry.events.UI_LAYOUT_CHANGED, {
-                      leftCollapsed: useUILayoutStore.getState().isBriefCollapsed,
-                      rightOpen: false,
-                      dualMode: false,
-                      reason: 'results_closed',
-                      sessionId, userId
-                    });
-                  } catch {}
-                })();
-              }}
-              currentResults={currentResults}
-              className="relative h-full w-full border-l-0 shadow-none"
-            />
-          </div>
-        )}
+        {/* RIGHT PANEL removed: now embedded in chat container */}
       </div>
     </div>
   );

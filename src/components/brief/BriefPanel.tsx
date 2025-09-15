@@ -19,6 +19,7 @@ import { useUiPhase } from '@/state/proposal';
 import { useCompareStore } from '@/state/compareStore';
 import { Check, Loader2, AlertTriangle, X, Plus, FileText, Eye, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CURRENCY_RATES } from '@/lib/currency-normalization';
 import { normalizeCoverage } from '@/lib/coveragesMap';
 import { useShallow } from 'zustand/react/shallow';
 import { getFFCategoryChooser } from '@/lib/flags';
@@ -82,6 +83,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
   const brief = useBriefStore(s => s.brief);
   const category = useBriefStore(s => s.brief?.category);
   const maxBudgetCop = useBriefStore(s => s.brief?.maxBudgetCop);
+  const budgetCurrency = (useBriefStore(s => s.brief?.budgetCurrency) as 'COP'|'USD'|undefined) || 'COP';
   const clientPersona = useBriefStore(s => s.brief?.clientPersona);
   const notes = useBriefStore(s => s.brief?.notes);
   const mustHaveCoverages = useBriefStore(s => s.brief?.mustHaveCoverages);
@@ -90,6 +92,23 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
   // Store actions
   const setBrief = useBriefStore(s => s.setBrief);
   const updateBrief = useBriefStore(s => s.updateBrief);
+  const [budgetInput, setBudgetInput] = useState<string>('');
+
+  // Sync visible input with store (store keeps COP always)
+  useEffect(() => {
+    if (typeof maxBudgetCop === 'number' && Number.isFinite(maxBudgetCop)) {
+      if (budgetCurrency === 'USD') {
+        const rate = Number(CURRENCY_RATES.USD_TO_COP || 4200);
+        const usd = Math.round(maxBudgetCop / (rate || 1));
+        setBudgetInput(String(usd));
+      } else {
+        setBudgetInput(String(Math.round(maxBudgetCop)));
+      }
+    } else {
+      setBudgetInput('');
+    }
+  }, [maxBudgetCop, budgetCurrency]);
+
   const applyBrief = useBriefStore(s => s.applyBrief);
   const isSaving = useBriefStore(s => s.isSaving);
   const isDirty = useBriefStore(s => s.isDirty);
@@ -121,6 +140,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
         source: 'manual' as const,
         category: null as any,
         maxBudgetCop: null,
+        budgetCurrency: 'COP' as const,
         mustHaveCoverages: [],
         clientPersona: '',
         notes: '',
@@ -146,18 +166,46 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
   }, [brief?.category, initializeBrief, updateBrief, getBriefFieldCounts]);
 
   const handleBudgetChange = useCallback((value: string) => {
+    setBudgetInput(value);
     const raw = value === '' ? null : Number(value);
-    const budget = typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
-    
+    const parsed = typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
+
+    // Calculate COP to store
+    let nextCop: number | null = null;
+    if (parsed != null) {
+      if (budgetCurrency === 'USD') {
+        const rate = Number(CURRENCY_RATES.USD_TO_COP || 4200);
+        nextCop = Math.round(parsed * (rate || 1));
+      } else {
+        nextCop = Math.round(parsed);
+      }
+    }
+
     // Only update if value actually changed
-    if (budget === maxBudgetCop) return;
-    
+    if (nextCop === maxBudgetCop) return;
+
     initializeBrief();
-    updateBrief({ maxBudgetCop: budget }, { field: 'maxBudgetCop' });
-    
+    updateBrief({ maxBudgetCop: nextCop }, { field: 'maxBudgetCop' });
+
     // Emit BRIEF_FIELDS_UPDATED from UI layer
     setTimeout(() => emitFieldsUpdated(telemetry, getBriefFieldCounts).catch(() => {}), 10);
-  }, [maxBudgetCop, initializeBrief, updateBrief, getBriefFieldCounts]);
+  }, [budgetCurrency, maxBudgetCop, initializeBrief, updateBrief, getBriefFieldCounts]);
+
+  const handleCurrencyChange = useCallback((newCurrency: 'COP'|'USD') => {
+    if (newCurrency === budgetCurrency) return;
+    initializeBrief();
+    updateBrief({ budgetCurrency: newCurrency }, { field: 'budgetCurrency' });
+    // Re-sync visible input from current COP value
+    const rate = Number(CURRENCY_RATES.USD_TO_COP || 4200);
+    if (typeof maxBudgetCop === 'number' && Number.isFinite(maxBudgetCop)) {
+      if (newCurrency === 'USD') {
+        const usd = Math.round(maxBudgetCop / (rate || 1));
+        setBudgetInput(String(usd));
+      } else {
+        setBudgetInput(String(Math.round(maxBudgetCop)));
+      }
+    }
+  }, [budgetCurrency, initializeBrief, updateBrief, maxBudgetCop]);
 
   const handleClientPersonaChange = useCallback((value: string) => {
     // Only update if value actually changed
@@ -440,12 +488,40 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
 
         {/* Budget */}
         <div className="space-y-2">
-          <Label htmlFor="budget">{t('brief.budget_label') as any}</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="budget">{t('brief.budget_label') as any}</Label>
+            <div className="flex gap-1" role="group" aria-label="Currency">
+              <Button
+                type="button"
+                variant={budgetCurrency === 'COP' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => handleCurrencyChange('COP')}
+                aria-pressed={budgetCurrency === 'COP'}
+              >
+                COP
+              </Button>
+              <Button
+                type="button"
+                variant={budgetCurrency === 'USD' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => handleCurrencyChange('USD')}
+                aria-pressed={budgetCurrency === 'USD'}
+              >
+                USD
+              </Button>
+            </div>
+          </div>
           <Input
             id="budget"
             type="number"
-            placeholder={t('brief.budget_placeholder') as any}
-            value={brief?.maxBudgetCop ?? ''}
+            placeholder={
+              budgetCurrency === 'USD'
+                ? String(Math.round(Number(300000) / Number(CURRENCY_RATES.USD_TO_COP || 4200)))
+                : (t('brief.budget_placeholder') as any)
+            }
+            value={budgetInput}
             onChange={(e) => handleBudgetChange(e.target.value)}
             data-testid="brief-budget-input"
           />

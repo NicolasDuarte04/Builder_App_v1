@@ -5,6 +5,7 @@ import { InsurancePlan } from '@/components/briki-ai-assistant/NewPlanCard';
 import type { TemplatePlan } from '@/types/results';
 import { telemetry, getUserContext } from '@/lib/telemetry';
 import { useProposal } from '@/state/proposal';
+import { isTemplatesFallbackEnabled } from '@/lib/flags';
 
 interface PlanResultsData {
   title: string;
@@ -12,6 +13,8 @@ interface PlanResultsData {
   category?: string;
   query?: string;
   timestamp?: Date;
+  // Optional filters used to produce these results (CTA/search)
+  filters?: any;
   // Template support
   templates?: TemplatePlan[];
   hasRealPlans?: boolean;
@@ -71,26 +74,32 @@ export function PlanResultsProvider({
 
   // CORE GEMINI-STYLE METHODS
   const showPanelWithPlans = async (results: PlanResultsData) => {
+    const isDev = process.env.NODE_ENV !== 'production';
     // Generate requestId if not provided
     const requestId = results.requestId || `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
+    // Coerce templates based on flag
+    const templates = isTemplatesFallbackEnabled() ? (results.templates ?? []) : [];
+    
     const newResults = {
       ...results,
+      templates,
       requestId,
       timestamp: new Date()
     };
     
     // [AUDIT] Context injection
     const uiPhaseBefore = (() => { try { return useProposal.getState().uiPhase; } catch { return 'unknown'; } })();
-    console.log('[AUDIT] Context injection:', {
-      plansCount: results.plans?.length || 0,
-      templatesCount: results.templates?.length || 0,
-      sourcesCount: results.sources?.length || 0,
-      uiPhaseBefore,
-      requestId
-    });
-    
-    console.log('🎯 GEMINI-STYLE: Auto-opening right panel with plans:', newResults);
+    if (isDev) {
+      console.log('[AUDIT] Context injection:', {
+        plansCount: results.plans?.length || 0,
+        templatesCount: templates.length || 0,
+        sourcesCount: results.sources?.length || 0,
+        uiPhaseBefore,
+        requestId
+      });
+      console.log('🎯 GEMINI-STYLE: Auto-opening right panel with plans:', newResults);
+    }
     
     // Fire consolidated telemetry (with de-duplication)
     if (!processedRequestIds.current.has(requestId)) {
@@ -99,7 +108,8 @@ export function PlanResultsProvider({
       try {
         const { sessionId, userId } = await getUserContext();
         const planCount = results.plans?.length || 0;
-        const templateCount = results.templates?.length || 0;
+        const templateCount = templates.length || 0;
+        const sourcesCount = results.sources?.length || 0;
         const hasRealPlans = results.hasRealPlans !== false && planCount > 0;
         const dataSource = results.dataSource || (templateCount > 0 && planCount === 0 ? 'templates' : planCount > 0 ? 'plans_v2' : 'mixed');
         
@@ -115,13 +125,22 @@ export function PlanResultsProvider({
           userId
         });
         
-        // If only templates are being shown (no plans, no sources)
-        const sourcesCount = results.sources?.length || 0;
-        if (templateCount > 0 && planCount === 0 && sourcesCount === 0) {
+        // If only templates are being shown (no plans, no sources) and fallback is enabled
+        if (templateCount > 0 && planCount === 0 && sourcesCount === 0 && isTemplatesFallbackEnabled()) {
           telemetry.track(telemetry.events.TEMPLATES_GENERATED, {
             reason: 'no_catalog_results',
             templateCount,
             category: results.category,
+            sessionId,
+            userId
+          });
+        }
+        
+        // Emit NO_RESULTS_SHOWN when nothing to show (once per requestId)
+        if (planCount === 0 && templateCount === 0) {
+          telemetry.track(telemetry.events.NO_RESULTS_SHOWN, {
+            requestId,
+            fallbackDisabled: !isTemplatesFallbackEnabled(),
             sessionId,
             userId
           });
@@ -132,18 +151,16 @@ export function PlanResultsProvider({
     }
     
     setCurrentResults(newResults);
-    
-    // AUTO-OPEN the right panel and enable dual-panel mode when items are present
-    const hasPlans = (results.plans?.length || 0) > 0;
-    const hasTemplates = (results.templates?.length || 0) > 0;
-    const hasSources = (results.sources?.length || 0) > 0;
-    if (hasPlans || hasTemplates || hasSources) {
-      setDualPanelMode(true);
-      setRightPanelOpen(true);
-      try { useProposal.getState().setUiPhase('results'); } catch {}
-      const itemCount = (results.plans?.length || 0) || (results.templates?.length || 0) || (results.sources?.length || 0);
-      const itemType = hasPlans ? 'plans' : hasTemplates ? 'templates' : 'sources';
-      console.log(`✅ Right panel auto-opened with ${itemCount} ${itemType}`);
+    setDualPanelMode(true);
+    setRightPanelOpen(true);
+    try { useProposal.getState().setUiPhase('results'); } catch {}
+    if (isDev) {
+      const hasPlans = (results.plans?.length || 0) > 0;
+      const hasTemplates = (templates.length || 0) > 0;
+      const hasSources = (results.sources?.length || 0) > 0;
+      const itemCount = (results.plans?.length || 0) || (templates.length || 0) || (results.sources?.length || 0);
+      const itemType = hasPlans ? 'plans' : hasTemplates ? 'templates' : hasSources ? 'sources' : 'none';
+      console.log(`✅ Right panel opened with ${itemCount} ${itemType}`);
     }
   };
 

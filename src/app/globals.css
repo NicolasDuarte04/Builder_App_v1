@@ -37,6 +37,9 @@
     /* Briki brand colors for portal mode */
     --briki-from: #2F7DF4;
     --briki-to: #06B6D4;
+    
+    /* Layout guardrails */
+    --nav-h: 64px;
   }
 
   .dark {
@@ -65,17 +68,19 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
-
-@layer base {
+  
+  * {
+    @apply border-border;
+  }
   body {
     @apply bg-background text-foreground;
   }
-  
   html {
     scroll-behavior: smooth;
   }
 }
+
+ 
 
 @keyframes aurora {
   from {
@@ -101,6 +106,19 @@
   
   .animation-delay-4000 {
     animation-delay: 4s;
+  }
+  
+  /* Layout guardrails */
+  .content-frame {
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+  
+  @media (min-width: 768px) {
+    .content-frame {
+      padding-inline: 1.5rem;
+    }
   }
 }
 
@@ -363,45 +381,37 @@
 }
 
 .before\:top-0::before {
-  content: "";
   top: 0px;
 }
 
 .before\:bottom-0::before {
-  content: "";
   bottom: 0px;
 }
 
 .before\:left-0::before {
-  content: "";
   left: 0px;
 }
 
 .before\:z-0::before {
-  content: "";
   z-index: 0;
 }
 
 .before\:w-full::before {
-  content: "";
   width: 100%;
 }
 
 .before\:px-2::before {
-  content: "";
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
 
 .before\:text-center::before {
-  content: "";
   text-align: center;
 }
 
 .before\:text-black::before {
-  content: "";
   --tw-text-opacity: 1;
-  color: rgba(0, 0, 0, var(--tw-text-opacity));
+  color: rgba(0, 0, 0, var(--tw-text-opacity, 1));
 }
 
 .before\:content-\[attr\(data-content\)\]::before {
@@ -410,14 +420,7 @@
 
 /* Dark Mode Adjustments */
 .dark .before\:text-black::before {
-  color: rgba(255, 255, 255, var(--tw-text-opacity));
+  color: rgba(255, 255, 255, var(--tw-text-opacity, 1));
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
+ 

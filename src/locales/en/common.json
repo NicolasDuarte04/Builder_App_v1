@@ -1,12 +1,58 @@
 {
   "home": {
+    "simple": {
+      "eyebrow": "BRIKI",
+      "headline": "Analyze policies, compare options, close deals faster",
+      "subhead": "Briki is your AI insurance co-pilot — extract coverages, spot exclusions, and produce client-ready outputs in minutes.",
+      "cta": "Get started free",
+      "see_how": "See how it works",
+      "demo_title": "Interactive Demo",
+      "demo_caption": "Demo coming soon. Try the features below.",
+      "how_it_works_title": "How Briki Works",
+      "how_it_works_description": "Connected tools and integrated data make it easier to know, analyze, and connect everything in your insurance business."
+    },
+    "why": {
+      "title": "Why Briki",
+      "bullets": [
+        "Extract coverage details in minutes",
+        "Spot exclusions and red flags automatically",
+        "Produce client-ready outputs faster"
+      ],
+      "tutorial": "Watch tutorial"
+    },
+    "hero": {
+      "overline": "Briki",
+      "title": "Analyze policies, compare options, close deals faster",
+      "subtitle": "Briki is your AI insurance co-pilot — extract coverages, spot exclusions, and produce client-ready output in minutes.",
+      "cta_primary": "Analyze policy (PDF)",
+      "cta_secondary": "See how it works"
+    },
     "title": "Welcome to Briki",
     "subtitle": "Your AI insurance co-pilot",
     "actions": {
       "upload_pdf": "Analyze policy (PDF)",
       "new_brief": "Start a new brief",
       "demo": "Explore demo",
-      "tutorial": "Watch tutorial"
+      "tutorial": "Watch tutorial",
+      "cards": {
+        "analyze": {
+          "eyebrow": "Policy Analysis",
+          "question": "Already have a policy?",
+          "helper": "Upload a PDF to extract coverages & exclusions.",
+          "secondary": {
+            "drop": "Drag & drop a PDF",
+            "demo": "Explore demo"
+          }
+        },
+        "brief": {
+          "eyebrow": "New Project",
+          "question": "Starting from scratch?",
+          "helper": "Tell Briki about the client and constraints.",
+          "secondary": {
+            "template": "Start with a template"
+          }
+        }
+      }
     },
     "help": {
       "title": "Quick tips",
@@ -19,7 +65,8 @@
     "recent": {
       "title": "Recent activity",
       "empty_title": "No recent activity yet",
-      "empty_body": "Your analyzed policies and briefs will appear here."
+      "empty_body": "Your analyzed policies and briefs will appear here.",
+      "explore_demo": "Explore demo"
     }
   },
   "nav": {
@@ -28,7 +75,7 @@
     "about": "About",
     "contact": "Contact",
     "assistant": "AI Assistant",
-    "myInsurance": "My Insurance",
+    "myInsurance": "Saved Analysis",
     "login": "Log in",
     "signup": "Sign up"
   },
@@ -377,6 +424,13 @@
     "results_title": "Results",
     "suggestions_title": "Suggestions"
   },
+  "toolbar": {
+    "density": {
+      "label": "Density",
+      "compact": "Compact",
+      "comfortable": "Comfortable"
+    }
+  },
   "brief": {
     "reparse": {
       "title": "How to process new text?",
@@ -412,7 +466,7 @@
     "title": "Client brief",
     "category_label": "Insurance category",
     "select_category": "Select a category",
-    "budget_label": "Max budget (COP)",
+    "budget_label": "Max budget",
     "budget_placeholder": "300000",
     "budget_hint": "Maximum monthly amount the client is willing to pay",
     "must_have_label": "Must-have coverages",
@@ -640,7 +694,7 @@
   },
   "dashboard": {
     "insurance": {
-      "title": "My Insurance",
+      "title": "Saved Analysis",
       "subtitle": "Manage your saved policy analyses and tracked insurance plans",
       "tabs": {
         "savedAnalyses": "Saved Analyses",
@@ -917,6 +971,22 @@
     },
     "price": {
       "conversion": "Converted from {amount} {currency} {period} at {rate}"
+    }
+  },
+  "results": {
+    "empty": {
+      "title": "No plans match your criteria",
+      "helper": "Try adjusting your budget or coverage to see more options.",
+      "tryAdjustments": [
+        "Increase the maximum budget",
+        "Reduce the number of must-haves",
+        "Change the category or city if applicable"
+      ]
+    }
+  },
+  "chat": {
+    "noResults": {
+      "notice": "I couldn't find plans with those constraints. Try increasing budget or relaxing required coverages."
     }
   }
 } 
