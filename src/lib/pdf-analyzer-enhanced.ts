@@ -1,5 +1,10 @@
-import { PolicyAnalysis } from './pdf-analyzer';
+import type { PolicyAnalysis } from './pdf-analyzer';
 import { PDF_THUMBS_ENABLED } from '@/lib/featureFlags';
+
+// Server-only guard to avoid accidental client bundling/execution
+if (typeof window !== 'undefined') {
+  throw new Error('Este módulo es solo para el servidor. No lo importes en el navegador (pdf-analyzer-enhanced).');
+}
 
 export interface EnhancedPolicyAnalysis extends PolicyAnalysis {
   sourceQuotes: Record<string, string>;

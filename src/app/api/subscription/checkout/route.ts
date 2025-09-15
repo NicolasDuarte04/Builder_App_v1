@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   // Check if Stripe is configured

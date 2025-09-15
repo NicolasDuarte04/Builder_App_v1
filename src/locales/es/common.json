@@ -1,4 +1,27 @@
 {
+  "home": {
+    "title": "Bienvenido a Briki",
+    "subtitle": "Tu co-piloto de seguros con IA",
+    "actions": {
+      "upload_pdf": "Analizar póliza (PDF)",
+      "new_brief": "Crear un brief",
+      "demo": "Explorar demo",
+      "tutorial": "Ver tutorial"
+    },
+    "help": {
+      "title": "Consejos rápidos",
+      "tips": [
+        "Sube una póliza para analizar coberturas",
+        "Compara múltiples planes de seguros",
+        "Obtén recomendaciones personalizadas"
+      ]
+    },
+    "recent": {
+      "title": "Actividad reciente",
+      "empty_title": "Aún no hay actividad",
+      "empty_body": "Aquí verás tus pólizas y briefs analizados."
+    }
+  },
   "nav": {
     "home": "Inicio",
     "projects": "Proyectos",
@@ -275,7 +298,7 @@
     "thinking": "Pensando...",
     "analyze_policy": "Analizar Póliza PDF",
     "search_insurance": "Buscar Seguros",
-    "context": "Contexto",
+    "contextLabel": "Contexto",
     "restart_chat": "Reiniciar Chat",
     "compare_selected": "Comparar seleccionados",
     "add_to_proposal": "Añadir a propuesta",
@@ -462,6 +485,8 @@
     "confirm": "Confirmar",
     "error": "Error",
     "minimize": "Minimizar",
+    "reopen": "Reabrir",
+    "lessOrEqual": "≤",
     "retry": "Reintentar"
   },
   "about": {

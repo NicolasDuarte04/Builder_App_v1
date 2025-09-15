@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+export const runtime = 'nodejs';
 
 // Check if environment variables are available
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {

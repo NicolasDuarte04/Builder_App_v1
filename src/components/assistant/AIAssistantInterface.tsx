@@ -84,6 +84,7 @@ import { buildSmartTemplates } from '@/lib/templates/buildSmartTemplates';
 import { useIsBriefCollapsed, useUILayoutStore } from '@/state/uiLayoutStore';
 import { getFFIncredibleBrief, getFFLongPasteGuard } from '@/lib/flags';
 import { useAnalyzerUI } from '@/state/analyzerUI';
+import { formatCurrency } from "@/lib/utils";
 
 // Render-safe telemetry dedupe (module-level) for Assistant UI
 const ASSISTANT_TELEMETRY_KEYS = new Set<string>();
@@ -269,13 +270,9 @@ function AIAssistantInterfaceInner({
       parts.push(String(briefCategory));
     }
     if (typeof briefBudget === 'number' && Number.isFinite(briefBudget)) {
-      const formatter = new Intl.NumberFormat(language === 'en' ? 'en-US' : 'es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      });
-      parts.push(`≤ ${formatter.format(briefBudget)}`);
+      const localeMap: Record<string, string> = { en: 'en-US', es: 'es-CO' };
+      const localeTag = localeMap[language] || language;
+      parts.push(`${t('common.lessOrEqual')} ${formatCurrency(briefBudget, 'COP', localeTag)}`);
     }
     const mh = briefMustHaves || [];
     if (Array.isArray(mh) && mh.length > 0) {
@@ -1394,7 +1391,7 @@ function AIAssistantInterfaceInner({
                     Object.keys(loadedOnboardingData).length > 0 && (
                       <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-sm text-blue-700 dark:text-blue-300">
-                          <strong>{t("assistant.context")}:</strong>{" "}
+                          <strong>{t("assistant.contextLabel")}:</strong>{" "}
                           {createContextMessage(loadedOnboardingData as any)}
                         </p>
                       </div>
@@ -1734,7 +1731,7 @@ function AIAssistantInterfaceInner({
                     aria-describedby="analysis-dialog-desc"
                   >
                     <div id="analysis-dialog-title" className="sr-only">
-                      Analyze Policy PDF
+                      {t("assistant.analyze_policy")}
                     </div>
                     <div className="flex items-center justify-between mb-6">
                       <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -1748,7 +1745,7 @@ function AIAssistantInterfaceInner({
                           }}
                           className="px-2 py-1 text-xs border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
                         >
-                          Minimize
+                          {t('common.minimize')}
                         </button>
                         <button
                           onClick={() => {
@@ -1788,7 +1785,7 @@ function AIAssistantInterfaceInner({
                 }}
                 className="text-xs px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700"
               >
-                Reopen
+                {t('common.reopen')}
               </button>
               <button
                 onClick={() => {
@@ -1798,7 +1795,7 @@ function AIAssistantInterfaceInner({
                 }}
                 className="text-xs px-2 py-1 rounded-full border hover:bg-gray-50 dark:hover:bg-neutral-800 text-gray-600 dark:text-gray-300"
               >
-                Close
+                {t('common.close')}
               </button>
             </div>
           </div>

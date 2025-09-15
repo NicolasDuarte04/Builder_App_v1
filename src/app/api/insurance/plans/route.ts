@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryInsurancePlans, getInsuranceTypes, testConnection } from '@/lib/render-db';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,4 +1,27 @@
 {
+  "home": {
+    "title": "Welcome to Briki",
+    "subtitle": "Your AI insurance co-pilot",
+    "actions": {
+      "upload_pdf": "Analyze policy (PDF)",
+      "new_brief": "Start a new brief",
+      "demo": "Explore demo",
+      "tutorial": "Watch tutorial"
+    },
+    "help": {
+      "title": "Quick tips",
+      "tips": [
+        "Upload a policy to analyze coverage",
+        "Compare multiple insurance plans",
+        "Get personalized recommendations"
+      ]
+    },
+    "recent": {
+      "title": "Recent activity",
+      "empty_title": "No recent activity yet",
+      "empty_body": "Your analyzed policies and briefs will appear here."
+    }
+  },
   "nav": {
     "home": "Home",
     "projects": "Projects",
@@ -275,7 +298,7 @@
     "thinking": "Thinking...",
     "analyze_policy": "Analyze Policy PDF",
     "search_insurance": "Search Insurance",
-    "context": "Context",
+    "contextLabel": "Context",
     "restart_chat": "Restart Chat",
     "compare_selected": "Compare selected",
     "add_to_proposal": "Add to proposal",
@@ -462,6 +485,8 @@
     "confirm": "Confirm",
     "error": "Error",
     "minimize": "Minimize",
+    "reopen": "Reopen",
+    "lessOrEqual": "≤",
     "retry": "Retry"
   },
   "about": {

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { pool } from '@/lib/render-db';
 import fs from 'fs';
 import path from 'path';
+export const runtime = 'nodejs';
+export const maxDuration = 120;
 
 export async function POST(request: Request) {
   try {

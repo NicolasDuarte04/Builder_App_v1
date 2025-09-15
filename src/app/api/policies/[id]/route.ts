@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { POLICY_BUCKET } from '@/lib/buckets';
+export const runtime = 'nodejs';
 
 const serverSupabase = createServerSupabaseClient();
 

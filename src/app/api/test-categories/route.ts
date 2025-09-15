@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
+export const runtime = 'nodejs';
 
 const pool = process.env.RENDER_POSTGRES_URL
   ? new Pool({

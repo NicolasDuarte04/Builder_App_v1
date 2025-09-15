@@ -197,6 +197,14 @@ export type SessionContext = { sessionId?: string; userId?: string };
 export type DurationFields = { durationMs?: number; latencyMs?: number };
 
 export interface TelemetryEventMap {
+  // Home events
+  HOME_OPENED: SessionContext;
+  HOME_CTA_UPLOAD_CLICKED: SessionContext;
+  HOME_CTA_BRIEF_CLICKED: SessionContext;
+  HOME_CTA_DEMO_CLICKED: SessionContext;
+  HOME_CTA_TUTORIAL_CLICKED: SessionContext;
+
+  // Proposal events
   PROPOSAL_GENERATION_STARTED: { itemCount: number; hasBrief: boolean } & SessionContext;
   PROPOSAL_GENERATION_COMPLETED: { itemCount: number; hasBrief: boolean; pages?: number; bytes?: number; urlKind: 'http' | 'https' | 'blob' | 'data' | 'unknown' } & DurationFields & SessionContext;
   PROPOSAL_GENERATION_FAILED: { itemCount: number; hasBrief: boolean } & TelemetryError & SessionContext;
@@ -248,6 +256,14 @@ export interface TelemetryEventMap {
 }
 
 const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly string[]>> = {
+  // Home events
+  HOME_OPENED: ['sessionId', 'userId'],
+  HOME_CTA_UPLOAD_CLICKED: ['sessionId', 'userId'],
+  HOME_CTA_BRIEF_CLICKED: ['sessionId', 'userId'],
+  HOME_CTA_DEMO_CLICKED: ['sessionId', 'userId'],
+  HOME_CTA_TUTORIAL_CLICKED: ['sessionId', 'userId'],
+
+  // Proposal events
   PROPOSAL_GENERATION_STARTED: ['itemCount', 'hasBrief', 'sessionId', 'userId'],
   PROPOSAL_GENERATION_COMPLETED: ['itemCount', 'hasBrief', 'pages', 'bytes', 'urlKind', 'durationMs', 'latencyMs', 'sessionId', 'userId'],
   PROPOSAL_GENERATION_FAILED: ['itemCount', 'hasBrief', 'error_code', 'stage', 'retryable', 'http_status', 'sessionId', 'userId'],
@@ -297,6 +313,18 @@ const EVENT_REQUIRED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly stri
 
 // Map legacy/lowercase event names to canonical keys in TelemetryEventMap
 const EVENT_ALIASES: Record<string, keyof TelemetryEventMap> = {
+  // Home events
+  HOME_OPENED: 'HOME_OPENED',
+  home_opened: 'HOME_OPENED',
+  HOME_CTA_UPLOAD_CLICKED: 'HOME_CTA_UPLOAD_CLICKED',
+  home_cta_upload_clicked: 'HOME_CTA_UPLOAD_CLICKED',
+  HOME_CTA_BRIEF_CLICKED: 'HOME_CTA_BRIEF_CLICKED',
+  home_cta_brief_clicked: 'HOME_CTA_BRIEF_CLICKED',
+  HOME_CTA_DEMO_CLICKED: 'HOME_CTA_DEMO_CLICKED',
+  home_cta_demo_clicked: 'HOME_CTA_DEMO_CLICKED',
+  HOME_CTA_TUTORIAL_CLICKED: 'HOME_CTA_TUTORIAL_CLICKED',
+  home_cta_tutorial_clicked: 'HOME_CTA_TUTORIAL_CLICKED',
+
   // Proposals
   PROPOSAL_GENERATION_STARTED: 'PROPOSAL_GENERATION_STARTED',
   PROPOSAL_GENERATION_COMPLETED: 'PROPOSAL_GENERATION_COMPLETED',
@@ -492,6 +520,14 @@ export const telemetry = {
   
   // Predefined event names for consistency
   events: {
+    // Home events
+    HOME_OPENED: 'home_opened',
+    HOME_CTA_UPLOAD_CLICKED: 'home_cta_upload_clicked',
+    HOME_CTA_BRIEF_CLICKED: 'home_cta_brief_clicked',
+    HOME_CTA_DEMO_CLICKED: 'home_cta_demo_clicked',
+    HOME_CTA_TUTORIAL_CLICKED: 'home_cta_tutorial_clicked',
+
+    // Legacy events
     INTAKE_SUBMITTED: 'intake_submitted',
     SHORTLIST_LOADED: 'shortlist_loaded',
     SHORTLIST_FETCHED: 'shortlist_fetched',

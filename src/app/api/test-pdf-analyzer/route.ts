@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 // Keep route but avoid importing optional deps that break builds in Co‑Pilot MVP
 // Lazy import inside handler if needed
+export const runtime = 'nodejs';
+export const maxDuration = 120;
 
 export async function POST(request: NextRequest) {
   try {

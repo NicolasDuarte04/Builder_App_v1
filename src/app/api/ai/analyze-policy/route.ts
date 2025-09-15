@@ -24,6 +24,7 @@ import { POLICY_BUCKET } from '@/lib/buckets';
 // Force Node.js runtime for NextAuth/Supabase compatibility
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 120;
 
 // GET health check endpoint
 export async function GET() {

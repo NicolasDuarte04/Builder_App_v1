@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { testConnection, hasDatabaseUrl } from '@/lib/render-db';
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
