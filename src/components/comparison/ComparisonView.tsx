@@ -10,12 +10,14 @@ import { X, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { makeLabelResolver } from "@/lib/i18n/labels";
 
 export function ComparisonView() {
   const items = useCompareStore(s => s.items);
   const remove = useCompareStore(s => s.remove);
   const brief = useBriefStore((state) => state.brief);
   const { t, language } = useTranslation();
+  const { fieldLabel, enumLabel } = makeLabelResolver(t as any);
   const hasEmittedTelemetryRef = useRef(false);
 
   // Only render if we have 2+ items
@@ -71,17 +73,7 @@ export function ComparisonView() {
   };
 
   // Format source
-  const formatSource = (source: { kind: string; ref: string }) => {
-    const sourceTypeMap: Record<string, string> = {
-      catalog: language === 'es' ? 'Catálogo' : 'Catalog',
-      template: language === 'es' ? 'Plantilla' : 'Template',
-      pdf: 'PDF',
-      url: 'URL',
-      text: language === 'es' ? 'Texto' : 'Text'
-    };
-    
-    return sourceTypeMap[source.kind] || source.kind;
-  };
+  const formatSource = (source: { kind: string; ref: string }) => enumLabel('sources', String(source.kind));
 
   // Format date
   const formatDate = (dateStr?: string) => {
@@ -126,13 +118,13 @@ export function ComparisonView() {
             
             {/* Price row */}
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">{t('comparison.fields.price')}</p>
+              <p className="text-sm font-medium text-muted-foreground">{fieldLabel('price')}</p>
               <p className="text-lg font-semibold">{formatPrice(plan.priceCop, plan.priceEstCop)}</p>
             </div>
             
             {/* Deductibles row */}
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">{t('comparison.fields.deductibles')}</p>
+              <p className="text-sm font-medium text-muted-foreground">{fieldLabel('deductibles')}</p>
               <p className="text-sm">{plan.deductibles || t('comparison.fields.noData')}</p>
             </div>
             
@@ -145,7 +137,7 @@ export function ComparisonView() {
                 return (
                   <div key={coverage} className="flex items-center justify-between">
                     <span className="text-sm capitalize">
-                      {t(`comparison.fields.${coverage === 'asistencia' ? 'assistance' : coverage === 'robo' ? 'theft' : 'windows'}`)}
+                      {enumLabel('coverage_types', String(coverage))}
                     </span>
                     <span 
                       className={`text-lg ${
@@ -164,7 +156,7 @@ export function ComparisonView() {
             
             {/* Waiting times */}
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">{t('comparison.fields.waitingTimes')}</p>
+              <p className="text-sm font-medium text-muted-foreground">{fieldLabel('waiting_times')}</p>
               <p className="text-sm">
                 {plan.waitingTimes?.join(', ') || t('comparison.fields.noData')}
               </p>
@@ -172,7 +164,7 @@ export function ComparisonView() {
             
             {/* Exclusions with tooltip */}
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">{t('comparison.fields.exclusions')}</p>
+              <p className="text-sm font-medium text-muted-foreground">{fieldLabel('exclusions')}</p>
               {plan.exclusions && plan.exclusions.length > 0 ? (
                 <div className="text-sm">
                   <p>{plan.exclusions.slice(0, 3).join(', ')}</p>
@@ -200,10 +192,10 @@ export function ComparisonView() {
             {/* Source and last updated */}
             <div className="pt-4 border-t space-y-1 text-xs text-muted-foreground">
               <p>
-                {t('comparison.fields.source')}: {formatSource(plan.source)}
+                {fieldLabel('source')}: {formatSource(plan.source)}
               </p>
               <p>
-                {t('comparison.fields.lastUpdated')}: {formatDate(plan.updatedAt)}
+                {fieldLabel('updated')}: {formatDate(plan.updatedAt)}
               </p>
             </div>
           </Card>

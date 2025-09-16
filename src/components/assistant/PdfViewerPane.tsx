@@ -144,7 +144,8 @@ const PdfViewerPane = forwardRef<PdfViewerHandle, Props>(function PdfViewerPane(
             try {
                 if (typeof window === 'undefined') return;
                 // Import browser ESM build directly (pinned version in package.json)
-                const mod: any = await import('pdfjs-dist/build/pdf.js');
+                // Use sandbox build which doesn't require canvas
+                const mod: any = await import('pdfjs-dist/build/pdf.sandbox.js');
                 const pdfjs = mod?.default ?? mod;
                 if (!pdfjs || !pdfjs.getDocument) throw new Error('Unable to load pdf.js browser build');
 				const worker = await resolveWorker();

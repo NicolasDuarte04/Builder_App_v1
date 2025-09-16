@@ -537,17 +537,23 @@ function AIAssistantInterfaceInner({
       const sessionUser = session.user as any;
       if (sessionUser.id) {
         setUserId(sessionUser.id);
-        console.log("🔐 User ID set from session:", sessionUser.id);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log("🔐 User ID set from session:", sessionUser.id);
+        }
       } else if (sessionUser.email) {
         // Fallback to email if no ID
         setUserId(sessionUser.email);
-        console.log("📧 Using email as user ID:", sessionUser.email);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log("📧 Using email as user ID:", sessionUser.email);
+        }
       }
     } else {
       // For chat functionality without auth, use a session-based ID
       const sessionId = `guest-${Date.now()}`;
       setUserId(sessionId);
-      console.log("👤 Using guest session ID:", sessionId);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log("👤 Using guest session ID:", sessionId);
+      }
     }
   }, [(session?.user as any)?.id, (session?.user as any)?.email]);
 
@@ -1324,7 +1330,11 @@ function AIAssistantInterfaceInner({
 
             {/* Comparator - only when explicitly opened and 2+ items */}
             {isComparatorOpen && compareItemsCount >= 2 && (
-              <div id="comparison-panel" className={`${railWidth} ${railPad} mx-auto`}>
+              <div
+                id="comparison-panel"
+                className={`${railWidth} ${railPad} mx-auto`}
+                style={{ scrollMarginTop: 'calc(var(--app-nav-h, var(--nav-h, 64px)) + 8px)' }}
+              >
                 <Comparator brief={briefForComparison} locale={language as 'es' | 'en'} />
               </div>
             )}
@@ -1521,7 +1531,7 @@ function AIAssistantInterfaceInner({
                 ? `border-t bg-white dark:bg-black ${railWidth} ${railPad} pb-[env(safe-area-inset-bottom,12px)] ${
                     isDualPanelMode && isRightPanelOpen ? 'md:pr-[20rem]' : ''
                   }`
-                : `sticky bottom-0 z-10 border-t bg-white dark:bg-black ${
+                : `sticky bottom-0 z-[60] border-t bg-white dark:bg-black ${
                     isDualPanelMode && isRightPanelOpen
                       ? "w-full px-4"
                       : "max-w-2xl mx-auto px-4"

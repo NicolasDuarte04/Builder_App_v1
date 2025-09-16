@@ -24,6 +24,13 @@ interface ProposalRequest {
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   
+  // EVENT FLOW:
+  // 1. Client emits PROPOSAL_GENERATION_STARTED before calling this API
+  // 2. Server emits PROPOSAL_GENERATION_PDF_START when starting PDF generation
+  // 3. Server emits PROPOSAL_GENERATION_UPLOAD_START when starting upload
+  // 4. Client emits PROPOSAL_GENERATION_COMPLETED after receiving response
+  // 
+  // Server MUST NOT emit STARTED/COMPLETED events to prevent double-counting
 
   try {
     // Parse request body
@@ -47,7 +54,9 @@ export async function POST(request: NextRequest) {
       ? Array.from(new Set(items.map(i => i?.source?.kind).filter(Boolean)))
       : [];
 
-    // Client emits PROPOSAL_GENERATION_STARTED; server suppresses duplicate
+    // IMPORTANT: Client emits PROPOSAL_GENERATION_STARTED before calling this API
+    // Server should NOT emit STARTED/COMPLETED to avoid double-counting
+    // Server emits only PDF_START and UPLOAD_START for internal phase tracking
 
     if (!brief || !items || items.length === 0) {
       return NextResponse.json(
@@ -68,6 +77,9 @@ export async function POST(request: NextRequest) {
       userId,
       requestId,
     });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Timeline] T1 PROPOSAL_GENERATION_PDF_START', { requestId });
+    }
 
     let pdfResult;
     try {
@@ -112,6 +124,9 @@ export async function POST(request: NextRequest) {
       userId,
       requestId,
     });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Timeline] T2 PROPOSAL_GENERATION_UPLOAD_START', { requestId });
+    }
 
     let uploadResult;
     try {
@@ -140,7 +155,7 @@ export async function POST(request: NextRequest) {
     let proposalId: string | undefined;
     
     if (caseId) {
-      telemetry.track('PROPOSAL_GENERATION_DB_START', { caseId, sessionId, userId });
+      telemetry.track('PROPOSAL_GENERATION_DB_START', { caseId, sessionId, userId, requestId, timestamp: new Date().toISOString() });
       
       try {
         const supabase = createServerSupabaseClient();
@@ -192,7 +207,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Success: client emits PROPOSAL_GENERATION_COMPLETED using response payload
+    // Success: return payload to client
+    // IMPORTANT: Client will emit PROPOSAL_GENERATION_COMPLETED after receiving this response
+    // Server must NOT emit COMPLETED to avoid double-counting
 
     return NextResponse.json({
       url: uploadResult.url,

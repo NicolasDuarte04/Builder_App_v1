@@ -8,7 +8,12 @@ export const translations = {
   en: enCommon,
 };
 
-export function getTranslation(language: 'es' | 'en', key: string) {
+type TranslationOptions = {
+  fallback?: unknown;
+  returnObjects?: boolean;
+};
+
+export function getTranslation(language: 'es' | 'en', key: string, opts?: TranslationOptions) {
   const keys = key.split('.');
   let value: any = translations[language] || translations['en'];
   
@@ -16,7 +21,11 @@ export function getTranslation(language: 'es' | 'en', key: string) {
     if (value && typeof value === 'object' && k in value) {
       value = value[k];
     } else {
-      return key; // Return the key if translation not found
+      // If caller explicitly provided a fallback option (even if undefined), return it; otherwise return key
+      if (opts && Object.prototype.hasOwnProperty.call(opts, 'fallback')) {
+        return opts.fallback as any;
+      }
+      return key;
     }
   }
   

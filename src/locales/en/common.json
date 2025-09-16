@@ -391,6 +391,8 @@
     "unpin_toast_desc": "{planName} removed from pinned plans",
     "unpin_toast_title": "Unpinned",
     "view_comparison_in_chat": "View comparison in chat",
+    "compare_ready_toast_title": "Ready to compare",
+    "compare_ready_toast_desc": "You pinned two plans. Click “Compare selected” to open the panel.",
     "price": {
       "converted_label": "Converted price (COP/month)",
       "original_label": "Original price",
@@ -987,6 +989,54 @@
   "chat": {
     "noResults": {
       "notice": "I couldn't find plans with those constraints. Try increasing budget or relaxing required coverages."
+    }
+  },
+  "labels": {
+    "fields": {
+      "price": "Price",
+      "deductibles": "Deductibles",
+      "waiting_times": "Waiting times",
+      "exclusions": "Exclusions",
+      "source": "Source",
+      "updated": "Updated"
+    },
+    "enums": {
+      "coverage_types": {
+        "muerte": "Death coverage",
+        "renta_diaria": "Daily income",
+        "auxilio_funerario": "Funeral assistance",
+        "asistencia": "Assistance",
+        "robo": "Theft",
+        "vidrios": "Glass",
+        "consulta_medica": "Medical consultation",
+        "hospitalizacion": "Hospitalization",
+        "medicamentos": "Medications",
+        "urgencias": "Emergency care",
+        "invalidez": "Disability",
+        "invalidez_total": "Total disability",
+        "invalidez_parcial": "Partial disability",
+        "enfermedades_graves": "Critical illness"
+      },
+      "sources": {
+        "catalog": "Catalog",
+        "template": "Template",
+        "pdf": "PDF",
+        "url": "Website",
+        "text": "Text"
+      },
+      "categories": {
+        "health": "Health",
+        "life": "Life",
+        "auto": "Auto",
+        "home": "Home",
+        "travel": "Travel",
+        "business": "Business",
+        "salud": "Health",
+        "vida": "Life",
+        "hogar": "Home",
+        "viaje": "Travel",
+        "empresarial": "Business"
+      }
     }
   }
 } 

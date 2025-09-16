@@ -10,6 +10,7 @@ import { computeCriticalDiffs, generateWhyTheseOptions } from '@/lib/comparison/
 import { normalizeCoverage } from '@/lib/coveragesMap';
 import { telemetry, getUserContext } from '@/lib/telemetry';
 import { useCompareStore } from '@/state/compareStore';
+import { makeLabelResolver } from '@/lib/i18n/labels';
 
 interface ComparatorProps {
   brief?: Brief | null;
@@ -32,6 +33,7 @@ const CoverageIcon = ({ status, label }: { status: 'ok' | 'partial' | 'miss'; la
 
 export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
   const { t, language } = useTranslation();
+  const { fieldLabel, enumLabel } = makeLabelResolver(t as any);
   // Subscribe only to what we use
   const itemCount = useCompareStore(s => s.items.length);
   // Snapshot of items only when count changes
@@ -74,7 +76,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
     [items]
   );
   const disclaimer = hasNonCatalogSource 
-    ? ` ${t('disclaimer.sourced')}`
+    ? ` ${t('comparator.disclaimer.sourced')}`
     : '';
   const fullReasoning = reasoning + disclaimer;
 
@@ -108,14 +110,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
 
   // Format source display
   const formatSource = (source: ComparedPlan['source']) => {
-    const sourceMap = {
-      catalog: t('sources.catalog'),
-      template: t('sources.template'),
-      pdf: t('sources.pdf'),
-      url: t('sources.url'),
-      text: t('sources.text'),
-    } as const;
-    return sourceMap[source.kind] || source.kind;
+    return enumLabel('sources', source.kind);
   };
 
   // Format date
@@ -134,12 +129,12 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
   return (
     <section 
       role="region" 
-      aria-label={t('header')}
-      id="comparison-panel"
+      aria-label={t('comparator.header')}
       className="w-full rounded-lg border bg-card p-6 mb-4"
+      style={{ zIndex: 1, position: 'relative' }}
       data-testid="comparator"
     >
-      <h2 className="text-lg font-semibold mb-4">{t('header')}</h2>
+      <h2 className="text-lg font-semibold mb-4">{t('comparator.header')}</h2>
       
       <div className="overflow-x-auto">
         <table className="w-full min-w-[600px]">
@@ -158,7 +153,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
                     <button
                       onClick={() => useCompareStore.getState().remove(plan.id)}
                       className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
-                      aria-label={t('remove')}
+                      aria-label={t('comparator.remove')}
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -170,7 +165,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
           <tbody>
             {/* Price */}
             <tr className="border-t">
-              <td className="font-medium p-2">{t('price')}</td>
+              <td className="font-medium p-2">{fieldLabel('price')}</td>
               {items.slice(0, 3).map((plan) => (
                 <td key={`${plan.id}-price`} className="p-2">
                   <div className="flex items-baseline gap-1">
@@ -179,7 +174,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
                     </span>
                     {!plan.priceCop && plan.priceEstCop && (
                       <span className="text-sm text-muted-foreground">
-                        {t('price_est')}
+                        {t('comparator.price_est')}
                       </span>
                     )}
                   </div>
@@ -189,7 +184,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
 
             {/* Deductibles */}
             <tr className="border-t">
-              <td className="font-medium p-2">{t('deductibles')}</td>
+              <td className="font-medium p-2">{fieldLabel('deductibles')}</td>
               {items.slice(0, 3).map((plan) => (
                 <td key={`${plan.id}-deductibles`} className="p-2">
                   <span className="text-sm">{plan.deductibles || '—'}</span>
@@ -200,13 +195,14 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
             {/* Key Coverages */}
             {keyCoverages.map((coverage) => (
               <tr key={coverage} className="border-t">
-                <td className="font-medium p-2 capitalize">{t(`coverageTypes.${coverage}`)}</td>
+                <td className="font-medium p-2 capitalize">{enumLabel('coverage_types', coverage)}</td>
                 {items.slice(0, 3).map((plan) => {
                   const status = getCoverageStatus(plan.coverages, coverage);
+                  const covLabel = enumLabel('coverage_types', coverage);
                   const statusLabels = {
-                    ok: `${t(`coverageTypes.${coverage}`)}: ${t('ticks.included')}`,
-                    partial: `${t(`coverageTypes.${coverage}`)}: ${t('ticks.partial')}`,
-                    miss: `${t(`coverageTypes.${coverage}`)}: ${t('ticks.notIncluded')}`
+                    ok: `${covLabel}: ${t('comparator.ticks.included')}`,
+                    partial: `${covLabel}: ${t('comparator.ticks.partial')}`,
+                    miss: `${covLabel}: ${t('comparator.ticks.notIncluded')}`
                   };
                   return (
                     <td key={`${plan.id}-${coverage}`} className="p-2">
@@ -219,7 +215,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
 
             {/* Waiting Times */}
             <tr className="border-t">
-              <td className="font-medium p-2">{t('waitingTimes')}</td>
+              <td className="font-medium p-2">{fieldLabel('waitingTimes')}</td>
               {items.slice(0, 3).map((plan) => (
                 <td key={`${plan.id}-waiting`} className="p-2">
                   <div className="text-sm">
@@ -233,7 +229,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
 
             {/* Exclusions */}
             <tr className="border-t">
-              <td className="font-medium p-2 align-top">{t('exclusions')}</td>
+              <td className="font-medium p-2 align-top">{fieldLabel('exclusions')}</td>
               {items.slice(0, 3).map((plan) => (
                 <td key={`${plan.id}-exclusions`} className="p-2">
                   <ul className="text-sm space-y-1">
@@ -251,7 +247,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
 
             {/* Source */}
             <tr className="border-t">
-              <td className="font-medium p-2">{t('source')}</td>
+              <td className="font-medium p-2">{fieldLabel('source')}</td>
               {items.slice(0, 3).map((plan) => (
                 <td key={`${plan.id}-source`} className="p-2">
                   <div className="text-sm text-muted-foreground">
@@ -263,7 +259,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
 
             {/* Last Updated */}
             <tr className="border-t">
-              <td className="font-medium p-2">{t('updated')}</td>
+              <td className="font-medium p-2">{fieldLabel('updated')}</td>
               {items.slice(0, 3).map((plan) => (
                 <td key={`${plan.id}-updated`} className="p-2">
                   <div className="text-sm text-muted-foreground">
@@ -281,7 +277,7 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
         {/* Critical Differences */}
         {criticalDiffs.length > 0 && (
           <div>
-            <h3 className="font-medium mb-2">{t('criticalDifferences')}</h3>
+            <h3 className="font-medium mb-2">{t('comparator.criticalDifferences')}</h3>
             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
               {criticalDiffs.map((diff: string, idx: number) => (
                 <li key={idx}>{diff}</li>

@@ -41,10 +41,24 @@ const nextConfig = {
       },
     ];
   },
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve = config.resolve || {};
     // Prevent accidental resolution of node "canvas" in server builds
     config.resolve.fallback = { ...(config.resolve.fallback || {}), canvas: false };
+
+    // Ignore canvas module and its bindings in client builds
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        canvas: false,
+      };
+    }
+
+    // Add rule to handle .node files
+    config.module.rules.push({
+      test: /\.node$/,
+      use: 'null-loader',
+    });
 
     return config;
   },

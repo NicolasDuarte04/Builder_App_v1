@@ -133,3 +133,10 @@ export const useIsInCompare = (id: string) => useCompareStore(state => state.isI
 // Tuple + shallow wrapper (TS-safe)
 export const useCompareActions = () =>
   useCompareStore(useShallow(s => [s.add, s.remove, s.clear] as const));
+
+// E2E exposure: allow tests to seed compare items deterministically
+try {
+  if (typeof window !== 'undefined' && (process.env.NEXT_PUBLIC_E2E_CAPTURE === '1')) {
+    (window as any).useCompareStore = useCompareStore;
+  }
+} catch {}

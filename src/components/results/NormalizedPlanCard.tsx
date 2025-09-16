@@ -14,6 +14,7 @@ import { telemetry, getUserContext } from '@/lib/telemetry';
 import { Brief } from '@/types/brief';
 import { SourceKind } from '@/types/compare';
 import { FLAGS, getFlag } from '@/lib/flags';
+import { makeLabelResolver } from '@/lib/i18n/labels';
 
 interface NormalizedPlanCardProps {
   plan: NormalizedPlan & { fitScore?: number };
@@ -31,6 +32,7 @@ export function NormalizedPlanCard({
   brief 
 }: NormalizedPlanCardProps) {
   const { t, language } = useTranslation();
+  const { fieldLabel, enumLabel } = makeLabelResolver(t as any);
   const planId = `${plan.source.kind}-${plan.source.ref}`;
   const compareCount = useCompareStore(s => s.count);
   const isInComparison = useCompareStore(s => s.isInCompare(planId));
@@ -64,16 +66,7 @@ export function NormalizedPlanCard({
   };
 
   const getSourceLabel = (sourceKind: string) => {
-    switch (sourceKind) {
-      case 'pdf':
-        return 'PDF';
-      case 'url':
-        return 'Web';
-      case 'text':
-        return 'Texto';
-      default:
-        return 'Fuente';
-    }
+    return enumLabel('sources', sourceKind);
   };
 
   return (
@@ -91,7 +84,7 @@ export function NormalizedPlanCard({
             )}
             {getFlag(FLAGS.TRUST_METADATA) && plan.source?.kind && plan.source?.updatedAt && (
               <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400" data-testid="plan-trust-meta">
-                {String(t('assistant.trust.source'))}: {plan.source.kind} • {String(t('assistant.trust.updated'))}: {formatTrustDate(plan.source.updatedAt, language)}
+                {String(t('assistant.trust.source'))}: {enumLabel('sources', plan.source.kind)} • {String(t('assistant.trust.updated'))}: {formatTrustDate(plan.source.updatedAt, language)}
               </div>
             )}
           </div>
@@ -183,7 +176,7 @@ export function NormalizedPlanCard({
         {/* Source Reference */}
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           <div className={`font-medium text-gray-700 dark:text-gray-300 mb-1 ${isCompact ? "text-xs" : "text-sm"}`}>
-            Fuente de datos
+            {fieldLabel('source')}
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-gray-600 dark:text-gray-400 truncate flex-1 mr-2">

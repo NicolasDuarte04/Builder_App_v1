@@ -4,6 +4,7 @@ import { MoveRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { telemetry } from "@/lib/telemetry";
+import { LeadForm } from "@/components/ui/LeadForm";
 
 function Hero() {
   const { t } = useTranslation();
@@ -52,15 +53,8 @@ function Hero() {
               </Button>
             </div>
           </div>
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 rounded-lg aspect-square flex items-center justify-center">
-            <div className="text-center p-8">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full flex items-center justify-center">
-                <FileText className="w-12 h-12 text-white" />
-              </div>
-              <p className="text-muted-foreground text-sm">
-                {t('home.simple.demo_caption')}
-              </p>
-            </div>
+          <div className="flex items-center justify-center">
+            <LeadForm />
           </div>
         </div>
       </div>

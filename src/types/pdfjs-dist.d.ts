@@ -3,4 +3,9 @@ declare module 'pdfjs-dist/build/pdf.js' {
   export default pdfjs;
 }
 
+declare module 'pdfjs-dist/build/pdf.sandbox.js' {
+  const pdfjs: any;
+  export default pdfjs;
+}
+
 

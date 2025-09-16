@@ -44,12 +44,22 @@ test.describe('Telemetry happy-path', () => {
     await expect(sidebar).toBeVisible({ timeout: 15000 });
     await page.waitForLoadState('networkidle');
 
-    // If there are plans, pin the first two to trigger compare events
+    // If there are plans, pin the first two
     const pinButtons = sidebar.getByTestId('pin-toggle');
     const count = await pinButtons.count();
     if (count >= 2) {
       await pinButtons.nth(0).click();
       await pinButtons.nth(1).click();
+      // Panel should not exist yet (requires explicit click)
+      await expect(page.locator('#comparison-panel')).toHaveCount(0);
+
+      // Click Compare CTA to open comparator and emit COMPARATOR_OPENED
+      const compareCta = page.getByTestId('compare-selected-btn');
+      await expect(compareCta).toBeVisible({ timeout: 10000 });
+      await compareCta.click();
+      await expect(page.locator('#comparison-panel')).toBeVisible({ timeout: 10000 });
+      // Capture screenshot of the panel for evidence
+      await page.locator('#comparison-panel').screenshot({ path: 'playwright-report/comparator-panel-happy.png' });
     }
 
     // Click Create Proposal
@@ -78,8 +88,8 @@ test.describe('Telemetry happy-path', () => {
     expect(events.has('BRIEF_APPLIED') || events.has('BRIEF_INJECTED_INTO_TOOL'), 'Expected BRIEF_APPLIED or BRIEF_INJECTED_INTO_TOOL to be present').toBeTruthy();
 
     if (count >= 2) {
-      expect(events.has('COMPARATOR_OPENED'), 'Expected COMPARATOR_OPENED to be present when items are pinned').toBeTruthy();
-      expect(events.has('COMPARATOR_ITEM_ADDED'), 'Expected COMPARATOR_ITEM_ADDED to be present when items are pinned').toBeTruthy();
+      expect(events.has('COMPARATOR_OPENED'), 'Expected COMPARATOR_OPENED after clicking Compare').toBeTruthy();
+      expect(events.has('COMPARATOR_ITEM_ADDED'), 'Expected COMPARATOR_ITEM_ADDED when items are pinned').toBeTruthy();
     }
 
     // Optional price normalization check: if it exists, that's sufficient.

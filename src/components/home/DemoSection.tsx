@@ -5,6 +5,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 export function DemoSection() {
   const { t } = useTranslation();
+  const thumbnail = '/images/login-hero.png';
 
   return (
     <section id="demo-section" className="w-full py-16 lg:py-24">
@@ -21,8 +22,8 @@ export function DemoSection() {
           
           <HeroVideoDialog
             animationStyle="from-center"
-            videoSrc="https://www.youtube.com/embed/dQw4w9WgXcQ" // Placeholder - replace with actual demo video
-            thumbnailSrc="/images/demo-thumbnail.jpg" // Placeholder - replace with actual thumbnail
+            videoSrc="https://www.youtube.com/embed/tuMq1mzbJSA"
+            thumbnailSrc={thumbnail}
             thumbnailAlt="Briki Demo Video"
             className="max-w-4xl mx-auto"
           />

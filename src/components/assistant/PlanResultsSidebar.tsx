@@ -13,6 +13,7 @@ import { SourcingActions } from '@/components/results/SourcingActions';
 import type { TemplatePlan, NormalizedPlan } from '@/types/results';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
+import { makeLabelResolver } from '@/lib/i18n/labels';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { eventBus } from '@/lib/event-bus';
@@ -89,6 +90,10 @@ export function PlanResultsSidebar({
   variant = 'overlay'
 }: PlanResultsSidebarProps) {
   const { t, language } = useTranslation();
+  const { fieldLabel, enumLabel } = makeLabelResolver((key: string, opts?: { fallback?: string }) => {
+    const val = t(key, { fallback: opts?.fallback });
+    return val;
+  });
   const { toast } = useToast();
   const { hideRightPanel, setDualPanelMode, setSidebarOpen } = usePlanResults();
   const clearBriefManualOverride = useUILayoutStore((s) => s.clearBriefManualOverride);
@@ -96,6 +101,9 @@ export function PlanResultsSidebar({
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const isEmbedded = variant === 'embedded';
   const compareItemsCount = useCompareStore((s) => s.items.length);
+  const shownCompareReadyRef = useRef(false);
+  // Edge-triggered toast dedupe for Strict Mode
+  const compareToastTokenRef = useRef<string | null>(null);
   
   // State for plan interactions
   const [selectedPlan, setSelectedPlan] = useState<InsurancePlan | null>(null);
@@ -310,36 +318,37 @@ export function PlanResultsSidebar({
   const handlePinPlan = (planId: number) => {
     const plan = activeResults?.plans.find(p => p.id === planId);
     if (plan) {
-      setPinnedPlans(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(planId)) {
-          newSet.delete(planId);
-          toast({
-            title: t('assistant.unpin_toast_title'),
-            description: t('assistant.unpin_toast_desc').replace('{planName}', plan.name),
-          });
-          
-          // Emit event for assistant
-          eventBus.emit('plan-unpinned', {
-            plan: plan,
-            pinnedCount: newSet.size
-          });
-        } else {
-          newSet.add(planId);
-          toast({
-            title: t('assistant.pin_toast_title'),
-            description: t('assistant.pin_toast_desc').replace('{planName}', plan.name),
-          });
-          
-          // Emit event for assistant
-          // Use the actual current size after adding (no +1)
-          eventBus.emit('plan-pinned', {
-            plan: plan,
-            pinnedCount: newSet.size
-          });
-        }
-        return newSet;
-      });
+      const newSet = new Set(pinnedPlans);
+      const wasPinned = newSet.has(planId);
+      
+      if (wasPinned) {
+        newSet.delete(planId);
+      } else {
+        newSet.add(planId);
+      }
+      
+      setPinnedPlans(newSet);
+      
+      // Fire toast and events after state update
+      if (wasPinned) {
+        toast({
+          title: t('assistant.unpin_toast_title'),
+          description: t('assistant.unpin_toast_desc').replace('{planName}', plan.name),
+        });
+        eventBus.emit('plan-unpinned', {
+          plan: plan,
+          pinnedCount: newSet.size
+        });
+      } else {
+        toast({
+          title: t('assistant.pin_toast_title'),
+          description: t('assistant.pin_toast_desc').replace('{planName}', plan.name),
+        });
+        eventBus.emit('plan-pinned', {
+          plan: plan,
+          pinnedCount: newSet.size
+        });
+      }
     }
   };
 
@@ -363,6 +372,41 @@ export function PlanResultsSidebar({
 
   // Stable plans list derived from effectiveResults for syncing to compare store
   const stablePlans = React.useMemo(() => effectiveResults?.plans || [], [effectiveResults?.plans]);
+
+  // Show compare ready toast only on 1→2 transition (Strict Mode resilient)
+  const prevPinnedCountRef = useRef(0);
+  useEffect(() => {
+    const currentCount = pinnedPlans.size;
+    const prevCount = prevPinnedCountRef.current;
+    
+    // Edge-triggered: only fire on 1→2 transition
+    if (prevCount === 1 && currentCount === 2) {
+      // Generate unique token for this specific transition
+      const transitionToken = `compare-${currentResults?.requestId || 'session'}-${Date.now()}`;
+      
+      // Check if we already processed this exact transition
+      if (compareToastTokenRef.current !== transitionToken) {
+        compareToastTokenRef.current = transitionToken;
+        
+        // Defer toast to next tick to avoid Strict Mode double-fire
+        const timeoutId = setTimeout(() => {
+          // Double-check conditions still hold
+          if (pinnedPlans.size === 2 && compareToastTokenRef.current === transitionToken) {
+            toast({
+              title: t('assistant.compare_ready_toast_title'),
+              description: t('assistant.compare_ready_toast_desc'),
+            });
+          }
+        }, 50);
+        
+        // Cleanup timeout on unmount or re-run
+        return () => clearTimeout(timeoutId);
+      }
+    }
+    
+    // Update ref for next comparison
+    prevPinnedCountRef.current = currentCount;
+  }, [pinnedPlans.size, t, currentResults?.requestId]);
 
   // Defer syncing of pinned plans to the compare store to avoid setState during render
   useEffect(() => {
@@ -409,7 +453,7 @@ export function PlanResultsSidebar({
         }
       }
     } catch {}
-  }, [pinnedPlans, stablePlans]);
+  }, [pinnedPlans, stablePlans, t]);
 
   // [AUDIT] Sidebar render state
   if (process.env.NODE_ENV !== 'production') {
@@ -486,6 +530,14 @@ export function PlanResultsSidebar({
           exit={{ x: '100%', opacity: 1 }}
           transition={{ type: 'spring', damping: 26, stiffness: 260 }}
           className={`${isEmbedded ? 'absolute right-0 top-0 h-full w-[92vw] max-w-[20rem]' : 'fixed right-0 top-0 h-full w-[88vw] max-w-[20rem]'} bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl z-[70] flex flex-col ${className}`}
+          style={
+            isEmbedded
+              ? undefined
+              : ({
+                  top: 'var(--app-nav-h, var(--nav-h, 64px))',
+                  height: 'calc(100vh - var(--app-nav-h, var(--nav-h, 64px)))',
+                } as React.CSSProperties)
+          }
           data-testid="plan-results-sidebar"
           ref={drawerRef}
           role={isEmbedded ? 'region' : 'dialog'}
@@ -564,7 +616,7 @@ export function PlanResultsSidebar({
             {process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_SHOW_FILTER_DEBUG === 'true' && (
               <div className="mb-2 text-[11px] text-gray-500">
                 <span>
-                  Filtered by: include=[{activeResults?.filters?.includeCategories?.join(', ') || ''}] exclude=[{activeResults?.filters?.excludeCategories?.join(', ') || ''}] • datasource={activeResults?.dataSource || (process.env.NEXT_PUBLIC_BRIKI_DATA_SOURCE || 'legacy')}
+                  Filtered by: include=[{(activeResults?.filters?.includeCategories || []).map((c) => enumLabel('categories', String(c))).join(', ')}] exclude=[{(activeResults?.filters?.excludeCategories || []).map((c) => enumLabel('categories', String(c))).join(', ')}] • datasource={activeResults?.dataSource || (process.env.NEXT_PUBLIC_BRIKI_DATA_SOURCE || 'legacy')}
                 </span>
               </div>
             )}
@@ -911,6 +963,7 @@ interface PlanCardProps {
 
 function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = false }: PlanCardProps) {
   const { t, language } = useTranslation();
+  const { enumLabel } = makeLabelResolver(((key: string, opts?: any) => t(key as any, { fallback: opts?.fallback })) as any);
 
   const formatPrice = (price: number, currency: string) => {
     try {
@@ -1080,7 +1133,7 @@ function PlanCard({ plan, onViewDetails, onQuote, onPin, isPinned, isCompact = f
       {/* Trust metadata */}
       {trustEnabled && trustKind && trustDateText && (
         <div className="mb-2 text-[11px] text-gray-500 dark:text-gray-400" data-testid="plan-trust-meta">
-          {String(t('assistant.trust.source'))}: {trustKind} • {String(t('assistant.trust.updated'))}: {trustDateText}
+          {String(t('assistant.trust.source'))}: {enumLabel('sources', String(trustKind))} • {String(t('assistant.trust.updated'))}: {trustDateText}
         </div>
       )}
 

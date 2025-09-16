@@ -26,6 +26,9 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
 
+// Dev-only logging gate
+const __DEV__ = process.env.NODE_ENV !== 'production';
+
 // GET health check endpoint
 export async function GET() {
   try {
@@ -111,7 +114,7 @@ export async function POST(request: NextRequest) {
   let extractionMethod: 'text' | 'ocr' = 'text';
   
   try {
-    console.log('📋 Starting PDF analysis request...');
+    if (__DEV__) console.log('📋 Starting PDF analysis request...', { ts: Date.now() });
     
     // Initialize server Supabase client
     try {
@@ -119,13 +122,13 @@ export async function POST(request: NextRequest) {
       if (process.env.NODE_ENV !== 'production') {
         try {
           const { data: buckets } = await serverSupabase.storage.listBuckets();
-          console.log('[analyze-policy] Available buckets:', buckets?.map((b: any) => b.name));
+          if (__DEV__) console.log('[analyze-policy] Available buckets:', buckets?.map((b: any) => b.name));
         } catch (e: any) {
-          console.log('[analyze-policy] listBuckets error:', e?.message || String(e));
+          if (__DEV__) console.log('[analyze-policy] listBuckets error:', e?.message || String(e));
         }
       }
     } catch (error: any) {
-      console.error('❌ Failed to create server Supabase client:', error?.message || error);
+      if (__DEV__) console.error('❌ Failed to create server Supabase client:', error?.message || error);
       return NextResponse.json(
         { error: 'server_db_not_configured', message: String(error?.message || error) },
         { status: 500 }
@@ -134,14 +137,16 @@ export async function POST(request: NextRequest) {
     
     // Optional session: allow guest analysis
     const session = await getServerSession(authOptions);
-    console.log('🔐 Session check:', session ? 'Authenticated' : 'Not authenticated');
     const userId: string | null = (session?.user as any)?.id ?? null;
     const isDevelopment = process.env.NODE_ENV !== 'production';
-    console.log('🔐 Using user ID:', userId, isDevelopment ? '(development mode)' : '(production mode)');
+    if (isDevelopment) {
+      if (__DEV__) console.log('🔐 Session check...', (session?.user as any)?.id);
+      if (__DEV__) console.log('🔐 Using user ID:', userId);
+    }
     
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
-      console.error('❌ OpenAI API key not configured');
+      if (__DEV__) console.error('❌ OpenAI API key not configured');
       return NextResponse.json(
         { error: 'AI service not configured. Please check server configuration.' },
         { status: 500 }
@@ -167,7 +172,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log('📋 Request details:', {
+    if (__DEV__) console.log('📋 Request details:', {
       hasFile: !!file,
       fileMetadata: file ? getSafeFileMetadata(file) : null,
       userId: userId,
@@ -200,10 +205,10 @@ export async function POST(request: NextRequest) {
     // Telemetry timing start
     const telemetryStartTs = Date.now();
 
-    console.log('📄 Analyzing PDF policy for user:', userId);
+    if (__DEV__) console.log('📄 Analyzing PDF policy for user:', userId);
 
     // Create initial upload record
-    console.log('💾 Creating upload record in database...');
+    if (__DEV__) console.log('💾 Creating upload record in database...');
     // Insert initial upload row directly (status: uploading)
     const { data: uploadRecord, error: createErr } = await serverSupabase
       .from('policy_uploads')
@@ -218,7 +223,7 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
     if (createErr) {
-      console.error('❌ Failed to create upload record in database', createErr);
+      if (__DEV__) console.error('❌ Failed to create upload record in database', createErr);
       return NextResponse.json(
         { error: 'Failed to create upload record. Please check database configuration.' },
         { status: 500 }
@@ -226,15 +231,15 @@ export async function POST(request: NextRequest) {
     }
 
     if (!uploadRecord) {
-      console.error('❌ Failed to create upload record in database');
-      console.error('Check if policy_uploads table exists and has correct structure');
+      if (__DEV__) console.error('❌ Failed to create upload record in database');
+      if (__DEV__) console.error('Check if policy_uploads table exists and has correct structure');
       return NextResponse.json(
         { error: 'Failed to create upload record. Please check database configuration.' },
         { status: 500 }
       );
     }
 
-    console.log('✅ Upload record created:', uploadRecord.id);
+    if (__DEV__) console.log('✅ Upload record created:', uploadRecord.id);
     uploadId = uploadRecord.id;
 
     // Telemetry: BRIEF_PARSE_STARTED
@@ -260,7 +265,7 @@ export async function POST(request: NextRequest) {
         .from(POLICY_BUCKET)
         .upload(safeName, buffer, { contentType: 'application/pdf', upsert: false });
       if (storageError) {
-        console.error('[analyze-policy] Storage upload failed', {
+        if (__DEV__) console.error('[analyze-policy] Storage upload failed', {
           bucket: POLICY_BUCKET,
           isServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
           error: storageError
@@ -304,7 +309,7 @@ export async function POST(request: NextRequest) {
         const DEBUG_ANALYZE_STATUS = process.env.DEBUG_ANALYZE_STATUS === '1';
         const setStatus = async (patch: any, label: string) => {
           const id = uploadRecord.id;
-          if (DEBUG_ANALYZE_STATUS) console.log('[status→TRY]', label, { id, patch });
+          if (DEBUG_ANALYZE_STATUS && __DEV__) console.log('[status→TRY]', label, { id, patch });
           const { data, error } = await serverSupabase
             .from('policy_uploads')
             .update(patch)
@@ -313,11 +318,11 @@ export async function POST(request: NextRequest) {
             .maybeSingle();
 
           if (!error) {
-            if (DEBUG_ANALYZE_STATUS) console.log('[status→OK]', label, data);
+            if (DEBUG_ANALYZE_STATUS && __DEV__) console.log('[status→OK]', label, data);
             return;
           }
 
-          console.error('[status→FAIL]', label, error);
+          if (__DEV__) console.error('[status→FAIL]', label, error);
 
           // CHECK constraint → retry with 'processing'
           if (error.code === '23514' && patch.status && patch.status !== 'processing') {
@@ -328,8 +333,8 @@ export async function POST(request: NextRequest) {
               .eq('id', id)
               .select('id,status,updated_at')
               .maybeSingle();
-            if (ferr) console.error('[status→FAIL] fallback processing', ferr);
-            else if (DEBUG_ANALYZE_STATUS) console.log('[status→OK] fallback processing', fdata);
+            if (ferr) { if (__DEV__) console.error('[status→FAIL] fallback processing', ferr); }
+            else if (DEBUG_ANALYZE_STATUS && __DEV__) console.log('[status→OK] fallback processing', fdata);
             return;
           }
 
@@ -343,8 +348,8 @@ export async function POST(request: NextRequest) {
               .eq('id', id)
               .select('id,status,updated_at')
               .maybeSingle();
-            if (serr) console.error('[status→FAIL] safe fallback', serr);
-            else if (DEBUG_ANALYZE_STATUS) console.log('[status→OK] safe fallback', sdata);
+            if (serr) { if (__DEV__) console.error('[status→FAIL] safe fallback', serr); }
+            else if (DEBUG_ANALYZE_STATUS && __DEV__) console.log('[status→OK] safe fallback', sdata);
           }
         };
         try {
@@ -420,7 +425,7 @@ export async function POST(request: NextRequest) {
           await setStatus({ status: 'extracting' }, 'extracting');
 
           // Extract text
-          console.log('📄 [bg] Extracting text from PDF...');
+          if (__DEV__) console.log('📄 [bg] Extracting text from PDF...');
           let pdfText: string;
           let ocrWasUsed = false;
           
@@ -437,7 +442,7 @@ export async function POST(request: NextRequest) {
                   extractionMethod = 'text';
                 } else if (bgOcrEnabled && enh?.extractTextFromPDFOCROnly) {
                   // Low confidence in text extraction, try OCR if enabled
-                  console.log('⚠️ [bg] Low text confidence, attempting OCR fallback...');
+                  if (__DEV__) console.log('⚠️ [bg] Low text confidence, attempting OCR fallback...');
                   telemetry.track(telemetry.events.PDF_OCR_STARTED, {
                     uploadId: uploadRecord.id,
                     userId: bgUserId,
@@ -463,7 +468,7 @@ export async function POST(request: NextRequest) {
                 }
               } catch (textError) {
                 if (isOcrEnabled && enh?.extractTextFromPDFOCROnly) {
-                  console.log('⚠️ [bg] Text extraction failed, attempting OCR fallback...');
+                  if (__DEV__) console.log('⚠️ [bg] Text extraction failed, attempting OCR fallback...');
                   telemetry.track(telemetry.events.PDF_OCR_STARTED, {
                     uploadId: uploadRecord.id,
                     userId: bgUserId,
@@ -510,7 +515,7 @@ export async function POST(request: NextRequest) {
               }
             }
           } catch (e) {
-            console.error('❌ [bg] PDF extraction failed:', e);
+            if (__DEV__) console.error('❌ [bg] PDF extraction failed:', e);
             
             // Track OCR failure if it was attempted
             if (ocrWasUsed) {
@@ -550,7 +555,7 @@ export async function POST(request: NextRequest) {
           }, 'analyzing');
 
           // AI analysis
-          console.log('🤖 [bg] Starting AI analysis...');
+          if (__DEV__) console.log('🤖 [bg] Starting AI analysis...');
           const oai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY! });
           const analysis = await analyzePolicyWithAIMultiChunk(pdfText, oai).catch(async (err: any) => {
             // Quota handling
@@ -640,14 +645,14 @@ export async function POST(request: NextRequest) {
           } catch {}
         } catch (error: any) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error during analysis';
-          console.error('❌ [bg] Error during analysis:', errorMessage);
+          if (__DEV__) console.error('❌ [bg] Error during analysis:', errorMessage);
           const telemetryError = normalizeError(error, 'background_job');
           await setStatus({
             status: 'error',
             error_code: 'internal',
             error_message: errorMessage,
           }, 'error');
-          console.error('[bg job ERROR]', error);
+          if (__DEV__) console.error('[bg job ERROR]', error);
           // Telemetry: BRIEF_PARSE_FAILED
           try {
             const latencyMs = Date.now() - telemetryStartTs;
@@ -676,7 +681,7 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error: any) {
-    console.error('[analyze-policy] error:', error);
+    if (__DEV__) console.error('[analyze-policy] error:', error);
     
     // Return more detailed error information
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -706,7 +711,7 @@ async function analyzePolicyWithAIMultiChunk(pdfText: string, oai: any) {
                      /\b(el|la|los|las|de|del|con|por|para|en|es|son|está|están|tiene|tienen|puede|pueden|debe|deben|ser|estar|hacer|tener|ir|venir|dar|ver|saber|querer|poder|deber|hay|está|están|muy|más|menos|bien|mal|bueno|buena|malo|mala|grande|pequeño|nuevo|viejo|alto|bajo|largo|corto|ancho|estrecho|fuerte|débil|rico|pobre|feliz|triste|contento|enojado|cansado|despierto|limpio|sucio|caliente|frío|caluroso|fresco|seco|mojado|lleno|vacío|abierto|cerrado|nuevo|usado|caro|barato|fácil|difícil|importante|necesario|posible|imposible|correcto|incorrecto|verdadero|falso|cierto|seguro|claro|oscuro|brillante|opaco|transparente|visible|invisible|público|privado|nacional|internacional|local|global|especial|general|particular|común|raro|normal|extraño|usual|habitual|frecuente|ocasional|siempre|nunca|a veces|a menudo|raramente|casi|apenas|exactamente|aproximadamente|cerca|lejos|dentro|fuera|arriba|abajo|adelante|atrás|izquierda|derecha|centro|medio|mitad|parte|todo|nada|algo|nadie|alguien|cualquiera|cada|cual|cuál|qué|quién|dónde|cuándo|cómo|por qué|cuánto|cuánta|cuántos|cuántas)\b/i.test(pdfText);
     
     const language = isSpanish ? 'Spanish' : 'English';
-    console.log(`🌐 Detected language: ${language}`);
+    if (__DEV__) console.log(`🌐 Detected language: ${language}`);
 
     const systemPrompt = `You are an expert insurance analyst specializing in Latin American insurance policies. Analyze the provided document and extract comprehensive, specific information.
 
@@ -765,12 +770,12 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
 
     // Check if the PDF has no extractable text
     if (!pdfText.trim() || pdfText.includes('No text content could be extracted')) {
-      console.log('⚠️ PDF has no extractable text content');
+      if (__DEV__) console.log('⚠️ PDF has no extractable text content');
       throw new Error('This PDF appears to contain only images or has no extractable text. Please upload a PDF with text content.');
     }
 
-    console.log('🤖 Preparing chunks for analysis...');
-    console.log(`📄 Text length: ${pdfText.length} characters`);
+    if (__DEV__) console.log('🤖 Preparing chunks for analysis...');
+    if (__DEV__) console.log(`📄 Text length: ${pdfText.length} characters`);
 
     const chunks = splitIntoSemanticChunks(pdfText);
     const MAX_CHUNKS = 5; // bound for latency
@@ -794,10 +799,10 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
           temperature: 0.3,
           maxTokens: 2000,
         });
-        console.log('✅ Single-chunk AI analysis completed successfully');
+        if (__DEV__) console.log('✅ Single-chunk AI analysis completed successfully');
         return result.object;
       } catch (schemaError) {
-        console.error('⚠️ Single-chunk schema validation failed, trying fallback:', schemaError);
+        if (__DEV__) console.error('⚠️ Single-chunk schema validation failed, trying fallback:', schemaError);
         const fallbackResult = await generateObject({
           model: oai(MODEL),
           system: systemPrompt,
@@ -806,7 +811,7 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
           temperature: 0.5,
           maxTokens: 1500,
         });
-        console.log('✅ Single-chunk fallback AI analysis completed');
+        if (__DEV__) console.log('✅ Single-chunk fallback AI analysis completed');
         return fallbackResult.object;
       }
     }
@@ -845,15 +850,15 @@ IMPORTANT: If the document is NOT an insurance policy, adapt the analysis but st
     });
 
     const results = await Promise.all(calls);
-    console.log(`✅ Multi-chunk analysis completed for ${results.length} chunks`);
+    if (__DEV__) console.log(`✅ Multi-chunk analysis completed for ${results.length} chunks`);
     const merged = mergeAnalyses(results);
     return merged;
     
   } catch (error) {
-    console.error('❌ Error in AI analysis:', error);
+    if (__DEV__) console.error('❌ Error in AI analysis:', error);
     
     // Return a default analysis if all else fails
-    console.log('⚠️ Returning default analysis due to errors');
+    if (__DEV__) console.log('⚠️ Returning default analysis due to errors');
     return {
       policyType: "Document Analysis Failed",
       premium: {

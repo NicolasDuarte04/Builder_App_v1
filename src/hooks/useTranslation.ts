@@ -13,8 +13,8 @@ export function useTranslation() {
   const { language } = useLanguage();
   const lang = normalizeLang(language);
 
-  const t = (key: string) => {
-    return getTranslation(lang, key);
+  const t = (key: string, opts?: { fallback?: unknown; returnObjects?: boolean }) => {
+    return getTranslation(lang, key, opts);
   };
 
   return { t, language: lang };

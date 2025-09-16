@@ -1,3 +1,41 @@
+/**
+ * Telemetry Module - Event Tracking and Analytics
+ * 
+ * CANONICAL EVENT FLOW FOR PROPOSAL GENERATION:
+ * =============================================
+ * 
+ * 1. CLIENT: User clicks "Create Proposal" button
+ *    - Emits: PROPOSAL_GENERATION_STARTED (with itemCount, hasBrief, requestId)
+ *    - Starts client-side timer for total duration tracking
+ * 
+ * 2. CLIENT: Makes API call to /api/proposals/generate
+ * 
+ * 3. SERVER: Receives request and begins PDF generation
+ *    - Emits: PROPOSAL_GENERATION_PDF_START (phase tracking)
+ *    - Does NOT emit STARTED (would cause double-counting)
+ * 
+ * 4. SERVER: Completes PDF, begins upload to storage
+ *    - Emits: PROPOSAL_GENERATION_UPLOAD_START (phase tracking)
+ * 
+ * 5. SERVER: Returns response with URL, pages, bytes
+ * 
+ * 6. CLIENT: Receives successful response
+ *    - Emits: PROPOSAL_GENERATION_COMPLETED (with durationMs from start)
+ *    - Does NOT rely on server to emit COMPLETED
+ * 
+ * RATIONALE:
+ * - Single source of truth: Client owns STARTED/COMPLETED lifecycle
+ * - Accurate timing: Client can measure true end-to-end duration
+ * - No race conditions: Sequential flow with clear ownership
+ * - No double-counting: Each event emitted exactly once
+ * - Server tracks internal phases with PDF_START/UPLOAD_START
+ * 
+ * MIGRATION NOTE:
+ * If server code attempts to emit STARTED/COMPLETED, it will be:
+ * - Logged as deprecation warning in development
+ * - Silently dropped in production to prevent double-counting
+ */
+
 import { getOrCreateSessionId } from './chat/session-prefs-client';
 import { now, since } from './time';
 import { createHash } from 'crypto';
@@ -206,9 +244,15 @@ export interface TelemetryEventMap {
   HOME_SEGMENT_CARD_VIEWED: SessionContext & { card: 'analyze' | 'brief' };
 
   // Proposal events
+  // CLIENT-ONLY: Emitted by CreateProposalButton when user initiates generation
   PROPOSAL_GENERATION_STARTED: { itemCount: number; hasBrief: boolean } & SessionContext & { requestId?: string };
+  // SERVER-ONLY: Emitted by API route during PDF generation phase
   PROPOSAL_GENERATION_PDF_START: { itemCount: number } & SessionContext & { requestId?: string };
+  // SERVER-ONLY: Emitted by API route during upload phase
   PROPOSAL_GENERATION_UPLOAD_START: { size: number; pages: number } & SessionContext & { requestId?: string };
+  // SERVER-ONLY: Emitted by API route when starting DB persistence for case-linked proposals
+  PROPOSAL_GENERATION_DB_START: { caseId: string } & SessionContext & { requestId?: string };
+  // CLIENT-ONLY: Emitted by CreateProposalButton after successful API response
   PROPOSAL_GENERATION_COMPLETED: { itemCount: number; hasBrief: boolean; pages?: number; bytes?: number; urlKind: 'http' | 'https' | 'blob' | 'data' | 'unknown' | 'signed' | 'public' | 'none' } & DurationFields & SessionContext & { requestId?: string };
   PROPOSAL_GENERATION_FAILED: { itemCount: number; hasBrief: boolean } & TelemetryError & SessionContext & { requestId?: string };
   PROPOSAL_OPENED: { url: string; id: string | null } & SessionContext & { requestId?: string };
@@ -253,7 +297,7 @@ export interface TelemetryEventMap {
   PDF_PRIMARY_SET: { fileCount: number; file: TelemetryFileMetadata } & SessionContext;
   FILE_SIZE_REJECTED: { sizeMB: number; limitMB: number } & TelemetryError & SessionContext;
 
-  COMPARATOR_OPENED: { count: number; pinnedIds?: string[]; origin?: 'toolbar' | 'sidebar' | string } & SessionContext;
+  COMPARATOR_OPENED: { itemCount: number } & SessionContext;
   COMPARATOR_ITEM_ADDED: { id: string; sourceKind: 'template' | 'catalog' | 'normalized'; price: number | null; coverageCount: number; itemCount: number } & SessionContext;
   COMPARATOR_ITEM_REMOVED: { id: string; sourceKind: 'template' | 'catalog' | 'normalized'; price: number | null; coverageCount: number; itemCount: number } & SessionContext;
   COMPARATOR_CLEARED: SessionContext;
@@ -268,11 +312,12 @@ const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly strin
   HOME_CTA_TUTORIAL_CLICKED: ['sessionId', 'userId'],
   HOME_SEGMENT_CARD_VIEWED: ['sessionId', 'userId', 'card'],
 
-  // Proposal events
-  PROPOSAL_GENERATION_STARTED: ['itemCount', 'hasBrief', 'timestamp', 'locale', 'sourceKinds', 'hasBranding', 'hasCaseId', 'hasProposalId', 'sessionId', 'userId', 'requestId'],
+  // Proposal events (CLIENT-ONLY: STARTED/COMPLETED, SERVER-ONLY: PDF_START/UPLOAD_START)
+  PROPOSAL_GENERATION_STARTED: ['itemCount', 'hasBrief', 'sessionId', 'userId', 'requestId'],
   PROPOSAL_GENERATION_PDF_START: ['itemCount', 'timestamp', 'locale', 'sourceKinds', 'hasBranding', 'hasCaseId', 'hasProposalId', 'sessionId', 'userId', 'requestId'],
   PROPOSAL_GENERATION_UPLOAD_START: ['size', 'pages', 'timestamp', 'locale', 'sourceKinds', 'hasBranding', 'hasCaseId', 'hasProposalId', 'sessionId', 'userId', 'requestId'],
-  PROPOSAL_GENERATION_COMPLETED: ['itemCount', 'hasBrief', 'pages', 'bytes', 'urlKind', 'durationMs', 'latencyMs', 'timestamp', 'locale', 'sourceKinds', 'hasBranding', 'hasCaseId', 'hasProposalId', 'sessionId', 'userId', 'requestId'],
+  PROPOSAL_GENERATION_DB_START: ['caseId', 'timestamp', 'sessionId', 'userId', 'requestId'],
+  PROPOSAL_GENERATION_COMPLETED: ['itemCount', 'hasBrief', 'pages', 'bytes', 'urlKind', 'durationMs', 'sessionId', 'userId', 'requestId'],
   PROPOSAL_GENERATION_FAILED: ['itemCount', 'hasBrief', 'error_code', 'stage', 'retryable', 'http_status', 'sessionId', 'userId', 'requestId'],
   PROPOSAL_OPENED: ['url', 'id', 'sessionId', 'userId', 'requestId'],
   PROPOSAL_LINK_COPIED: ['url', 'id', 'sessionId', 'userId', 'requestId'],
@@ -306,7 +351,7 @@ const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly strin
   PDF_ANALYSIS_FAILED: ['durationMs', 'error_code', 'stage', 'retryable', 'http_status', 'sessionId', 'userId'],
   PDF_PRIMARY_SET: ['fileCount', 'file', 'sessionId', 'userId'],
   FILE_SIZE_REJECTED: ['sizeMB', 'limitMB', 'error_code', 'stage', 'retryable', 'http_status', 'sessionId', 'userId'],
-  COMPARATOR_OPENED: ['count', 'pinnedIds', 'origin', 'sessionId', 'userId'],
+  COMPARATOR_OPENED: ['itemCount', 'sessionId', 'userId'],
   COMPARATOR_ITEM_ADDED: ['id', 'sourceKind', 'price', 'coverageCount', 'itemCount', 'sessionId', 'userId'],
   COMPARATOR_ITEM_REMOVED: ['id', 'sourceKind', 'price', 'coverageCount', 'itemCount', 'sessionId', 'userId'],
   COMPARATOR_CLEARED: ['sessionId', 'userId'],
@@ -316,9 +361,11 @@ const EVENT_REQUIRED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly stri
   PROPOSAL_GENERATION_STARTED: ['itemCount', 'hasBrief'],
   PROPOSAL_GENERATION_PDF_START: ['itemCount'],
   PROPOSAL_GENERATION_UPLOAD_START: ['size', 'pages'],
-  PROPOSAL_GENERATION_COMPLETED: ['itemCount', 'hasBrief', 'urlKind', 'durationMs', 'pages', 'bytes'],
+  PROPOSAL_GENERATION_DB_START: ['caseId'],
+  PROPOSAL_GENERATION_COMPLETED: ['itemCount', 'hasBrief', 'urlKind', 'durationMs'],
   TIME_TO_PROPOSAL_MS: ['durationMs'],
   ANALYZER_RUN_SUCCEEDED: ['hasPlan', 'success', 'hasSummary', 'durationMs'],
+  COMPARATOR_OPENED: ['itemCount', 'sessionId', 'userId'],
 };
 
 // Map legacy/lowercase event names to canonical keys in TelemetryEventMap
@@ -341,6 +388,7 @@ const EVENT_ALIASES: Record<string, keyof TelemetryEventMap> = {
   PROPOSAL_GENERATION_STARTED: 'PROPOSAL_GENERATION_STARTED',
   PROPOSAL_GENERATION_PDF_START: 'PROPOSAL_GENERATION_PDF_START',
   PROPOSAL_GENERATION_UPLOAD_START: 'PROPOSAL_GENERATION_UPLOAD_START',
+  PROPOSAL_GENERATION_DB_START: 'PROPOSAL_GENERATION_DB_START',
   PROPOSAL_GENERATION_COMPLETED: 'PROPOSAL_GENERATION_COMPLETED',
   PROPOSAL_GENERATION_FAILED: 'PROPOSAL_GENERATION_FAILED',
   PROPOSAL_OPENED: 'PROPOSAL_OPENED',
@@ -349,6 +397,7 @@ const EVENT_ALIASES: Record<string, keyof TelemetryEventMap> = {
   proposal_generation_started: 'PROPOSAL_GENERATION_STARTED',
   proposal_generation_pdf_start: 'PROPOSAL_GENERATION_PDF_START',
   proposal_generation_upload_start: 'PROPOSAL_GENERATION_UPLOAD_START',
+  proposal_generation_db_start: 'PROPOSAL_GENERATION_DB_START',
   proposal_generation_completed: 'PROPOSAL_GENERATION_COMPLETED',
   proposal_generation_failed: 'PROPOSAL_GENERATION_FAILED',
   proposal_opened: 'PROPOSAL_OPENED',
@@ -478,6 +527,17 @@ export const telemetry = {
     const payload = sanitizeTelemetryPayload(normalizeDurationPayload(eventName, (properties || {})));
     devValidatePayload(eventName, payload);
     const isDev = process.env.NODE_ENV !== 'production';
+    
+    // Guard against server-side emission of client-only events
+    const isServer = typeof window === 'undefined';
+    const clientOnlyEvents = ['PROPOSAL_GENERATION_STARTED', 'PROPOSAL_GENERATION_COMPLETED', 'proposal_generation_started', 'proposal_generation_completed'];
+    if (isServer && clientOnlyEvents.includes(eventName)) {
+      if (isDev) {
+        console.warn(`[TelemetryGuard] DEPRECATED: Server attempted to emit client-only event '${eventName}'. This event should only be emitted from the client. Server should use PDF_START/UPLOAD_START instead.`);
+      }
+      // In production, silently drop the event to avoid double-counting
+      return;
+    }
     // E2E capture surface (always capture if flag is enabled) - client-side
     if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_E2E_CAPTURE === '1') {
       try {
@@ -656,6 +716,7 @@ export const telemetry = {
     PROPOSAL_GENERATION_STARTED: 'PROPOSAL_GENERATION_STARTED',
     PROPOSAL_GENERATION_PDF_START: 'PROPOSAL_GENERATION_PDF_START',
     PROPOSAL_GENERATION_UPLOAD_START: 'PROPOSAL_GENERATION_UPLOAD_START',
+    PROPOSAL_GENERATION_DB_START: 'PROPOSAL_GENERATION_DB_START',
     PROPOSAL_GENERATION_COMPLETED: 'PROPOSAL_GENERATION_COMPLETED',
     PROPOSAL_GENERATION_FAILED: 'PROPOSAL_GENERATION_FAILED',
     PROPOSAL_OPENED: 'PROPOSAL_OPENED',

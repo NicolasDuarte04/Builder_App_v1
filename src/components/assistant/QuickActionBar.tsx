@@ -25,14 +25,15 @@ export function QuickActionBar({ density }: { density?: DensityPreset }) {
   const openAnalyzer = useAnalyzerUI((s) => s.open);
   const compareCount = useCompareStore((s) => s.items.length);
   const openComparator = useCompareUI((s) => s.open);
+  const isComparatorOpen = useCompareUI((s) => s.isOpen);
   const lastOpenRef = useRef<number>(0);
   const prefDensity = usePrefsStore((s) => s.toolbarDensity);
   const setToolbarDensity = usePrefsStore((s) => s.setToolbarDensity);
 
-  // Density preset: prop has priority; fallback to env; default comfortable (~44px)
+  // Density preset: prop has priority; fallback to env; comfortable targets ~44px
   const envDensity = (process.env.NEXT_PUBLIC_TOOLBAR_DENSITY as DensityPreset | undefined);
   const resolvedDensity: DensityPreset = (density || prefDensity || envDensity || 'comfortable') as DensityPreset;
-  const buttonSize: 'default' | 'sm' = resolvedDensity === 'compact' ? 'sm' : 'default';
+  const buttonSize: 'default' | 'lg' = resolvedDensity === 'compact' ? 'default' : 'lg';
   const buttonGapClass = resolvedDensity === 'compact' ? 'gap-1.5' : 'gap-2';
   const barGapClass = resolvedDensity === 'compact' ? 'gap-1.5' : 'gap-2';
   const sharedBtnClass = `inline-flex items-center ${buttonGapClass} px-3 text-sm disabled:opacity-60 disabled:cursor-not-allowed`;
@@ -72,15 +73,15 @@ export function QuickActionBar({ density }: { density?: DensityPreset }) {
     lastOpenRef.current = now;
 
     // Open comparator (table is rendered when there are ≥2 items)
+    const wasOpen = isComparatorOpen;
     try { openComparator(); } catch {}
     scrollToComparison();
 
     // Emit COMPARATOR_OPENED (single emission per click via debounce)
-    if (since > 500) {
+    if (!wasOpen) {
       getUserContext().then(({ sessionId, userId }) => {
         telemetry.track(telemetry.events.COMPARATOR_OPENED, {
-          count: compareCount,
-          pinnedIds: useCompareStore.getState().items.map(i => i.id),
+          itemCount: compareCount,
           sessionId,
           userId,
         });
@@ -100,7 +101,8 @@ export function QuickActionBar({ density }: { density?: DensityPreset }) {
     <TooltipProvider>
       <div
         role="toolbar"
-        className={`w-full flex flex-wrap items-center ${barGapClass} gap-y-2 px-3 py-2 border-b bg-white/70 dark:bg-black/50 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-10`}
+        className={`w-full flex flex-wrap items-center ${barGapClass} gap-y-2 px-3 py-2 border-b bg-white/70 dark:bg-black/50 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky z-[11]`}
+        style={{ top: 'var(--app-nav-h, var(--nav-h, 64px))' }}
         aria-label={t('assistant.quick_actions')}
         data-density={resolvedDensity}
       >
@@ -132,13 +134,13 @@ export function QuickActionBar({ density }: { density?: DensityPreset }) {
               disabled={isCompareDisabled}
               aria-disabled={isCompareDisabled}
               data-testid="compare-selected-btn"
-              className={sharedBtnClass}
+              className={`${sharedBtnClass} focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-black`}
               aria-label={t('assistant.compare_selected')}
             >
               <ArrowLeftRight className="w-5 h-5" />
               <span className="hidden md:inline">{t('assistant.compare_selected')}</span>
               {compareCount > 0 && (
-                <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border px-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border px-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 leading-none">
                   {compareCount}
                 </span>
               )}

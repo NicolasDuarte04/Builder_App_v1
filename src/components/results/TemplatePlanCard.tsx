@@ -13,6 +13,7 @@ import { useCompareStore } from '@/state/compareStore';
 import { fromTemplate } from '@/lib/comparison/adapters';
 import { telemetry, getUserContext } from '@/lib/telemetry';
 import { Brief } from '@/types/brief';
+import { makeLabelResolver } from '@/lib/i18n/labels';
 
 interface TemplatePlanCardProps {
   template: TemplatePlan;
@@ -23,6 +24,10 @@ interface TemplatePlanCardProps {
 
 export function TemplatePlanCard({ template, onUseTemplate, isCompact = false, brief }: TemplatePlanCardProps) {
   const { t, language } = useTranslation();
+  const { fieldLabel, enumLabel } = makeLabelResolver(((key: string, opts?: any) => {
+    const val = t(key as any);
+    return (val === (key as any) && opts?.fallback !== undefined) ? opts.fallback : val;
+  }) as any);
   const compareCount = useCompareStore(s => s.count);
   const isInComparison = useCompareStore(s => s.isInCompare(String(template.id)));
   const isComparisonFull = useCompareStore(s => s.isFull);
@@ -89,7 +94,7 @@ export function TemplatePlanCard({ template, onUseTemplate, isCompact = false, b
         {/* Trust metadata */}
         {template.source?.kind && template.source?.updatedAt && (
           <div className="text-[11px] text-gray-500 dark:text-gray-400" data-testid="plan-trust-meta">
-            {String(t('assistant.trust.source'))}: {template.source.kind} • {String(t('assistant.trust.updated'))}: {formatTrustDate(template.source.updatedAt, language)}
+            {String(t('assistant.trust.source'))}: {enumLabel('sources', String(template.source.kind))} • {String(t('assistant.trust.updated'))}: {formatTrustDate(template.source.updatedAt, language)}
           </div>
         )}
         {/* Price Range */}
@@ -111,7 +116,7 @@ export function TemplatePlanCard({ template, onUseTemplate, isCompact = false, b
             <div className="flex flex-wrap gap-1">
               {template.suggestedCoverages.slice(0, isCompact ? 3 : 4).map((coverage, index) => (
                 <Badge key={index} variant="outline" className="text-xs">
-                  {coverage}
+                  {enumLabel('coverage_types', String(coverage))}
                 </Badge>
               ))}
               {template.suggestedCoverages.length > (isCompact ? 3 : 4) && (

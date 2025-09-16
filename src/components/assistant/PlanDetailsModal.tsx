@@ -9,6 +9,7 @@ import { InsurancePlan } from '../briki-ai-assistant/NewPlanCard';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { useTranslation } from '@/hooks/useTranslation';
+import { makeLabelResolver } from '@/lib/i18n/labels';
 import { formatPrice as fmt, localizedBenefits, localizedName } from '@/lib/formatters';
 
 interface PlanDetailsModalProps {
@@ -22,13 +23,17 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
   // Do not early-return before hooks; React hooks must run consistently across renders.
   // We'll render null at the bottom if there's no plan or the modal is closed.
 
-  const { language } = useTranslation();
+  const { t: intlT, language } = useTranslation();
   const isEN = language === 'en';
-  const t = (k: string) => {
+  const uiT = (k: string) => {
     const EN = { quote: 'Quote', viewPolicy: 'View Policy (PDF)', website: 'See Website', benefits: 'Benefits', policy: 'Policy/Brochure' } as const;
     const ES = { quote: 'Cotizar', viewPolicy: 'Ver Póliza (PDF)', website: 'Ver sitio', benefits: 'Beneficios', policy: 'Póliza/Folleto' } as const;
     return (isEN ? EN : ES)[k as keyof typeof EN];
   };
+  const { enumLabel } = makeLabelResolver(((key: string, opts?: any) => {
+    const val = intlT(key as any);
+    return (val === (key as any) && opts?.fallback !== undefined) ? opts.fallback : val;
+  }) as any);
 
   // Body scroll lock and optional drawer minimization
   // Select from store with stable references to avoid re-running effects on every store change
@@ -148,7 +153,7 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
                   {mode === 'details' ? 'Detalles del Plan' : 'Cotizar Plan'}
                 </span>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {plan.provider} • {plan.category}
+                  {plan.provider} • {enumLabel('categories', String((plan as any).category || ''))}
                 </p>
               </div>
               <button
@@ -191,7 +196,7 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
               {/* Benefits */}
               <div>
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                  {t('benefits')}
+                  {uiT('benefits')}
                 </h4>
                 <div className="space-y-2 max-h-64 overflow-auto pr-1">
                   {localizedBenefits((plan as any).benefits, (plan as any).benefits_en, isEN).map((benefit: string, index: number) => (
@@ -228,7 +233,7 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2"
                       >
-                        <ExternalLink className="w-4 h-4 mr-2" /> {t('quote')}
+                        <ExternalLink className="w-4 h-4 mr-2" /> {uiT('quote')}
                       </a>
                     )}
                     {((plan as any).brochure_link || (plan as any).brochure) && (
@@ -238,7 +243,7 @@ export function PlanDetailsModal({ plan, isOpen, onClose, mode }: PlanDetailsMod
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center rounded-md border border-gray-300 hover:border-blue-300 text-sm px-4 py-2"
                       >
-                        {t('viewPolicy')}
+                        {uiT('viewPolicy')}
                       </a>
                     )}
                   </div>

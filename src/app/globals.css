@@ -40,6 +40,8 @@
     
     /* Layout guardrails */
     --nav-h: 64px;
+    /* Unified app navbar height var for sticky offsets */
+    --app-nav-h: var(--nav-h);
   }
 
   .dark {

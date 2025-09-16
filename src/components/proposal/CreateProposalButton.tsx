@@ -129,9 +129,13 @@ export function CreateProposalButton({
       let stage: string = 'init';
       const { sessionId, userId } = await getUserContext();
       const { brief } = useBriefStore.getState();
-      const requestId = `req-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const requestId = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+        ? crypto.randomUUID()
+        : `req-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       
       // Track proposal generation started
+      // NOTE: Client is the canonical emitter for STARTED/COMPLETED.
+      // Server will only emit intermediate phases (PDF_START, UPLOAD_START, DB_START).
       telemetry.track(telemetry.events.PROPOSAL_GENERATION_STARTED, {
         itemCount: items.length,
         hasBrief: !!brief,
@@ -139,6 +143,9 @@ export function CreateProposalButton({
         userId,
         requestId,
       });
+      if (process.env.NODE_ENV !== 'production') {
+        try { console.log('[Timeline] T0 PROPOSAL_GENERATION_STARTED', { requestId }); } catch {}
+      }
 
       const body = {
         brief: brief || {},
@@ -167,6 +174,7 @@ export function CreateProposalButton({
       const data: { url: string | null; urlKind?: 'signed' | 'public' | 'none' | string; id?: string; pages?: number; bytes?: number; requestId?: string } = await res.json();
 
       const durationMs = typeof startTs === 'number' ? Math.max(0, Math.round(Date.now() - startTs)) : undefined;
+      // Ensure urlKind and hasBrief are always populated; urlKind normalized to signed/public/none/unknown
       telemetry.track(telemetry.events.PROPOSAL_GENERATION_COMPLETED, {
         itemCount: items.length,
         hasBrief: !!brief,
@@ -178,6 +186,9 @@ export function CreateProposalButton({
         userId,
         requestId: data?.requestId || requestId,
       });
+      if (process.env.NODE_ENV !== 'production') {
+        try { console.log('[Timeline] T3 PROPOSAL_GENERATION_COMPLETED', { requestId: data?.requestId || requestId }); } catch {}
+      }
 
       try {
         telemetry.metrics.endTimeToProposalIfStarted();

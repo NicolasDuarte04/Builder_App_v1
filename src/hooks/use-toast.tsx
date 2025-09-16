@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 interface Toast {
   title: string;
@@ -47,6 +47,8 @@ export function toast(t: Toast) {
 // Global ARIA live region for announcing toasts to screen readers
 export function ToastLiveRegion() {
   const [message, setMessage] = useState<string>('');
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const hideTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -56,6 +58,16 @@ export function ToastLiveRegion() {
         const custom = ev as CustomEvent<{ message: string }>;
         const msg = custom?.detail?.message ?? '';
         setMessage(msg);
+        setIsVisible(true);
+        try {
+          if (hideTimerRef.current != null) {
+            clearTimeout(hideTimerRef.current);
+          }
+        } catch {}
+        // Auto-hide visual toast after 3 seconds
+        hideTimerRef.current = (setTimeout(() => {
+          setIsVisible(false);
+        }, 3000) as unknown) as number;
       } catch {}
     };
 
@@ -66,9 +78,21 @@ export function ToastLiveRegion() {
   }, []);
 
   return (
-    <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-      {message}
-    </div>
+    <>
+      {/* Screen reader only region */}
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {message}
+      </div>
+      {/* Minimal visual toast (client-only) */}
+      {isVisible && (
+        <div
+          aria-hidden="true"
+          className="fixed left-1/2 -translate-x-1/2 bottom-4 z-[9999] px-3 py-2 rounded-md shadow-lg bg-neutral-900/85 text-white dark:bg-neutral-900/85 backdrop-blur-sm border border-white/10 max-w-[88vw] text-sm"
+        >
+          {message}
+        </div>
+      )}
+    </>
   );
 }
 

@@ -391,6 +391,8 @@
     "unpin_toast_desc": "{planName} quitado de la comparación",
     "unpin_toast_title": "Desfijado",
     "view_comparison_in_chat": "Ver comparación en el chat",
+    "compare_ready_toast_title": "Listo para comparar",
+    "compare_ready_toast_desc": "Fijaste dos planes. Haz clic en “Comparar seleccionados” para abrir el panel.",
     "price": {
       "converted_label": "Precio convertido (COP/mes)",
       "original_label": "Precio original",
@@ -1008,6 +1010,54 @@
   "chat": {
     "noResults": {
       "notice": "No encontré planes con esos criterios. Puedes intentar aumentar el presupuesto o flexibilizar coberturas."
+    }
+  },
+  "labels": {
+    "fields": {
+      "price": "Precio",
+      "deductibles": "Deducibles",
+      "waiting_times": "Tiempos de espera",
+      "exclusions": "Exclusiones",
+      "source": "Fuente",
+      "updated": "Actualizado"
+    },
+    "enums": {
+      "coverage_types": {
+        "muerte": "Fallecimiento",
+        "renta_diaria": "Renta diaria",
+        "auxilio_funerario": "Auxilio funerario",
+        "asistencia": "Asistencia",
+        "robo": "Robo",
+        "vidrios": "Vidrios",
+        "consulta_medica": "Consulta médica",
+        "hospitalizacion": "Hospitalización",
+        "medicamentos": "Medicamentos",
+        "urgencias": "Urgencias",
+        "invalidez": "Invalidez",
+        "invalidez_total": "Invalidez total",
+        "invalidez_parcial": "Invalidez parcial",
+        "enfermedades_graves": "Enfermedades graves"
+      },
+      "sources": {
+        "catalog": "Catálogo",
+        "template": "Plantilla",
+        "pdf": "PDF",
+        "url": "Sitio web",
+        "text": "Texto"
+      },
+      "categories": {
+        "health": "Salud",
+        "life": "Vida",
+        "auto": "Auto",
+        "home": "Hogar",
+        "travel": "Viaje",
+        "business": "Empresarial",
+        "salud": "Salud",
+        "vida": "Vida",
+        "hogar": "Hogar",
+        "viaje": "Viaje",
+        "empresarial": "Empresarial"
+      }
     }
   }
 } 
