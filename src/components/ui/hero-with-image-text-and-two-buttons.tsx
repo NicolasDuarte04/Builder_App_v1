@@ -5,17 +5,13 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { telemetry } from "@/lib/telemetry";
 import { LeadForm } from "@/components/ui/LeadForm";
-import dynamic from 'next/dynamic';
-import { useState } from 'react';
 
 function Hero() {
   const { t } = useTranslation();
-  const InviteCodeModal = dynamic(() => import('@/components/gate/InviteCodeModal').then(mod => ({ default: mod.InviteCodeModal })), { ssr: false });
-  const [open, setOpen] = useState(false);
 
   const handleGetStarted = () => {
     telemetry.track(telemetry.events.HOME_CTA_GET_STARTED_CLICKED, { source: 'hero' });
-    setOpen(true);
+    window.location.href = '/assistant';
   };
 
   const handleSeeHow = () => {
@@ -62,7 +58,6 @@ function Hero() {
           </div>
         </div>
       </div>
-      <InviteCodeModal open={open} onOpenChange={setOpen} />
     </div>
   );
 }

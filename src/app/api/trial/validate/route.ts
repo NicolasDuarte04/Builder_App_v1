@@ -18,43 +18,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Check if gate is enabled
-  if (!isGateEnabled()) {
-    return NextResponse.json({ error: 'gate_disabled' }, { status: 403 });
-  }
-  
-  // Check if allowlist is configured
-  const allowlist = loadAllowlist();
-  if (allowlist.length === 0) {
-    return NextResponse.json({ error: 'gate_misconfigured' }, { status: 503 });
-  }
-  
-  // Log allowlist count in dev
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[Trial Gate] codes:', allowlist.length);
-  }
-  
-  // Parse request body
-  let body;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: 'invalid_request' }, { status: 400 });
-  }
-  
-  const { code } = body;
-  
-  // Check if code is provided
-  if (!code || typeof code !== 'string') {
-    return NextResponse.json({ error: 'missing_code' }, { status: 400 });
-  }
-  
-  // Validate code
-  if (!isValidTrialCode(code)) {
-    return NextResponse.json({ error: 'invalid_code' }, { status: 403 });
-  }
-  
-  // Generate JWT
+  // Access code requirement has been removed - always allow access
+  // Generate JWT for consistency with existing system
   const jwt = await signTrialJwt();
   
   // Calculate Max-Age from TTL
