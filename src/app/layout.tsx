@@ -10,6 +10,7 @@ import AuthProvider from "@/components/AuthProvider"
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider"
 import ChunkRecovery from "./_components/ChunkRecovery"
 import { ToastLiveRegion } from "../hooks/use-toast"
+import { Analytics } from '@vercel/analytics/react'
 // Removed next-intl provider usage
 
 const inter = Inter({ subsets: ["latin"] })
@@ -77,6 +78,8 @@ export default async function RootLayout({
               </AuthProvider>
             </LanguageProvider>
         </ThemeProvider>
+        {/* Vercel Web Analytics */}
+        <Analytics />
       </body>
     </html>
   )

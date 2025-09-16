@@ -2,14 +2,23 @@
 
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
 import { telemetry } from '@/lib/telemetry';
 
 export function Hero() {
   const { t } = useTranslation();
+  const InviteCodeModal = dynamic(() => import('@/components/gate/InviteCodeModal'), { ssr: false });
+  const gateEnabled = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_TRIAL_GATE_ENABLED === '1';
+  const [open, setOpen] = useState(false);
 
   const handleGetStarted = () => {
     telemetry.track(telemetry.events.HOME_CTA_GET_STARTED_CLICKED, { source: 'hero' });
-    window.location.href = '/assistant';
+    if (gateEnabled) {
+      setOpen(true);
+    } else {
+      window.location.href = '/assistant';
+    }
   };
 
   return (
@@ -65,6 +74,10 @@ export function Hero() {
         {/* Right column - intentionally empty for visual balance */}
         <div className="hidden lg:block" />
       </div>
+      {gateEnabled ? (
+        // Keep modal mounted to preserve input
+        <InviteCodeModal open={open} onOpenChange={setOpen} source="landing" />
+      ) : null}
     </section>
   );
 }

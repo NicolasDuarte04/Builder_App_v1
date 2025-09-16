@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { track } from '@vercel/analytics';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,6 +35,7 @@ import { useIsBriefCollapsed, useUILayoutStore } from '@/state/uiLayoutStore';
 import { useUiPhase } from '@/state/proposal';
 
 export default function AssistantPage() {
+  useEffect(() => { track('assistant_opened'); }, []);
   const router = useRouter();
   const { t } = useTranslation();
   const brief = useProposal((s) => s.brief);

@@ -69,6 +69,16 @@
       "explore_demo": "Explore demo"
     }
   },
+  "gate": {
+    "title": "Enter Invite Code",
+    "placeholder": "Enter your invite code",
+    "submit": "Submit",
+    "error": {
+      "invalid": "Invalid code. Please try again.",
+      "rate": "Too many attempts. Please try again later."
+    },
+    "success": "Access granted! Redirecting..."
+  },
   "nav": {
     "home": "Home",
     "projects": "Projects",
@@ -990,6 +1000,16 @@
     "noResults": {
       "notice": "I couldn't find plans with those constraints. Try increasing budget or relaxing required coverages."
     }
+  },
+  "gate": {
+    "title": "Enter your access code",
+    "placeholder": "Access code",
+    "submit": "Access",
+    "error": {
+      "invalid": "Invalid or expired code.",
+      "rate": "Too many attempts. Try again later."
+    },
+    "success": "Access granted. Redirecting…"
   },
   "labels": {
     "fields": {

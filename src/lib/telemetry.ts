@@ -243,6 +243,11 @@ export interface TelemetryEventMap {
   HOME_CTA_TUTORIAL_CLICKED: SessionContext;
   HOME_SEGMENT_CARD_VIEWED: SessionContext & { card: 'analyze' | 'brief' };
 
+  // Trial gate events
+  INVITE_CODE_VALIDATE_ATTEMPT: { ok: boolean; source: 'landing' | 'access_page'; reason?: 'invalid' | 'expired' | 'over_quota' | 'rate_limited' } & SessionContext;
+  TRIAL_ACCESS_GRANTED: { kind: 'broker_trial'; ttlDays: number } & SessionContext;
+  TRIAL_ACCESS_BLOCKED: { reason: 'invalid' | 'expired' | 'over_quota' | 'rate_limited' | 'missing' | 'invalid_token'; ipHash: string } & SessionContext;
+
   // Proposal events
   // CLIENT-ONLY: Emitted by CreateProposalButton when user initiates generation
   PROPOSAL_GENERATION_STARTED: { itemCount: number; hasBrief: boolean } & SessionContext & { requestId?: string };
@@ -311,6 +316,11 @@ const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly strin
   HOME_CTA_DEMO_CLICKED: ['sessionId', 'userId'],
   HOME_CTA_TUTORIAL_CLICKED: ['sessionId', 'userId'],
   HOME_SEGMENT_CARD_VIEWED: ['sessionId', 'userId', 'card'],
+
+  // Trial gate events
+  INVITE_CODE_VALIDATE_ATTEMPT: ['ok', 'source', 'reason', 'sessionId', 'userId'],
+  TRIAL_ACCESS_GRANTED: ['kind', 'ttlDays', 'sessionId', 'userId'],
+  TRIAL_ACCESS_BLOCKED: ['reason', 'ipHash', 'sessionId', 'userId'],
 
   // Proposal events (CLIENT-ONLY: STARTED/COMPLETED, SERVER-ONLY: PDF_START/UPLOAD_START)
   PROPOSAL_GENERATION_STARTED: ['itemCount', 'hasBrief', 'sessionId', 'userId', 'requestId'],
@@ -383,6 +393,14 @@ const EVENT_ALIASES: Record<string, keyof TelemetryEventMap> = {
   home_cta_tutorial_clicked: 'HOME_CTA_TUTORIAL_CLICKED',
   HOME_SEGMENT_CARD_VIEWED: 'HOME_SEGMENT_CARD_VIEWED',
   home_segment_card_viewed: 'HOME_SEGMENT_CARD_VIEWED',
+
+  // Trial gate events
+  INVITE_CODE_VALIDATE_ATTEMPT: 'INVITE_CODE_VALIDATE_ATTEMPT',
+  invite_code_validate_attempt: 'INVITE_CODE_VALIDATE_ATTEMPT',
+  TRIAL_ACCESS_GRANTED: 'TRIAL_ACCESS_GRANTED',
+  trial_access_granted: 'TRIAL_ACCESS_GRANTED',
+  TRIAL_ACCESS_BLOCKED: 'TRIAL_ACCESS_BLOCKED',
+  trial_access_blocked: 'TRIAL_ACCESS_BLOCKED',
 
   // Proposals
   PROPOSAL_GENERATION_STARTED: 'PROPOSAL_GENERATION_STARTED',

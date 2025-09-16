@@ -49,10 +49,24 @@ export function LeadForm() {
         country: formData.country
       });
 
-      // TODO: Implement actual form submission logic
-      console.log('Form submitted:', formData);
+      // Submit to API
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al enviar el formulario');
+      }
+
+      const result = await response.json();
+      console.log('Lead saved successfully:', result);
       
-      // Show success message or redirect
+      // Show success message
       alert('¡Gracias por tu interés! Te contactaremos pronto.');
       
       // Reset form

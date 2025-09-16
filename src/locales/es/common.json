@@ -69,6 +69,16 @@
       "explore_demo": "Explorar demo"
     }
   },
+  "gate": {
+    "title": "Ingresa el Código de Invitación",
+    "placeholder": "Ingresa tu código de invitación",
+    "submit": "Enviar",
+    "error": {
+      "invalid": "Código inválido. Por favor intenta de nuevo.",
+      "rate": "Demasiados intentos. Por favor intenta más tarde."
+    },
+    "success": "¡Acceso concedido! Redirigiendo..."
+  },
   "nav": {
     "home": "Inicio",
     "projects": "Proyectos",
@@ -1010,6 +1020,23 @@
   "chat": {
     "noResults": {
       "notice": "No encontré planes con esos criterios. Puedes intentar aumentar el presupuesto o flexibilizar coberturas."
+    }
+  },
+  "gate": {
+    "title": "Ingresa tu código de acceso",
+    "description": "Para acceder al asistente de Briki, ingresa tu código de invitación.",
+    "placeholder": "Código de acceso",
+    "submit": "Acceder",
+    "error": {
+      "invalid": "Código inválido o expirado.",
+      "rate": "Demasiados intentos. Intenta más tarde.",
+      "required": "El código de acceso es requerido."
+    },
+    "success": "Acceso concedido. Redirigiendo…",
+    "modal": {
+      "title": "Acceso Exclusivo",
+      "description": "Para acceder al asistente de Briki, ingresa tu código de invitación.",
+      "close": "Cerrar"
     }
   },
   "labels": {
