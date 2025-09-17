@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseBriefFromText } from '@/lib/briefParser';
+import { withPerfTimer } from '@/lib/perf';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,7 +15,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'schema_mismatch' });
     }
 
-    const result = await parseBriefFromText(text, locale);
+    const result = await withPerfTimer('brief.parse', () => parseBriefFromText(text, locale), {
+      telemetryProps: { source: 'text', chars: text.length },
+    });
     return NextResponse.json(result);
   } catch (error: any) {
     console.error('[parse-from-text] error:', error);

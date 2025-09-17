@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { pool, hasDatabaseUrl } from '@/lib/render-db';
 import { normalizeIncludeExclude, normalizeList, normalizeCategory } from '@/lib/category-alias';
 import { getDomainFromRequest } from '@/lib/server/base-url';
 import { writeReport } from '@/lib/observability/reports';
@@ -7,6 +6,7 @@ import { FLAGS } from '@/lib/flags';
 import { normalizePriceToCOP } from '@/lib/currency-normalization';
 import { normalizeCarrier } from '@/lib/catalog/normalize';
 import { createHash } from 'crypto';
+import { telemetry } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
 
@@ -92,7 +92,101 @@ export async function POST(req: Request) {
   // Do NOT filter out quote-only or missing-price plans. The UI handles placeholder display.
 
   let rows: any[] = [];
-  if (pool && hasDatabaseUrl) {
+  // Determine catalog DB env used (RO preferred) without importing the client unless present
+  const catalogRo = process.env.CATALOG_DB_RO_URL;
+  const catalogRw = process.env.CATALOG_DB_URL;
+  const usingEnv = catalogRo ? 'CATALOG_DB_RO_URL' : (catalogRw ? 'CATALOG_DB_URL' : null);
+  const hasCatalogDb = Boolean(usingEnv);
+  let metaInfo: { db: string | null; sch: string | null } = { db: null, sch: null };
+  let catalogTableExists = false;
+  let usedCatalog = false;
+
+  if (hasCatalogDb) {
+    // Import lazily to avoid throwing when envs are missing
+    const { q } = await import('@/lib/db-catalog');
+
+    // Log which env is active in development
+    try { if (process.env.NODE_ENV !== 'production') console.info('[plans_v2/search] using', usingEnv); } catch {}
+
+    // Self-test: verify plans_v2 exists before issuing the main query, and capture db/schema
+    try {
+      const metaRows = await q<{ reg: string | null; db: string | null; sch: string | null }>(
+        `select to_regclass('public.plans_v2') as reg, current_database() as db, current_schema() as sch`
+      );
+      const metaRow = metaRows?.[0] || ({} as any);
+      const reg = metaRow?.reg ?? null;
+      metaInfo = { db: metaRow?.db || null, sch: metaRow?.sch || null };
+      if (!reg) {
+        console.warn('[plans_v2/search:selftest] catalog table missing', {
+          using: usingEnv,
+          db: metaInfo?.db || null,
+          schema: metaInfo?.sch || null,
+          missing: 'public.plans_v2',
+        });
+        const fallbackResp = await buildFallbackResponse({
+          body, includeNorm, excludeNorm, tags, q, limit, country
+        });
+        try {
+          fallbackResp.headers.set('x-catalog-degraded', 'true');
+          fallbackResp.headers.set('x-catalog-source', 'fallback');
+          fallbackResp.headers.set('x-catalog-using', usingEnv || 'none');
+          fallbackResp.headers.set('x-catalog-db', metaInfo?.db || '');
+          fallbackResp.headers.set('x-catalog-schema', metaInfo?.sch || '');
+        } catch {}
+        return fallbackResp;
+      } else {
+        catalogTableExists = true;
+        console.info('[plans_v2/search:selftest] catalog check ok', {
+          using: usingEnv,
+          db: metaInfo?.db || null,
+          schema: metaInfo?.sch || null,
+          plans_v2_exists: true,
+        });
+      }
+    } catch (e: any) {
+      const transientCode = getTransientErrorCode(e);
+      if (transientCode) {
+        try { telemetry.track('catalog.error', { provider: 'render', code: transientCode }); } catch {}
+        await sleep(100 + Math.floor(Math.random() * 101));
+        try {
+          const metaRows2 = await q<{ reg: string | null; db: string | null; sch: string | null }>(
+            `select to_regclass('public.plans_v2') as reg, current_database() as db, current_schema() as sch`
+          );
+          const meta2 = metaRows2?.[0] || ({} as any);
+          const reg2 = meta2?.reg ?? null;
+          if (!reg2) {
+            const fb = await buildFallbackResponse({ body, includeNorm, excludeNorm, tags, q, limit, country });
+            try {
+              fb.headers.set('x-catalog-degraded', 'true');
+              fb.headers.set('x-catalog-source', 'fallback');
+              fb.headers.set('x-catalog-using', usingEnv || 'none');
+              fb.headers.set('x-catalog-db', meta2?.db || '');
+              fb.headers.set('x-catalog-schema', meta2?.sch || '');
+            } catch {}
+            return fb;
+          }
+        } catch (e2: any) {
+          console.warn('[plans_v2/search:selftest] retry failed, using fallback', { using: usingEnv, error: e2?.message || String(e2) });
+          const fallbackResp = await buildFallbackResponse({ body, includeNorm, excludeNorm, tags, q, limit, country });
+          try {
+            fallbackResp.headers.set('x-catalog-degraded', 'true');
+            fallbackResp.headers.set('x-catalog-source', 'fallback');
+            fallbackResp.headers.set('x-catalog-using', usingEnv || 'none');
+          } catch {}
+          return fallbackResp;
+        }
+      } else {
+        console.warn('[plans_v2/search:selftest] catalog connection failed, using fallback', { using: usingEnv, error: e?.message || String(e) });
+        const fallbackResp = await buildFallbackResponse({ body, includeNorm, excludeNorm, tags, q, limit, country });
+        try {
+          fallbackResp.headers.set('x-catalog-degraded', 'true');
+          fallbackResp.headers.set('x-catalog-source', 'fallback');
+          fallbackResp.headers.set('x-catalog-using', usingEnv || 'none');
+        } catch {}
+        return fallbackResp;
+      }
+    }
+
     // Default sort: price ascending (can be overridden via body.sort = 'price_desc' | 'name')
     const sortRaw = (body as any)?.sort || 'price_asc';
     let orderBy = 'base_price ASC';
@@ -108,8 +202,25 @@ export async function POST(req: Request) {
                  LIMIT $${i}`;
     params.push(Math.min(Number(limit) || 20, 100));
 
-    const res = await pool.query(sql, params);
-    rows = res.rows;
+    try {
+      const dbRows = await q<any>(sql, params);
+      rows = dbRows;
+      if (Array.isArray(rows) && rows.length > 0) usedCatalog = true;
+    } catch (e: any) {
+      const transientCode = getTransientErrorCode(e);
+      if (transientCode) {
+        try { telemetry.track('catalog.error', { provider: 'render', code: transientCode }); } catch {}
+        await sleep(100 + Math.floor(Math.random() * 101));
+        try {
+          const dbRows2 = await q<any>(sql, params);
+          rows = dbRows2;
+          if (Array.isArray(rows) && rows.length > 0) usedCatalog = true;
+        } catch {
+          // fall through to fallback
+        }
+      }
+      // else fall through to fallback
+    }
   }
 
   // Add normalized prices (always enabled)
@@ -164,54 +275,7 @@ export async function POST(req: Request) {
 
   // DB-first: query Postgres; only if it yields 0 rows (or DB unavailable), use bundled JSON fallback
   if (!Array.isArray(rows) || rows.length === 0) {
-    try {
-      // Use a bundled import so the dataset is packaged with the serverless function
-      const dataModule: any = await import('../../../../../scripts/etl/dist/plans_v2.json');
-      const data = dataModule?.default || dataModule;
-      const lc = (s: any) => String(s || '').toLowerCase();
-      const includeSet = new Set((includeNorm || []).map((c: string) => lc(c)));
-      const excludeSet = new Set((excludeNorm || []).map((c: string) => lc(c)));
-      let filtered = (Array.isArray(data) ? data : []);
-      if (includeSet.size > 0) {
-        filtered = filtered.filter((r: any) => includeSet.has(lc(r.category)));
-      }
-      if (excludeSet.size > 0) {
-        filtered = filtered.filter((r: any) => !excludeSet.has(lc(r.category)));
-      }
-      if (country) {
-        filtered = filtered.filter((r: any) => lc(r.country) === lc(country));
-      }
-      if (Array.isArray(tags) && tags.length > 0) {
-        const tagSet = new Set(tags.map((t: any) => lc(t)));
-        filtered = filtered.filter((r: any) => Array.isArray(r.tags) && r.tags.some((t: any) => tagSet.has(lc(t))));
-      }
-      if (q && typeof q === 'string' && q.trim()) {
-        const needle = lc(q);
-        filtered = filtered.filter((r: any) => lc(r.name).includes(needle) || lc(r.name_en || '').includes(needle) || lc(r.provider).includes(needle));
-      }
-      let limited = filtered.slice(0, Math.min(Number(limit) || 20, 100));
-      
-      // Add normalized prices to fallback data
-      limited = limited.map((row: any) => {
-        const normalizedPrice = normalizePriceToCOP(
-          row.base_price,
-          row.currency,
-          row.price_period || 'monthly'
-        );
-        
-        return {
-          ...row,
-          normalizedPrice
-        };
-      });
-      
-      try {
-        console.info('[plans_v2/search:fallback]', { includeCategories: includeNorm, country: country || null, count: limited.length, currencyNormEnabled: true });
-      } catch {}
-      rows = limited;
-    } catch (e) {
-      try { console.error('[plans_v2/search:fallback] failed', e); } catch {}
-    }
+    rows = await performJsonFallback({ includeNorm, excludeNorm, country, tags, q, limit });
   }
 
   // Lightweight relevance tweak: boost matches by intent keywords vs plan tags
@@ -258,16 +322,45 @@ export async function POST(req: Request) {
     const resultsHash = createHash('sha1').update(resultsSig).digest('hex').slice(0, 12);
     const runKey = `${searchId}|${resultsHash}`;
 
-    const resp = NextResponse.json(rows, { status: 200 });
+    const isCatalogSuccess = Boolean(usedCatalog && catalogTableExists && safeRows.length > 0);
+    if (isCatalogSuccess) {
+      try {
+        telemetry.track('catalog.success', {
+          using: usingEnv || 'none',
+          db: metaInfo.db,
+          schema: metaInfo.sch,
+          rowCount: safeRows.length,
+        });
+      } catch {}
+    }
+
+    const payload = isCatalogSuccess
+      ? {
+          ok: true,
+          degraded: false,
+          source: 'catalog',
+          items: safeRows,
+          diagnostics: { using: usingEnv || 'none', db: metaInfo.db, schema: metaInfo.sch },
+        }
+      : {
+          ok: true,
+          degraded: true,
+          source: 'fallback',
+          items: safeRows,
+        };
+
+    const resp = NextResponse.json(payload as any, { status: 200 });
     try {
       resp.headers.set('x-price-normalized-count', String(normalizedCount));
       resp.headers.set('x-price-normalized-origin', 'server');
       resp.headers.set('x-price-normalized-runkey', runKey);
       resp.headers.set('x-search-id', searchId);
+      resp.headers.set('x-catalog-source', isCatalogSuccess ? 'catalog' : 'fallback');
+      resp.headers.set('x-catalog-degraded', isCatalogSuccess ? 'false' : 'true');
     } catch {}
     return resp;
   } catch {
-    return NextResponse.json(rows, { status: 200 });
+    return NextResponse.json({ ok: true, degraded: !usedCatalog, source: usedCatalog ? 'catalog' : 'fallback', items: Array.isArray(rows) ? rows : [] }, { status: 200 });
   }
 }
 
@@ -288,4 +381,93 @@ export async function GET(req: Request) {
   return POST(new Request(req.url, { method: 'POST', body: JSON.stringify({ country, includeCategories, excludeCategories, tags, q, provider, minPrice, maxPrice, benefitsContains, sort, limit }) }));
 }
 
+
+
+// Helpers
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+function getTransientErrorCode(e: any): string | null {
+  try {
+    const codeRaw = (e?.code || e?.errno || '').toString().toUpperCase();
+    if (codeRaw === 'ECONNREFUSED') return 'ECONNREFUSED';
+    if (codeRaw === 'ETIMEDOUT' || codeRaw === 'ETIMEOUT') return 'ETIMEDOUT';
+    const msg = (e?.message || e?.toString?.() || '').toString().toLowerCase();
+    if (msg.includes('ssl') && msg.includes('syscall')) return 'SSL_SYSCALL';
+  } catch {}
+  return null;
+}
+async function performJsonFallback(args: {
+  includeNorm: string[];
+  excludeNorm: string[];
+  country?: string;
+  tags: any[];
+  q: string;
+  limit: number;
+}) {
+  const { includeNorm, excludeNorm, country, tags, q, limit } = args;
+  try {
+    const dataModule: any = await import('../../../../../scripts/etl/dist/plans_v2.json');
+    const data = dataModule?.default || dataModule;
+    const lc = (s: any) => String(s || '').toLowerCase();
+    const includeSet = new Set((includeNorm || []).map((c: string) => lc(c)));
+    const excludeSet = new Set((excludeNorm || []).map((c: string) => lc(c)));
+    let filtered = (Array.isArray(data) ? data : []);
+    if (includeSet.size > 0) {
+      filtered = filtered.filter((r: any) => includeSet.has(lc(r.category)));
+    }
+    if (excludeSet.size > 0) {
+      filtered = filtered.filter((r: any) => !excludeSet.has(lc(r.category)));
+    }
+    if (country) {
+      filtered = filtered.filter((r: any) => lc(r.country) === lc(country));
+    }
+    if (Array.isArray(tags) && tags.length > 0) {
+      const tagSet = new Set(tags.map((t: any) => lc(t)));
+      filtered = filtered.filter((r: any) => Array.isArray(r.tags) && r.tags.some((t: any) => tagSet.has(lc(t))));
+    }
+    if (q && typeof q === 'string' && q.trim()) {
+      const needle = lc(q);
+      filtered = filtered.filter((r: any) => lc(r.name).includes(needle) || lc(r.name_en || '').includes(needle) || lc(r.provider).includes(needle));
+    }
+    let limited = filtered.slice(0, Math.min(Number(limit) || 20, 100));
+
+    limited = limited.map((row: any) => {
+      const normalizedPrice = normalizePriceToCOP(
+        row.base_price,
+        row.currency,
+        row.price_period || 'monthly'
+      );
+      return { ...row, normalizedPrice };
+    });
+    try { console.info('[plans_v2/search:fallback]', { includeCategories: includeNorm, country: country || null, count: limited.length, currencyNormEnabled: true }); } catch {}
+    return limited;
+  } catch (e) {
+    try { console.error('[plans_v2/search:fallback] failed', e); } catch {}
+    return [];
+  }
+}
+
+async function buildFallbackResponse(args: any) {
+  const rows = await performJsonFallback(args);
+  try {
+    // lightweight intent scoring
+    const needle = String(args.q || '').toLowerCase();
+    const want = new Set<string>([]);
+    if (/(grua|grúa|asistencia)/.test(needle)) want.add('asistencia vial');
+    if (/(robo|hurto)/.test(needle)) want.add('robo total');
+    if (/(rc|responsabilidad\s*civil)/.test(needle)) want.add('responsabilidad civil');
+    const scored = rows.map((r: any, idx: number) => {
+      const tagsArr = Array.isArray(r.tags) ? r.tags.map((t: any) => String(t).toLowerCase()) : [];
+      let boost = 0; want.forEach((k) => { if (tagsArr.includes(k)) boost += 1; });
+      return { r, s: boost, i: idx };
+    });
+    scored.sort((a, b) => (b.s - a.s) || (a.i - b.i));
+    const ordered = scored.map((x) => x.r);
+    return NextResponse.json({ ok: true, degraded: true, source: 'fallback', items: ordered }, { status: 200 });
+  } catch {
+    return NextResponse.json({ ok: true, degraded: true, source: 'fallback', items: rows }, { status: 200 });
+  }
+}
 

@@ -61,12 +61,34 @@ src/
 - [Next.js Documentation](https://nextjs.org/docs)
 - [TailwindCSS Documentation](https://tailwindcss.com/docs)
 - [TypeScript Documentation](https://www.typescriptlang.org/docs)
+- [Catalog DB on Render – setup & fallback](docs/catalog_render.md)
 
 ## 📝 License
 
 This project is licensed under the MIT License.
 
 <!-- redeploy: 2025-08-08T04:45:19Z -->
+
+## Catalog DB (Render Postgres)
+
+Set `CATALOG_DB_URL` (primary RW) and optionally `CATALOG_DB_RO_URL` (pgbouncer RO). Both should include `?sslmode=require`.
+
+Example `.env.local`:
+
+```
+# Render Primary (RW) – pega aquí tu URL completa, incluye ?sslmode=require
+CATALOG_DB_URL=postgres://user:pass@host:5432/dbname?sslmode=require
+
+# Render PGBouncer (RO) – si tienes; si no, omite o reutiliza el RW para lectura
+CATALOG_DB_RO_URL=postgres://user:pass@host:5432/dbname?sslmode=require
+```
+
+Run migration and check:
+
+```
+npm run db:catalog:migrate
+npm run db:catalog:check
+```
 
 ## ✅ Deploy checklist (server env only)
 

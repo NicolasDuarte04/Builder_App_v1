@@ -66,7 +66,15 @@ export function AnalyzerCore({ plan, onAnalysisComplete, variant = 'panel' }: An
   const [uploadProgress, setUploadProgress] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const primaryFile = useMemo(() => attachedFiles.find(f => f.isPrimary), [attachedFiles]);
-  const isMultiPdfEnabled = FLAGS.multiPdf;
+  const isMultiPdfEnabled = ((): boolean => {
+    try {
+      // Read via public flag alias
+      const envVal = process.env.NEXT_PUBLIC_MULTI_PDF;
+      if (envVal === '1' || (envVal ?? '').toLowerCase() === 'true') return true;
+    } catch {}
+    // fallback disabled by default
+    return false;
+  })();
   const analysisStartRef = useRef<number | null>(null);
   const analysisPrepBullets = useMemo(() => {
     const b = t('upload.analysis_prep.bullets') as any;
@@ -370,6 +378,12 @@ export function AnalyzerCore({ plan, onAnalysisComplete, variant = 'panel' }: An
           setIsAnalyzing(false);
           setUiPhase('welcome');
           setUploadStatus('error');
+          if (process.env.NODE_ENV !== 'production') {
+            try {
+              const { sessionId, userId } = await getUserContext();
+              console.log('[AUDIT] pdf_upload_rejected_413', { limitMB, sessionId, userId });
+            } catch {}
+          }
           return;
         }
         
@@ -415,6 +429,12 @@ export function AnalyzerCore({ plan, onAnalysisComplete, variant = 'panel' }: An
           setIsAnalyzing(false);
           setUiPhase('welcome');
           setUploadStatus('error');
+          if (process.env.NODE_ENV !== 'production') {
+            try {
+              const { sessionId, userId } = await getUserContext();
+              console.log('[AUDIT] pdf_analysis_failed', { status: res.status, errorCode: errorData?.error_code || errorData?.code, sessionId, userId });
+            } catch {}
+          }
           
           // Announce error for screen readers
           window.dispatchEvent(new CustomEvent('briki:announce', {
@@ -458,6 +478,9 @@ export function AnalyzerCore({ plan, onAnalysisComplete, variant = 'panel' }: An
               userId,
             });
           }
+          if (process.env.NODE_ENV !== 'production') {
+            try { console.log('[AUDIT] pdf_analysis_completed', { bytes: primaryFile.file.size, durationMs, pages: (data && typeof data.pages === 'number') ? data.pages : undefined, sessionId, userId }); } catch {}
+          }
           analysisStartRef.current = null;
         } catch {}
         
@@ -499,6 +522,12 @@ export function AnalyzerCore({ plan, onAnalysisComplete, variant = 'panel' }: An
                 } catch {
                   telemetry.track(telemetry.events.BRIEF_PARSED_SUCCESS, { source: 'pdf', fieldsFilled, uploadId });
                 }
+              if (process.env.NODE_ENV !== 'production') {
+                try {
+                  const { sessionId, userId } = await getUserContext();
+                  console.log('[AUDIT] brief_parsed_from_pdf', { uploadId, fieldsFilledCount: fieldsFilled.length, sessionId, userId });
+                } catch {}
+              }
 
                 // Add the PDF to Brief's docRefs
                 const docRef = {
@@ -521,6 +550,9 @@ export function AnalyzerCore({ plan, onAnalysisComplete, variant = 'panel' }: An
               } else {
                 const error = normalizeError({ message: 'schema mismatch' }, 'brief_parsing');
                 telemetry.track(telemetry.events.PARSER_OUTPUT_SCHEMA_MISMATCH, { source: 'pdf', uploadId, ...error });
+              if (process.env.NODE_ENV !== 'production') {
+                try { console.log('[AUDIT] brief_parse_pdf_schema_mismatch', { uploadId }); } catch {}
+              }
               }
             }
           } catch (err) {

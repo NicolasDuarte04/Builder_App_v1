@@ -85,6 +85,7 @@ import { useIsBriefCollapsed, useUILayoutStore } from '@/state/uiLayoutStore';
 import { getFFIncredibleBrief, getFFLongPasteGuard, isNoResultsChatNoticeEnabled } from '@/lib/flags';
 import { useAnalyzerUI } from '@/state/analyzerUI';
 import { formatCurrency } from "@/lib/utils";
+import { pickBriefWhitelist } from '@/lib/briefWhitelist';
 
 // Render-safe telemetry dedupe (module-level) for Assistant UI
 const ASSISTANT_TELEMETRY_KEYS = new Set<string>();
@@ -1024,6 +1025,17 @@ function AIAssistantInterfaceInner({
         userId,
         userAction: action,
       });
+      if (process.env.NODE_ENV !== 'production') {
+        try {
+          console.log('[AUDIT] brief_parse_started', {
+            sessionId,
+            userId,
+            v2Enabled,
+            action,
+            chars: pendingPastedText.length
+          });
+        } catch {}
+      }
 
       // Prepare text for parsing (summarize first if long)
       let textForParsing = pendingPastedText;
@@ -1081,6 +1093,16 @@ function AIAssistantInterfaceInner({
           userId,
           userAction: action,
         });
+        if (process.env.NODE_ENV !== 'production') {
+          try {
+            console.log('[AUDIT] brief_parse_completed', {
+              latencyMs,
+              fieldsFilledCount: fieldsFilled.length,
+              sessionId,
+              userId
+            });
+          } catch {}
+        }
 
         // Keep legacy success metric as well
         telemetry.track(telemetry.events.BRIEF_PARSED_SUCCESS, {
@@ -1111,6 +1133,15 @@ function AIAssistantInterfaceInner({
           userId,
         });
         telemetry.track(telemetry.events.PARSER_OUTPUT_SCHEMA_MISMATCH, { source: 'text', sessionId, userId });
+        if (process.env.NODE_ENV !== 'production') {
+          try {
+            console.log('[AUDIT] brief_parse_failed', {
+              status: res?.status,
+              sessionId,
+              userId
+            });
+          } catch {}
+        }
       }
     } catch (err) {
       console.error('[paste→parse] error:', err);
@@ -1118,6 +1149,14 @@ function AIAssistantInterfaceInner({
         const { sessionId, userId } = await getUserContext();
         telemetry.track(telemetry.events.BRIEF_PARSE_FAILED, { source: 'paste', via_summary: isPendingTextLong === true, userAction: action, sessionId, userId });
         telemetry.track(telemetry.events.PARSER_OUTPUT_SCHEMA_MISMATCH, { source: 'text', sessionId, userId });
+        if (process.env.NODE_ENV !== 'production') {
+          try {
+            console.log('[AUDIT] brief_parse_exception', {
+              hasSessionId: !!sessionId,
+              hasUserId: !!userId
+            });
+          } catch {}
+        }
       } catch {}
     } finally {
       setShowExtractChip(false);
@@ -1200,7 +1239,8 @@ function AIAssistantInterfaceInner({
         ('rawText')
       ) as keyof Brief | undefined;
 
-      store.updateBrief(patch, dirtyField ? { field: dirtyField } : undefined);
+      const whitelistedPatch = pickBriefWhitelist(patch);
+      store.updateBrief(whitelistedPatch, dirtyField ? { field: dirtyField } : undefined);
     } catch (e) {
       console.error('[mergeParsedBriefIntoStore] error:', e);
     }
@@ -1223,8 +1263,6 @@ function AIAssistantInterfaceInner({
       <CategoryFallbackObserver
         appendAssistantMessage={appendAssistantMessage}
       />
-
-      {/* ComparisonObserver removed: comparison flows go to table comparator */}
 
       {/* Layout Mode Toggle hidden per design cleanup */}
       {/* <LayoutModeToggle variant="floating" size="sm" /> */}
@@ -1576,6 +1614,20 @@ function AIAssistantInterfaceInner({
                         const approxTokens = Math.ceil(text.length / 4);
                         const isLong = ffLongPasteGuard && (text.length > charLimit || approxTokens > tokenLimit);
                         setIsPendingTextLong(isLong);
+                        if (process.env.NODE_ENV !== 'production') {
+                          try {
+                            console.log('[AUDIT] paste_chip_shown', {
+                              chars: text.length,
+                              approxTokens,
+                              charLimit,
+                              tokenLimit,
+                              isLong,
+                              ffIncredibleBrief,
+                              ffLongPasteGuard,
+                              isE2E
+                            });
+                          } catch {}
+                        }
                         if (isLong) {
                           // Non-blocking toast to explain summarize-first flow
                           try {
@@ -1637,10 +1689,16 @@ function AIAssistantInterfaceInner({
                           );
 
                           if (hasExistingData) {
+                            if (process.env.NODE_ENV !== 'production') {
+                              try { console.log('[AUDIT] paste_chip_confirm_clicked', { hasExistingData: true }); } catch {}
+                            }
                             setShowReparseDialog(true);
                             return;
                           }
 
+                          if (process.env.NODE_ENV !== 'production') {
+                            try { console.log('[AUDIT] paste_chip_confirm_clicked', { hasExistingData: false }); } catch {}
+                          }
                           await handleParseBrief('merge');
                         }}
                         className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1653,6 +1711,9 @@ function AIAssistantInterfaceInner({
                           window.dispatchEvent(new CustomEvent('briki:open-brief'));
                           setShowExtractChip(false);
                           setPendingPastedText("");
+                          if (process.env.NODE_ENV !== 'production') {
+                            try { console.log('[AUDIT] paste_chip_edit_clicked'); } catch {}
+                          }
                         }}
                         data-testid="extract-brief-chip-edit"
                         className="px-3 py-1 text-xs border border-blue-200 dark:border-blue-700 rounded hover:bg-blue-100 dark:hover:bg-blue-800/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1664,6 +1725,9 @@ function AIAssistantInterfaceInner({
                         onClick={() => {
                           setShowExtractChip(false);
                           setPendingPastedText("");
+                          if (process.env.NODE_ENV !== 'production') {
+                            try { console.log('[AUDIT] paste_chip_dismiss_clicked'); } catch {}
+                          }
                         }}
                         data-testid="extract-brief-chip-dismiss"
                         className="p-1 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded-full"

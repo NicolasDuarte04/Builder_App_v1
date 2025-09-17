@@ -45,7 +45,7 @@ export const MessageRenderer = React.memo(function MessageRenderer({
     // Try strict JSON
     try { return { json: JSON.parse(raw), source: 'json' as any }; } catch {}
     // Try fenced JSON at the end of the message
-    const m = raw.match(/```(?:json)?\s*\n([\s\S]*?)\n```/);
+    const m = raw.match(/```(?:json)?\s*\n([\s\S]*?)\s*```/);
     if (m && m[1]) {
       try { return { json: JSON.parse(m[1]), source: 'fenced' as any }; } catch {}
     }
@@ -92,6 +92,27 @@ export const MessageRenderer = React.memo(function MessageRenderer({
       });
     }
   }, [parsed, showPanelWithPlans, isDualPanelMode, t]);
+
+  // Side-effect: trigger right panel when analysis results arrive (must not be conditional)
+  useEffect(() => {
+    if (!parsed.isJSON) return;
+    const analysis = parsed.payload?.analysis;
+    if (!analysis) return;
+    try {
+      const layoutMode = (typeof window !== 'undefined' ? (require('@/state/ui') as any).useUI.getState().layoutMode : undefined);
+      const isPortalMode = layoutMode === 'analysis_portal_prep' || layoutMode === 'analysis_running' || layoutMode === 'analysis_results';
+      if (isDualPanelMode && !isPortalMode) {
+        showPanelWithPlans({
+          title: 'Análisis de Póliza',
+          plans: [],
+          analysis,
+          analysisType: 'policy_analysis'
+        });
+      }
+    } catch (err) {
+      console.warn('[MR] analysis_results side-effect failed', err);
+    }
+  }, [parsed.isJSON, parsed.payload?.analysis, isDualPanelMode, showPanelWithPlans]);
 
   // Determine if this is a blank meaningless message.
   const isBlankText = !parsed.isJSON && !String(content || '').trim();
@@ -239,21 +260,6 @@ export const MessageRenderer = React.memo(function MessageRenderer({
 
   // Handle analysis results
   if (role === 'assistant' && parsed.isJSON && parsed.payload?.type === 'analysis_results' && parsed.payload?.analysis) {
-    // Trigger right panel with analysis results
-    useEffect(() => {
-      const lm = (typeof window !== 'undefined' ? (window as any) : null) ? undefined : undefined;
-      const layoutMode = (typeof window !== 'undefined' ? (require('@/state/ui') as any).useUI.getState().layoutMode : undefined);
-      const isPortalMode = layoutMode === 'analysis_portal_prep' || layoutMode === 'analysis_running' || layoutMode === 'analysis_results';
-      if (isDualPanelMode && parsed.payload?.analysis && !isPortalMode) {
-        showPanelWithPlans({
-          title: 'Análisis de Póliza',
-          plans: [], // Empty plans array for analysis
-          analysis: parsed.payload.analysis,
-          analysisType: 'policy_analysis'
-        });
-      }
-    }, [parsed.payload?.analysis, isDualPanelMode, showPanelWithPlans]);
-
     return (
       <div className="space-y-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
         <div className="flex items-start space-x-3">

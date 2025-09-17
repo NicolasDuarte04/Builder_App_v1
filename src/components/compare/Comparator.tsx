@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { CheckCircle2, AlertCircle, XCircle, X } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -11,6 +11,8 @@ import { normalizeCoverage } from '@/lib/coveragesMap';
 import { telemetry, getUserContext } from '@/lib/telemetry';
 import { useCompareStore } from '@/state/compareStore';
 import { makeLabelResolver } from '@/lib/i18n/labels';
+import { formatZoned } from '@/lib/datetime';
+import './Comparator.css';
 
 interface ComparatorProps {
   brief?: Brief | null;
@@ -41,6 +43,8 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
   const hasTrackedOpenRef = useRef(false);
   const hasTrackedDiffsRef = useRef(false);
   const hasTrackedReasoningRef = useRef(false);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const [isHeaderStuck, setIsHeaderStuck] = useState(false);
 
   // Removed COMPARATOR_OPENED emission here to avoid duplicates; handled by open/scroll triggers.
 
@@ -94,6 +98,37 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
     }
   }, [reasoning, hasNonCatalogSource]);
 
+  // Detect scroll to toggle subtle shadow on header (works with nearest scroll container)
+  useEffect(() => {
+    const getScrollParent = (node: HTMLElement | null): HTMLElement | Window => {
+      let el: HTMLElement | null = node?.parentElement || null;
+      const scrollRegex = /(auto|scroll)/i;
+      while (el) {
+        const style = window.getComputedStyle(el);
+        if (scrollRegex.test(style.overflowY) || scrollRegex.test(style.overflow)) {
+          return el;
+        }
+        el = el.parentElement;
+      }
+      return window;
+    };
+
+    const target = sectionRef.current;
+    if (!target) return;
+    const sp = getScrollParent(target);
+    const readScrollTop = () => (sp instanceof Window ? window.scrollY : (sp as HTMLElement).scrollTop || 0);
+    const onScroll = () => setIsHeaderStuck(readScrollTop() > 0);
+    // Initialize state
+    onScroll();
+    if (sp instanceof Window) {
+      window.addEventListener('scroll', onScroll, { passive: true } as any);
+      return () => window.removeEventListener('scroll', onScroll as any);
+    } else {
+      (sp as HTMLElement).addEventListener('scroll', onScroll, { passive: true } as any);
+      return () => (sp as HTMLElement).removeEventListener('scroll', onScroll as any);
+    }
+  }, []);
+
   // Helper to check coverage status
   const getCoverageStatus = (planCoverages: string[], coverage: string): 'ok' | 'partial' | 'miss' => {
     const normalizedCoverage = normalizeCoverage(coverage);
@@ -113,14 +148,10 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
     return enumLabel('sources', source.kind);
   };
 
-  // Format date
+  // Format date (Bogotá TZ with short zone)
   const formatDate = (date?: string) => {
     if (!date) return '—';
-    try {
-      return new Date(date).toLocaleDateString(locale === 'es' ? 'es-CO' : 'en-US');
-    } catch {
-      return '—';
-    }
+    return formatZoned(date, locale);
   };
 
   // Key coverages to show (from brief or defaults)
@@ -133,16 +164,17 @@ export function Comparator({ brief, locale = 'es' }: ComparatorProps) {
       className="w-full rounded-lg border bg-card p-6 mb-4"
       style={{ zIndex: 1, position: 'relative' }}
       data-testid="comparator"
+      ref={sectionRef}
     >
       <h2 className="text-lg font-semibold mb-4">{t('comparator.header')}</h2>
       
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[600px]">
+        <table className={cn('w-full min-w-[600px] comparator-table', isHeaderStuck && 'comparator-header--scrolled')}>
           <thead>
             <tr>
-              <th className="text-left font-medium p-2 w-40"></th>
+              <th className="text-left font-medium p-2 w-40 sticky-th"></th>
               {items.slice(0, 3).map((plan) => (
-                <th key={plan.id} className="text-left p-2 min-w-[200px]">
+                <th key={plan.id} className="text-left p-2 min-w-[200px] sticky-th">
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="font-semibold">{plan.name || 'Plan sin nombre'}</div>

@@ -8,7 +8,9 @@ const FLAGS = {
   TRUST_METADATA: 'enable_trust_metadata',
   // Public flags
   TEMPLATES_FALLBACK: 'enable_templates_fallback',
-  NO_RESULTS_CHAT_NOTICE: 'enable_no_results_chat_notice'
+  NO_RESULTS_CHAT_NOTICE: 'enable_no_results_chat_notice',
+  // Analyzer features
+  MULTI_PDF: 'multi_pdf'
 } as const;
 
 type FeatureFlag = typeof FLAGS[keyof typeof FLAGS];

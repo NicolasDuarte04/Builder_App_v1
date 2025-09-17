@@ -1,32 +1,37 @@
 import { NextResponse } from 'next/server';
-import { pool, hasDatabaseUrl } from '@/lib/render-db';
-import { normalizeIncludeExclude, normalizeCategory } from '@/lib/category-alias';
 
 export const runtime = 'nodejs';
 
-export async function GET() {
-  const ok = !!pool && hasDatabaseUrl;
-  let plansCount: number | null = null;
-  let datasourceDetected = 'unknown';
-  let categories: string[] = [];
-
-  if (pool) {
-    try {
-      const res = await pool.query('SELECT COUNT(*)::int AS c FROM public.plans_v2');
-      plansCount = res.rows[0]?.c ?? null;
-      datasourceDetected = 'plans_v2';
-      const cats = await pool.query('SELECT DISTINCT category FROM public.plans_v2 ORDER BY category');
-      categories = cats.rows.map((r: any) => r.category);
-    } catch {
-      // ignore
-    }
+export async function GET(req: Request) {
+  const hasCatalogEnv = Boolean(process.env.CATALOG_DB_RO_URL || process.env.CATALOG_DB_URL);
+  if (!hasCatalogEnv) {
+    return NextResponse.json({ exists: false, count: 0 });
   }
 
-  const aliasMap = {
-    educacion: 'educativa',
-  };
+  try {
+    const { q } = await import('@/lib/db-catalog');
+    const url = new URL(req.url);
+    const wantCount = url.searchParams.get('count') === '1';
 
-  return NextResponse.json({ ok, datasourceDetected, plansCount, categories, aliasMap });
+    const meta = await q<{ reg: string | null }>(
+      `select to_regclass('public.plans_v2') as reg`
+    );
+    const reg = meta?.[0]?.reg ?? null;
+    if (!reg) {
+      return NextResponse.json({ exists: false, count: 0 });
+    }
+
+    if (wantCount) {
+      const rows = await q<{ count: number }>(
+        `SELECT COUNT(*)::int AS count FROM public.plans_v2`
+      );
+      const count = Number(rows?.[0]?.count ?? 0);
+      return NextResponse.json({ exists: true, count });
+    }
+
+    return NextResponse.json({ exists: true, count: 0 });
+  } catch {
+    return NextResponse.json({ exists: false, count: 0 });
+  }
 }
-
 

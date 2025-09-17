@@ -22,6 +22,7 @@ export async function searchPlans(opts: {
   const res = await fetch(url, { method: 'POST', body: JSON.stringify(body) });
   if (!res.ok) throw new Error(`plans fetch failed: ${res.status}`);
   const data = await res.json();
-  console.info('[plans-client:browser] response', { count: Array.isArray(data) ? data.length : data?.length ?? 0 });
-  return data;
+  const items = Array.isArray(data) ? data : (Array.isArray((data as any)?.items) ? (data as any).items : []);
+  console.info('[plans-client:browser] response', { count: items.length });
+  return items;
 }

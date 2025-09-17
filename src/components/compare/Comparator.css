@@ -1,0 +1,23 @@
+.comparator-table thead th.sticky-th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-card, hsl(var(--card)));
+  /* Preserve layout aesthetics */
+  /* Add a subtle separator by default */
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Subtle shadow only when scrolled */
+.comparator-header--scrolled thead th.sticky-th {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Respect prefers-reduced-motion (no animated shadow changes) */
+@media (prefers-reduced-motion: reduce) {
+  .comparator-header--scrolled thead th.sticky-th {
+    transition: none;
+  }
+}
+
+

@@ -15,15 +15,19 @@ import { setManualOverride } from '@/components/assistant/AIAssistantInterface';
 import { useTranslation } from '@/hooks/useTranslation';
 import { presetsFor } from '@/lib/coverage-presets';
 import { telemetry, getUserContext } from '@/lib/telemetry';
+import { formatZoned } from '@/lib/datetime';
 import { useUiPhase } from '@/state/proposal';
 import { useCompareStore } from '@/state/compareStore';
 import { Check, Loader2, AlertTriangle, X, Plus, FileText, Eye, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CURRENCY_RATES } from '@/lib/currency-normalization';
 import { normalizeCoverage } from '@/lib/coveragesMap';
 import { useShallow } from 'zustand/react/shallow';
 import { getFFCategoryChooser } from '@/lib/flags';
 import { CategoryChooser } from './CategoryChooser';
+import { validateAndNormalizeBrief } from '@/lib/validate/brief';
+import AuditChips from '@/components/brief/AuditChips';
 
 // Helper para emitir BRIEF_FIELDS_UPDATED desde UI (debounced, dev-safe)
 let lastEmissionTime = 0;
@@ -54,6 +58,8 @@ interface BriefPanelProps {
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   collapseMode?: 'inplace' | 'window';
+  readOnly?: boolean;
+  testState?: 'empty' | 'loading' | 'error' | null;
 }
 
 const CATEGORY_OPTIONS = [
@@ -66,7 +72,7 @@ const CATEGORY_OPTIONS = [
 ] as const;
 
 
-export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, collapseMode = 'window' }: BriefPanelProps) {
+export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, collapseMode = 'window', readOnly = false, testState = null }: BriefPanelProps) {
   const [showCategoryChooser, setShowCategoryChooser] = useState(false);
   const { t, language } = useTranslation();
   const { setBriefCollapsed } = useUILayoutStore(
@@ -156,6 +162,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
 
   // Memoized handlers to prevent re-creation and loops
   const handleCategoryChange = useCallback((value: string) => {
+    if (readOnly) return;
     initializeBrief();
     const label = CATEGORY_OPTIONS.find(o => o.value === value)?.label;
     if (!label || brief?.category === label) return;
@@ -163,9 +170,10 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
     
     // Emit BRIEF_FIELDS_UPDATED from UI layer
     setTimeout(() => emitFieldsUpdated(telemetry, getBriefFieldCounts).catch(() => {}), 10);
-  }, [brief?.category, initializeBrief, updateBrief, getBriefFieldCounts]);
+  }, [brief?.category, initializeBrief, updateBrief, getBriefFieldCounts, readOnly]);
 
   const handleBudgetChange = useCallback((value: string) => {
+    if (readOnly) return;
     setBudgetInput(value);
     const raw = value === '' ? null : Number(value);
     const parsed = typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
@@ -189,9 +197,10 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
 
     // Emit BRIEF_FIELDS_UPDATED from UI layer
     setTimeout(() => emitFieldsUpdated(telemetry, getBriefFieldCounts).catch(() => {}), 10);
-  }, [budgetCurrency, maxBudgetCop, initializeBrief, updateBrief, getBriefFieldCounts]);
+  }, [budgetCurrency, maxBudgetCop, initializeBrief, updateBrief, getBriefFieldCounts, readOnly]);
 
   const handleCurrencyChange = useCallback((newCurrency: 'COP'|'USD') => {
+    if (readOnly) return;
     if (newCurrency === budgetCurrency) return;
     initializeBrief();
     updateBrief({ budgetCurrency: newCurrency }, { field: 'budgetCurrency' });
@@ -205,9 +214,10 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
         setBudgetInput(String(Math.round(maxBudgetCop)));
       }
     }
-  }, [budgetCurrency, initializeBrief, updateBrief, maxBudgetCop]);
+  }, [budgetCurrency, initializeBrief, updateBrief, maxBudgetCop, readOnly]);
 
   const handleClientPersonaChange = useCallback((value: string) => {
+    if (readOnly) return;
     // Only update if value actually changed
     if (value === (clientPersona ?? '')) return;
     
@@ -216,9 +226,10 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
     
     // Emit BRIEF_FIELDS_UPDATED from UI layer
     setTimeout(() => emitFieldsUpdated(telemetry, getBriefFieldCounts).catch(() => {}), 10);
-  }, [clientPersona, initializeBrief, updateBrief, getBriefFieldCounts]);
+  }, [clientPersona, initializeBrief, updateBrief, getBriefFieldCounts, readOnly]);
 
   const handleNotesChange = useCallback((value: string) => {
+    if (readOnly) return;
     // Only update if value actually changed
     if (value === (notes ?? '')) return;
     
@@ -227,10 +238,11 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
     
     // Emit BRIEF_FIELDS_UPDATED from UI layer
     setTimeout(() => emitFieldsUpdated(telemetry, getBriefFieldCounts).catch(() => {}), 10);
-  }, [notes, initializeBrief, updateBrief, getBriefFieldCounts]);
+  }, [notes, initializeBrief, updateBrief, getBriefFieldCounts, readOnly]);
 
   // Memoized coverage handlers
   const addCoverage = useCallback((coverage: string) => {
+    if (readOnly) return;
     if (!coverage.trim()) return;
     
     initializeBrief();
@@ -248,9 +260,10 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
     }
     
     setNewCoverage('');
-  }, [mustHaveCoverages, initializeBrief, updateBrief, getBriefFieldCounts]);
+  }, [mustHaveCoverages, initializeBrief, updateBrief, getBriefFieldCounts, readOnly]);
 
   const toggleCoverage = useCallback((coverage: string) => {
+    if (readOnly) return;
     const trimmedCoverage = normalizeCoverage(coverage);
     const currentCoverages = mustHaveCoverages || [];
     const existingIndex = currentCoverages.findIndex(c => c.toLowerCase() === trimmedCoverage);
@@ -261,9 +274,10 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
     initializeBrief();
     updateBrief({ mustHaveCoverages: updatedCoverages }, { field: 'mustHaveCoverages' });
     setTimeout(() => emitFieldsUpdated(telemetry, getBriefFieldCounts).catch(() => {}), 10);
-  }, [mustHaveCoverages, initializeBrief, updateBrief, getBriefFieldCounts]);
+  }, [mustHaveCoverages, initializeBrief, updateBrief, getBriefFieldCounts, readOnly]);
 
   const removeCoverage = useCallback((index: number) => {
+    if (readOnly) return;
     if (!mustHaveCoverages) return;
     
     const updatedCoverages = mustHaveCoverages.filter((_, i) => i !== index);
@@ -273,10 +287,11 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
     
     // Emit BRIEF_FIELDS_UPDATED from UI layer
     setTimeout(() => emitFieldsUpdated(telemetry, getBriefFieldCounts).catch(() => {}), 10);
-  }, [mustHaveCoverages, updateBrief, getBriefFieldCounts]);
+  }, [mustHaveCoverages, updateBrief, getBriefFieldCounts, readOnly]);
 
   // Memoized pill handlers
   const handleQuickPillClick = useCallback(async (coverage: string) => {
+    if (readOnly) return;
     toggleCoverage(coverage);
     
     // Track telemetry
@@ -287,7 +302,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
       sessionId,
       userId
     });
-  }, [toggleCoverage, category]);
+  }, [toggleCoverage, category, readOnly]);
 
   const handlePillKeyDown = useCallback((e: KeyboardEvent<HTMLButtonElement>, coverage: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -324,6 +339,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
   }, [addCoverage, newCoverage]);
 
   const handleApplyToggle = useCallback((checked: boolean) => {
+    if (readOnly) return;
     if (!brief) return;
     
     // Only update if value actually changed
@@ -333,7 +349,20 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
     if (checked) {
       applyBrief();
     }
-  }, [brief, isApplied, updateBrief, applyBrief]);
+  }, [brief, isApplied, updateBrief, applyBrief, readOnly]);
+
+  // Global event: open category chooser
+  useEffect(() => {
+    const onOpen = () => setShowCategoryChooser(true);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('briki:open-category-chooser', onOpen);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('briki:open-category-chooser', onOpen);
+      }
+    };
+  }, []);
 
   // Memoized document handlers
   const removeDocument = useCallback((docRef: string) => {
@@ -348,6 +377,20 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
     console.log('Preview document:', docRef);
   }, []);
 
+  // Derived visual states (empty/loading/error) with optional test override
+  const fieldCounts = getBriefFieldCounts();
+  const computedEmpty = (!brief || fieldCounts.fieldsFilled === 0);
+  const showLoading = testState === 'loading';
+  const showError = testState === 'error';
+  const showEmpty = testState === 'empty' || (!showLoading && !showError && computedEmpty);
+  const describedById = showError
+    ? 'brief-status-error'
+    : showLoading
+      ? 'brief-status-loading'
+      : showEmpty
+        ? 'brief-status-empty'
+        : undefined;
+
   // Autosave status badge
   const AutosaveBadge = () => {
     if (authRequired) {
@@ -359,10 +402,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
       if (isSaving) return t('brief.badge.saving') as string;
       if (saving === 'error') return t('brief.badge.error') as string;
       if (lastSavedAt && !isDirty) {
-        const savedTime = new Date(lastSavedAt).toLocaleTimeString(language, {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+        const savedTime = formatZoned(lastSavedAt, language);
         return `${t('brief.badge.saved') as string} ${savedTime}`;
       }
       return '';
@@ -397,10 +437,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
     }
     
     if (lastSavedAt && !isDirty) {
-      const savedTime = new Date(lastSavedAt).toLocaleTimeString(language, {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const savedTime = formatZoned(lastSavedAt, language);
       return (
         <Badge variant="secondary" className="gap-1" data-testid="autosave-badge">
           <Check className="h-3 w-3" />
@@ -421,6 +458,9 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
             <Badge variant="secondary" data-testid="brief-source-chip-paste">
               {t('brief.source.paste') as any}
             </Badge>
+          )}
+          {process.env.NODE_ENV !== 'production' && brief?.source === 'paste' && (
+            (() => { try { console.log('[AUDIT] brief_source_chip_render', { source: brief?.source, hasDocRefs: Array.isArray(brief?.docRefs) && brief!.docRefs!.length > 0 }); } catch {} return null; })()
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -466,14 +506,39 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
       >
       {(collapseMode === 'inplace' || !isCollapsed) && (
         <CardContent className="p-5 sm:p-6 pt-0 space-y-4">
+        {/* Audit Chips */}
+        <AuditChips 
+          brief={brief || undefined}
+          result={useMemo(() => validateAndNormalizeBrief(brief || {} as any), [brief])}
+        />
+        {/* Visual States */}
+        {showLoading && (
+          <div id="brief-status-loading" role="status" aria-busy="true" data-testid="brief-loading-state" className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>{t('brief.state.loading') as any || 'Cargando…'}</span>
+          </div>
+        )}
+        {showError && (
+          <div id="brief-status-error" role="alert" data-testid="brief-error-state" className="flex items-center gap-2 p-3 border rounded-lg bg-destructive/10 text-destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <span>{t('brief.state.error') as any || 'Ocurrió un error'}</span>
+          </div>
+        )}
+        {showEmpty && (
+          <div id="brief-status-empty" data-testid="brief-empty-state" className="p-3 border rounded-lg bg-muted/20">
+            <p className="text-sm text-muted-foreground">{t('brief.state.empty') as any || 'Completa los campos para empezar.'}</p>
+          </div>
+        )}
+
         {/* Category Selection */}
         <div className="space-y-2">
           <Label htmlFor="category">{t('brief.category_label') as any}</Label>
           <Select
             value={categoryKey || ''}
-            onValueChange={handleCategoryChange}
+            onValueChange={readOnly ? () => {} : handleCategoryChange}
+            disabled={readOnly}
           >
-            <SelectTrigger id="category" data-testid="brief-category-select">
+            <SelectTrigger id="category" data-testid="brief-category-select" disabled={readOnly} aria-describedby={describedById}>
               <SelectValue placeholder={t('brief.select_category') as any} />
             </SelectTrigger>
             <SelectContent>
@@ -497,6 +562,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
                 size="sm"
                 className="h-7 px-2 text-xs"
                 onClick={() => handleCurrencyChange('COP')}
+                disabled={readOnly}
                 aria-pressed={budgetCurrency === 'COP'}
               >
                 COP
@@ -507,6 +573,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
                 size="sm"
                 className="h-7 px-2 text-xs"
                 onClick={() => handleCurrencyChange('USD')}
+                disabled={readOnly}
                 aria-pressed={budgetCurrency === 'USD'}
               >
                 USD
@@ -523,6 +590,8 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
             }
             value={budgetInput}
             onChange={(e) => handleBudgetChange(e.target.value)}
+            disabled={readOnly}
+            aria-describedby={describedById}
             data-testid="brief-budget-input"
           />
           <p className="text-xs text-muted-foreground">
@@ -547,6 +616,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
                   <button
                     type="button"
                     onClick={() => removeCoverage(index)}
+                disabled={readOnly}
                     className="ml-1 hover:bg-muted rounded-full p-0.5"
                     aria-label={`Eliminar ${coverage}`}
                   >
@@ -561,17 +631,20 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
           <div className="flex gap-2">
             <Input
               ref={newCoverageInputRef}
+              id="coverageInput"
               placeholder={t('brief.add_coverage_placeholder') as any}
               value={newCoverage}
               onChange={(e) => setNewCoverage(e.target.value)}
               onKeyPress={handleNewCoverageKeyPress}
               className="flex-1"
+              disabled={readOnly}
+              aria-describedby={describedById}
             />
             <Button
               type="button"
               size="sm"
               onClick={() => addCoverage(newCoverage)}
-              disabled={!newCoverage.trim()}
+              disabled={!newCoverage.trim() || readOnly}
               aria-label={t('brief.add_coverage') as any}
             >
               <Plus className="h-4 w-4" />
@@ -603,8 +676,10 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
                           className={cn(
                             "px-2 py-1 text-xs border rounded-full transition-colors",
                             "hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                            isSelected && "bg-muted"
+                            isSelected && "bg-muted",
+                            readOnly && "opacity-50 cursor-not-allowed"
                           )}
+                          disabled={readOnly}
                           aria-pressed={isSelected}
                           aria-label={`${t('brief.add_coverage') as any} ${coverage}`}
                         >
@@ -627,6 +702,8 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
             placeholder={t('brief.persona_placeholder') as any}
             value={brief?.clientPersona ?? ''}
             onChange={(e) => handleClientPersonaChange(e.target.value)}
+            disabled={readOnly}
+            aria-describedby={describedById}
             data-testid="brief-persona-input"
           />
           <p className="text-xs text-muted-foreground">
@@ -643,6 +720,8 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
             value={brief?.notes ?? ''}
             onChange={(e) => handleNotesChange(e.target.value)}
             rows={3}
+            disabled={readOnly}
+            aria-describedby={describedById}
             data-testid="brief-notes-input"
           />
         </div>
@@ -652,6 +731,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
           <Button
             type="button"
             onClick={async () => {
+              if (readOnly) return;
               // Initialize brief if it doesn't exist
               initializeBrief();
 
@@ -700,7 +780,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
               window.dispatchEvent(new CustomEvent('briki:search-plans'));
             }}
             className="w-full"
-            disabled={!category && !getFFCategoryChooser({ sessionId: brief?.sessionId || '', userId: brief?.userId || '' })}
+            disabled={readOnly || (!category && !getFFCategoryChooser({ sessionId: brief?.sessionId || '', userId: brief?.userId || '' }))}
             data-testid="brief-search-button"
           >
             {t('brief.search') as any}
@@ -784,6 +864,8 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
             id="apply-toggle"
             checked={isApplied || false}
             onCheckedChange={handleApplyToggle}
+            disabled={readOnly}
+            aria-describedby={describedById}
             aria-label={t('brief.apply_to_assistant') as any}
           />
         </div>
@@ -823,6 +905,7 @@ export function BriefPanel({ className, isCollapsed = false, onToggleCollapse, c
                       size="sm"
                       onClick={() => removeDocument(docRef.ref)}
                       className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      disabled={readOnly}
                       aria-label={`${t('brief.docs.delete') as any} ${docRef.title}`}
                       title={t('brief.docs.delete') as any}
                     >

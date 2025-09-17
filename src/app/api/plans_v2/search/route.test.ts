@@ -23,8 +23,9 @@ describe('plans_v2/search normalization', () => {
     const req = new Request('http://localhost/api/plans_v2/search', { method: 'POST', body: JSON.stringify(body) });
     const res: any = await POST(req);
     const json = await res.json();
-    expect(Array.isArray(json)).toBe(true);
-    expect(json[0].normalizedPrice).toEqual(expect.objectContaining({ amountCOPMonthly: 50000, originalCurrency: 'USD' }));
+    const items = Array.isArray(json) ? json : (Array.isArray(json?.items) ? json.items : []);
+    expect(Array.isArray(items)).toBe(true);
+    expect(items[0].normalizedPrice).toEqual(expect.objectContaining({ amountCOPMonthly: 50000, originalCurrency: 'USD' }));
   });
 });
 

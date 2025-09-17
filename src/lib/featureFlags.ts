@@ -14,6 +14,13 @@ export const ENABLE_PDF_VERIFY: boolean =
 export const ENABLE_BRC_PORTAL: boolean =
   typeof process !== "undefined" &&
   typeof process.env !== "undefined" &&
+  String(process.env.NEXT_PUBLIC_ENABLE_BRC_PORTAL || '').toLowerCase() === 'true';
+
+// UI-only proposal feature (client)
+export const ENABLE_PROPOSAL: boolean =
+  typeof process !== "undefined" &&
+  typeof process.env !== "undefined" &&
+  String(process.env.NEXT_PUBLIC_ENABLE_PROPOSAL || '').toLowerCase() === 'true';
   process.env.NEXT_PUBLIC_BRC_PORTAL_ENABLED === "true";
 
 // Debug flag for portal development

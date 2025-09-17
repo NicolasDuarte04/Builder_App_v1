@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Brief } from "@/types/brief";
 import { ComparedPlan, TemplatePlan } from "@/types/compare";
-import { telemetry, getUserContext } from "@/lib/telemetry";
+import { telemetry, getUserContext, normalizeError } from "@/lib/telemetry";
 import { backoff } from "@/lib/net/backoff";
 
 type SavingState = 'idle' | 'saving' | 'error';
@@ -68,7 +68,9 @@ interface BriefStoreState {
   
   // step-3 hooks (stubs for now)
   loadFromServer: (userId: string, sessionId: string) => Promise<void>;
-  saveNow: () => Promise<void>;
+  // Save with options (e.g., noBackoff for immediate UI flows)
+  // Returns true on success (or if skipped due to authRequired), false on failure
+  saveNow: (opts?: { noBackoff?: boolean; fieldName?: keyof Brief; stage?: string }) => Promise<boolean>;
 }
 
 // Debounce timer management
@@ -192,7 +194,11 @@ export const useBriefStore = create<BriefStoreWithDerived>()(
           // Set new timer
           const timer = setTimeout(() => {
             saveTimers.delete(sessionId);
-            get().saveNow().catch(console.error);
+            // Telemetry: autosave enqueued
+            getUserContext().then(({ sessionId, userId }) => {
+              telemetry.track('brief.autosave.enqueued', { field: opts?.field || 'unknown', sessionId, userId });
+            }).catch(() => {});
+            get().saveNow({ fieldName: opts?.field }).catch(() => {});
           }, 700);
 
           saveTimers.set(sessionId, timer);
@@ -314,9 +320,9 @@ export const useBriefStore = create<BriefStoreWithDerived>()(
         }
       },
 
-      saveNow: async () => {
+      saveNow: async (options?: { noBackoff?: boolean; fieldName?: keyof Brief; stage?: string }) => {
         const state = get();
-        if (!state.brief || !state.isDirty) return;
+        if (!state.brief || !state.isDirty) return true;
         
         // If auth required (guest mode), skip network save
         if (state.authRequired) {
@@ -334,7 +340,7 @@ export const useBriefStore = create<BriefStoreWithDerived>()(
             console.warn('Failed to save draft locally:', error);
           }
           
-          return;
+          return true;
         }
 
         set({ saving: 'saving', error: undefined });
@@ -488,12 +494,12 @@ export const useBriefStore = create<BriefStoreWithDerived>()(
                   throw new Error('No server brief found for conflict resolution');
                 }
               } catch (retryError) {
-                console.error('Conflict resolution failed:', retryError);
-                set({
-                  saving: 'error',
-                  error: retryError instanceof Error ? retryError.message : 'Conflict resolution failed',
-                });
-                return;
+              console.error('Conflict resolution failed:', retryError);
+              set({
+                saving: 'error',
+                error: retryError instanceof Error ? retryError.message : 'Conflict resolution failed',
+              });
+              return false;
               }
             } else {
               // Re-throw non-409 errors
@@ -512,19 +518,32 @@ export const useBriefStore = create<BriefStoreWithDerived>()(
             dirtyFields: new Set(),
             error: undefined,
           });
+          // Telemetry: autosave success
+          try {
+            const { sessionId, userId } = await getUserContext();
+            telemetry.track('brief.autosave.success', { field: options?.fieldName || 'unknown', sessionId, userId });
+          } catch {}
+          return true;
         } catch (error: any) {
           console.error('Save failed:', error);
           set({
             saving: 'error',
             error: error?.message || 'Save failed',
           });
+          // Telemetry: autosave fail (normalized, no PII)
+          try {
+            const err = normalizeError(error, options?.stage || 'autosave');
+            const { sessionId, userId } = await getUserContext();
+            telemetry.track('brief.autosave.fail', { field: options?.fieldName || 'unknown', ...err, sessionId, userId });
+          } catch {}
           
           // Don't retry on client errors (4xx)
           if (error?.status >= 400 && error?.status < 500) {
-            return;
+            return false;
           }
           
           // For other errors, could implement additional retry logic here
+          return false;
         }
       },
     }),

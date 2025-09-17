@@ -7,6 +7,14 @@ import { telemetry, getUserContext } from "@/lib/telemetry";
 // Idempotency guard per session for COMPARATOR_OPENED
 const comparatorOpenedSessions = new Set<string>();
 
+// Feature flag: templates fallback (client-side, build-time substituted)
+const isTemplatesFallbackEnabled = (() => {
+  const raw = (process.env.NEXT_PUBLIC_ENABLE_TEMPLATES_FALLBACK ?? process.env.ENABLE_TEMPLATES_FALLBACK);
+  if (raw === undefined) return true; // default ON unless explicitly disabled
+  const normalized = String(raw).toLowerCase();
+  return !["0", "false", "off", "no"].includes(normalized);
+})();
+
 interface CompareStoreState {
   items: ComparedPlan[];
   
@@ -50,6 +58,14 @@ export const useCompareStore = create<CompareStoreWithDerived>()((set, get) => (
   add: (item: ComparedPlan) => {
     const state = get();
     
+    // Guard: block template items if templates fallback is disabled
+    if (!isTemplatesFallbackEnabled && item?.source?.kind === 'template') {
+      if (process.env.NODE_ENV !== 'production') {
+        try { console.info('[Compare] Template add ignored (fallback disabled)', { id: item?.id }); } catch {}
+      }
+      return;
+    }
+
     // Guard: max 3 items
     if (state.items.length >= 3) {
       return;
@@ -63,6 +79,19 @@ export const useCompareStore = create<CompareStoreWithDerived>()((set, get) => (
     const newItems = [...state.items, item];
     set({ items: newItems });
     
+    // Dev-only probe when comparator "opens" (first item added)
+    if (process.env.NODE_ENV !== 'production' && state.items.length === 0 && newItems.length > 0) {
+      try {
+        getUserContext().then(({ sessionId }) => {
+          const sid = sessionId || 'dev-session';
+          if (!comparatorOpenedSessions.has(sid)) {
+            comparatorOpenedSessions.add(sid);
+            try { console.info('[Compare] Opened (dev-probe)', { sessionId: sid, itemCount: newItems.length, origin: 'add' }); } catch {}
+          }
+        });
+      } catch {}
+    }
+
     // Side-effects: emit events (opened event now emitted by open/scroll handlers)
     getUserContext().then(({ sessionId, userId }) => {
       const sourceKindForTelemetry = (() => {

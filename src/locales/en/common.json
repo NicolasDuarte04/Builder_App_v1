@@ -71,11 +71,18 @@
   },
   "gate": {
     "title": "Enter Invite Code",
+    "description": "To access Briki's assistant, enter your invite code.",
     "placeholder": "Enter your invite code",
     "submit": "Submit",
     "error": {
       "invalid": "Invalid code. Please try again.",
-      "rate": "Too many attempts. Please try again later."
+      "rate": "Too many attempts. Please try again later.",
+      "required": "Access code is required."
+    },
+    "modal": {
+      "title": "Exclusive Access",
+      "description": "To access Briki's assistant, enter your invite code.",
+      "close": "Close"
     },
     "success": "Access granted! Redirecting..."
   },
@@ -217,7 +224,7 @@
       "title": "Briki · Preparing analysis",
       "progress_label": "Ready"
     },
-    "chips": ["exclusions","deductibles","limits","waiting periods","international coverage","specific clauses"],
+    "chips": ["exclusions", "deductibles", "limits", "waiting periods", "international coverage", "specific clauses"],
     "cta_analyze": "Start analysis",
     "cta_change": "Change PDF",
     "running": {
@@ -822,14 +829,35 @@
     "scannedToggle": "This is a scanned PDF (force OCR)",
     "analyzing": "Analyzing policy...",
     "analyzeButton": "Analyze policy",
+    "uploadAnyPolicy": "Upload any policy to analyze (without selecting a plan).",
+    "analysisReadyGeneric": "Your analysis is ready. You can use it to compare or attach it to a plan later.",
     "upload_prompt": "Upload a PDF to analyze",
     "choose_pdf": "Select PDF",
     "remove_file": "Remove",
     "error_no_pdf": "Please upload a PDF file.",
     "status": {
+      "uploading": "Uploading file...",
+      "analyzing": "Analyzing content...",
+      "success": "Analysis completed",
+      "error": "Analysis error",
       "collecting_brief": "Collecting client information…",
       "analyzing_pdf": "Analyzing policy (PDF)…",
       "processing": "Generating results…"
+    },
+    "analysis_completed": "Analysis completed successfully",
+    "pdf_added_to_brief": "PDF added to brief documents",
+    "error_messages": {
+      "analysis_failed": "Failed to analyze the PDF",
+      "pdfOnly": "Only PDF files are allowed",
+      "tooLarge": "File is too large. Maximum 10MB",
+      "unknown": "Unknown error",
+      "ocrFailed": "Could not extract text from PDF. Please upload a PDF with selectable text instead of a scanned image."
+    },
+    "status_messages": {
+      "uploading": "Uploading file...",
+      "analyzing": "Analyzing content...",
+      "success": "Analysis completed",
+      "error": "Analysis error"
     },
     "analysis_prep": {
       "title": "Ready to analyze your policy",
@@ -837,7 +865,7 @@
       "cta_analyze": "Analyze now",
       "cta_change": "Change PDF",
       "note_hint": "This note will guide the analysis. I won't send messages until you press Analyze now.",
-      "chips": ["exclusions","deductibles","limits","waiting periods","international coverage","specific clauses"]
+      "chips": ["exclusions", "deductibles", "limits", "waiting periods", "international coverage", "specific clauses"]
     },
     "no_results_title": "No options found",
     "no_results_subtitle": "Try adjusting your search criteria",
@@ -868,7 +896,7 @@
     "jumpHere": "Jump here",
     "viewOriginal": "View original PDF",
     "backToTop": "Back to top",
-    "announcedJump": "Jumped to page {{page}}",
+    "announcedJump": "Jumped to page {page}",
     "analyzing": "Analyzing...",
     "error": "Failed to load PDF",
     "upload_prompt": "Upload a PDF to analyze"
@@ -891,9 +919,9 @@
   },
   "openInPdf": "Open in PDF",
   "searchInPdf": "Search in PDF",
-  "emptySectionGuide": "We didn’t find items in \"{{section}}\". Want me to search the PDF or review a related section?",
-  "askAboutSection": "Ask me about \"{{section}}\"?",
-  "prefillExplainSection": "Explain this section ({{section}}).",
+  "emptySectionGuide": "We didn't find items in \"{section}\". Want me to search the PDF or review a related section?",
+  "askAboutSection": "Ask me about \"{section}\"?",
+  "prefillExplainSection": "Explain this section ({section}).",
   "useSuggestion": "Use",
   "section": {
     "premium": "Premium",
@@ -1000,16 +1028,6 @@
     "noResults": {
       "notice": "I couldn't find plans with those constraints. Try increasing budget or relaxing required coverages."
     }
-  },
-  "gate": {
-    "title": "Enter your access code",
-    "placeholder": "Access code",
-    "submit": "Access",
-    "error": {
-      "invalid": "Invalid or expired code.",
-      "rate": "Too many attempts. Try again later."
-    },
-    "success": "Access granted. Redirecting…"
   },
   "labels": {
     "fields": {

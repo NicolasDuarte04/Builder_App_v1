@@ -78,6 +78,7 @@ export async function searchPlans(opts: {
   } catch {}
 
   const data = await res.json();
-  console.info('[plans-client] response', { count: Array.isArray(data) ? data.length : data?.length ?? 0 });
-  return Array.isArray(data) ? data : [];
+  const items = Array.isArray(data) ? data : (Array.isArray((data as any)?.items) ? (data as any).items : []);
+  console.info('[plans-client] response', { count: items.length });
+  return items;
 }

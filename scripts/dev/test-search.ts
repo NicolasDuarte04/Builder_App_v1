@@ -13,8 +13,9 @@ async function call(body: any) {
     body: JSON.stringify(body),
   });
   const res = await searchPOST(req as unknown as Request);
-  const json = (await res.json()) as any[];
-  return json.map((r) => ({ provider: r.provider, name: r.name, category: r.category, country: r.country }));
+  const json = (await res.json()) as any;
+  const items: any[] = Array.isArray(json) ? json : (Array.isArray(json?.items) ? json.items : []);
+  return items.map((r) => ({ provider: r.provider, name: r.name, category: r.category, country: r.country }));
 }
 
 async function main() {

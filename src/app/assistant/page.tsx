@@ -79,11 +79,26 @@ export default function AssistantPage() {
   const [portalAnalysis, setPortalAnalysis] = useState<any>(null);
   const [portalViewerUrl, setPortalViewerUrl] = useState<string | null>(null);
   const analyzerPanelRef = useRef<HTMLDivElement | null>(null);
+  const [forceReadOnly, setForceReadOnly] = useState(false);
+  const [forcedBriefState, setForcedBriefState] = useState<null | 'empty' | 'loading' | 'error'>(null);
   
   useEffect(() => {
     const t = setTimeout(() => setBoot(false), 1200);
     return () => clearTimeout(t);
   }, []);
+  // E2E helpers via query params: ?e2e=1&briefReadOnly=1&briefState=loading|empty|error
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const sp = new URLSearchParams(window.location.search);
+    const e2e = sp.get('e2e') === '1';
+    const ro = sp.get('briefReadOnly') === '1';
+    const st = sp.get('briefState');
+    if (e2e && ro) setForceReadOnly(true);
+    if (e2e && st && (st === 'empty' || st === 'loading' || st === 'error')) {
+      setForcedBriefState(st);
+    }
+  }, []);
+
 
   // Client-side session hydration
   useEffect(() => {
@@ -604,6 +619,8 @@ export default function AssistantPage() {
               isCollapsed={isBriefCollapsed}
               onToggleCollapse={handleToggleBriefPanel}
               collapseMode={collapseMode}
+              readOnly={forceReadOnly}
+              testState={forcedBriefState}
             />
             
             {/* Analyze Policy (PDF) Button - Separate full-width action */}

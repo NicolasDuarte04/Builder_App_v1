@@ -63,6 +63,14 @@ export function CreateProposalButton({
 
   const isDisabled = useMemo(() => disabledProp || isGenerating, [disabledProp, isGenerating]);
 
+  // Feature flag: templates fallback (client-side)
+  const isTemplatesFallbackEnabled = useMemo(() => {
+    const raw = (process.env.NEXT_PUBLIC_ENABLE_TEMPLATES_FALLBACK ?? process.env.ENABLE_TEMPLATES_FALLBACK) as any;
+    if (raw === undefined) return true; // default ON unless explicitly disabled
+    const normalized = String(raw).toLowerCase();
+    return !["0", "false", "off", "no"].includes(normalized);
+  }, []);
+
 
   const detectUrlKind = (url?: string | null) => {
     if (!url) return 'unknown';
@@ -90,7 +98,10 @@ export function CreateProposalButton({
     if (isDisabled) return;
     
     // Read candidates, prefer pinned (compare) over shortlist
-    const pinned = useCompareStore.getState().items;
+    const pinnedRaw = useCompareStore.getState().items;
+    const pinned = isTemplatesFallbackEnabled
+      ? pinnedRaw
+      : pinnedRaw.filter(p => p?.source?.kind === 'catalog');
     const shortlist = useProposal.getState().shortlist;
 
     const items: ComparedPlan[] =
@@ -266,7 +277,7 @@ export function CreateProposalButton({
     try {
       await navigator.clipboard.writeText(resultUrl);
       const { sessionId, userId } = await getUserContext();
-      telemetry.track(telemetry.events.PROPOSAL_LINK_COPIED, { url: resultUrl, id: resultId, sessionId, userId });
+      telemetry.track('proposal.share.link', { url: resultUrl, id: resultId, sessionId, userId });
       toast({ title: t('proposal.copyLink') || 'Copy link', description: resultUrl });
     } catch (e) {
       toast({ title: t('proposal.copyLink') || 'Copy link', description: t('common.error') || 'Error', variant: 'destructive' });

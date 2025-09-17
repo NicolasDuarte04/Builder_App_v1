@@ -69,16 +69,6 @@
       "explore_demo": "Explorar demo"
     }
   },
-  "gate": {
-    "title": "Ingresa el Código de Invitación",
-    "placeholder": "Ingresa tu código de invitación",
-    "submit": "Enviar",
-    "error": {
-      "invalid": "Código inválido. Por favor intenta de nuevo.",
-      "rate": "Demasiados intentos. Por favor intenta más tarde."
-    },
-    "success": "¡Acceso concedido! Redirigiendo..."
-  },
   "nav": {
     "home": "Inicio",
     "projects": "Proyectos",
@@ -217,7 +207,7 @@
       "title": "Briki · Preparando análisis",
       "progress_label": "Listo"
     },
-    "chips": ["exclusiones","deducibles","límites","carencias","cobertura internacional","cláusulas específicas"],
+    "chips": ["exclusiones", "deducibles", "límites", "carencias", "cobertura internacional", "cláusulas específicas"],
     "cta_analyze": "Iniciar análisis",
     "cta_change": "Cambiar PDF",
     "running": {
@@ -858,7 +848,7 @@
       "cta_analyze": "Analizar ahora",
       "cta_change": "Cambiar PDF",
       "note_hint": "Esta nota guiará el análisis. No enviaré mensajes hasta que presiones Analizar ahora.",
-      "chips": ["exclusiones","deducibles","límites","carencias","cobertura internacional","cláusulas específicas"]
+      "chips": ["exclusiones", "deducibles", "límites", "carencias", "cobertura internacional", "cláusulas específicas"]
     },
     "no_results_title": "No encontramos opciones",
     "no_results_subtitle": "Intenta ajustar los criterios de búsqueda",
@@ -889,7 +879,7 @@
     "jumpHere": "Ir aquí",
     "viewOriginal": "Ver PDF original",
     "backToTop": "Volver arriba",
-    "announcedJump": "Saltaste a la página {{page}}",
+    "announcedJump": "Saltaste a la página {page}",
     "analyzing": "Analizando...",
     "error": "Error al cargar el PDF",
     "upload_prompt": "Sube un PDF para analizar"
@@ -912,9 +902,9 @@
   },
   "openInPdf": "Ver en PDF",
   "searchInPdf": "Buscar en PDF",
-  "emptySectionGuide": "No encontramos elementos en \"{{section}}\". ¿Quieres que busque en el PDF o revisar una sección relacionada?",
-  "askAboutSection": "¿Pregúntame por «{{section}}»?",
-  "prefillExplainSection": "Explícame esta sección ({{section}}).",
+  "emptySectionGuide": "No encontramos elementos en \"{section}\". ¿Quieres que busque en el PDF o revisar una sección relacionada?",
+  "askAboutSection": "¿Pregúntame por «{section}»?",
+  "prefillExplainSection": "Explícame esta sección ({section}).",
   "useSuggestion": "Usar",
   "section": {
     "premium": "Prima",

@@ -39,6 +39,7 @@
 import { getOrCreateSessionId } from './chat/session-prefs-client';
 import { now, since } from './time';
 import { createHash } from 'crypto';
+import { sanitizeTelemetryPayload } from './telemetry.sanitize';
 
 // Ensure integer milliseconds
 const toIntMs = (value: unknown): number => {
@@ -281,6 +282,9 @@ export interface TelemetryEventMap {
   RESULTS_DRAWN: { requestId: string; category?: string; dataSource: 'plans_v2' | 'templates' | 'mixed'; displayedCount: number; viewMode: 'dual' | 'single' } & SessionContext;
   NO_RESULTS_SHOWN: { requestId: string; fallbackDisabled: boolean } & SessionContext;
 
+  // Catalog reliability
+  CATALOG_ERROR: { provider: string; code: string } & Partial<SessionContext>;
+
   FEATURE_FLAG_EXPOSURE: { flag: string; value: boolean } & SessionContext;
   BRIEF_PARSE_REQUESTED: { source: 'paste' | 'upload'; chars?: number; v2?: boolean; userAction?: 'merge' | 'replace'; uploadId?: string } & SessionContext;
   BRIEF_PARSE_STARTED: { source: 'paste' | 'upload'; chars?: number; v2?: boolean; userAction?: 'merge' | 'replace' } & SessionContext;
@@ -306,6 +310,14 @@ export interface TelemetryEventMap {
   COMPARATOR_ITEM_ADDED: { id: string; sourceKind: 'template' | 'catalog' | 'normalized'; price: number | null; coverageCount: number; itemCount: number } & SessionContext;
   COMPARATOR_ITEM_REMOVED: { id: string; sourceKind: 'template' | 'catalog' | 'normalized'; price: number | null; coverageCount: number; itemCount: number } & SessionContext;
   COMPARATOR_CLEARED: SessionContext;
+  // No-catalog banner
+  NOCATALOG_BANNER_VIEW: { requestId?: string; category?: string } & SessionContext;
+  NOCATALOG_BANNER_CLICK: { cta: 'edit_brief' | 'choose_category'; requestId?: string; category?: string } & SessionContext;
+
+  // Autosave lifecycle (unified)
+  'brief.autosave.enqueued': { field?: string } & SessionContext;
+  'brief.autosave.success': { field?: string } & SessionContext;
+  'brief.autosave.fail': { field?: string } & TelemetryError & SessionContext;
 }
 
 const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly string[]>> = {
@@ -342,6 +354,7 @@ const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly strin
   RESULTS_INJECTED: ['requestId', 'category', 'dataSource', 'planCount', 'templateCount', 'hasRealPlans', 'sessionId', 'userId'],
   RESULTS_DRAWN: ['requestId', 'category', 'dataSource', 'displayedCount', 'viewMode', 'sessionId', 'userId'],
   NO_RESULTS_SHOWN: ['requestId', 'fallbackDisabled', 'sessionId', 'userId'],
+  CATALOG_ERROR: ['provider', 'code', 'sessionId', 'userId'],
   FEATURE_FLAG_EXPOSURE: ['flag', 'value', 'sessionId', 'userId'],
   BRIEF_PARSE_REQUESTED: ['source', 'chars', 'v2', 'userAction', 'uploadId', 'sessionId', 'userId'],
   BRIEF_PARSE_STARTED: ['source', 'chars', 'v2', 'userAction', 'sessionId', 'userId'],
@@ -365,6 +378,12 @@ const EVENT_ALLOWED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly strin
   COMPARATOR_ITEM_ADDED: ['id', 'sourceKind', 'price', 'coverageCount', 'itemCount', 'sessionId', 'userId'],
   COMPARATOR_ITEM_REMOVED: ['id', 'sourceKind', 'price', 'coverageCount', 'itemCount', 'sessionId', 'userId'],
   COMPARATOR_CLEARED: ['sessionId', 'userId'],
+  NOCATALOG_BANNER_VIEW: ['sessionId', 'userId', 'requestId', 'category'],
+  NOCATALOG_BANNER_CLICK: ['cta', 'sessionId', 'userId', 'requestId', 'category'],
+  // Autosave lifecycle (unified)
+  'brief.autosave.enqueued': ['field', 'sessionId', 'userId'],
+  'brief.autosave.success': ['field', 'sessionId', 'userId'],
+  'brief.autosave.fail': ['field', 'error_code', 'stage', 'retryable', 'http_status', 'sessionId', 'userId'],
 };
 
 const EVENT_REQUIRED_KEYS: Partial<Record<keyof TelemetryEventMap, readonly string[]>> = {
@@ -445,6 +464,10 @@ const EVENT_ALIASES: Record<string, keyof TelemetryEventMap> = {
   NO_RESULTS_SHOWN: 'NO_RESULTS_SHOWN',
   results_drawn: 'RESULTS_DRAWN',
 
+  // Catalog reliability
+  CATALOG_ERROR: 'CATALOG_ERROR',
+  'catalog.error': 'CATALOG_ERROR',
+
   // FF exposure
   FEATURE_FLAG_EXPOSURE: 'FEATURE_FLAG_EXPOSURE',
   feature_flag_exposure: 'FEATURE_FLAG_EXPOSURE',
@@ -496,6 +519,9 @@ const EVENT_ALIASES: Record<string, keyof TelemetryEventMap> = {
   comparator_item_removed: 'COMPARATOR_ITEM_REMOVED',
   COMPARATOR_CLEARED: 'COMPARATOR_CLEARED',
   comparator_cleared: 'COMPARATOR_CLEARED',
+  // nocatalog banner aliases (lowercase external names)
+  'nocatalog.banner.view': 'NOCATALOG_BANNER_VIEW',
+  'nocatalog.banner.click': 'NOCATALOG_BANNER_CLICK',
 
   // Timers
   TIME_TO_PROPOSAL_MS: 'TIME_TO_PROPOSAL_MS',
@@ -545,6 +571,21 @@ export const telemetry = {
     const payload = sanitizeTelemetryPayload(normalizeDurationPayload(eventName, (properties || {})));
     devValidatePayload(eventName, payload);
     const isDev = process.env.NODE_ENV !== 'production';
+    // Dev-only: assert sessionId/userId presence for BRIEF_PARSE_* and PDF_* family
+    if (isDev) {
+      try {
+        const lower = eventName.toLowerCase();
+        const isBriefParse = lower.startsWith('brief_parse_') || lower === 'brief_parsed_success' || lower === 'parser_output_schema_mismatch';
+        const isPdf = lower.startsWith('pdf_') || lower === 'pdfs_attached' || lower === 'pdf_primary_set';
+        if (isBriefParse || isPdf) {
+          const hasSession = Object.prototype.hasOwnProperty.call(payload, 'sessionId');
+          const hasUser = Object.prototype.hasOwnProperty.call(payload, 'userId');
+          if (!(hasSession && hasUser)) {
+            console.warn(`[AUDIT] telemetry_missing_ids for ${eventName}`, { hasSession, hasUser, payloadKeys: Object.keys(payload) });
+          }
+        }
+      } catch {}
+    }
     
     // Guard against server-side emission of client-only events
     const isServer = typeof window === 'undefined';
@@ -578,6 +619,26 @@ export const telemetry = {
         console.log(`[Telemetry] ${eventName}`, payload);
       } catch {}
     }
+  },
+  
+  // Sampled tracking: emit event with probability `rate` (default 0.1).
+  // Always emit in development or when E2E capture flags are enabled.
+  trackSampled(event: string, properties?: Record<string, any>, options?: { rate?: number }) {
+    const eventName = String(event);
+    const rate = typeof options?.rate === 'number' ? Math.min(1, Math.max(0, options.rate)) : 0.2;
+    const isDev = process.env.NODE_ENV !== 'production';
+    const isE2E = (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_E2E_CAPTURE === '1')
+      || (typeof window === 'undefined' && process.env.ENABLE_SERVER_E2E_CAPTURE === '1');
+    const sanitized = sanitizeTelemetryPayload(normalizeDurationPayload(eventName, (properties || {})));
+    if (isDev || isE2E) {
+      try { telemetry.track(eventName, sanitized); } catch {}
+      return true;
+    }
+    if (Math.random() < rate) {
+      try { telemetry.track(eventName, sanitized); } catch {}
+      return true;
+    }
+    return false;
   },
   
   // Lightweight metrics helpers (Step-11)
@@ -727,6 +788,8 @@ export const telemetry = {
     FIT_SCORE_COMPUTED: 'fit_score_computed',
     RESULTS_STATUS_BANNER_SHOWN: 'results_status_banner_shown',
     RESULTS_STATUS_EDIT_CLICKED: 'results_status_edit_clicked',
+    NOCATALOG_BANNER_VIEW: 'nocatalog.banner.view',
+    NOCATALOG_BANNER_CLICK: 'nocatalog.banner.click',
     // Brief search events
     BRIEF_SEARCH_CLICKED: 'brief_search_clicked',
     PLANS_SEARCHED: 'plans_searched',
@@ -760,37 +823,9 @@ export const telemetry = {
     // L13 events
     PASTE_LONG_GUARDED: 'paste_long_guarded',
     CATEGORY_DISAMBIGUATED: 'category_disambiguated',
+    // Catalog reliability
+    CATALOG_ERROR: 'catalog.error',
   }
 };
 
-// Remove potentially sensitive fields like messages or stacks from telemetry payloads
-function sanitizeTelemetryPayload(input: Record<string, any> | undefined | null): Record<string, any> {
-  if (!input || typeof input !== 'object') return {};
-  try {
-    // Shallow clone first
-    const clone: Record<string, any> = {};
-    for (const [key, value] of Object.entries(input)) {
-      const lower = key.toLowerCase();
-      const isMessageKey = lower === 'message' || lower.endsWith('_message') || lower === 'errormessage';
-      const isStackKey = lower === 'stack' || lower.includes('stacktrace') || lower === 'stack_trace';
-      const isErrorLikeKey = lower === 'error' || lower === 'cause' || lower === 'exception';
-      const isFileNameLike = lower === 'filename' || lower === 'file_name' || lower.endsWith('filename') || lower.endsWith('file_name');
-      if (isMessageKey || isStackKey || isErrorLikeKey || isFileNameLike) continue;
-
-      // Recursively sanitize nested objects/arrays to remove accidental message/stack fields
-      if (value && typeof value === 'object') {
-        if (Array.isArray(value)) {
-          clone[key] = value.map((v) => (typeof v === 'object' && v != null ? sanitizeTelemetryPayload(v as any) : v));
-        } else {
-          clone[key] = sanitizeTelemetryPayload(value as Record<string, any>);
-        }
-      } else {
-        clone[key] = value;
-      }
-    }
-    return clone;
-  } catch {
-    // Best-effort: if sanitization fails, drop payload rather than risk leaking details
-    return {};
-  }
-}
+// (sanitizer moved to './telemetry.sanitize')

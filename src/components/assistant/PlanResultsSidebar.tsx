@@ -10,6 +10,7 @@ import { TemplateCard } from './TemplateCard';
 import { TemplatePlanCard } from '@/components/results/TemplatePlanCard';
 import { NormalizedPlanCard } from '@/components/results/NormalizedPlanCard';
 import { SourcingActions } from '@/components/results/SourcingActions';
+import { ResultsStatusBanner } from '@/components/results/ResultsStatusBanner';
 import type { TemplatePlan, NormalizedPlan } from '@/types/results';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -505,6 +506,24 @@ export function PlanResultsSidebar({
 
   return (
     <>
+      {/* No-catalog banner: only when no plans, no templates, no sources and templates fallback disabled */}
+      {(() => {
+        const noPlans = (activeResults?.plans?.length ?? 0) === 0;
+        const noTemplates = !currentResults?.templates || currentResults.templates.length === 0;
+        const noSources = !currentResults?.sources || currentResults.sources.length === 0;
+        const showNocatalogBanner = noPlans && noTemplates && noSources && !isTemplatesFallbackEnabled();
+        if (!showNocatalogBanner) return null;
+        const reqId = currentResults?.requestId || undefined;
+        const cat = currentResults?.category || undefined;
+        return (
+          <div className="fixed left-0 right-0 top-[var(--app-nav-h,64px)] z-[71] mx-2 md:mx-0">
+            <div className="max-w-[20rem] ml-auto">
+              <ResultsStatusBanner variant="nocatalog" requestId={reqId as any} category={cat as any} />
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Mobile scrim only in overlay mode */}
       {!isEmbedded && (
         <AnimatePresence>

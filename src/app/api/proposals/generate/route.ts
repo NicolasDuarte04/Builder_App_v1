@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 import type { ComparedPlan } from '@/types/compare';
 import type { Brief } from '@/types/brief';
 import { telemetry, getUserContext, normalizeError } from '@/lib/telemetry';
+import { withPerfTimer } from '@/lib/perf';
 
 export const runtime = 'nodejs';
 
@@ -83,14 +84,14 @@ export async function POST(request: NextRequest) {
 
     let pdfResult;
     try {
-      pdfResult = await generateProposal({
+      pdfResult = await withPerfTimer('proposal.export', () => generateProposal({
         brief,
         comparedItems: items,
         notes,
         sources,
         branding,
         locale,
-      });
+      }), { telemetryProps: { itemCount, locale } });
     } catch (error) {
       const err = normalizeError(error, 'generation');
       telemetry.track('PROPOSAL_GENERATION_FAILED', {
@@ -110,6 +111,12 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Emit normalized export event for analytics consumers
+    try {
+      const ms = Math.max(0, Date.now() - startTime);
+      telemetry.track('proposal.export.pdf', { ms, size: pdfResult.size, pages: pdfResult.pages });
+    } catch {}
 
     // Upload to storage
     telemetry.track('PROPOSAL_GENERATION_UPLOAD_START', {
