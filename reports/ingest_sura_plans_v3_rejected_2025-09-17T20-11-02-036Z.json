@@ -1,0 +1,37 @@
+[
+  {
+    "plan_slug": "sura_salud_a_tu_alcance_plan_3",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "sura_salud_a_tu_alcance_plan_1",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "sura_salud_a_tu_alcance_plan_2",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "sura_salud_para_ti_plan_2",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "sura_salud_para_ti_plan_1",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "sura_salud_plan_preferencial",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "sura_salud_plan_plus",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  }
+]

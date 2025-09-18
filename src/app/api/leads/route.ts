@@ -1,27 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ Missing Supabase environment variables');
-}
+import { env } from '@/lib/env';
+export const runtime = 'nodejs';
 
 const supabase = createClient(
-  supabaseUrl || '',
-  supabaseKey || ''
+  env.server.SUPABASE_URL,
+  env.server.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export async function POST(request: NextRequest) {
   console.log("📥 API: POST /api/leads called");
 
-  if (!supabaseUrl || !supabaseKey) {
-    return NextResponse.json(
-      { error: 'Server configuration error' },
-      { status: 500 }
-    );
-  }
+  // env.server validation guarantees required keys
 
   try {
     const body = await request.json();

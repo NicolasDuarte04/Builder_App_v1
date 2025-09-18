@@ -1,10 +1,12 @@
 // Lightweight currency and period normalization helper for COP/month
 // Extracted from plans_v2 search route for unit testing and reuse.
 
+import { getServerVar } from '@/lib/env';
+
 export const CURRENCY_RATES = {
-  USD_TO_COP: Number(process.env.USD_TO_COP || '4200'),
-  EUR_TO_COP: Number(process.env.EUR_TO_COP || '4600'),
-  MXN_TO_COP: Number(process.env.MXN_TO_COP || '250'),
+  USD_TO_COP: Number(getServerVar('USD_TO_COP') || '4200'),
+  EUR_TO_COP: Number(getServerVar('EUR_TO_COP') || '4600'),
+  MXN_TO_COP: Number(getServerVar('MXN_TO_COP') || '250'),
 };
 
 export const PERIOD_TO_MONTHLY = {

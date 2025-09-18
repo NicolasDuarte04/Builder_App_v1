@@ -9,7 +9,7 @@ const comparatorOpenedSessions = new Set<string>();
 
 // Feature flag: templates fallback (client-side, build-time substituted)
 const isTemplatesFallbackEnabled = (() => {
-  const raw = (process.env.NEXT_PUBLIC_ENABLE_TEMPLATES_FALLBACK ?? process.env.ENABLE_TEMPLATES_FALLBACK);
+  const raw = ((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_ENABLE_TEMPLATES_FALLBACK ?? process.env.ENABLE_TEMPLATES_FALLBACK);
   if (raw === undefined) return true; // default ON unless explicitly disabled
   const normalized = String(raw).toLowerCase();
   return !["0", "false", "off", "no"].includes(normalized);
@@ -165,7 +165,7 @@ export const useCompareActions = () =>
 
 // E2E exposure: allow tests to seed compare items deterministically
 try {
-  if (typeof window !== 'undefined' && (process.env.NEXT_PUBLIC_E2E_CAPTURE === '1')) {
+  if (typeof window !== 'undefined' && ((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_E2E_CAPTURE === '1')) {
     (window as any).useCompareStore = useCompareStore;
   }
 } catch {}

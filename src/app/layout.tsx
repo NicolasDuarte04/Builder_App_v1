@@ -11,6 +11,7 @@ import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider"
 import ChunkRecovery from "./_components/ChunkRecovery"
 import { ToastLiveRegion } from "../hooks/use-toast"
 import { Analytics } from '@vercel/analytics/react'
+import { env } from "@/lib/env"
 // Removed next-intl provider usage
 
 const inter = Inter({ subsets: ["latin"] })
@@ -44,8 +45,8 @@ export default async function RootLayout({
   // Non-blocking build banner (server-side only)
   // Logs once on server start to help identify build in prod logs
   console.log('Briki build', {
-    commit: process.env.VERCEL_GIT_COMMIT_SHA ?? 'local',
-    branch: process.env.VERCEL_GIT_COMMIT_REF ?? 'local'
+    commit: env.server.VERCEL_GIT_COMMIT_SHA ?? 'local',
+    branch: env.server.VERCEL_GIT_COMMIT_REF ?? 'local'
   });
   // Note: The html lang is statically set to 'es' server-side.
   // For accessibility, we set it client-side based on LanguageProvider after hydration.

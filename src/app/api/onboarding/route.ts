@@ -1,39 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
 export const runtime = 'nodejs';
 
-// Check if environment variables are available
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  console.error('❌ NEXT_PUBLIC_SUPABASE_URL is not set');
-}
-
-// Use anon key if service role key is not available (for development)
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabaseKey) {
-  console.error('❌ No Supabase key available');
-}
-
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  supabaseKey || ''
+  env.server.SUPABASE_URL,
+  env.server.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export async function POST(request: NextRequest) {
   console.log("📥 API: POST /api/onboarding called");
   
-  // Log Supabase configuration
-  console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log("Using service role key:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-  
-  // Check if Supabase is configured
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !supabaseKey) {
-    console.error('❌ Supabase environment variables not configured');
-    return NextResponse.json(
-      { error: 'Supabase not configured. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY' },
-      { status: 500 }
-    );
-  }
+  // Non-sensitive boot info
+  console.log("Using service role key:", true);
   
   try {
     const body = await request.json();

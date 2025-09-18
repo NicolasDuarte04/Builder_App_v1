@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { env } from '@/lib/env';
 import { testConnection, hasDatabaseUrl } from '@/lib/render-db';
 export const runtime = 'nodejs';
 
@@ -6,7 +7,7 @@ export async function GET() {
   try {
     const envStatus = {
       RENDER_POSTGRES_URL: !!process.env.RENDER_POSTGRES_URL,
-      NODE_ENV: process.env.NODE_ENV,
+      NODE_ENV: env.server.NODE_ENV,
       hasDatabaseUrl,
     };
 

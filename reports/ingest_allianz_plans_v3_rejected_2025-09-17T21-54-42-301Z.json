@@ -1,0 +1,52 @@
+[
+  {
+    "plan_slug": "seguro-viaje-internacional-plan-premium",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "seguro-viaje-internacional-plan-light",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "seguro-viaje-internacional-plan-estandar",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "seguro-para-taxi",
+    "category": "taxis",
+    "reason": "unsupported_category"
+  },
+  {
+    "plan_slug": "seguro-todo-riesgo-moto",
+    "category": "motos",
+    "reason": "unsupported_category"
+  },
+  {
+    "plan_slug": "accidentes-personales-estandar",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "accidentes-personales-corporativo",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "accidentes-personales-viajero",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "autos-esencial",
+    "category": "autos",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "autos-plus",
+    "category": "autos",
+    "reason": "insufficient_canonical_benefits"
+  }
+]

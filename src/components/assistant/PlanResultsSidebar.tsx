@@ -632,10 +632,10 @@ export function PlanResultsSidebar({
             </div>
 
             {/* Hide filter debug for end users; can be re-enabled via explicit flag only */}
-            {process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_SHOW_FILTER_DEBUG === 'true' && (
+            {process.env.NODE_ENV !== 'production' && ((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_SHOW_FILTER_DEBUG === 'true') && (
               <div className="mb-2 text-[11px] text-gray-500">
                 <span>
-                  Filtered by: include=[{(activeResults?.filters?.includeCategories || []).map((c) => enumLabel('categories', String(c))).join(', ')}] exclude=[{(activeResults?.filters?.excludeCategories || []).map((c) => enumLabel('categories', String(c))).join(', ')}] • datasource={activeResults?.dataSource || (process.env.NEXT_PUBLIC_BRIKI_DATA_SOURCE || 'legacy')}
+                  Filtered by: include={[{(activeResults?.filters?.includeCategories || []).map((c) => enumLabel('categories', String(c))).join(', ')}] exclude={[{(activeResults?.filters?.excludeCategories || []).map((c) => enumLabel('categories', String(c))).join(', ')}]} • datasource={activeResults?.dataSource || (((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_BRIKI_DATA_SOURCE || 'legacy'))}
                 </span>
               </div>
             )}

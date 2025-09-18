@@ -1,0 +1,2234 @@
+{
+  "metadata": {
+    "entity": {
+      "name": "Allianz Colombia Consumer Insurance Plan (Autos, Motos, Taxis, & Salud)",
+      "criteria": [
+        "Is the plan offered by Allianz Colombia?",
+        "Is the plan for Autos, Motos, Taxis, or Salud category?",
+        "Does the plan have a unique slug and display name?",
+        "Is pricing information (min price or \"quote\") available?",
+        "Does the plan have at least 4 canonical benefits?",
+        "Is the source URL an official Allianz Colombia domain (allianz.co or relevant allianz.com section for Colombia)?",
+        "Is the last verification date within 180 days of the scrape timestamp?"
+      ],
+      "description": "Consumer-facing insurance plans offered by Allianz Colombia, specifically for Autos, Motos, Taxis, and Salud categories, with all required attributes and meeting strict inclusion criteria."
+    },
+    "schema": {
+      "attributes": [
+        {
+          "name": "provider_slug",
+          "type": "string",
+          "description": "A unique, URL-friendly identifier for the insurance provider. Must be \"allianz\".",
+          "is_primary": true
+        },
+        {
+          "name": "provider_display",
+          "type": "string",
+          "description": "The display name of the insurance provider.",
+          "is_primary": false
+        },
+        {
+          "name": "plan_slug",
+          "type": "string",
+          "description": "A unique, URL-friendly identifier for the insurance plan, unique per provider.",
+          "is_primary": true
+        },
+        {
+          "name": "plan_display",
+          "type": "string",
+          "description": "The display name of the insurance plan.",
+          "is_primary": false
+        },
+        {
+          "name": "price_min",
+          "type": "number",
+          "description": "The minimum price of the insurance plan, if available.",
+          "is_primary": false
+        },
+        {
+          "name": "pricing_model",
+          "type": "string",
+          "description": "The pricing model (e.g., \"fixed\", \"quote\", \"tiered\").",
+          "is_primary": false
+        },
+        {
+          "name": "benefits",
+          "type": "string",
+          "description": "A list of canonical benefit codes offered by the plan. Must have at least 4 items.",
+          "is_primary": false
+        },
+        {
+          "name": "benefit_details",
+          "type": "string",
+          "description": "A detailed description of the benefits.",
+          "is_primary": false
+        },
+        {
+          "name": "deductible",
+          "type": "string",
+          "description": "The deductible amount for the plan. Can be null if only found in unparseable PDFs (relevant for Autos).",
+          "is_primary": false
+        },
+        {
+          "name": "copay",
+          "type": "string",
+          "description": "The copay amount for the plan. Can be null if only found in unparseable PDFs (relevant for Salud).",
+          "is_primary": false
+        },
+        {
+          "name": "waiting_period_days",
+          "type": "number",
+          "description": "The waiting period in days before certain benefits become active.",
+          "is_primary": false
+        },
+        {
+          "name": "geo_scope",
+          "type": "string",
+          "description": "The geographical scope of the plan. Can be null if not visible.",
+          "is_primary": false
+        },
+        {
+          "name": "target_personas",
+          "type": "string",
+          "description": "The target audience or personas for the plan. Can be null if not visible.",
+          "is_primary": false
+        },
+        {
+          "name": "last_verified_at",
+          "type": "string",
+          "description": "The timestamp when the plan details were last verified (scrape timestamp).",
+          "is_primary": false
+        },
+        {
+          "name": "source_primary_url",
+          "type": "string",
+          "description": "The primary official Allianz Colombia URL where the plan details were found.",
+          "is_primary": true
+        },
+        {
+          "name": "external_purchase_url",
+          "type": "string",
+          "description": "A URL where the plan can be purchased or a quote can be obtained externally.",
+          "is_primary": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Relevant tags for the plan.",
+          "is_primary": false
+        },
+        {
+          "name": "category_slug",
+          "type": "string",
+          "description": "The category of the insurance plan. Must be either \"autos\", \"motos\", \"taxis\", or \"salud\".",
+          "is_primary": false
+        },
+        {
+          "name": "price_currency",
+          "description": "The currency of the insurance plan price. Must be 'COP' for Colombian Pesos.",
+          "is_primary": false
+        }
+      ]
+    },
+    "exported_at": "2025-09-17T21:42:10.812Z",
+    "total_items": 16
+  },
+  "data": [
+    {
+      "id": "7f0452e3-736f-456e-b283-d017e0b81936",
+      "created_at": "2025-09-17T21:20:29.777399+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-viaje-internacional-plan-premium",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Viaje Internacional - Plan Premium",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "asistencia_medica_accidente_enfermedad",
+            "medicamentos",
+            "traslado_medico_emergencia",
+            "repatriacion_medica",
+            "repatriacion_restos_mortales",
+            "recuperacion_hotel",
+            "urgencia_odontologica",
+            "transporte_acompanante",
+            "regreso_dependientes",
+            "enfermedad_preexistente",
+            "mujeres_embarazadas",
+            "compensacion_perdida_equipaje"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Para tus viajes largos y presupuestos altos. Encuentra asistencias para ti y tu familia, beneficios médicos y cobertura exclusiva para cualquier imprevisto durante tu aventura desde USD 75.000. Incluye asistencia médica por accidente o enfermedad, medicamentos, traslado médico de emergencia, repatriación médica, repatriación de restos mortales, recuperación médica en el hotel, urgencia odontológica, transporte de acompañante, regreso de dependientes, cobertura para enfermedad preexistente (50% límite global) y mujeres embarazadas (50% límite global), y compensación por pérdida, daño o robo de equipaje.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": "internacional",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:26:22Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/personas/asistencia-internacional.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/personas/asistencia-internacional.html#formulario",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html#formulario"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c5635f2a-c51c-45d8-8db4-4b59721351a0",
+      "created_at": "2025-09-17T21:20:29.765048+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-viaje-internacional-plan-light",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Viaje Internacional - Plan Light",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "asistencia_medica_accidente_enfermedad",
+            "medicamentos",
+            "traslado_medico_emergencia",
+            "repatriacion_medica",
+            "repatriacion_restos_mortales",
+            "recuperacion_hotel",
+            "urgencia_odontologica",
+            "transporte_acompanante",
+            "regreso_dependientes",
+            "enfermedad_preexistente",
+            "mujeres_embarazadas"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Tu asistencia en cualquier lugar del mundo desde USD 30.000 con las asistencias y coberturas necesarias para tu viaje. Incluye asistencia médica por accidente o enfermedad, medicamentos, traslado médico de emergencia, repatriación médica, repatriación de restos mortales, recuperación médica en el hotel, urgencia odontológica, transporte de acompañante, regreso de dependientes, cobertura para enfermedad preexistente (50% límite global) y mujeres embarazadas (50% límite global).",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": "internacional",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:26:22Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/personas/asistencia-internacional.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/personas/asistencia-internacional.html#formulario",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html#formulario"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "e99029d4-b3ed-4835-a3ae-a5de9ef08cf9",
+      "created_at": "2025-09-17T21:20:29.748141+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-viaje-internacional-plan-estandar",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Viaje Internacional - Plan Estándar",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "asistencia_medica_accidente_enfermedad",
+            "medicamentos",
+            "traslado_medico_emergencia",
+            "repatriacion_medica",
+            "repatriacion_restos_mortales",
+            "recuperacion_hotel",
+            "urgencia_odontologica",
+            "transporte_acompanante",
+            "regreso_dependientes",
+            "enfermedad_preexistente",
+            "mujeres_embarazadas",
+            "compensacion_perdida_equipaje"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Cuidamos tu viaje con beneficios exclusivos, asistencias y coberturas ideales para que disfrutes sin complicarte desde USD 50.000. Incluye asistencia médica por accidente o enfermedad, medicamentos, traslado médico de emergencia, repatriación médica, repatriación de restos mortales, recuperación médica en el hotel, urgencia odontológica, transporte de acompañante, regreso de dependientes, cobertura para enfermedad preexistente (50% límite global) y mujeres embarazadas (50% límite global), y compensación por pérdida, daño o robo de equipaje.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": "internacional",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:26:22Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/personas/asistencia-internacional.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/personas/asistencia-internacional.html#formulario",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html#formulario"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/asistencia-internacional.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "cdf140a2-7522-42a6-b48b-043828310e66",
+      "created_at": "2025-09-17T21:17:23.017111+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-para-taxi",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro para Taxi",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "proteccion_patrimonio",
+            "rc",
+            "asistencia_juridica",
+            "cobertura_total_danos_robo",
+            "gastos_movilizacion",
+            "accidentes_personales",
+            "deducible_fijo",
+            "grua",
+            "rescate_accidente",
+            "asistencia_vial",
+            "estancia_desplazamiento_ocupante",
+            "transporte_deposito_custodia"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Protección para tu patrimonio por robo o daños por accidente, y cobertura de Responsabilidad Civil Extracontractual y Asistencia Jurídica. Amplia red de proveedores de asistencia a nivel nacional. Cobertura del 100% por daños causados por accidente o robo, eventos de la naturaleza o actos malintencionados. Cobertura de Responsabilidad Civil Extracontractual de 500 millones de pesos, con deducible de 1.5 SMMLV. Asistencia Jurídica para procesos penales y civiles, hasta por 25 millones de pesos. Amparo para gastos de movilización de hasta 100 mil pesos diarios por 30 días. Cobertura de accidentes personales para el asegurado y el conductor autorizado, hasta 50 millones de pesos. Deducible fijo de 2.8 SMMLV para pérdidas de menor cuantía. Asistencias incluyen servicio de grúa, rescate por accidente, asistencia por despinchada, varada por gasolina, cerrajería o batería, estancia o desplazamiento de ocupante, transporte, depósito y custodia del vehículo.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "deductible": {
+          "value": "1.5 SMMLV (RC) / 2.8 SMMLV (menor cuantía)",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:20:25Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/vehiculos/Autos.html#formulario",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        },
+        "category_slug": {
+          "value": "taxis",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-taxis.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "a4d1f006-aab2-4e6d-b5dd-dde0e4b28e76",
+      "created_at": "2025-09-17T21:15:09.949064+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-todo-riesgo-moto",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro Todo Riesgo para Moto",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "deducible_fijo_perdidas_parciales",
+            "rc",
+            "asistencia_juridica",
+            "amparo_patrimonial",
+            "grua",
+            "estancia_desplazamiento_ocupante",
+            "localizacion_repuestos",
+            "transporte_deposito_custodia",
+            "informe_estado_carreteras"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Protección para tu moto con deducibles fijos para pérdidas parciales. Responsabilidad Civil Extracontractual y Asistencia Jurídica con los límites más altos. Asistencias incluyen servicio de grúa, estancia o desplazamiento de ocupante, localización de piezas de repuesto, transporte, depósito o custodia de la moto, e informe del estado de las carreteras.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "deductible": {
+          "value": "1 SMMLV - 3.7 SMMLV",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:14:34Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html#coberturas",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        },
+        "category_slug": {
+          "value": "motos",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/seguro-de-motos.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "3073f0a6-0c6c-4285-a154-3ff1f6ef1dfa",
+      "created_at": "2025-09-17T21:08:15.389115+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "accidentes-personales-estandar",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Accidentes Personales Estándar",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "muerte_accidental",
+            "incapacidad_total_permanente_accidente",
+            "desmembracion_accidental",
+            "gastos_medicos_accidente",
+            "renta_diaria_hospitalizacion_incapacidad_accidente",
+            "auxilio_funerario_accidente",
+            "auxilio_educativo_muerte_incapacidad_accidente",
+            "asistencia_medica",
+            "odontologia_urgencia",
+            "medicamentos_ambulatorios",
+            "medicamentos_hospitalizacion",
+            "repatriacion_traslado",
+            "conductor_elegido",
+            "asistencia_legal",
+            "asistencia_veterinaria",
+            "asistencia_educativa"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Cubre los riesgos accidentales que puedan afectar su integridad física tanto por fallecimiento, como por incapacidad total y permanente. Respaldo económico con la cobertura de gastos médicos y renta clínica por accidente. Asistencia Médica en caso de accidente o enfermedad no preexistente (Internacional y Nacional), Primera atención médica en caso de enfermedad preexistente (Internacional y Nacional), Odontología de urgencia (Internacional y Nacional), Medicamentos ambulatorios (Internacional y Nacional), Medicamentos en caso de hospitalización (Internacional y Nacional), Repatriación o traslado (Internacional y Nacional), Conductor elegido, Asistencia opinión médica, Asistencia Legal virtual, Asistencia veterinaria virtual, Asistencia educativa.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/vida/contratos/accidentes-personales/Accidentes-Personales-Individual-13122023-Version-03.pdf"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/vida/contratos/accidentes-personales/Accidentes-Personales-Individual-13122023-Version-03.pdf"
+          ]
+        },
+        "waiting_period_days": {
+          "value": 120,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/vida/contratos/accidentes-personales/2VIDGRUPVERSION11-000I.pdf"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:12:00Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/personas/vida.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "5272d0cc-22e3-4ef6-a395-8e9364479646",
+      "created_at": "2025-09-17T21:08:15.386862+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "accidentes-personales-corporativo",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Accidentes Personales Corporativo",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "muerte_accidental",
+            "incapacidad_total_permanente_accidente",
+            "desmembracion_accidental",
+            "gastos_medicos_accidente",
+            "renta_diaria_hospitalizacion_incapacidad_accidente",
+            "auxilio_funerario_accidente",
+            "auxilio_educativo_muerte_incapacidad_accidente",
+            "asistencia_medica",
+            "odontologia_urgencia",
+            "medicamentos_ambulatorios",
+            "medicamentos_hospitalizacion",
+            "repatriacion_traslado",
+            "conductor_elegido",
+            "asistencia_opinion_medica",
+            "asistencia_legal",
+            "asistencia_veterinaria",
+            "asistencia_educativa"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Cubre los riesgos accidentales que puedan afectar su integridad física tanto por fallecimiento, como por incapacidad total y permanente. Respaldo económico con la cobertura de gastos médicos y renta clínica por accidente. Asistencia Médica en caso de accidente o enfermedad no preexistente (Internacional y Nacional), Primera atención médica en caso de enfermedad preexistente (Internacional y Nacional), Odontología de urgencia (Internacional y Nacional), Medicamentos ambulatorios (Internacional y Nacional), Medicamentos en caso de hospitalización (Internacional y Nacional), Repatriación o traslado (Internacional y Nacional), Conductor elegido, Asistencia opinión médica, Asistencia Legal virtual, Asistencia veterinaria virtual, Asistencia educativa.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": 120,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/vida/contratos/accidentes-personales/2VIDGRUPVERSION11-000I.pdf"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:12:00Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/personas/vida.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "6db20ab9-ca36-4491-b3ee-d37bcf498241",
+      "created_at": "2025-09-17T21:08:15.381024+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "accidentes-personales-viajero",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Accidentes Personales Viajero",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "muerte_accidental",
+            "incapacidad_total_permanente_accidente",
+            "desmembracion_accidental",
+            "gastos_medicos_accidente",
+            "renta_diaria_hospitalizacion_incapacidad_accidente",
+            "auxilio_funerario_accidente",
+            "auxilio_educativo_muerte_incapacidad_accidente",
+            "cobertura_amplia_vuelo",
+            "cobertura_accidentes_transporte_publico",
+            "asistencia_medica",
+            "odontologia_urgencia",
+            "medicamentos_ambulatorios",
+            "medicamentos_hospitalizacion",
+            "repatriacion_traslado",
+            "conductor_elegido",
+            "asistencia_opinion_medica",
+            "asistencia_legal",
+            "asistencia_veterinaria",
+            "asistencia_educativa"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Cubre los riesgos accidentales que puedan afectar su integridad física tanto por fallecimiento, como por incapacidad total y permanente. Respaldo económico con la cobertura de gastos médicos y renta clínica por accidente. Asistencia Médica en caso de accidente o enfermedad no preexistente (Internacional y Nacional), Primera atención médica en caso de enfermedad preexistente (Internacional y Nacional), Odontología de urgencia (Internacional y Nacional), Medicamentos ambulatorios (Internacional y Nacional), Medicamentos en caso de hospitalización (Internacional y Nacional), Repatriación o traslado (Internacional y Nacional), Conductor elegido, Asistencia opinión médica, Asistencia Legal virtual, Asistencia veterinaria virtual, Asistencia educativa. Cobertura amplia de vuelo. Cobertura de accidentes en transporte público.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/vida/contratos/accidentes-personales/Accidentes-Personales-Individual-13122023-Version-03.pdf"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/vida/contratos/accidentes-personales/Accidentes-Personales-Individual-13122023-Version-03.pdf"
+          ]
+        },
+        "waiting_period_days": {
+          "value": 120,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/vida/contratos/accidentes-personales/2VIDGRUPVERSION11-000I.pdf"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:12:00Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/personas/vida.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/vida/accidentes-personales.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "544e1bb3-fbd4-4314-8e18-780eb820556f",
+      "created_at": "2025-09-17T21:04:38.463476+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "autos-esencial",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Carro Esencial",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "asistencia_juridica",
+            "amparo_patrimonial",
+            "conductor_viaje",
+            "emergencias_accidentes",
+            "traslado_medico",
+            "estancia_desplazamiento"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Responsabilidad Civil Extracontractual de 4 mil millones de pesos. Asistencia Jurídica para procesos penales y civiles, hasta por 50 millones de pesos. Amparo patrimonial. Asistencias: Conductor de viaje. Emergencias y urgencias por accidente de tránsito. Traslado médico. Estancia y desplazamiento de los ocupantes.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:05:43Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://allianzdigital.co/cotizar?utm_source=web&utm_medium=boton&utm_campaign=quiero+un+seguro",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "569a6acd-ceae-4d8e-8f8a-24b3f3b1cc7c",
+      "created_at": "2025-09-17T21:03:47.673319+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "esencial-totales",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Carro Esencial + Totales",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cobertura_total",
+            "rc",
+            "asistencia_juridica",
+            "gastos_movilizacion",
+            "amparo_patrimonial",
+            "conductor_viaje",
+            "emergencias_accidentes",
+            "traslado_medico",
+            "grua",
+            "estancia_desplazamiento",
+            "transporte_deposito"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "100% de cobertura por daños que sufra tu auto causados por accidente, robo, eventos de la naturaleza o actos malintencionados, como hechos terroristas. Responsabilidad Civil Extracontractual de 4 mil millones de pesos. Asistencia Jurídica para procesos penales y civiles, hasta por 50 millones de pesos. Si el auto es declarado como pérdida de mayor cuantía, ofrecemos un amparo para gastos de movilización de hasta 40 mil pesos diarios por 30 días. Amparo patrimonial. Asistencias: Conductor de viaje. Emergencias y urgencias por accidente de tránsito. Traslado médico. Grúa. Estancia y desplazamiento de los ocupantes. Transporte, depósito o custodia del vehículo.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:04:49Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://allianzdigital.co/cotizar?utm_source=web&utm_medium=boton&utm_campaign=quiero+un+seguro",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/esencial-totales.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "2eee7c3d-c49c-4706-92d0-89b6fd248307",
+      "created_at": "2025-09-17T21:03:05.530137+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "autos-plus",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro para Carro Autos Plus",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cobertura_total",
+            "rc",
+            "asistencia_juridica",
+            "gastos_movilizacion",
+            "accidentes_personales",
+            "deducible_parcial",
+            "conductor_elegido",
+            "traslado_hospedaje",
+            "emergencias_accidentes",
+            "traslado_medico",
+            "vehiculo_reemplazo",
+            "transporte_deposito",
+            "asistencia_vial_basica",
+            "consultas_medicas_domiciliarias",
+            "traslado_conductor_taller",
+            "grua"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Protección: Tu carro estará asegurado al 100% en caso de daños por accidente o robo. Asistencia: Amplia red de proveedores de asistencia a nivel nacional que te aseguran atencion donde te encuentres. Oportunidad: Llámanos al #265 para recibir el acompañamiento y asistencia oportuna cuando nos necesites. Coberturas: 100% de cobertura por daños que sufra tu auto causados por accidente, robo, eventos de la naturaleza o actos malintencionados, como hechos terroristas. Cobertura de RCE de 4000 millones de pesos. Cubre el mayor monto en Asistencia Jurídica para procesos penales y civiles, hasta por 50 millones de pesos. Si el auto es declarado como pérdida de mayor cuantía, ofrecemos un amparo para gastos de movilización de hasta 40 mil pesos diarios por 30 días. Cobertura de accidentes personales en caso de accidente de tránsito para el asegurado y el conductor autorizado, hasta 50 millones de pesos. Deducible parcial de 1.1 SMMLV para pérdidas de menor cuantía. Asistencias: 12 conductores elegidos por vigencia. Asistencia jurídica. Grúa. Conductor de Viaje. Traslado y hospedaje de los ocupantes del vehículo a la ciudad más cercana, en caso de hurto o avería del auto durante un viaje. Emergencias y urgencias por accidente de tránsito. Traslado médico. Vehículo de reemplazo, 15 días en pérdidas parciales y 20 días para pérdidas totales. Transporte, deposito o custodia del vehículo. Asistencia Vial Básica (cambio de llanta, batería, gasolina o cerrajería). Consultas Médicas Domiciliarias. Traslado del Conductor al Taller.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "deductible": {
+          "value": "1.1 SMMLV",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:03:09Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://allianzdigital.co/cotizar?utm_source=web&utm_medium=boton&utm_campaign=quiero+un+seguro",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/autos_plus.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "5b2d6c28-de55-40d5-858b-30c883b15a31",
+      "created_at": "2025-09-17T21:01:09.552031+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "vitallianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "plan_display": {
+          "value": "VitAllianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "telemedicina",
+            "consultas_ilimitadas",
+            "odontologia",
+            "terapias",
+            "salud_mental"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Telemedicina y bienestar virtual: Hasta 16 especialidades médicas de acuerdo con el plan. Componente de bienestar y servicios para mascotas. Terapias: Límite de sesiones de acuerdo con el plan - Copago de $10.000. Exámenes rutinarios: Monto de acuerdo con el plan. Consultas médicas: Sesiones y especialidades de acuerdo con el plan. Consultas domiciliarias: Según pertinencia médica de la consulta 24/7. Urgencia Odontológica y Limpieza: En casa o en clínica de acuerdo con el plan. Sin copago. Reembolso de medicamentos: Post consulta virtual.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "deductible": {
+          "value": "$10.000 (Terapias)",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud.html"
+          ]
+        },
+        "copay": {
+          "value": "$10.000 (Terapias)",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "waiting_period_days": {
+          "value": 60,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud.html"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:00:33Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/personas/salud/vitallianz.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://m.serlefin.com/AllianzLeads/WF/?A=M_S",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/vitallianz.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "28380754-dc01-4364-8b2b-abc77907fc9c",
+      "created_at": "2025-09-17T21:00:25.568959+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "salud-care",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Salud Care",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "hospitalizacion",
+            "urgencias",
+            "maternidad",
+            "consultas_ilimitadas",
+            "telemedicina",
+            "odontologia",
+            "red_prestadores_top",
+            "terapias"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Más de 4.100 médicos, laboratorios e instituciones médicas disponibles en Colombia. Acceso directo a todas las especialidades médicas. Atención y tarifas preferenciales en Centros Médicos Allianz. Centros Médicos Allianz: Disponibles en Bogotá, Barranquilla, Pereira y Medellín. Servicios en línea a través de Allianz App Salud. Asistencia médica en el exterior: Cobertura internacional desde 60 a 180 días. Atención en casa: Con hospitalización en casa con cuidados prolongados y consultas domiciliarias ilimitadas. Acompañamiento permanente y asesoría integral de un asesor para el uso de tu seguro. Cobertura Básica: Hospitalización con cama individual y cama de acompañante, enfermera especial, cuidados intensivos, cirugías y tratamientos, entre otros. Prótesis, Órtesis, Trasplante de órganos, Diálisis renal, Tratamiento integral para Cáncer, Tratamiento hospitalario para Sida, Atención de urgencias. Atención integral en maternidad: Consultas y exámenes, Curso Psicoprofiláctico, Cobertura de enfermedades congénitas, Inclusión del bebé recién nacido dentro de la póliza sin ningún costo hasta la terminación de la vigencia, Libre elección de clínica y médico al momento del parto, dentro de la red disponible, Acompañamiento y asesoría integral por parte de un asesor especializado, Regalo especial por parte de Allianz para los primeros días del bebé. Exámenes y laboratorios: Acceso a exámenes de rutina y especializados de diagnóstico para conocer tu estado de salud. Consultas Médicas: Prioritarias, Generales y Especializadas. Terapias en consultorio y a domicilio: Acceso a tratamientos para mejorar tu estado de salud en instituciones médicas o en la comodidad de tu casa. Cuidados en casa: Hospitalización en casa, Cuidados prolongados, Consultas domiciliarias ilimitadas. Coberturas Plus: Consulta médica en casa, Ambulancia terrestre nacional, Acceso a Centros Médicos Allianz (Bogotá y Barranquilla), Asistencia médica en el exterior, Asistencia odontológica en emergencias.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/MedicAllCARE_MODULO_3-02.pdf"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/MedicAllCARE_MODULO_3-02.pdf"
+          ]
+        },
+        "waiting_period_days": {
+          "value": 121,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/MedicAllCARE_MODULO_3-02.pdf",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Salud-Care-11092024.pdf"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T20:59:45Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/personas/salud/care.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/personas/salud.html#formulario",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/care.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "25374c05-87a3-4c50-b7ee-65b06d798587",
+      "created_at": "2025-09-17T20:59:37.789922+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "salud-gold",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Salud Gold",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "hospitalizacion",
+            "urgencias",
+            "cirugias",
+            "maternidad",
+            "consultas_ilimitadas",
+            "odontologia",
+            "red_prestadores_top",
+            "telemedicina",
+            "preexistencias"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Acceso: Visita tu médico o clínica preferida, dentro o fuera de la red médica. Asistencia en el exterior: Cobertura médica internacional desde 90 a 180 días. Centros Médicos Allianz: Atención y tarifas preferenciales para nuestros asegurados. Centros Médicos Allianz: Disponibles en Bogotá, Barranquilla, Pereira y Medellín. Acceso a todos los servicios de tu póliza en cualquier lugar de Colombia. Reembolsos y autorizaciones: Tramitadas por medio de correo electrónico. Consulta pediátrica en casa: Para Bogotá en pólizas individuales. Atención en casa: Hospitalización en casa con cuidados prolongados y consultas domiciliarias ilimitadas. Terapias sin copago. Servicios en línea a través de Allianz App Salud. Cobertura Básica: Hospitalización con cama individual (tipo suite) y cama de acompañante, enfermera especial, cuidados intensivos, cirugías y tratamientos, entre otros. Prótesis, Órtesis, Transplante de órganos, Diálisis renal, Tratamiento integral para Cáncer, Tratamiento hospitalario para Sida, Atención de urgencias, Cirugia bariátrica. Atención integral en maternidad: Consultas y exámenes, Curso Psicoprofiláctico, Cobertura de enfermedades congénitas, Inclusión del bebé recién nacido dentro de la póliza sin ningún costo hasta la terminación de la vigencia, Libre elección de clínica y médico al momento del parto, dentro de la red disponible, Acompañamiento y asesoría integral por parte de un asesor especializado, Regalo especial por parte de Allianz para los primeros días del bebé. Exámenes y laboratorios: Acceso a exámenes de rutina y especializados de diagnóstico para conocer tu estado de salud. Consultas Médicas: Prioritarias, Generales y Especializadas. Terapias en consultorio y a domicilio: Acceso a tratamientos para mejorar tu estado de salud en instituciones médicas o en la comodidad de tu casa. Cuidados en casa: Hospitalización en casa, Cuidados prolongados, Consultas domiciliarias ilimitadas. Coberturas Plus: Consulta médica en casa, Ambulancia terrestre nacional, Acceso a Centros Médicos Allianz (Bogotá y Barranquilla), Asistencia médica en el exterior, Asistencia odontológica en emergencias, Renta por incapacidad y/o hospitalización, Cobertura de exequias, Ambulancia aérea nacional, Exoneración del pago de primas a causa de la muerte del asegurado principal.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Salud-Gold-11092024.pdf",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Clausulado_MedicAll_Gold_Modulo_6.pdf"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Salud-Gold-11092024.pdf",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Clausulado_MedicAll_Gold_Modulo_6.pdf"
+          ]
+        },
+        "waiting_period_days": {
+          "value": 121,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Salud-Gold-Plus-01072024-Version-01-1.pdf",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Salud-Gold-11092024.pdf",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Clausulado_MedicAll_Gold_Modulo_6.pdf"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T20:58:32Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/personas/salud/gold.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/personas/salud.html#formulario",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/gold.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "b704fa84-43bb-4a22-98de-4424f916b419",
+      "created_at": "2025-09-17T20:58:25.660515+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "salud-plus",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Salud Plus",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "hospitalizacion",
+            "urgencias",
+            "cirugias",
+            "maternidad",
+            "consultas_ilimitadas",
+            "odontologia"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Servicios de salud hospitalarios y ambulatorios a nivel nacional e internacional. Respaldo a tu salud con límites de cobertura es de hasta 3 millones de dólares o 5.500 millones de pesos. Más de 4.100 médicos, laboratorios e instituciones médicas disponibles en Colombia; con atención preferencial en Centros Médicos Allianz. Cobertura Básica: Hospitalización, Prótesis, Órtesis, Transplante de órganos, Diálisis renal, Tratamiento integral para Cáncer, Tratamiento hospitalario para Sida, Atención de urgencias, Cirugia bariátrica. Atención integral en maternidad. Exámenes y laboratorios. Consultas Médicas. Terapias en consultorio y a domicilio. Cuidados en casa. Coberturas Plus: Consulta médica en casa, Ambulancia terrestre nacional, Acceso a Centros Médicos Allianz (Bogotá y Barranquilla), Asistencia médica en el exterior, Asistencia odontológica en emergencias, Renta por incapacidad y/o hospitalización, Cobertura de exequias, Ambulancia aérea nacional, Exoneración del pago de primas a causa de la muerte del asegurado principal.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Salud-Plus-Dolares-11092024.pdf",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Salud-Plus-Pesos-11092024.pdf"
+          ]
+        },
+        "copay": {
+          "value": "Sin copago (Terapias)",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "waiting_period_days": {
+          "value": 180,
+          "source_urls": [
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Salud-Plus-Dolares-11092024.pdf",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/Salud-Plus-Pesos-11092024.pdf",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/MedicAllPLUSD_MODULO_1-02.pdf",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/MedicAllPLUS_PESOS_MODULO_02-02.pdf",
+            "https://www.allianz.co/content/dam/onemarketing/iberolatam/allianz-co/seguros/personas/salud/contratos/MedicAllPLUS_PESOS_MODULO_01-02.pdf"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T20:57:39Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/personas/salud/plus.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://www.allianz.co/seguros/personas/salud.html#formulario",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/personas/salud/plus.html"
+          ]
+        }
+      }
+    },
+    {
+      "id": "b2efc6ee-1492-407e-b6c9-7fb1792ffb97",
+      "created_at": "2025-09-17T20:56:42.553026+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "allianz",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "provider_display": {
+          "value": "Allianz Colombia",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "plan_slug": {
+          "value": "llave-en-mano",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro para Carro Llave en Mano",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "perdida_total",
+            "danos_parciales",
+            "grua_km",
+            "cobertura_vidrios",
+            "asistencia_juridica",
+            "accidentes_personales",
+            "cobertura_llantas",
+            "colision",
+            "robo_parcial"
+          ],
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "benefit_details": {
+          "value": "Protección: Tu carro de 0 a 2 años de antiguedad estará asegurado al 100% en caso de daños por accidente o robo. Respaldo: Amplios límites amplios de cobertura de Responsabilidad Civil Extracontractual para respaldar tu patrimonio. Oportunidad: Llámanos al #265 para recibir el acompañamiento y asistencia oportuna cuando nos necesites. Cobertura llave en mano: Protege tu auto de 0 a 2 años de antigüedad. En caso de sufrir daños por accidente o hurto que ocasione una pérdida de mayor cuantía, recibirás un auto cero kilómetros con valor comercial menor o igual al valor comercial del último modelo de tu auto, de cualquier marca, clase o tipo comercializada en el país; y liviano de uso particular familiar. Además Allianz asumirá los gastos por: SOAT, derechos de matrícula, impuestos y gastos del tramitador. Más cobertura: 100% de cobertura por daños que sufra tu auto causados por accidente, robo, eventos de la naturaleza o actos malintencionados, como hechos terroristas. Cobertura de Responsabilidad Civil Extracontractual más alta del mercado de 4 mil millones de pesos. Cubre el mayor monto en Asistencia Jurídica para procesos penales y civiles, hasta por 50 millones de pesos. Si el auto es declarado como pérdida de mayor cuantía, ofrecemos un amparo para gastos de movilización de hasta 40 mil pesos diarios por 30 días. Cobertura de accidentes personales en caso de accidente de tránsito para el asegurado y el conductor autorizado, hasta 50 millones de pesos.",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "deductible": {
+          "value": "1,1 S.M.M.L.V",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "target_personas": {
+          "value": "vehículo liviano de uso particular familiar",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T20:56:01Z",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://allianzdigital.co/cotizar?utm_source=web&utm_medium=boton&utm_campaign=quiero+un+seguro",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.allianz.co/seguros/vehiculos/Autos/llave-en-mano.html"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,9 +1,10 @@
 import { SignJWT, jwtVerify } from 'jose';
+import { env, getPublicEnv } from '@/lib/env';
 
 export const ACCESS_COOKIE = 'briki_trial_access';
 
 export function loadAllowlist(): string[] {
-  const raw = process.env.TRIAL_CODES || "";
+  const raw = env.server.TRIAL_CODES || "";
   return raw.split(/[, \n\r]+/).map(s => s.trim()).filter(Boolean);
 }
 
@@ -23,12 +24,13 @@ export function isValidTrialCode(code: string): boolean {
 }
 
 export function isGateEnabled() {
-  return process.env.NEXT_PUBLIC_TRIAL_GATE_ENABLED === '1' || process.env.TRIAL_GATE_ENABLED === '1';
+  const pub = getPublicEnv();
+  return pub.NEXT_PUBLIC_TRIAL_GATE_ENABLED === '1' || env.server.TRIAL_GATE_ENABLED === '1';
 }
 
 export async function signTrialJwt() {
-  const secret = process.env.TRIAL_JWT_SECRET; if (!secret) throw new Error('TRIAL_JWT_SECRET missing');
-  const ttlDays = Number(process.env.TRIAL_TTL_DAYS || '14');
+  const secret = env.server.TRIAL_JWT_SECRET; if (!secret) throw new Error('TRIAL_JWT_SECRET missing');
+  const ttlDays = Number(env.server.TRIAL_TTL_DAYS || '14');
   const enc = new TextEncoder().encode(secret);
   const iat = Math.floor(Date.now()/1000), exp = iat + ttlDays*24*60*60;
   return await new SignJWT({ sub:'trial', scope:'assistant' })
@@ -36,7 +38,7 @@ export async function signTrialJwt() {
 }
 
 export async function verifyTrialJwt(token: string) {
-  const secret = process.env.TRIAL_JWT_SECRET; if (!secret) return null;
+  const secret = env.server.TRIAL_JWT_SECRET; if (!secret) return null;
   try {
     const enc = new TextEncoder().encode(secret);
     const { payload } = await jwtVerify(token, enc);

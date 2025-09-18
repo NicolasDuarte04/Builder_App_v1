@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 
-const ENABLED = String(process.env.NEXT_PUBLIC_ENABLE_ADMIN_METRICS || '').toLowerCase() === 'true';
+import { getPublicEnv } from '@/lib/env';
+const ENABLED = String(getPublicEnv().NEXT_PUBLIC_ENABLE_ADMIN_METRICS || '').toLowerCase() === 'true';
 
 export default function MetricsPage() {
   if (!ENABLED) return notFound();

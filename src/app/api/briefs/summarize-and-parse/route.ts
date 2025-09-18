@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     const charLimit = (() => {
-      const raw = String(process.env.NEXT_PUBLIC_LONG_PASTE_CHAR_LIMIT || '').trim();
+      const raw = String((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_LONG_PASTE_CHAR_LIMIT || '').trim();
       const n = Number.parseInt(raw, 10);
       return Number.isFinite(n) && n > 0 ? n : 12000;
     })();

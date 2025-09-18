@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
+import { env, getServerVar } from '@/lib/env';
+
 export async function GET(req: Request) {
-  const hasCatalogEnv = Boolean(process.env.CATALOG_DB_RO_URL || process.env.CATALOG_DB_URL);
+  const hasCatalogEnv = Boolean(env.server.CATALOG_DB_RO_URL || env.server.CATALOG_DB_URL || getServerVar('CATALOG_DB_RO_URL') || getServerVar('CATALOG_DB_URL'));
   if (!hasCatalogEnv) {
     return NextResponse.json({ exists: false, count: 0 });
   }

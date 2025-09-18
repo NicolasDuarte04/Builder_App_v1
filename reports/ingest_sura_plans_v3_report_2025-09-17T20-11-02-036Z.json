@@ -1,0 +1,23 @@
+{
+  "startedAt": "2025-09-17T20:10:54.669Z",
+  "inputPath": "scripts/etl/raw/raw_webhound_sura.json (or fallback ./scripts/etl/raw_webhound_sura.json)",
+  "rowsRead": 9,
+  "kept": 2,
+  "rejected": 7,
+  "rejectedByReason": {
+    "insufficient_canonical_benefits": 7
+  },
+  "countsByCategory": {
+    "salud": 2
+  },
+  "upsertedProviders": 2,
+  "upsertedPlans": 2,
+  "insertedBenefits": 14,
+  "insertedPrices": 2,
+  "insertedSources": 2,
+  "notes": [],
+  "sampleKeptPlanSlugs": [
+    "sura_salud_para_dos_plan_estandar",
+    "sura_salud_para_dos_plan_plus"
+  ]
+}

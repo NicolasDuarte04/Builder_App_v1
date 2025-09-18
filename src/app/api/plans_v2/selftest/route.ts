@@ -1,3 +1,4 @@
+import { env, getServerVar } from '@/lib/env';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
@@ -8,9 +9,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false }, { status: 404 });
   }
 
-  const usingEnv = process.env.CATALOG_DB_RO_URL
+  const usingEnv = (env.server.CATALOG_DB_RO_URL || getServerVar('CATALOG_DB_RO_URL'))
     ? 'CATALOG_DB_RO_URL'
-    : (process.env.CATALOG_DB_URL ? 'CATALOG_DB_URL' : 'none');
+    : ((env.server.CATALOG_DB_URL || getServerVar('CATALOG_DB_URL')) ? 'CATALOG_DB_URL' : 'none');
 
   try {
     const { q } = await import('@/lib/db-catalog');

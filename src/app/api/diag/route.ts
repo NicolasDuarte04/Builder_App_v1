@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool as sharedPool } from '@/lib/render-db';
 import { Pool } from 'pg';
+import { env as brikiEnv, getServerVar } from '@/lib/env';
 
 export const runtime = 'nodejs';
 
 function getSafePool(): Pool | null {
   if (sharedPool) return sharedPool as unknown as Pool;
-  const conn = process.env.RENDER_POSTGRES_URL;
+  const conn = getServerVar('RENDER_POSTGRES_URL');
   if (!conn) return null;
   return new Pool({ connectionString: conn, ssl: { rejectUnauthorized: false } });
 }
@@ -14,21 +15,21 @@ function getSafePool(): Pool | null {
 export async function GET(req: NextRequest) {
   try {
     const headerToken = req.headers.get('x-diag-token');
-    const expected = process.env.DIAG_TOKEN;
+    const expected = getServerVar('DIAG_TOKEN');
     if (!expected || headerToken !== expected) {
       return NextResponse.json({ error: 'forbidden' }, { status: 403 });
     }
 
     const build = {
-      commit: process.env.VERCEL_GIT_COMMIT_SHA ?? 'local',
-      branch: process.env.VERCEL_GIT_COMMIT_REF ?? 'local',
+      commit: brikiEnv.server.VERCEL_GIT_COMMIT_SHA ?? 'local',
+      branch: brikiEnv.server.VERCEL_GIT_COMMIT_REF ?? 'local',
     };
 
     const env = {
-      has_RENDER_POSTGRES_URL: !!process.env.RENDER_POSTGRES_URL,
-      has_DATABASE_URL: !!process.env.DATABASE_URL,
-      has_OPENAI_API_KEY: !!process.env.OPENAI_API_KEY,
-      validate_openai_response: process.env.VALIDATE_OPENAI_RESPONSE ?? 'unset',
+      has_RENDER_POSTGRES_URL: !!getServerVar('RENDER_POSTGRES_URL'),
+      has_DATABASE_URL: !!getServerVar('DATABASE_URL'),
+      has_OPENAI_API_KEY: !!brikiEnv.server.OPENAI_API_KEY,
+      validate_openai_response: getServerVar('VALIDATE_OPENAI_RESPONSE') ?? 'unset',
     };
 
     const pool = getSafePool();

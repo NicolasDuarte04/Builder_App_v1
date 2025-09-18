@@ -1,0 +1,57 @@
+[
+  {
+    "plan_slug": "world_medica_bolivar",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "universal_medical_care_advance",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "plan_de_salud_a_su_medida",
+    "category": "salud",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "autos_premium",
+    "category": "autos",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "autos_ligero",
+    "category": "autos",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "autos_verde",
+    "category": "autos",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "autos_premium_cobertura_360",
+    "category": "autos",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "autos_clasico",
+    "category": "autos",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "autos_estandar",
+    "category": "autos",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "plan_premium",
+    "category": "autos",
+    "reason": "insufficient_canonical_benefits"
+  },
+  {
+    "plan_slug": "plan_estandar",
+    "category": "autos",
+    "reason": "insufficient_canonical_benefits"
+  }
+]

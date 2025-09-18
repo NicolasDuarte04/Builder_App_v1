@@ -1,7 +1,8 @@
 import { Pool } from 'pg';
+import { env, getServerVar } from '@/lib/env';
 
 const connectionString =
-  process.env.CATALOG_DB_RO_URL || process.env.CATALOG_DB_URL;
+  env.server.CATALOG_DB_RO_URL || env.server.CATALOG_DB_URL || getServerVar('CATALOG_DB_RO_URL') || getServerVar('CATALOG_DB_URL');
 
 if (!connectionString) {
   throw new Error('[ENV] Missing CATALOG_DB_URL or CATALOG_DB_RO_URL');

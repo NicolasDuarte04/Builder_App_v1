@@ -1,0 +1,1433 @@
+{
+  "metadata": {
+    "entity": {
+      "name": "AXA COLPATRIA Colombia Consumer Insurance Plan (Autos & Salud)",
+      "criteria": [
+        "Is it an insurance plan offered by AXA COLPATRIA Colombia?",
+        "Is it a consumer-facing plan?",
+        "Does it fall under \"Autos\" or \"Salud\" categories?",
+        "Is the source an official axacolpatria.co URL or a Colombia section of axa.com that points back to Colombia products?",
+        "Does it have a provider_slug of \"axacolpatria\" and provider_display present?",
+        "Does it have a category_slug of \"autos\" or \"salud\"?",
+        "Does it have a unique plan_slug and plan_display present?",
+        "Does it have pricing (either price_min or pricing_model=\"quote\")?",
+        "Does it have at least 4 canonical benefits?",
+        "Is source_primary_url an official AXA COLPATRIA URL?",
+        "Is last_verified_at present and ≤180 days old?"
+      ],
+      "description": "Consumer-facing insurance plans offered by AXA COLPATRIA in Colombia, limited to Autos and Salud categories, with all required attributes for data extraction."
+    },
+    "schema": {
+      "attributes": [
+        {
+          "name": "provider_slug",
+          "type": "string",
+          "description": "Unique identifier for the insurance provider, always \"axacolpatria\".",
+          "is_primary": true
+        },
+        {
+          "name": "provider_display",
+          "type": "string",
+          "description": "Display name for the insurance provider, always \"AXA COLPATRIA\".",
+          "is_primary": false
+        },
+        {
+          "name": "category_slug",
+          "type": "string",
+          "description": "Category of the insurance plan, either \"autos\" or \"salud\".",
+          "is_primary": true
+        },
+        {
+          "name": "plan_slug",
+          "type": "string",
+          "description": "Unique identifier for the insurance plan within the provider.",
+          "is_primary": true
+        },
+        {
+          "name": "plan_display",
+          "type": "string",
+          "description": "Display name of the insurance plan.",
+          "is_primary": false
+        },
+        {
+          "name": "price_currency",
+          "type": "string",
+          "description": "Currency of the plan price, typically \"COP\".",
+          "is_primary": false
+        },
+        {
+          "name": "price_min",
+          "type": "number",
+          "description": "Minimum price of the plan, can be null if pricing_model is \"quote\".",
+          "is_primary": false
+        },
+        {
+          "name": "pricing_model",
+          "type": "string",
+          "description": "Pricing model, either \"quote\" or \"fixed\".",
+          "is_primary": false
+        },
+        {
+          "name": "benefits",
+          "type": "string",
+          "description": "List of canonical benefit codes included in the plan.",
+          "is_primary": false
+        },
+        {
+          "name": "benefit_details",
+          "type": "string",
+          "description": "Additional details or descriptions about the plan benefits.",
+          "is_primary": false
+        },
+        {
+          "name": "deductible",
+          "type": "string",
+          "description": "Deductible amount for Autos plans. Can be null if only available in PDF.",
+          "is_primary": false
+        },
+        {
+          "name": "copay",
+          "type": "string",
+          "description": "Copay amount for Salud plans. Can be null if only available in PDF.",
+          "is_primary": false
+        },
+        {
+          "name": "waiting_period_days",
+          "type": "number",
+          "description": "Number of days for the waiting period.",
+          "is_primary": false
+        },
+        {
+          "name": "geo_scope",
+          "type": "string",
+          "description": "Geographical scope of the plan, can be null if not visible.",
+          "is_primary": false
+        },
+        {
+          "name": "target_personas",
+          "type": "string",
+          "description": "Target audience or personas for the plan, can be null if not visible.",
+          "is_primary": false
+        },
+        {
+          "name": "last_verified_at",
+          "type": "string",
+          "description": "Timestamp when the plan data was last verified.",
+          "is_primary": false
+        },
+        {
+          "name": "source_primary_url",
+          "type": "string",
+          "description": "URL of the official source where the plan information was found.",
+          "is_primary": false
+        },
+        {
+          "name": "external_purchase_url",
+          "type": "string",
+          "description": "URL for purchasing the plan, if available.",
+          "is_primary": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Relevant tags or keywords for the plan.",
+          "is_primary": false
+        }
+      ]
+    },
+    "exported_at": "2025-09-17T22:28:41.405Z",
+    "total_items": 11
+  },
+  "data": [
+    {
+      "id": "6660fa01-c17f-4dea-af32-37328137c22b",
+      "created_at": "2025-09-17T22:17:06.98165+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-taxi"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-taxi"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-taxi"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-de-taxis",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-taxi"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Taxis",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-taxi"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-taxi"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "perdida_total_daños",
+            "daños_parciales",
+            "perdida_total_hurto",
+            "perdida_parcial_hurto",
+            "grua_transporte",
+            "temblor_terremoto_erupcion_volcanica",
+            "proteccion_patrimonial",
+            "asistencia_juridica",
+            "lucro_cesante",
+            "grua",
+            "informe_vias",
+            "traslado_medico",
+            "mensajes_urgentes"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-taxi"
+          ]
+        },
+        "benefit_details": {
+          "value": "Sabemos que para todo trabajador es fundamental contar siempre con su herramienta de trabajo, no contar con ella puede afectar su bienestar y el de sus familias porque dependen económicamente de su vehículo. Por esta razón, te respaldamos ante las pérdidas que puedas tener en un accidente en tu taxi. Coberturas básicas: Perjuicios causados a terceros o responsabilidad civil extracontractual. Pérdida total o parcial de tu vehículo por daños. Pérdida total o parcial de tu vehículo por hurto. Gastos de grúa, transporte y protección de tu vehículo. Temblor, terremoto o erupción volcánica. Protección patrimonial. Asistencia jurídica (procesos penales y civiles). Coberturas adicionales: Lucro cesante o auxilio económico por inactividad de tu taxi. Asistencias: Servicio de grúa, Informe estado de las vías, Traslado Medico Terrestre por Accidente, Transmisión de mensajes urgentes, Asistencia jurídica.",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-taxi"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-taxi"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/seguro-de-taxi",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-taxi"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "2a81d5de-7ad4-43c4-80a4-e6c7bcaf2f7c",
+      "created_at": "2025-09-17T22:14:25.593827+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "plan_slug": {
+          "value": "auto-suficiente",
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "plan_display": {
+          "value": "Auto Suficiente",
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "perdida_total",
+            "grua_transporte",
+            "proteccion_patrimonial",
+            "asistencia_juridica"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "benefit_details": {
+          "value": "Con nuestro nuevo seguro de autos Auto Suficiente proteges tu auto y ahorras al mismo tiempo. Aplica únicamente cuando no se presentan lesiones personales o daños a bienes públicos. Coberturas básicas: Responsabilidad civil extracontractual, Pérdida total de tu vehículo por hurto o hurto calificado, Gastos de grúa, transporte y protección de tu vehículo, Protección patrimonial, Asistencia jurídica (procesos penales y civiles).",
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "deductible": {
+          "value": "El deducible es el monto o porcentaje del daño indemnizable que invariablemente se deduce del pago de la indemnización y que, por lo tanto, siempre queda a tu cargo como asegurado.",
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/auto-suficiente",
+          "source_urls": [
+            "https://www.axacolpatria.co/auto-suficiente"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "6b1ce670-ef25-40bb-82e0-9a4b5ac6e4a8",
+      "created_at": "2025-09-17T22:10:00.016557+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "plan_slug": {
+          "value": "plan-fesalud",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Fesalud",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cancer_tratamiento",
+            "medicamentos",
+            "reembolso_consultas",
+            "reembolso_urgencias_exterior",
+            "deportes_alto_riesgo",
+            "urgencias_alcohol_sustancias",
+            "trasplantes",
+            "vih_sida_tratamiento",
+            "vacunas",
+            "cirugia_bariatrica",
+            "enfermedades_congenitas",
+            "tamizaje_embarazo",
+            "maternidad",
+            "examenes_diagnostico",
+            "terapias",
+            "amparo_desempleo",
+            "continuidad_fallecimiento"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "benefit_details": {
+          "value": "Cáncer hospitalización, cirugía y tratamiento ilimitado. Medicamentos en presentación comercial para quimioterapia y coadyuvantes*. Reembolso en consultas médicas para profesionales no adscritos a la red AXA COLPATRIA*. Reembolso en urgencias en el exterior a tarifas AXA COLPATRIA*. Cobertura ilimitada en la práctica de deportes de alto riesgo (en calidad de aficionado). Atención de urgencias bajo los efectos del alcohol o sustancias psicoactivas. Todos los trasplantes aprobados en Colombia. Se cubren los gastos de donante efectivo*. Medicamentos pre y post hospitalarios (30 días)*. VIH / SIDA tratamiento y sus complicaciones. Cubre medicamentos antirretrovirales hospitalarios*. Vacunas, por reembolso*. Cirugía bariátrica*. Enfermedades congénitas y genéticas*. Tamizaje para patologías congénitas en el primer trimestre del embarazo*. Maternidad, atención integral al recién nacido incluyendo enfermedades congénitas y exámenes de tamizaje neonatal. Exámenes de diagnóstico simple, especializado y laboratorios sin copago desde el primer día de afiliación. Terapia respiratoria, ocupacional, del lenguaje y fisioterapia sin copago*. Amparo de desempleo, aplica por 6 meses para todos los beneficiarios de la póliza, aplica cuando el tomador sea beneficiario*. Continuidad en el pago por fallecimiento hasta el fin de la vigencia anual, cuando el tomador sea beneficiario*.",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "46ac6cae-2114-4b8d-a2d3-bdcc340df4ba",
+      "created_at": "2025-09-17T22:09:59.99251+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "plan_slug": {
+          "value": "plan-alterno",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Alterno",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cancer_tratamiento",
+            "medicamentos",
+            "trasplante_riñon_cornea",
+            "vih_sida_tratamiento",
+            "maternidad",
+            "urgencias_alcohol",
+            "amparo_desempleo"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "benefit_details": {
+          "value": "Cáncer capitalización, cirugía y tratamiento Ilimitado. Medicamentos en presentación comercial para quimioterapia*. Trasplante de riñón y córnea*. VIH / SIDA tratamiento y sus complicaciones*. Maternidad, atención integral al recién nacido incluyendo enfermedades congénitas y exámenes de tamizaje neonatal. Atención de urgencias bajo los efectos del alcohol. Amparo de desempleo, aplica por 6 meses para todos los beneficiarios de la póliza, aplica cuando el tomador sea beneficiario*.",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "14032017-4104-4653-9425-a442db843c93",
+      "created_at": "2025-09-17T22:09:59.981771+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "plan_slug": {
+          "value": "plan-original",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Original",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud_new"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "urgencias",
+            "hospitalizacion",
+            "cirugias",
+            "medicamentos",
+            "telemedicina",
+            "maternidad",
+            "enfermedades_congenitas",
+            "cancer_tratamiento",
+            "trasplantes",
+            "vih_sida_tratamiento",
+            "terapias",
+            "amparo_desempleo",
+            "asistencia_internacional"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud/plan-original"
+          ]
+        },
+        "benefit_details": {
+          "value": "Nuestro Plan Original brinda acceso a servicios de salud integrales, ambulatorios y hospitalarios, respaldados por una red de clínicas y especialistas de primer nivel. Con amplias coberturas en urgencias, hospitalización y maternidad, y beneficios actualizados que maximizan la protección ante imprevistos, este plan garantiza la seguridad y tranquilidad que mereces. Coberturas generales: Urgencias médicas y odontológicas a nivel nacional ilimitadas desde el 1er día. Hospitalización y cirugía sin límite de días. Medicamentos pre y post hospitalarios en presentación comercial hasta 30 días*. Hospitalización psiquiátrica hasta 50 días por vigencia anual. Acceso directo a consulta en todas las especialidades médicas y estudios diagnósticos ilimitados en la red contratada. Consulta médica domiciliaria hasta 5 SIN copago y telemedicina. * Cobertura de maternidad integral y recién nacido incluida la cobertura de enfermedades congénitas , genéticas y tamizaje del recién nacido. * Prótesis y material de osteosíntesis hasta 60 SMMLV por vigencia anual Lente intraocular hasta 3 SMMLV por año. Audífonos para pérdida auditiva hasta 3 SMMLV por año. Cáncer hospitalización, cirugía y tratamiento Ilimitado. Medicamentos en presentación comercial para quimioterapia y sus efectos colaterales*. Todos los trasplantes aprobados en Colombia a partir del 3er año, incluye gastos de donante. Tratamiento para insuficiencia renal crónica ilimitado. Tratamiento hospitalario para VIH-SIDA desde el 2do año. Cobertura para enfermedades congénitas y genéticas de usuarios no nacidos en la póliza desde el 3er año. * Terapias especializadas (respiratoria, ocupacional, del lenguaje y fisioterapia). * Pomeroy y vasectomía. Escleroterapia. Amparo por fallecimiento y desempleo del tomador. * Otras asistencias nacionales como traslado en vehículo a consulta médica. * Asistencia médica en el exterior 120 días hasta por 30.000 USD o Euros por evento.*",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud/plan-original"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": "Nacional e Internacional",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud/plan-original"
+          ]
+        },
+        "target_personas": {
+          "value": "Edad mínima de ingreso: desde el nacimiento. Edad máxima de ingreso: hasta los 63 años. No hay edad máxima de permanencia.",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud/plan-original"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud/plan-original"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/planes-de-salud/plan-original",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud/plan-original"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "bded6299-84c8-4318-8cda-f7628e8f645c",
+      "created_at": "2025-09-17T22:00:18.165909+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "plan_slug": {
+          "value": "salud-ideal",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Salud Ideal",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "urgencias",
+            "odontologia",
+            "consultas_ilimitadas",
+            "hospitalizacion",
+            "cirugias",
+            "maternidad",
+            "asistencia_internacional",
+            "hospitalizacion_domiciliaria",
+            "medicamentos",
+            "terapias"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud/plan-salud-ideal"
+          ]
+        },
+        "benefit_details": {
+          "value": "Cobertura integral en servicios de urgencias, hospitalización y cirugía. Incluye urgencias médicas y odontológicas ilimitadas a nivel nacional desde el 1er día, consultas médicas pre y post hospitalarias (hasta 3 por evento), hospitalización en habitación individual, UCI y honorarios médicos, cirugías programadas, maternidad (incluye parto normal/cesárea, embarazo ectópico, aborto espontáneo y complicaciones), cobertura recién nacidos (60 días post-nacimiento, incluye patologías congénitas), hospitalización domiciliaria (enfermería, médico general, oxigenoterapia, hasta 10 terapias físicas y respiratorias), gastos ambulatorios relacionados con evento hospitalario (laboratorio, diagnóstico, radiología, medicamentos genéricos, terapias). Asistencia médica en el exterior 120 días hasta por 25.000 USD o Euros por evento.",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud/plan-salud-ideal"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": "Nacional e Internacional",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud/plan-salud-ideal"
+          ]
+        },
+        "target_personas": {
+          "value": "Edad mínima de ingreso: desde el nacimiento. Edad máxima de ingreso: hasta los 63 años. No hay edad máxima de permanencia.",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud/plan-salud-ideal"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud/plan-salud-ideal"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/planes-de-salud-livianos",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "2aff01a7-0175-4f24-8dd9-6578636d721c",
+      "created_at": "2025-09-17T22:00:18.110902+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "plan_slug": {
+          "value": "plan-ambulatorio",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Ambulatorio",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "telemedicina",
+            "hospitalizacion",
+            "urgencias",
+            "odontologia",
+            "consultas_ilimitadas",
+            "terapias",
+            "nutricion",
+            "psicologia",
+            "optometria"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud/plan-ambulatorio"
+          ]
+        },
+        "benefit_details": {
+          "value": "Acceso a especialistas sin necesidad de autorizaciones, orientación médica 24/7 y una amplia red de servicios ambulatorios de salud a nivel nacional. Coberturas generales include: Consulta médica general y especializadas ilimitada. Urgencias, consultas y estudios diagnósticos de odontología SIN copago. Consulta en especialidades como psicología, nutrición y optometría. Consulta médica domiciliaria y traslado en ambulancia a criterio médico a centros hospitalarios. Orientación médica telefónica 24/7. Exámenes de laboratorio clínico y especializados de diagnóstico ilimitados. Radiografías y ecografías simples. Exámenes y ecografías de maternidad. Terapias respiratorias, ocupacional, del lenguaje y fisioterapia. Transporte para asistencia a consultas médicas. Renta diaria por hospitalización.",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud/plan-ambulatorio"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": "Sin copago en traslado a consulta médica (3 events/year) and for urgencias, consultas y estudios diagnósticos de odontología",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud/plan-ambulatorio"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": "Edad mínima de ingreso: desde el nacimiento. Edad máxima de ingreso: hasta los 63 años. No hay edad máxima de permanencia.",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud/plan-ambulatorio"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/portal-alterno-iufd/planes-de-salud/plan-ambulatorio"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/planes-de-salud-livianos",
+          "source_urls": [
+            "https://www.axacolpatria.co/planes-de-salud-livianos"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "04f31c8b-c9b3-4189-8d5d-2b67d92dd59f",
+      "created_at": "2025-09-17T21:59:13.894634+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "plan_slug": {
+          "value": "plus",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "plan_display": {
+          "value": "Plus",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "asistencia_juridica",
+            "perdida_parcial_daños",
+            "perdida_total_daños",
+            "perdida_parcial_hurto",
+            "perdida_total_hurto",
+            "grua_transporte",
+            "temblor_terremoto_erupcion_volcanica",
+            "proteccion_patrimonial"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "benefit_details": {
+          "value": "Limite de valor asegurado: 300 millones. Limite de antigüedad de ingreso en póliza nuevas: Hasta 15 años. Limite de antigüedad de ingreso en renovaciones: Hasta 20 años. Limite de RCE: 4.000 millones. Pérdida parcial daños: Si cubre. Pérdida total daños: Si cubre. Pérdida parcial hurto: Si cubre. Pérdida total hurto: Si cubre. Temblor, terremoto y erupción volcánica: Si cubre. Protección patrimonial: Si cubre.",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/seguro-de-auto",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "0692ad02-7cdf-4611-bf46-11bb0aab5c5a",
+      "created_at": "2025-09-17T21:59:13.890708+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "plan_slug": {
+          "value": "tradicional",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "plan_display": {
+          "value": "Tradicional",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "asistencia_juridica",
+            "perdida_parcial_daños",
+            "perdida_total_daños",
+            "perdida_parcial_hurto",
+            "perdida_total_hurto",
+            "grua_transporte",
+            "temblor_terremoto_erupcion_volcanica",
+            "proteccion_patrimonial"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "benefit_details": {
+          "value": "Limite de valor asegurado: Menor a 70 millones. Limite de antigüedad de ingreso en póliza nuevas: Hasta 15 años. Limite de antigüedad de ingreso en renovaciones: Hasta 20 años. Limite de RCE: 1.800 millones. Pérdida parcial daños: Si cubre. Pérdida total daños: Si cubre. Pérdida parcial hurto: Si cubre. Pérdida total hurto: Si cubre. Temblor, terremoto y erupción volcánica: Si cubre. Protección patrimonial: Si cubre.",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/seguro-de-auto",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "35637392-b7ff-48a5-bcfe-abf764c15716",
+      "created_at": "2025-09-17T21:59:13.870184+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "plan_slug": {
+          "value": "vip",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "plan_display": {
+          "value": "VIP",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "asistencia_juridica",
+            "perdida_parcial_daños",
+            "perdida_total_daños",
+            "perdida_parcial_hurto",
+            "perdida_total_hurto",
+            "grua_transporte",
+            "temblor_terremoto_erupcion_volcanica",
+            "proteccion_patrimonial"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "benefit_details": {
+          "value": "Limite de valor asegurado: Desde 70 millones hasta 300 millones. Limite de antigüedad de ingreso en póliza nuevas: Hasta 15 años. Limite de antigüedad de ingreso en renovaciones: Hasta 20 años. Limite de RCE: 2.100 millones. Pérdida parcial daños: Si cubre. Pérdida total daños: Si cubre. Pérdida parcial hurto: Si cubre. Pérdida total hurto: Si cubre. Temblor, terremoto y erupción volcánica: Si cubre. Protección patrimonial: Si cubre.",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/seguro-de-auto",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "89224529-f401-42c0-9914-8e2eb81f3c9c",
+      "created_at": "2025-09-17T21:58:39.592703+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "axacolpatria",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "provider_display": {
+          "value": "AXA COLPATRIA",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "plan_slug": {
+          "value": "esencial",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "plan_display": {
+          "value": "Esencial",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "asistencia_juridica",
+            "perdida_total_daños",
+            "perdida_total_hurto",
+            "grua_transporte",
+            "temblor_terremoto_erupcion_volcanica",
+            "proteccion_patrimonial"
+          ],
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "benefit_details": {
+          "value": "Limite de valor asegurado: 300 millones. Limite de antigüedad de ingreso en póliza nuevas: Hasta 25 años. Limite de antigüedad de ingreso en renovaciones: Hasta 25 años. Limite de RCE: 600 millones. Pérdida parcial daños: No cubre. Pérdida total daños: Si cubre. Pérdida parcial hurto: No cubre. Pérdida total hurto: Si cubre. Temblor, terremoto y erupción volcánica: Si cubre. Protección patrimonial: Si cubre.",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.axacolpatria.co/seguro-de-auto",
+          "source_urls": [
+            "https://www.axacolpatria.co/seguro-de-auto"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    }
+  ]
+}

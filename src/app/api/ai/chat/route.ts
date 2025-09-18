@@ -17,7 +17,8 @@ import { telemetry } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
 
-const hasValidKey = !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-');
+import { env } from '@/lib/env';
+const hasValidKey = !!env.server.OPENAI_API_KEY && env.server.OPENAI_API_KEY.startsWith('sk-');
 
 // Language detection function
 function detectLanguage(text: string): 'english' | 'spanish' {
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
   console.log('🔵 Chat API called with:', {
     messageCount: messages.length,
     lastMessage: messages[messages.length - 1]?.content?.substring(0, 50) + '...',
-    hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+    hasOpenAIKey: !!env.server.OPENAI_API_KEY,
     promptVersion: PROMPT_VERSION,
     preferredLanguage: preferredLanguage || 'not set'
   });
@@ -240,7 +241,7 @@ export async function POST(req: NextRequest) {
 
   // Real OpenAI call ------------------------------------------------------------------
   try {
-    const oai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const oai = createOpenAI({ apiKey: env.server.OPENAI_API_KEY! });
 
     const result = await streamText({
       model: oai('gpt-3.5-turbo'),

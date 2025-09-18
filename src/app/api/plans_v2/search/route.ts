@@ -7,6 +7,7 @@ import { normalizePriceToCOP } from '@/lib/currency-normalization';
 import { normalizeCarrier } from '@/lib/catalog/normalize';
 import { createHash } from 'crypto';
 import { telemetry } from '@/lib/telemetry';
+import { env, getServerVar } from '@/lib/env';
 
 export const runtime = 'nodejs';
 
@@ -93,8 +94,8 @@ export async function POST(req: Request) {
 
   let rows: any[] = [];
   // Determine catalog DB env used (RO preferred) without importing the client unless present
-  const catalogRo = process.env.CATALOG_DB_RO_URL;
-  const catalogRw = process.env.CATALOG_DB_URL;
+  const catalogRo = env.server.CATALOG_DB_RO_URL || getServerVar('CATALOG_DB_RO_URL');
+  const catalogRw = env.server.CATALOG_DB_URL || getServerVar('CATALOG_DB_URL');
   const usingEnv = catalogRo ? 'CATALOG_DB_RO_URL' : (catalogRw ? 'CATALOG_DB_URL' : null);
   const hasCatalogDb = Boolean(usingEnv);
   let metaInfo: { db: string | null; sch: string | null } = { db: null, sch: null };
@@ -106,7 +107,7 @@ export async function POST(req: Request) {
     const { q } = await import('@/lib/db-catalog');
 
     // Log which env is active in development
-    try { if (process.env.NODE_ENV !== 'production') console.info('[plans_v2/search] using', usingEnv); } catch {}
+    try { if (env.server.NODE_ENV !== 'production') console.info('[plans_v2/search] using', usingEnv); } catch {}
 
     // Self-test: verify plans_v2 exists before issuing the main query, and capture db/schema
     try {
@@ -244,16 +245,16 @@ export async function POST(req: Request) {
       includeCategories: includeNorm,
       country: country || null,
       count: Array.isArray(rows) ? rows.length : 0,
-      runtime: process.env.NEXT_RUNTIME || 'nodejs',
+      runtime: getServerVar('NEXT_RUNTIME') || 'nodejs',
       limit,
       currencyNormEnabled: true,
     });
   } catch {}
 
-  if (process.env.LOG_THIN_RESULTS === 'true') {
+  if (getServerVar('LOG_THIN_RESULTS') === 'true') {
     const durationMs = Date.now() - start;
     const domain = getDomainFromRequest(req);
-    const datasource = process.env.BRIKI_DATA_SOURCE || null;
+    const datasource = getServerVar('BRIKI_DATA_SOURCE') || null;
     const event = {
       timestamp: new Date(start).toISOString(),
       domain,

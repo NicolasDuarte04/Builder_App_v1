@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { env } from '@/lib/env';
 import crypto from 'crypto';
 
 export class StorageError extends Error {
@@ -61,8 +62,8 @@ async function ensureBucketExists(supabase: any, bucketName: string): Promise<vo
 
 export async function uploadProposal(buffer: Buffer): Promise<ProposalStorageResult> {
   // Dev fallback: if Supabase env is missing, return a data URL
-  const missingEnv = !process.env.NEXT_PUBLIC_SUPABASE_URL || (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_SERVICE_KEY && !process.env.SERVICE_ROLE_KEY);
-  if (process.env.NODE_ENV !== 'production' && missingEnv) {
+  const missingEnv = !env.server.SUPABASE_URL || !env.server.SUPABASE_SERVICE_ROLE_KEY;
+  if (env.server.NODE_ENV !== 'production' && missingEnv) {
     try {
       const base64 = buffer.toString('base64');
       const dataUrl = `data:application/pdf;base64,${base64}`;
@@ -75,8 +76,8 @@ export async function uploadProposal(buffer: Buffer): Promise<ProposalStorageRes
   const supabase = createServerSupabaseClient();
   
   // Determine bucket name and TTL
-  const bucketName = process.env.PROPOSALS_BUCKET || 'documents';
-  const signedUrlTTL = parseInt(process.env.PROPOSALS_SIGNED_TTL_SECS || '7200', 10);
+  const bucketName = env.server.PROPOSALS_BUCKET || 'documents';
+  const signedUrlTTL = parseInt((env.server.PROPOSALS_SIGNED_TTL_SECS as any) || '7200', 10);
   
   // Ensure bucket exists
   await ensureBucketExists(supabase, bucketName);

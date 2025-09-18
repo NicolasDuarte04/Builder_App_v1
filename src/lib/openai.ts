@@ -4,14 +4,15 @@
 // TODO: Remove this file and related roadmap endpoints after confirming no production dependencies
 
 import OpenAI from 'openai';
+import { env } from '@/lib/env';
 
-if (!process.env.OPENAI_API_KEY) {
+if (!env.server.OPENAI_API_KEY) {
   console.error('OPENAI_API_KEY is not set in environment variables');
 }
 
 // Initialize the OpenAI client with the API key from environment variables
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: env.server.OPENAI_API_KEY,
 });
 
 // Helper function to extract project context from the prompt
@@ -190,7 +191,7 @@ Remember:
       }
 
       // Enable or disable validation via environment variable
-      const shouldValidate = process.env.VALIDATE_OPENAI_RESPONSE !== 'false';
+      const shouldValidate = (await import('@/lib/env')).getServerVar('VALIDATE_OPENAI_RESPONSE') !== 'false';
       if (!shouldValidate) {
         console.warn('Skipping OpenAI response validation (VALIDATE_OPENAI_RESPONSE=false)');
         return content;

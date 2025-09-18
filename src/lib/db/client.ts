@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { getDatabaseUrl, getDbMode, type DbMode } from './env';
+import { isDevelopment } from '@/lib/env';
 
 let pool: Pool | null = null;
 
@@ -15,7 +16,7 @@ export function getPool(): Pool {
   }
   
   // Configuración SSL basada en el entorno
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = !isDevelopment();
   const sslConfig = isProduction 
     ? { rejectUnauthorized: true }
     : { rejectUnauthorized: false };

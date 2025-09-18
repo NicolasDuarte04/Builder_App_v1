@@ -1,0 +1,27 @@
+{
+  "startedAt": "2025-09-17T20:43:22.148Z",
+  "inputPath": "scripts/etl/raw/raw_webhound_sura.json (or fallback ./scripts/etl/raw_webhound_sura.json)",
+  "rowsRead": 9,
+  "kept": 9,
+  "rejected": 0,
+  "rejectedByReason": {},
+  "countsByCategory": {
+    "salud": 9
+  },
+  "upsertedProviders": 9,
+  "upsertedPlans": 9,
+  "insertedBenefits": 59,
+  "insertedPrices": 5,
+  "insertedSources": 9,
+  "notes": [],
+  "sampleKeptPlanSlugs": [
+    "sura_salud_para_dos_plan_estandar",
+    "sura_salud_para_dos_plan_plus",
+    "sura_salud_a_tu_alcance_plan_3",
+    "sura_salud_a_tu_alcance_plan_1",
+    "sura_salud_a_tu_alcance_plan_2",
+    "sura_salud_para_ti_plan_2",
+    "sura_salud_para_ti_plan_1",
+    "sura_salud_plan_preferencial"
+  ]
+}

@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { env } from '@/lib/env';
 import { Brief } from '@/types/brief';
 import { parseLatinNumber } from './money';
 import { telemetry, getUserContext } from './telemetry';
@@ -7,7 +8,7 @@ import { COVERAGE_PRESETS } from './coverage-presets';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: env.server.OPENAI_API_KEY,
 });
 
 // Token limit for input text

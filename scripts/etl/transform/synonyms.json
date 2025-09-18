@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "updatedAt": "",
+  "notes": "Externalized canonical benefit code synonyms per category. Add new providers by appending synonyms that normalize to the same keys (lowercase, underscores, accents stripped).",
+  "categories": {
+    "salud": {
+      "copago_bajo": [
+        "sin_copagos",
+        "no_cobro_cuotas_moderadoras_pbs",
+        "no_cobro_copagos_pbs"
+      ],
+      "medicamentos": [
+        "medicamentos",
+        "bolsa_medicamentos",
+        "medicamentos_post_atencion_medica"
+      ],
+      "telemedicina": [
+        "medicina_general_no_programada_virtual",
+        "atencion_virtual_prioritaria_medico_general",
+        "atencion_virtual_medico_general",
+        "atencion_virtual_medico_especialista"
+      ],
+      "salud_mental": [
+        "psicologia",
+        "psiquiatria",
+        "atencion_para_acompanamiento_emocional"
+      ],
+      "odontologia": [
+        "emergencias_odontologicas_domicilio_clinica",
+        "limpieza_oral_clinica",
+        "consulta_odontologia_general"
+      ],
+      "diagnosticos": [
+        "imagenologia",
+        "laboratorio_clinico",
+        "ayudas_diagnosticas",
+        "examenes_laboratorio_clinico",
+        "laboratorio_clinico_e_imagenologia",
+        "ayudas_diagnosticas_imagenologia_hospitalarias_pac",
+        "ayudas_diagnosticas_imagenologia_ambulatorias_pac"
+      ],
+      "atencion_domiciliaria": [
+        "atencion_medica_domiciliaria",
+        "atencion_domiciliaria",
+        "atencion_medica_domicilio"
+      ],
+      "consultas_especialistas": [
+        "consulta_medica_especialista",
+        "acceso_directo_especialistas",
+        "atencion_presencial_especialista",
+        "internista",
+        "pediatra",
+        "ginecologo",
+        "oftalmologo",
+        "urologo",
+        "ortopedista",
+        "otorrinolaringologo",
+        "dermatologo",
+        "nutricionista",
+        "medicina_interna",
+        "urologia",
+        "ginecologia",
+        "oftalmologia",
+        "ortopedia",
+        "otorrinolaringologia",
+        "dermatologia",
+        "nutricion"
+      ],
+      "hospitalizacion": [
+        "habitacion_individual_hospitalizacion",
+        "bono_por_atencion_hospitalaria"
+      ],
+      "cirugias": [
+        "cirugia_ambulatoria",
+        "complicaciones_quirurgicas_ambulatorias"
+      ],
+      "urgencias": [
+        "atencion_prioritaria_presencial_virtual",
+        "atencion_prioritaria_virtual_pediatra"
+      ]
+    },
+    "autos": {
+      "rc": [
+        "rc",
+        "responsabilidad_civil",
+        "responsabilidad civil"
+      ],
+      "perdida_total": [
+        "perdida_total",
+        "pérdida_total",
+        "perdidatotal"
+      ],
+      "daños_parciales": [
+        "danos_parciales",
+        "daños_parciales"
+      ],
+      "colision": [
+        "colision",
+        "colisión"
+      ],
+      "grua_km": [
+        "asistencia_grua",
+        "grua_km"
+      ],
+      "carro_reemplazo": [
+        "carro_reemplazo"
+      ],
+      "cobertura_llantas": [
+        "llantas",
+        "cobertura_llantas"
+      ],
+      "cobertura_vidrios": [
+        "vidrios",
+        "cobertura_vidrios"
+      ]
+    }
+  },
+  "howToExtend": {
+    "providers": [
+      "SURA",
+      "MAPFRE",
+      "AXA",
+      "Allianz"
+    ],
+    "instructions": [
+      "Add synonyms under the correct category inside categories.{category}.{canonical_code}.",
+      "Use lowercase, underscores between words; accents are optional and will be stripped during matching.",
+      "No redeploy required: the ingest reads this file at runtime.",
+      "If a new canonical code is needed, first ensure it exists in plans_v3.benefits_master or will be inserted by ingest.",
+      "For MAPFRE/AXA/Allianz, add provider-specific raw strings you see on their sites into the appropriate synonym arrays."
+    ]
+  }
+}

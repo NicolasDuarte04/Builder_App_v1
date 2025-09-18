@@ -983,7 +983,7 @@ function AIAssistantInterfaceInner({
   const handleParseBrief = async (action: 'merge' | 'replace' = 'merge') => {
     const v2Enabled = ((): boolean => {
       try {
-        const raw = String(process.env.NEXT_PUBLIC_BRIEF_PARSER_V2 || '').toLowerCase();
+        const raw = String((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_BRIEF_PARSER_V2 || '').toLowerCase();
         return raw === '1' || raw === 'true' || raw === 'on';
       } catch { return false; }
     })();
@@ -1602,12 +1602,12 @@ function AIAssistantInterfaceInner({
                       // Long paste guard detection (client-side)
                       try {
                         const charLimit = (() => {
-                          const raw = String(process.env.NEXT_PUBLIC_LONG_PASTE_CHAR_LIMIT || '').trim();
+                          const raw = String((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_LONG_PASTE_CHAR_LIMIT || '').trim();
                           const n = Number.parseInt(raw, 10);
                           return Number.isFinite(n) && n > 0 ? n : 12000; // ~4k tokens
                         })();
                         const tokenLimit = (() => {
-                          const raw = String(process.env.NEXT_PUBLIC_LONG_PASTE_TOKEN_LIMIT || '').trim();
+                          const raw = String((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_LONG_PASTE_TOKEN_LIMIT || '').trim();
                           const n = Number.parseInt(raw, 10);
                           return Number.isFinite(n) && n > 0 ? n : 4000;
                         })();

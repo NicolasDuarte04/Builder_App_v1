@@ -11,7 +11,7 @@ export async function GET() {
       NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET',
       GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET',
       GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET',
-      NODE_ENV: process.env.NODE_ENV,
+      NODE_ENV: (await import('@/lib/env')).env.server.NODE_ENV,
     },
     session: session || null,
     authOptions: {

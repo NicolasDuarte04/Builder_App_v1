@@ -1,0 +1,722 @@
+{
+  "metadata": {
+    "entity": {
+      "name": "HDI Colombia Insurance Plan (Autos & Salud)",
+      "criteria": [
+        "Is the provider HDI (Colombia)?",
+        "Is the category either \"Autos\" or \"Salud\"?",
+        "Is the plan slug unique and plan display present?",
+        "Is pricing present (minimum price or pricing model \"quote\")?",
+        "Are there at least 4 canonical benefits?",
+        "Is the primary source URL an official HDI Colombia URL?",
+        "Is the last verified date within 180 days of the scrape time?"
+      ],
+      "description": "Consumer-facing insurance plans offered by HDI Seguros Colombia, limited to Autos and Salud categories, with specific criteria for inclusion."
+    },
+    "schema": {
+      "attributes": [
+        {
+          "name": "provider_slug",
+          "type": "string",
+          "description": "Canonical identifier for the insurance provider.",
+          "is_primary": false
+        },
+        {
+          "name": "provider_display",
+          "type": "string",
+          "description": "Display name of the insurance provider.",
+          "is_primary": false
+        },
+        {
+          "name": "category_slug",
+          "type": "string",
+          "description": "Canonical identifier for the insurance category.",
+          "is_primary": false
+        },
+        {
+          "name": "plan_slug",
+          "type": "string",
+          "description": "Unique canonical identifier for the insurance plan.",
+          "is_primary": true
+        },
+        {
+          "name": "plan_display",
+          "type": "string",
+          "description": "Display name of the insurance plan.",
+          "is_primary": false
+        },
+        {
+          "name": "pricing_model",
+          "type": "string",
+          "description": "Describes how pricing is determined: \"fixed_price\" if price_min is available, or \"quote\" if a quote is required.",
+          "is_primary": false
+        },
+        {
+          "name": "benefits",
+          "type": "string",
+          "description": "A list of canonical benefits included in the insurance plan.",
+          "is_primary": false
+        },
+        {
+          "name": "source_primary_url",
+          "type": "string",
+          "description": "The official HDI Colombia URL where the plan information was found.",
+          "is_primary": false
+        },
+        {
+          "name": "last_verified_at",
+          "type": "string",
+          "description": "The date and time when the plan information was last verified, corresponding to the scrape time.",
+          "is_primary": false
+        },
+        {
+          "name": "price_min",
+          "is_primary": false
+        }
+      ]
+    },
+    "exported_at": "2025-09-17T21:52:54.732Z",
+    "total_items": 8
+  },
+  "data": [
+    {
+      "id": "b51d7f9b-fcd2-4e2c-b9df-a121cc25bda4",
+      "created_at": "2025-09-17T21:08:31.250825+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/taxis"
+          ]
+        },
+        "provider_display": {
+          "value": "HDI Seguros Colombia",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/taxis"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/taxis"
+          ]
+        },
+        "plan_slug": {
+          "value": "taxis-hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/taxis"
+          ]
+        },
+        "plan_display": {
+          "value": "Taxis HDI",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/taxis"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/taxis"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "Pagamos por los daños que puedas ocasionar a otras personas o a sus bienes",
+            "Asistencia jurídica en proceso penal o civil",
+            "Amparo patrimonial",
+            "Cubrimos los gastos asociados a una pérdida total por daños o hurto",
+            "Cubrimos las pérdidas parciales por daños o hurto",
+            "Asistencia en viaje",
+            "Asistencia exequial",
+            "Cubrimos tu salario diario asociado a los ingresos que dejaste de recibir durante los días en que nos encargamos de tu vehículo",
+            "Cubrimos los gastos de accidentes personales"
+          ],
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/taxis"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.hdiseguros.com.co/personas/seguros-autos/taxis",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/taxis"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/taxis"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "28db0227-baf3-4ce3-94b8-dc7a73089c0a",
+      "created_at": "2025-09-17T21:08:01.554261+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/motos"
+          ]
+        },
+        "provider_display": {
+          "value": "HDI Seguros Colombia",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/motos"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/motos"
+          ]
+        },
+        "plan_slug": {
+          "value": "moto-hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/motos"
+          ]
+        },
+        "plan_display": {
+          "value": "Moto HDI",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/motos"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/motos"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "Pagamos por los daños que puedas ocasionar a otras personas o a sus bienes.",
+            "Cubrimos los gastos asociados a una pérdida total por daños o hurto.",
+            "Cubrimos las pérdidas parciales por daños o hurto.",
+            "Te cubrimos en eventos como: temblor, terremoto y erupción volcánica.",
+            "Asistencia jurídica en proceso penal o civil.",
+            "Amparo patrimonial.",
+            "Gastos médicos.",
+            "Asistencia en viaje.",
+            "Asistencia odontológica (zona de cobertura: ciudades capitales del departamento)."
+          ],
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/motos"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.hdiseguros.com.co/personas/seguros-autos/motos",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/motos"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/motos"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "d61486b0-994d-4e7b-ba06-9488a775f38f",
+      "created_at": "2025-09-17T21:07:25.942941+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/pesados-y-herramientas-de-trabajo"
+          ]
+        },
+        "provider_display": {
+          "value": "HDI Seguros Colombia",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/pesados-y-herramientas-de-trabajo"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/pesados-y-herramientas-de-trabajo"
+          ]
+        },
+        "plan_slug": {
+          "value": "vehiculos-de-trabajo-hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/pesados-y-herramientas-de-trabajo"
+          ]
+        },
+        "plan_display": {
+          "value": "Vehículos de trabajo HDI",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/pesados-y-herramientas-de-trabajo"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/pesados-y-herramientas-de-trabajo"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "Pagamos por los daños que puedas ocasionar a otras personas o a sus bienes.",
+            "Asistencia jurídica en proceso penal y civil.",
+            "Pérdida total por hurto",
+            "Pérdida parcial por hurto",
+            "Pérdida total por daños",
+            "Pérdida parcial por daños",
+            "Te cubrimos en eventos como: temblor, terremoto y erupción volcánica.",
+            "Amparo patrimonial",
+            "Accidentes personales",
+            "Responsabilidad civil general familiar",
+            "Lucro Cesante",
+            "Asistencia en viaje.",
+            "Asistencia exequial.",
+            "Asistencia odontológica."
+          ],
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/pesados-y-herramientas-de-trabajo"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.hdiseguros.com.co/personas/seguros-autos/pesados-y-herramientas-de-trabajo",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/pesados-y-herramientas-de-trabajo"
+          ]
+        },
+        "last_verified_at": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "d01f3b1e-fe1b-4021-a2c6-ed747d4671c8",
+      "created_at": "2025-09-17T20:59:42.907306+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/salud/salud-integral-hdi"
+          ]
+        },
+        "provider_display": {
+          "value": "HDI Seguros Colombia",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/salud/salud-integral-hdi"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/salud/salud-integral-hdi"
+          ]
+        },
+        "plan_slug": {
+          "value": "salud-integral-hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/salud/salud-integral-hdi"
+          ]
+        },
+        "plan_display": {
+          "value": "Salud Integral HDI",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/salud/salud-integral-hdi"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/salud/salud-integral-hdi"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "Habitación hospitalaria",
+            "Unidad de Cuidados Intensivos",
+            "Cama acompañante",
+            "Enfermera especial",
+            "Hospitalización en casa",
+            "Visitas médicas por tratamiento médico hospitalario",
+            "Consultas pre-hospitalarias",
+            "Consultas post-hospitalarias",
+            "Honorarios quirúrgicos",
+            "Servicios especiales hospitalarios",
+            "Cirugía ambulatoria o simplificada y tratamiento de fracturas sin hospitalización",
+            "Fisioterapias",
+            "Tratamiento odontológico por accidente",
+            "Tratamiento ambulatorio por cáncer y leucemia",
+            "Exámenes para diagnóstico",
+            "Tratamiento médico no hospitalario por enfermedades específicas",
+            "Tratamiento Psiquiátrico",
+            "Maternidad",
+            "Enfermedades de alto costo",
+            "Prótesis",
+            "Urgencias",
+            "Asistencia odontológica",
+            "Asistencia en viaje al exterior",
+            "Segunda opinión Médica Internacional"
+          ],
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/salud/salud-integral-hdi"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.hdiseguros.com.co/personas/salud/salud-integral-hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/salud/salud-integral-hdi"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/salud/salud-integral-hdi"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "c841dce5-42f9-4f4d-bd7d-09cba682ee06",
+      "created_at": "2025-09-17T20:59:06.9268+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/salud-esencial"
+          ]
+        },
+        "provider_display": {
+          "value": "HDI Seguros Colombia",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/salud-esencial"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/salud-esencial"
+          ]
+        },
+        "plan_slug": {
+          "value": "salud-esencial-hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/salud-esencial"
+          ]
+        },
+        "plan_display": {
+          "value": "Salud esencial HDI",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/salud-esencial"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/salud-esencial"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "Cobertura de enfermedades catastróficas",
+            "Cobertura de trasplantes",
+            "Cobertura ambulatoria de consulta y exámenes simples, terapias e infiltraciones",
+            "Servicios médicos dentro de la red contratada por HDI Seguros.",
+            "Hospitalización y cirugía",
+            "Maternidad global, prenatal, parto y cuidado postnatal",
+            "Exámenes de diagnóstico simple y especializado",
+            "Tratamientos odontológicos por accidente",
+            "Urgencias por accidente y/o enfermedad",
+            "Reembolso de gastos funerarios",
+            "Exoneración de pago de primas",
+            "Asistencia Médica HDI, asesoría las 24 horas del día, los 365 días del año (Orientación médica telefónica, Asistencia médica domiciliaria, Traslado médico de emergencia).",
+            "Asistencias odontológicas (Servicio de urgencias por enfermedad o accidente, Diagnóstico oral o evaluación clínica, Promoción y prevención)."
+          ],
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/salud-esencial"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.hdiseguros.com.co/personas/seguros-salud/salud-esencial",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/salud-esencial"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/salud-esencial"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "b1d5ae1f-d7c5-4aec-81c2-06f9332933a5",
+      "created_at": "2025-09-17T20:58:27.404251+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-plus"
+          ]
+        },
+        "provider_display": {
+          "value": "HDI Seguros Colombia",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-plus"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-plus"
+          ]
+        },
+        "plan_slug": {
+          "value": "total-help-plus-hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-plus"
+          ]
+        },
+        "plan_display": {
+          "value": "Total Help Plus HDI",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-plus"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-plus"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "Cobertura ambulatoria de consulta y exámenes simples, terapias e infiltraciones.",
+            "Servicios médicos dentro y fuera de la red contratada por HDI Seguros.",
+            "Tratamiento ambulatorio para el cáncer.",
+            "Hospitalización y cirugía.",
+            "Terapias post hospitalarias o postquirúrgicas.",
+            "Visitas pre y post hospitalarias.",
+            "Maternidad global, prenatal, parto y cuidado postnatal.",
+            "Exámenes de diagnóstico especializado.",
+            "Urgencias por accidente y/o enfermedad.",
+            "Gasto médico mayor (excedentes).",
+            "Asistencia Médica HDI, asesoría las 24 horas del día, los 365 días del año (Orientación médica telefónica, Asistencia médica domiciliaria, Traslado médico de emergencia).",
+            "Asistencias odontológicas (Servicio de urgencias por enfermedad o accidente, Diagnóstico oral o evaluación clínica, Promoción y prevención)."
+          ],
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-plus"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-plus",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-plus"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-plus"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "4eb668e6-2c24-44b4-a5d3-cd73402068b5",
+      "created_at": "2025-09-17T20:57:55.570407+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-md"
+          ]
+        },
+        "provider_display": {
+          "value": "HDI Seguros Colombia",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-md"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-md"
+          ]
+        },
+        "plan_slug": {
+          "value": "total-help-md-hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-md"
+          ]
+        },
+        "plan_display": {
+          "value": "Total Help MD HDI",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-md"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-md"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "Cobertura de enfermedades catastróficas.",
+            "Cobertura de trasplantes.",
+            "Cobertura de hospitalización domiciliaria.",
+            "Cobertura ambulatoria de consulta y exámenes simples, terapias e infiltraciones.",
+            "Servicios médicos dentro y fuera de la red contratada por HDI Seguros.",
+            "Hospitalización y cirugía.",
+            "Maternidad global, prenatal, parto y cuidado postnatal.",
+            "Exámenes de diagnóstico simple y especializado.",
+            "Tratamientos por enfermedades permanentes y odontológicas por accidente.",
+            "Urgencias por accidente y/o enfermedad.",
+            "Reembolso de gastos funerarios.",
+            "Exoneración de pago de primas.",
+            "Servicios de interconsulta.",
+            "Asistencia Médica HDI, asesoría las 24 horas del día, los 365 días del año (Orientación médica telefónica, Asistencia médica domiciliaria, Traslado médico de emergencia).",
+            "Asistencias odontológicas (Servicio de urgencias por enfermedad o accidente, Diagnóstico oral o evaluación clínica, Promoción y prevención).",
+            "Asistencia en viaje al exterior con gastos médicos."
+          ],
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-md"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-md",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-md"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-salud/total-help-md"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "4cca01b8-e3e7-4b79-bfba-e7b1ef9a6ae8",
+      "created_at": "2025-09-17T20:56:56.324061+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/autos"
+          ]
+        },
+        "provider_display": {
+          "value": "HDI Seguros Colombia",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/autos"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/autos"
+          ]
+        },
+        "plan_slug": {
+          "value": "auto-hdi",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/autos"
+          ]
+        },
+        "plan_display": {
+          "value": "Auto HDI",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/autos"
+          ]
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/autos"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "Pagamos por los daños que puedas ocasionar a otras personas o a sus bienes, en caso de muerte o desmembración.",
+            "En caso de pérdidas totales se otorga vehículo sustituto (10 días calendario en pérdidas parciales y 21 días calendario en perdidas totales) y adicionalmente gastos de transporte.",
+            "Cobertura para vidrios, pequeños accesorios, llantas estalladas y pérdida de llaves.",
+            "Asistencia en viaje y al hogar.",
+            "Programa de dispositivo de recuperación para hurto, aplica para aquellos vehículos relacionados en políticas de instalación.",
+            "Asistencia jurídica en proceso penal o civil.",
+            "Amparo patrimonial.",
+            "Asistencia exequial."
+          ],
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/autos"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.hdiseguros.com.co/personas/seguros-autos/autos",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/autos"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17",
+          "source_urls": [
+            "https://www.hdiseguros.com.co/personas/seguros-autos/autos"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    }
+  ]
+}

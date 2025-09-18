@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { generateRoadmap } from '@/lib/openai';
+import { env, getServerVar } from '@/lib/env';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {
     // Env status logs
-    console.log('OpenAI Key status:', process.env.OPENAI_API_KEY ? 'Present' : 'Missing');
-    console.log('VALIDATE_OPENAI_RESPONSE:', process.env.VALIDATE_OPENAI_RESPONSE ?? 'undefined (default=true)');
+    console.log('OpenAI Key status:', env.server.OPENAI_API_KEY ? 'Present' : 'Missing');
+    console.log('VALIDATE_OPENAI_RESPONSE:', getServerVar('VALIDATE_OPENAI_RESPONSE') ?? 'undefined (default=true)');
 
     const body = await request.json();
     console.log('Request body:', body);

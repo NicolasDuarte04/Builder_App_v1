@@ -1,0 +1,190 @@
+{
+  "started_at": "2025-09-17T23:13:14.625Z",
+  "by_provider_category": [
+    {
+      "provider": "Allianz Colombia",
+      "category": "autos",
+      "count": "2"
+    },
+    {
+      "provider": "Allianz Colombia",
+      "category": "salud",
+      "count": "4"
+    },
+    {
+      "provider": "AXA COLPATRIA",
+      "category": "autos",
+      "count": "6"
+    },
+    {
+      "provider": "AXA COLPATRIA",
+      "category": "salud",
+      "count": "5"
+    },
+    {
+      "provider": "HDI Seguros Colombia",
+      "category": "autos",
+      "count": "3"
+    },
+    {
+      "provider": "HDI Seguros Colombia",
+      "category": "salud",
+      "count": "4"
+    },
+    {
+      "provider": "MAPFRE",
+      "category": "autos",
+      "count": "4"
+    },
+    {
+      "provider": "MAPFRE",
+      "category": "salud",
+      "count": "3"
+    },
+    {
+      "provider": "Seguros Bolívar",
+      "category": "autos",
+      "count": "2"
+    },
+    {
+      "provider": "Seguros Bolívar",
+      "category": "salud",
+      "count": "9"
+    },
+    {
+      "provider": "Seguros SURA",
+      "category": "salud",
+      "count": "9"
+    }
+  ],
+  "by_category": [
+    {
+      "category": "autos",
+      "count": "17"
+    },
+    {
+      "category": "salud",
+      "count": "34"
+    }
+  ],
+  "providers": [
+    {
+      "provider": "Allianz Colombia",
+      "count": "6"
+    },
+    {
+      "provider": "AXA COLPATRIA",
+      "count": "11"
+    },
+    {
+      "provider": "HDI Seguros Colombia",
+      "count": "7"
+    },
+    {
+      "provider": "MAPFRE",
+      "count": "7"
+    },
+    {
+      "provider": "Seguros Bolívar",
+      "count": "11"
+    },
+    {
+      "provider": "Seguros SURA",
+      "count": "9"
+    }
+  ],
+  "freshness_by_provider": [
+    {
+      "provider": "Allianz Colombia",
+      "oldest_verified": "2025-09-17T20:56:01.000Z",
+      "newest_verified": "2025-09-17T21:04:49.000Z"
+    },
+    {
+      "provider": "AXA COLPATRIA",
+      "oldest_verified": "2025-09-17T00:00:00.000Z",
+      "newest_verified": "2025-09-17T00:00:00.000Z"
+    },
+    {
+      "provider": "HDI Seguros Colombia",
+      "oldest_verified": "2025-09-17T00:00:00.000Z",
+      "newest_verified": "2025-09-17T00:00:00.000Z"
+    },
+    {
+      "provider": "MAPFRE",
+      "oldest_verified": "2025-09-17T19:53:34.000Z",
+      "newest_verified": "2025-09-17T20:41:27.000Z"
+    },
+    {
+      "provider": "Seguros Bolívar",
+      "oldest_verified": "2025-09-17T21:58:46.000Z",
+      "newest_verified": "2025-09-17T22:06:40.000Z"
+    },
+    {
+      "provider": "Seguros SURA",
+      "oldest_verified": "2025-09-17T16:59:58.000Z",
+      "newest_verified": "2025-09-17T17:07:05.000Z"
+    }
+  ],
+  "pricing_coverage_by_provider": [
+    {
+      "provider": "Allianz Colombia",
+      "quote_count": 0,
+      "priced_count": "0",
+      "total": "6"
+    },
+    {
+      "provider": "AXA COLPATRIA",
+      "quote_count": 0,
+      "priced_count": "0",
+      "total": "11"
+    },
+    {
+      "provider": "HDI Seguros Colombia",
+      "quote_count": 0,
+      "priced_count": "0",
+      "total": "7"
+    },
+    {
+      "provider": "MAPFRE",
+      "quote_count": 0,
+      "priced_count": "0",
+      "total": "7"
+    },
+    {
+      "provider": "Seguros Bolívar",
+      "quote_count": 0,
+      "priced_count": "2",
+      "total": "11"
+    },
+    {
+      "provider": "Seguros SURA",
+      "quote_count": 0,
+      "priced_count": "5",
+      "total": "9"
+    }
+  ],
+  "api_probes": [
+    {
+      "category": "salud",
+      "country": "CO",
+      "limit": 3,
+      "ok": true,
+      "degraded": false,
+      "source": "catalog",
+      "items": 3,
+      "first_provider": "Seguros SURA",
+      "first_name": "Seguro Plan Salud para Ti - Plan 1"
+    },
+    {
+      "category": "autos",
+      "country": "CO",
+      "limit": 3,
+      "ok": true,
+      "degraded": false,
+      "source": "catalog",
+      "items": 3,
+      "first_provider": "MAPFRE",
+      "first_name": "Seguro de automóvil Tradicional"
+    }
+  ]
+}

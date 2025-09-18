@@ -131,7 +131,7 @@ export default function AssistantPage() {
           flag: 'ff_incredible_brief',
           variant,
           method: force ? 'forced' : 'hash(sessionId)',
-          pct: Number(process.env.NEXT_PUBLIC_FF_INCREDIBLE_BRIEF_PCT ?? '10'),
+          pct: Number((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_FF_INCREDIBLE_BRIEF_PCT ?? '10'),
           sessionId, 
           userId,
         });
@@ -579,7 +579,7 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background" data-build-id={process.env.NEXT_PUBLIC_BUILD_ID || ''}>
+    <div className="min-h-screen bg-background" data-build-id={(await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_BUILD_ID || ''}>
       <BootOverlay show={boot} />
 
       {/* Main workspace */}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { env, getServerVar } from '@/lib/env';
 import { extractTextFromPDF } from '@/lib/pdf-analyzer';
 import { assignOcrFallback } from '@/lib/flags';
 import { telemetry, getSafeFileMetadata, normalizeError } from '@/lib/telemetry';
@@ -27,7 +28,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
 
 // Dev-only logging gate
-const __DEV__ = process.env.NODE_ENV !== 'production';
+const __DEV__ = env.server.NODE_ENV !== 'production';
 
 // GET health check endpoint
 export async function GET() {
@@ -35,7 +36,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     return NextResponse.json({
       ok: true,
-      runtime: process.env.NEXT_RUNTIME ?? 'unknown',
+      runtime: getServerVar('NEXT_RUNTIME') ?? 'unknown',
       hasSession: !!session,
       userId: (session?.user as any)?.id ?? null,
       now: new Date().toISOString(),
@@ -138,14 +139,14 @@ export async function POST(request: NextRequest) {
     // Optional session: allow guest analysis
     const session = await getServerSession(authOptions);
     const userId: string | null = (session?.user as any)?.id ?? null;
-    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const isDevelopment = env.server.NODE_ENV !== 'production';
     if (isDevelopment) {
       if (__DEV__) console.log('🔐 Session check...', (session?.user as any)?.id);
       if (__DEV__) console.log('🔐 Using user ID:', userId);
     }
     
     // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
+    if (!env.server.OPENAI_API_KEY) {
       if (__DEV__) console.error('❌ OpenAI API key not configured');
       return NextResponse.json(
         { error: 'AI service not configured. Please check server configuration.' },
@@ -306,7 +307,7 @@ export async function POST(request: NextRequest) {
       const bgPdfUrl = pdfPublicUrl;
       const bgOcrEnabled = isOcrEnabled;
       setImmediate(async () => {
-        const DEBUG_ANALYZE_STATUS = process.env.DEBUG_ANALYZE_STATUS === '1';
+        const DEBUG_ANALYZE_STATUS = getServerVar('DEBUG_ANALYZE_STATUS') === '1';
         const setStatus = async (patch: any, label: string) => {
           const id = uploadRecord.id;
           if (DEBUG_ANALYZE_STATUS && __DEV__) console.log('[status→TRY]', label, { id, patch });
@@ -355,7 +356,7 @@ export async function POST(request: NextRequest) {
         try {
 
           // Mock path for smoke test
-          if (process.env.USE_MOCK_ANALYSIS === '1') {
+          if (getServerVar('USE_MOCK_ANALYSIS') === '1') {
             await setStatus({ status: 'extracting' }, 'extracting');
             await setStatus({ status: 'analyzing' }, 'analyzing');
             await setStatus({ status: 'summarizing' }, 'summarizing');
@@ -556,7 +557,7 @@ export async function POST(request: NextRequest) {
 
           // AI analysis
           if (__DEV__) console.log('🤖 [bg] Starting AI analysis...');
-          const oai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+          const oai = createOpenAI({ apiKey: env.server.OPENAI_API_KEY! });
           const analysis = await analyzePolicyWithAIMultiChunk(pdfText, oai).catch(async (err: any) => {
             // Quota handling
             const code = (err?.status || err?.code || '').toString();
@@ -663,7 +664,7 @@ export async function POST(request: NextRequest) {
 
       // Early return 202 with id + signature so client can start polling
       const statusSig = signUploadId(uploadRecord.id);
-      if (process.env.NODE_ENV !== 'production') {
+      if (env.server.NODE_ENV !== 'production') {
         console.log(`[analyze] early-202 uploadId=${uploadRecord.id}, uploaderUserId=${userId}`);
       }
       return NextResponse.json({ uploadId: uploadRecord.id, statusSig, status: 'queued' }, { status: 202 });
@@ -704,7 +705,7 @@ export async function POST(request: NextRequest) {
 
 // Split long documents by headings and chunk length, analyze per chunk, and merge results
 async function analyzePolicyWithAIMultiChunk(pdfText: string, oai: any) {
-  const MODEL = process.env.ANALYZE_MODEL ?? 'gpt-4o-mini';
+  const MODEL = getServerVar('ANALYZE_MODEL') ?? 'gpt-4o-mini';
   try {
     // Detect language from the PDF text
     const isSpanish = /[áéíóúñü]/i.test(pdfText) || 

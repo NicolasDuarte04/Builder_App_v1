@@ -1,0 +1,32 @@
+{
+  "started_at": "2025-09-17T23:11:49.002Z",
+  "by_provider_category": [],
+  "by_category": [],
+  "providers": [],
+  "freshness_by_provider": [],
+  "pricing_coverage_by_provider": [],
+  "api_probes": [
+    {
+      "category": "salud",
+      "country": "CO",
+      "limit": 3,
+      "ok": true,
+      "degraded": false,
+      "source": "catalog",
+      "items": 3,
+      "first_provider": "Seguros SURA",
+      "first_name": "Seguro Plan Salud para Ti - Plan 1"
+    },
+    {
+      "category": "autos",
+      "country": "CO",
+      "limit": 3,
+      "ok": true,
+      "degraded": false,
+      "source": "catalog",
+      "items": 3,
+      "first_provider": "MAPFRE",
+      "first_name": "Seguro de automóvil Tradicional"
+    }
+  ]
+}

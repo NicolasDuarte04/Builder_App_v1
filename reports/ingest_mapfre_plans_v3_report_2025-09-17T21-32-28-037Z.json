@@ -1,0 +1,94 @@
+{
+  "startedAt": "2025-09-17T21:32:09.511Z",
+  "inputPath": "/Users/nicolasduarte/Briki Co Pilot /briki-clean/scripts/etl/raw_webhound_mapfre..json",
+  "rowsRead": 7,
+  "kept": 7,
+  "rejected": 0,
+  "rejectedByReason": {},
+  "countsByCategory": {
+    "autos": 4,
+    "salud": 3
+  },
+  "upsertedProviders": 7,
+  "upsertedPlans": 7,
+  "insertedBenefits": 34,
+  "insertedPrices": 0,
+  "insertedSources": 7,
+  "notes": [],
+  "sampleKeptPlanSlugs": [
+    "seguro-automovil-familiar",
+    "seguro-salud-vital",
+    "seguro-salud-excelencia",
+    "seguro-salud-preferencial",
+    "seguro-vehiculos-pesados",
+    "seguro-automovil-mujer",
+    "seguro-automovil-tradicional"
+  ],
+  "topUnmapped": [
+    {
+      "term": "robo_parcial",
+      "category": "autos",
+      "count": 4,
+      "suggestion": "robo_parcial"
+    },
+    {
+      "term": "asistencia_juridica",
+      "category": "autos",
+      "count": 4,
+      "suggestion": "asistencia_juridica"
+    },
+    {
+      "term": "accidentes_personales",
+      "category": "autos",
+      "count": 3,
+      "suggestion": "accidentes_personales"
+    },
+    {
+      "term": "terremoto",
+      "category": "autos",
+      "count": 2,
+      "suggestion": "terremoto"
+    },
+    {
+      "term": "terrorismo",
+      "category": "autos",
+      "count": 2,
+      "suggestion": "terrorismo"
+    },
+    {
+      "term": "amparo_patrimonial",
+      "category": "autos",
+      "count": 2,
+      "suggestion": "amparo_patrimonial"
+    },
+    {
+      "term": "accesorios",
+      "category": "autos",
+      "count": 2,
+      "suggestion": "accesorios"
+    },
+    {
+      "term": "traslado_descuento",
+      "category": "autos",
+      "count": 2,
+      "suggestion": "traslado_descuento"
+    },
+    {
+      "term": "marcacion_gratuita",
+      "category": "autos",
+      "count": 2,
+      "suggestion": "marcacion_gratuita"
+    },
+    {
+      "term": "descuento_hijos",
+      "category": "autos",
+      "count": 1
+    },
+    {
+      "term": "consultas_ilimitadas",
+      "category": "salud",
+      "count": 3,
+      "suggestion": "consultas_especialistas"
+    }
+  ]
+}

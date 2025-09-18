@@ -31,7 +31,7 @@ export function QuickActionBar({ density }: { density?: DensityPreset }) {
   const setToolbarDensity = usePrefsStore((s) => s.setToolbarDensity);
 
   // Density preset: prop has priority; fallback to env; comfortable targets ~44px
-  const envDensity = (process.env.NEXT_PUBLIC_TOOLBAR_DENSITY as DensityPreset | undefined);
+  const envDensity = (((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_TOOLBAR_DENSITY) as DensityPreset | undefined);
   const resolvedDensity: DensityPreset = (density || prefDensity || envDensity || 'comfortable') as DensityPreset;
   const buttonSize: 'default' | 'lg' = resolvedDensity === 'compact' ? 'default' : 'lg';
   const buttonGapClass = resolvedDensity === 'compact' ? 'gap-1.5' : 'gap-2';

@@ -4,8 +4,9 @@ import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { env, getPublicEnv } from '@/lib/env';
+const SUPABASE_URL = env.server.SUPABASE_URL || getPublicEnv().NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = getPublicEnv().NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   throw new Error('[ENV] Missing SUPABASE_URL or SUPABASE_ANON_KEY');

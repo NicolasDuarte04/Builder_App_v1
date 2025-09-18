@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  env.server.SUPABASE_URL,
+  env.server.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export async function POST(request: NextRequest) {
   // Check if Stripe is configured
-  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+  if (!env.server.STRIPE_SECRET_KEY || !env.server.STRIPE_WEBHOOK_SECRET) {
     return NextResponse.json(
       { error: 'Stripe not configured' },
       { status: 500 }
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      env.server.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);

@@ -7,7 +7,7 @@ export async function GET() {
     JSON.stringify({
       ok: true,
       datasource: ds,
-      node_env: process.env.NODE_ENV,
+      node_env: (await import('@/lib/env')).env.server.NODE_ENV,
       hasDatabaseUrl: Boolean(process.env.DATABASE_URL || process.env.RENDER_POSTGRES_URL),
       disableLegacy,
     }),

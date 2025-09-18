@@ -1,4 +1,6 @@
+import { getPublicEnv } from '@/lib/env';
+
 export const POLICY_BUCKET =
-  process.env.NEXT_PUBLIC_POLICY_BUCKET ?? 'policy-documents';
+  getPublicEnv().NEXT_PUBLIC_POLICY_BUCKET ?? 'policy-documents' as any;
 
 

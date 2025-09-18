@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { env } from '@/lib/env';
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   // Check if Stripe is configured
-  if (!process.env.STRIPE_SECRET_KEY) {
+  if (!env.server.STRIPE_SECRET_KEY) {
     return NextResponse.json(
       { error: 'Stripe not configured', message: 'Checkout service unavailable' },
       { status: 500 }

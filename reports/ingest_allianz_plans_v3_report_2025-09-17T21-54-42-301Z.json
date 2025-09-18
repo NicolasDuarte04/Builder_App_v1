@@ -1,0 +1,137 @@
+{
+  "startedAt": "2025-09-17T21:54:23.801Z",
+  "inputPath": "/Users/nicolasduarte/Briki Co Pilot /briki-clean/scripts/etl/raw_webhound_allianz.json",
+  "rowsRead": 16,
+  "kept": 6,
+  "rejected": 10,
+  "rejectedByReason": {
+    "insufficient_canonical_benefits": 8,
+    "unsupported_category": 2
+  },
+  "countsByCategory": {
+    "autos": 2,
+    "salud": 4
+  },
+  "upsertedProviders": 6,
+  "upsertedPlans": 6,
+  "insertedBenefits": 35,
+  "insertedPrices": 0,
+  "insertedSources": 6,
+  "notes": [],
+  "sampleKeptPlanSlugs": [
+    "esencial-totales",
+    "vitallianz",
+    "salud-care",
+    "salud-gold",
+    "salud-plus",
+    "llave-en-mano"
+  ],
+  "topUnmapped": [
+    {
+      "term": "emergencias_accidentes",
+      "category": "autos",
+      "count": 3
+    },
+    {
+      "term": "traslado_medico",
+      "category": "autos",
+      "count": 3
+    },
+    {
+      "term": "conductor_viaje",
+      "category": "autos",
+      "count": 2
+    },
+    {
+      "term": "estancia_desplazamiento",
+      "category": "autos",
+      "count": 2
+    },
+    {
+      "term": "cobertura_total",
+      "category": "autos",
+      "count": 2,
+      "suggestion": "perdida_total"
+    },
+    {
+      "term": "gastos_movilizacion",
+      "category": "autos",
+      "count": 2,
+      "suggestion": "gastos_movilizacion"
+    },
+    {
+      "term": "transporte_deposito",
+      "category": "autos",
+      "count": 2
+    },
+    {
+      "term": "accidentes_personales",
+      "category": "autos",
+      "count": 2,
+      "suggestion": "accidentes_personales"
+    },
+    {
+      "term": "deducible_parcial",
+      "category": "autos",
+      "count": 1
+    },
+    {
+      "term": "conductor_elegido",
+      "category": "autos",
+      "count": 1,
+      "suggestion": "conductor_viaje"
+    },
+    {
+      "term": "asistencia_medica_accidente_enfermedad",
+      "category": "salud",
+      "count": 3
+    },
+    {
+      "term": "traslado_medico_emergencia",
+      "category": "salud",
+      "count": 3
+    },
+    {
+      "term": "repatriacion_medica",
+      "category": "salud",
+      "count": 3,
+      "suggestion": "repatriacion_medica"
+    },
+    {
+      "term": "repatriacion_restos_mortales",
+      "category": "salud",
+      "count": 3
+    },
+    {
+      "term": "recuperacion_hotel",
+      "category": "salud",
+      "count": 3
+    },
+    {
+      "term": "urgencia_odontologica",
+      "category": "salud",
+      "count": 3,
+      "suggestion": "odontologia"
+    },
+    {
+      "term": "transporte_acompanante",
+      "category": "salud",
+      "count": 3
+    },
+    {
+      "term": "regreso_dependientes",
+      "category": "salud",
+      "count": 3
+    },
+    {
+      "term": "enfermedad_preexistente",
+      "category": "salud",
+      "count": 3
+    },
+    {
+      "term": "mujeres_embarazadas",
+      "category": "salud",
+      "count": 3
+    }
+  ]
+}

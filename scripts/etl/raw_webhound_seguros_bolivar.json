@@ -1,0 +1,1814 @@
+{
+  "metadata": {
+    "entity": {
+      "name": "Seguros Bolívar Consumer Insurance Plan (Autos & Salud Colombia)",
+      "criteria": [
+        "Is the plan offered by Seguros Bolívar Colombia?",
+        "Is the plan category either 'Autos' or 'Salud'?",
+        "Is the information from an official segurosbolivar.com or grupobolivar.com.co (Colombia section) domain?",
+        "Is the plan for consumers and not a business or corporate offering?"
+      ],
+      "description": "Consumer-facing insurance plans offered by Seguros Bolívar in Colombia for Autos and Salud categories, extracted from official sources."
+    },
+    "schema": {
+      "attributes": [
+        {
+          "name": "provider_slug",
+          "type": "string",
+          "description": "A unique identifier for the insurance provider, always 'seguros_bolivar' for this dataset.",
+          "is_primary": true
+        },
+        {
+          "name": "provider_display",
+          "type": "string",
+          "description": "The human-readable name of the insurance provider.",
+          "is_primary": false
+        },
+        {
+          "name": "category_slug",
+          "type": "string",
+          "description": "A unique identifier for the insurance category, either 'autos' or 'salud'.",
+          "is_primary": true
+        },
+        {
+          "name": "plan_slug",
+          "type": "string",
+          "description": "A unique identifier for the specific insurance plan within Seguros Bolívar for its category.",
+          "is_primary": true
+        },
+        {
+          "name": "plan_display",
+          "type": "string",
+          "description": "The human-readable name of the insurance plan.",
+          "is_primary": false
+        },
+        {
+          "name": "price_min",
+          "type": "number",
+          "description": "The minimum price for the plan, if available. Can be null if pricing_model is 'quote'.",
+          "is_primary": false
+        },
+        {
+          "name": "pricing_model",
+          "type": "string",
+          "description": "Indicates how pricing is determined. Either a direct price or 'quote' if a custom quote is required.",
+          "is_primary": false
+        },
+        {
+          "name": "benefits",
+          "type": "string",
+          "description": "A list of canonical benefits offered by the plan. Must have at least 4 items.",
+          "is_primary": false
+        },
+        {
+          "name": "source_primary_url",
+          "type": "string",
+          "description": "The official Seguros Bolívar URL where the plan details were found.",
+          "is_primary": false
+        },
+        {
+          "name": "last_verified_at",
+          "type": "string",
+          "description": "The timestamp when the plan details were last verified by the scraper, representing the scrape time (within 180 days).",
+          "is_primary": false
+        }
+      ]
+    },
+    "exported_at": "2025-09-17T22:30:16.823Z",
+    "total_items": 22
+  },
+  "data": [
+    {
+      "id": "1b773c83-b5ab-41b2-a4b0-37bd307f8c28",
+      "created_at": "2025-09-17T22:05:58.246749+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "plan_slug": {
+          "value": "universal_medical_care_plus",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "plan_display": {
+          "value": "Universal Medical Care Plus",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "hospitalization",
+            "medical fees",
+            "outpatient expenses",
+            "emergency services",
+            "transplants",
+            "prosthetics and orthopedic devices",
+            "maternity coverage (international)",
+            "newborn coverage",
+            "emergency abroad",
+            "home hospitalization and psychiatric crisis treatment"
+          ],
+          "source_urls": [
+            "https://sostenibilidad.segurosbolivar.com/wp-content/uploads/sites/3/2025/06/12141658/Tabla-coberturas-UMC-plus-23-2025-min.pdf"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://sostenibilidad.segurosbolivar.com/wp-content/uploads/sites/3/2025/06/12141658/Tabla-coberturas-UMC-plus-23-2025-min.pdf",
+          "source_urls": [
+            "https://sostenibilidad.segurosbolivar.com/wp-content/uploads/sites/3/2025/06/12141658/Tabla-coberturas-UMC-plus-23-2025-min.pdf"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:05:00Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        }
+      }
+    },
+    {
+      "id": "4fc4325e-4278-4f80-b872-5bc5189091a6",
+      "created_at": "2025-09-17T22:05:58.245407+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "plan_slug": {
+          "value": "medica_familiar_individual",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "plan_display": {
+          "value": "Médica Familiar Individual",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "asistencia médica integral",
+            "programa de medicina familiar",
+            "hospital and intensive care unit",
+            "medical and surgical fees",
+            "outpatient expenses",
+            "palliative and advanced care program",
+            "maternity",
+            "telephone medical guidance",
+            "second opinion",
+            "emergency assistance abroad"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud",
+            "https://www.segurosbolivar.com/blog/bienestar-y-salud/medicina-familiar-el-corazon-de-la-atencion-integral-en-salud/"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-de-salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud",
+            "https://www.segurosbolivar.com/blog/bienestar-y-salud/medicina-familiar-el-corazon-de-la-atencion-integral-en-salud/"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:05:00Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        }
+      }
+    },
+    {
+      "id": "872fa72b-358d-404b-8880-a990e2ed9aeb",
+      "created_at": "2025-09-17T22:05:58.235373+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "plan_slug": {
+          "value": "world_medica_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "plan_display": {
+          "value": "World Médica Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "benefits": {
+          "value": [],
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:05:00Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        }
+      }
+    },
+    {
+      "id": "3d651193-c105-4648-a09c-0aebe09caec9",
+      "created_at": "2025-09-17T22:05:58.224537+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "plan_slug": {
+          "value": "universal_medical_care_advance",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "plan_display": {
+          "value": "Universal Medical Care Advance",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cobertura mundial en dólares",
+            "elija médico y hospital en colombia",
+            "acceso a red médica internacional",
+            "más de 800 instituciones hospitalarias nacionales",
+            "más de 3500 médicos adscritos",
+            "orientación telefónica médica",
+            "coordinación de médicos domiciliarios",
+            "administración ágil de trámites de admisión",
+            "autorizaciones de servicio directas",
+            "coordinación de traslados médicos",
+            "asesoría amplia sobre su programa"
+          ],
+          "source_urls": [
+            "https://www.grupobolivar.com.co/wps/portal/?current=true&urile=wcm:path:/bolivar_es/inicio/segurospersonasfamilias/salud/universalmedicalcare/serviciosproductoumc/cfcebf26-8819-410a-91f9-d137f08a8f2e"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.grupobolivar.com.co/wps/portal/?current=true&urile=wcm:path:/bolivar_es/inicio/segurospersonasfamilias/salud/universalmedicalcare/serviciosproductoumc/cfcebf26-8819-410a-91f9-d137f08a8f2e",
+          "source_urls": [
+            "https://www.grupobolivar.com.co/wps/portal/?current=true&urile=wcm:path:/bolivar_es/inicio/segurospersonasfamilias/salud/universalmedicalcare/serviciosproductoumc/cfcebf26-8819-410a-91f9-d137f08a8f2e"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:05:00Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/tablas-coberturas-seguros-salud"
+          ]
+        }
+      }
+    },
+    {
+      "id": "cdfe1b7e-929b-494a-af6f-3a08275ee118",
+      "created_at": "2025-09-17T22:04:55.726424+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida"
+          ]
+        },
+        "plan_slug": {
+          "value": "plan_de_salud_a_su_medida",
+          "source_urls": [
+            "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan de Salud a Su Medida",
+          "source_urls": [
+            "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida"
+          ]
+        },
+        "price_min": {
+          "value": 38400,
+          "source_urls": [
+            "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida"
+          ]
+        },
+        "pricing_model": {
+          "value": "direct",
+          "source_urls": [
+            "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "atención personalizada con equipo médico de cabecera",
+            "exámenes e imágenes diagnósticas",
+            "traslados en ambulancias",
+            "procedimientos odontológicos",
+            "atención a urgencias",
+            "atención exclusiva en la red interna",
+            "consultas virtuales y presenciales",
+            "médico en casa 24/7",
+            "odontología",
+            "consultas sin cita previa",
+            "urgencias"
+          ],
+          "source_urls": [
+            "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida",
+          "source_urls": [
+            "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:05:00Z",
+          "source_urls": [
+            "https://novedades.segurosbolivar.com/seguro-salud-a-su-medida"
+          ]
+        }
+      }
+    },
+    {
+      "id": "44a4a20b-e570-48d9-b86f-b6604e79aaea",
+      "created_at": "2025-09-17T22:03:47.277812+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "plan_slug": {
+          "value": "global_ultimate_health_plan",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "plan_display": {
+          "value": "Global Ultimate Health Plan",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cobertura global sin límites",
+            "health partner logístico",
+            "programas especializados de cuidado",
+            "planes que se ajustan a su vida",
+            "red médica internacional de primer nivel",
+            "segunda opinión médica",
+            "asesoría médica telefónica en colombia",
+            "asesoría médica en el exterior",
+            "bolívar conmigo",
+            "hospitalización",
+            "tratamiento ambulatorio",
+            "maternidad",
+            "enfermedades críticas, cuidados paliativos y rehabilitación"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-medico-internacional",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:05:00Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        }
+      }
+    },
+    {
+      "id": "a8bec846-076a-4c8b-8b6f-a43bc30b0a1e",
+      "created_at": "2025-09-17T22:03:47.242779+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "plan_slug": {
+          "value": "global_elite_health_plan",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "plan_display": {
+          "value": "Global Elite Health Plan",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cobertura global sin límites",
+            "health partner logístico",
+            "programas especializados de cuidado",
+            "planes que se ajustan a su vida",
+            "red médica internacional de primer nivel",
+            "segunda opinión médica",
+            "asesoría médica telefónica en colombia",
+            "asesoría médica en el exterior",
+            "bolívar conmigo",
+            "hospitalización",
+            "tratamiento ambulatorio",
+            "maternidad",
+            "enfermedades críticas, cuidados paliativos y rehabilitación"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-medico-internacional",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:05:00Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        }
+      }
+    },
+    {
+      "id": "d098a35f-c2cf-48d5-928c-e7c3c1218be8",
+      "created_at": "2025-09-17T22:03:47.233704+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "plan_slug": {
+          "value": "essential_care",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "plan_display": {
+          "value": "Essential Care",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cobertura global sin límites",
+            "health partner logístico",
+            "programas especializados de cuidado",
+            "planes que se ajustan a su vida",
+            "red médica internacional de primer nivel",
+            "segunda opinión médica",
+            "asesoría médica telefónica en colombia",
+            "asesoría médica en el exterior",
+            "bolívar conmigo",
+            "hospitalización",
+            "tratamiento ambulatorio",
+            "maternidad",
+            "enfermedades críticas, cuidados paliativos y rehabilitación"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-medico-internacional",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:05:00Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        }
+      }
+    },
+    {
+      "id": "201569b8-1194-4e6d-8f19-52f82a30cc72",
+      "created_at": "2025-09-17T22:03:47.229113+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "plan_slug": {
+          "value": "global_premier_health_plan",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "plan_display": {
+          "value": "Global Premier Health Plan",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cobertura global sin límites",
+            "health partner logístico",
+            "programas especializados de cuidado",
+            "planes que se ajustan a su vida",
+            "red médica internacional de primer nivel",
+            "segunda opinión médica",
+            "asesoría médica telefónica en colombia",
+            "asesoría médica en el exterior",
+            "bolívar conmigo",
+            "hospitalización",
+            "tratamiento ambulatorio",
+            "maternidad",
+            "enfermedades críticas, cuidados paliativos y rehabilitación"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-medico-internacional",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:05:00Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        }
+      }
+    },
+    {
+      "id": "339fd0b7-b34a-45d2-bcf4-81e4f25dfec4",
+      "created_at": "2025-09-17T22:03:47.18729+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "plan_slug": {
+          "value": "global_select_health_plan",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "plan_display": {
+          "value": "Global Select Health Plan",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cobertura global sin límites",
+            "health partner logístico",
+            "programas especializados de cuidado",
+            "planes que se ajustan a su vida",
+            "red médica internacional de primer nivel",
+            "segunda opinión médica",
+            "asesoría médica telefónica en colombia",
+            "asesoría médica en el exterior",
+            "bolívar conmigo",
+            "hospitalización",
+            "tratamiento ambulatorio",
+            "maternidad",
+            "enfermedades críticas, cuidados paliativos y rehabilitación"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-medico-internacional",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:05:00Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-medico-internacional"
+          ]
+        }
+      }
+    },
+    {
+      "id": "fa0c4e0f-c49a-4953-a6b8-9377108f0e0c",
+      "created_at": "2025-09-17T22:02:34.705415+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "plan_slug": {
+          "value": "bienestar_y_salud_para_disfrutar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "plan_display": {
+          "value": "Bienestar y Salud para Disfrutar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "price_min": {
+          "value": 485000,
+          "source_urls": [
+            "https://www.segurosbolivar.com/planes-de-salud"
+          ]
+        },
+        "pricing_model": {
+          "value": "direct",
+          "source_urls": [
+            "https://www.segurosbolivar.com/planes-de-salud"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "respaldo",
+            "cobertura",
+            "directorio médico",
+            "maternidad",
+            "elija la mejor atención en salud",
+            "cuidados paliativos",
+            "habitación hospitalaria y unidad de cuidados intensivos",
+            "honorarios médicos hospitalarios",
+            "gastos ambulatorios",
+            "programa de cuidados paliativos y avanzados",
+            "orientación médica telefónica",
+            "segunda opinión",
+            "asistencia en caso de urgencia en el exterior"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-de-salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:06:40Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/planes-de-salud"
+          ]
+        }
+      }
+    },
+    {
+      "id": "9b08bee7-d72e-4f86-8d6d-96974d4eb21b",
+      "created_at": "2025-09-17T22:02:34.677527+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro_de_salud_integral",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Salud Integral",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud"
+          ]
+        },
+        "price_min": {
+          "value": 374000,
+          "source_urls": [
+            "https://www.segurosbolivar.com/planes-de-salud"
+          ]
+        },
+        "pricing_model": {
+          "value": "direct",
+          "source_urls": [
+            "https://www.segurosbolivar.com/planes-de-salud"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "respaldo",
+            "cobertura",
+            "directorio médico",
+            "maternidad",
+            "elija la mejor atención en salud",
+            "cuidados paliativos",
+            "habitación hospitalaria y unidad de cuidados intensivos",
+            "honorarios médicos hospitalarios",
+            "gastos ambulatorios",
+            "programa de cuidados paliativos y avanzados",
+            "orientación médica telefónica",
+            "segunda opinión",
+            "asistencia en caso de urgencia en el exterior",
+            "urgencias internacionales",
+            "médico domiciliario",
+            "emergencias",
+            "protección integral",
+            "ambulancia",
+            "consultas sin cita",
+            "exámenes a domicilio",
+            "más protección",
+            "cubre prótesis",
+            "trasplantes y ortopedia"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud",
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-salud-integral"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://digital.experienciasbolivar.segurosbolivar.com/seguro-salud-integral",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-de-salud",
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-salud-integral"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T22:06:40Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/planes-de-salud"
+          ]
+        }
+      }
+    },
+    {
+      "id": "55364809-1a49-4b4c-8473-e879da8b3b30",
+      "created_at": "2025-09-17T22:01:00.198681+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_slug": {
+          "value": "autos_premium",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_display": {
+          "value": "Autos Premium",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "price_min": {
+          "value": 3613600,
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "pricing_model": {
+          "value": "direct",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cubrimos daños a otras personas",
+            "daño y hurto total o parcial del carro",
+            "vehículo de reemplazo hasta por 30 días",
+            "deducible desde 0% - 0,8 smmlv",
+            "protegemos sus recorridos en bici, patineta o transporte público",
+            "pequeños accesorios por daños o hurto",
+            "asistencia full - conductor, mensajería y más"
+          ],
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:59:59Z",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        }
+      }
+    },
+    {
+      "id": "5d747959-ef6f-4f7f-b680-f67101e24e20",
+      "created_at": "2025-09-17T22:01:00.065386+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_slug": {
+          "value": "autos_ligero",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_display": {
+          "value": "Autos Ligero",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "price_min": {
+          "value": 1367000,
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "pricing_model": {
+          "value": "direct",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cubrimos daños a otras personas",
+            "daño y hurto total del carro",
+            "deducible desde 0% hasta 10 años",
+            "daño y hurto parcial",
+            "vehículo de reemplazo",
+            "protegemos sus recorridos en bici, patineta o transporte público",
+            "asistencia ligera"
+          ],
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:59:59Z",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        }
+      }
+    },
+    {
+      "id": "675f9d49-9126-440b-9b29-97dd980d6460",
+      "created_at": "2025-09-17T22:01:00.056863+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_slug": {
+          "value": "autos_verde",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_display": {
+          "value": "Autos Verde",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "price_min": {
+          "value": 3763500,
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "pricing_model": {
+          "value": "direct",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cubrimos daños a otras personas",
+            "daño y hurto total o parcial del carro",
+            "vehículo de reemplazo hasta por 30 días",
+            "deducible desde 0% - 0,8 smmlv",
+            "protegemos sus recorridos en bici, patineta o transporte público",
+            "pérdida o daño del cargador",
+            "pequeños accesorios por daños o hurto",
+            "asistencia full - conductor, mensajería y más",
+            "respaldo",
+            "protección",
+            "acompañamiento",
+            "cerrajería",
+            "carro taller",
+            "grúa",
+            "cambio de batería",
+            "conductor especial",
+            "conductor elegido",
+            "mensajería liviana",
+            "valet parking",
+            "cable cargador",
+            "gastos para proteger y trasladar el vehículo"
+          ],
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros",
+            "https://www.segurosbolivar.com/seguro-autos-verde-carro-electrico-hibrido"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-autos-verde-carro-electrico-hibrido",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros",
+            "https://www.segurosbolivar.com/seguro-autos-verde-carro-electrico-hibrido"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:59:59Z",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        }
+      }
+    },
+    {
+      "id": "e8a27976-e381-4ea9-9725-ef050261d35e",
+      "created_at": "2025-09-17T22:01:00.056247+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_slug": {
+          "value": "autos_premium_cobertura_360",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_display": {
+          "value": "Autos Premium + Cobertura 360",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "price_min": {
+          "value": 3863600,
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "pricing_model": {
+          "value": "direct",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cubrimos daños a otras personas",
+            "daño y hurto total o parcial del carro",
+            "vehículo de reemplazo hasta por 30 días",
+            "deducible desde 0% - 0,8 smmlv",
+            "protegemos sus recorridos en bici, patineta o transporte público",
+            "pequeños accesorios por daños o hurto",
+            "asistencia full - conductor, mensajería y más"
+          ],
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:59:59Z",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        }
+      }
+    },
+    {
+      "id": "0d48c0af-e0a1-4d6c-ab26-e88ffeec5086",
+      "created_at": "2025-09-17T22:01:00.0413+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_slug": {
+          "value": "autos_clasico",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_display": {
+          "value": "Autos Clásico",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "price_min": {
+          "value": 2594000,
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "pricing_model": {
+          "value": "direct",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cubrimos daños a otras personas",
+            "daño y hurto total o parcial del carro",
+            "deducible desde 0% - 1,25 smmlv",
+            "vehículo de reemplazo",
+            "protegemos sus recorridos en bici, patineta o transporte público",
+            "asistencia full - conductor, mensajería y más"
+          ],
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:59:59Z",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        }
+      }
+    },
+    {
+      "id": "caba9f2c-f31c-448f-80e6-ce05a1cdc112",
+      "created_at": "2025-09-17T22:01:00.016218+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_slug": {
+          "value": "autos_estandar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "plan_display": {
+          "value": "Autos Estándar",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "price_min": {
+          "value": 3197000,
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "pricing_model": {
+          "value": "direct",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "cubrimos daños a otras personas",
+            "daño y hurto total o parcial del carro",
+            "vehículo de reemplazo hasta por 15 días",
+            "deducible desde 0% - 1 smmlv",
+            "protegemos sus recorridos en bici, patineta o transporte público",
+            "pequeños accesorios por daños o hurto",
+            "asistencia full - conductor, mensajería y más"
+          ],
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:59:59Z",
+          "source_urls": [
+            "https://digital.experienciasbolivar.segurosbolivar.com/seguro-para-carros"
+          ]
+        }
+      }
+    },
+    {
+      "id": "f8e65a6e-2def-4f81-a380-d9d357f19dd4",
+      "created_at": "2025-09-17T21:59:49.012529+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "plan_slug": {
+          "value": "plan_ligero",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Ligero",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "robo o perdida total",
+            "responsabilidad civil por daños a terceros",
+            "accidentes personales",
+            "cobertura 360",
+            "asesoría legal",
+            "asistencia vial",
+            "vehículo de reemplazo",
+            "servicios programados"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:58:46Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        }
+      }
+    },
+    {
+      "id": "8350338f-a423-4a5a-99d7-ba739def9692",
+      "created_at": "2025-09-17T21:59:49.006829+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "plan_slug": {
+          "value": "plan_premium",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Premium",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "robo o perdida total",
+            "responsabilidad civil por daños a terceros",
+            "accidentes personales",
+            "vehículo de reemplazo",
+            "cerrajería",
+            "conductor elegido",
+            "conductor para diligencias",
+            "transporte de documentos",
+            "extensión a responsabilidad civil extendida",
+            "daños a patineta o bicicleta",
+            "asistencia a bici o patineta",
+            "accidentes personales en patineta, bicicleta, o medios masivos"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:58:46Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        }
+      }
+    },
+    {
+      "id": "b24d25e3-230c-43db-bbc5-c14677bb858a",
+      "created_at": "2025-09-17T21:59:49.002396+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "plan_slug": {
+          "value": "plan_estandar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Estándar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "robo o perdida total",
+            "responsabilidad civil por daños a terceros",
+            "accidente personales",
+            "vehículo de reemplazo",
+            "cerrajería",
+            "conductor elegido",
+            "conductor para diligencias",
+            "transporte de documentos",
+            "servicios programados"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:58:46Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        }
+      }
+    },
+    {
+      "id": "1da7ac17-18e3-40b1-bb4e-4fea1af5fee4",
+      "created_at": "2025-09-17T21:59:49.001523+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "seguros_bolivar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros Bolívar",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "plan_slug": {
+          "value": "plan_clasico",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Clásico",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "robo o perdida total",
+            "responsabilidad civil por daños a terceros",
+            "accidentes personales",
+            "cobertura 360",
+            "asesoría legal",
+            "asistencia vial",
+            "vehículo de reemplazo",
+            "servicios programados"
+          ],
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T21:58:46Z",
+          "source_urls": [
+            "https://www.segurosbolivar.com/seguro-todo-riesgo-vehiculo"
+          ]
+        }
+      }
+    }
+  ]
+}

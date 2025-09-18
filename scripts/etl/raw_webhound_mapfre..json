@@ -1,0 +1,995 @@
+{
+  "metadata": {
+    "entity": {
+      "name": "MAPFRE Colombia Insurance Plan",
+      "criteria": [
+        "Is it an insurance plan offered by MAPFRE?",
+        "Is it offered in Colombia?",
+        "Does it fall under the \"Autos\" or \"Salud\" category?",
+        "Does it have provider_slug=\"mapfre\" and provider_display present?",
+        "Does it have plan_slug (unique per provider) and plan_display present?",
+        "Does it have pricing present (either price_min or pricing_model=\"quote\")?",
+        "Does it have at least 4 canonical benefits as per the provided list?",
+        "Does its source_primary_url point to an official MAPFRE Colombia domain (*.mapfre.com.co or mapfre.com Colombia sections)?"
+      ],
+      "description": "A consumer-facing insurance plan offered by MAPFRE in Colombia, specifically within the \"Autos\" or \"Salud\" categories, with at least 4 canonical benefits and valid pricing."
+    },
+    "schema": {
+      "attributes": [
+        {
+          "name": "provider_slug",
+          "type": "string",
+          "description": "Unique identifier for the insurance provider, always \"mapfre\" for this task.",
+          "is_primary": true
+        },
+        {
+          "name": "provider_display",
+          "type": "string",
+          "description": "Display name of the insurance provider, always \"MAPFRE\" for this task.",
+          "is_primary": false
+        },
+        {
+          "name": "category_slug",
+          "type": "string",
+          "description": "Category of the insurance plan, either \"autos\" or \"salud\".",
+          "is_primary": false
+        },
+        {
+          "name": "plan_slug",
+          "type": "string",
+          "description": "Unique identifier for the specific insurance plan within MAPFRE.",
+          "is_primary": true
+        },
+        {
+          "name": "plan_display",
+          "type": "string",
+          "description": "Display name of the insurance plan.",
+          "is_primary": false
+        },
+        {
+          "name": "price_min",
+          "type": "number",
+          "description": "Minimum price of the insurance plan, or null if pricing_model is \"quote\".",
+          "is_primary": false
+        },
+        {
+          "name": "pricing_model",
+          "type": "string",
+          "description": "Model for pricing: \"fixed\", \"quote\", or \"tiered\".",
+          "is_primary": false
+        },
+        {
+          "name": "benefits",
+          "type": "string",
+          "description": "Array of canonical benefit codes for the plan (e.g., rc, perdida_total, consultas_ilimitadas).",
+          "is_primary": false
+        },
+        {
+          "name": "benefit_details",
+          "type": "string",
+          "description": "A general description or summary of the plan benefits.",
+          "is_primary": false
+        },
+        {
+          "name": "deductible",
+          "type": "string",
+          "description": "Deductible amount for the plan (primarily for autos). Can be null if only found in inaccessible PDFs.",
+          "is_primary": false
+        },
+        {
+          "name": "copay",
+          "type": "string",
+          "description": "Copay amount for the plan (primarily for salud). Can be null if only found in inaccessible PDFs.",
+          "is_primary": false
+        },
+        {
+          "name": "waiting_period_days",
+          "type": "number",
+          "description": "Waiting period in days before certain benefits become active.",
+          "is_primary": false
+        },
+        {
+          "name": "geo_scope",
+          "type": "string",
+          "description": "Geographical scope where the plan is valid. Null if not explicitly visible.",
+          "is_primary": false
+        },
+        {
+          "name": "target_personas",
+          "type": "string",
+          "description": "Target demographic or user segment for the plan. Null if not explicitly visible.",
+          "is_primary": false
+        },
+        {
+          "name": "last_verified_at",
+          "type": "string",
+          "description": "Timestamp when the plan data was last verified.",
+          "is_primary": false
+        },
+        {
+          "name": "source_primary_url",
+          "type": "string",
+          "description": "Primary URL where the plan information was sourced.",
+          "is_primary": false
+        },
+        {
+          "name": "external_purchase_url",
+          "type": "string",
+          "description": "URL for purchasing the plan directly, if available. Null if not found.",
+          "is_primary": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Relevant tags or keywords for the plan.",
+          "is_primary": false
+        },
+        {
+          "name": "price_currency",
+          "type": "string",
+          "is_primary": false
+        }
+      ]
+    },
+    "exported_at": "2025-09-17T20:47:58.524Z",
+    "total_items": 7
+  },
+  "data": [
+    {
+      "id": "6cfd35da-8000-4514-9fa4-aa72f0fe1de8",
+      "created_at": "2025-09-17T20:03:12.210751+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "mapfre",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "provider_display": {
+          "value": "MAPFRE",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-automovil-familiar",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de automóvil Familiar",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "perdida_total",
+            "daños_parciales",
+            "robo_parcial",
+            "terremoto",
+            "terrorismo",
+            "amparo_patrimonial",
+            "asistencia_juridica",
+            "accesorios",
+            "grua_km",
+            "accidentes_personales",
+            "descuento_hijos",
+            "canasta_familiar",
+            "renta_educativa",
+            "traslado_descuento",
+            "marcacion_gratuita"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "benefit_details": {
+          "value": "La póliza de automóviles Familiar ha sido desarrollada con una serie de ventajas y amparos adicionales, para brindarle una protección total a tu vehículo y a sus ocupantes. Un producto excepcional para automóviles de servicio particular y uso familiar. Incluye responsabilidad civil extracontractual, pérdida parcial o total por daños o hurto, daños por terremoto o terrorismo, amparo patrimonial o asistencia jurídica en proceso civil o penal. Además, incluye un descuento especial según el número de hijos del asegurado, cobertura por muerte accidental e invalidez total, servicio de asistencia en viaje, entrega de una canasta familiar por un valor $500.000 durante 6 meses en casos de muerte o incapacidad total o permanente del asegurado, renta educativa por $250.000 mensuales durante 6 meses para cada hijo en caso de muerte o incapacidad total o permanente del asegurado, gastos de transporte por pérdida total, y gastos de traspaso por pérdida total hasta 7 S.M.D.L.V. También ofrece asistencia MAPFRE Si-24.",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": "Colombia, Bolivia, Ecuador, Perú, Venezuela",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "familia"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T20:41:27Z",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.mapfre.com.co/seguros-carros/familiar/",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://digital.mapfre.com.co/iModelWeb/vista/autoscme/autoscmeinicio.jsf",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "tags": {
+          "value": [
+            "descuento_hijos",
+            "canasta_familiar",
+            "renta_educativa",
+            "marcacion_gratuita",
+            "traslado_descuento"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/familiar/"
+          ]
+        }
+      }
+    },
+    {
+      "id": "17f85acf-43a3-4f5a-9954-b0fb74a4472b",
+      "created_at": "2025-09-17T20:01:01.501813+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "mapfre",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "provider_display": {
+          "value": "MAPFRE",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-salud-vital",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Salud Vital",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "hospitalizacion",
+            "maternidad",
+            "cirugias",
+            "odontologia",
+            "consultas_ilimitadas",
+            "urgencias"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "benefit_details": {
+          "value": "Vital es la póliza que permite escoger la mejor protección en salud de acuerdo con las necesidades de cada persona o familia. Este es un producto modular de coberturas limitadas, para todo evento de enfermedad, accidente o maternidad. It offers coverage for transplants, hospital treatment for cancer and AIDS, recognition of prosthetics, maternity benefits, newborn coverage, enteral and parenteral feeding, pre and post hospitalization/surgery expenses, therapies, chronic renal insufficiency, and dental treatments due to accident. Optional ambulatory coverages include medical consultations, routine and specialized lab exams, simple and specialized diagnostic exams, emergencies due to illness, and ambulatory therapies/infiltrations. It also provides home medical assistance, emergency dental assistance, and funeral assistance.",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T20:01:45Z",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.mapfre.com.co/seguros-salud/vital/",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://digital.mapfre.com.co/pagosWeb/vista/paginas/noFilterIniPagosPublico.jsf",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/vital/"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "d435f945-8de1-41af-83f6-fade85dbf7a0",
+      "created_at": "2025-09-17T20:00:16.447218+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "mapfre",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "provider_display": {
+          "value": "MAPFRE",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-salud-excelencia",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de Salud Excelencia",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "hospitalizacion",
+            "maternidad",
+            "cirugias",
+            "consultas_ilimitadas",
+            "urgencias",
+            "odontologia",
+            "medicamentos"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "benefit_details": {
+          "value": "Excelencia brinda coberturas integrales de maternidad, accidente y enfermedad, dentro de nuestra prestigiosa Red y fuera de ella por reembolsos. It offers coverage for transplants, hospital treatment for cancer and AIDS, recognition of prosthetics, maternity benefits including prenatal care, postpartum home nursing, transport for medical controls, newborn coverage including congenital diseases, bariatric surgery, enteral and parenteral feeding, outpatient medications after emergencies, laboratory and diagnostic exams, post-hospitalization and post-surgery therapies, outpatient medical consultations, chronic reversible and irreversible renal insufficiency, dental treatments for accidents, premium payment exemption for the death of the main insured, and home hospitalization. Additionally, it provides medical assistance during travel, home medical assistance, dental assistance, and funeral assistance.",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": "Colombia",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T20:00:50Z",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.mapfre.com.co/seguros-salud/excelencia/",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://digital.mapfre.com.co/pagosWeb/vista/paginas/noFilterIniPagosPublico.jsf",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/excelencia/"
+          ]
+        }
+      }
+    },
+    {
+      "id": "238f0f66-a7fd-4306-91d3-0d183e0a4e85",
+      "created_at": "2025-09-17T19:58:33.370491+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "mapfre",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "provider_display": {
+          "value": "MAPFRE",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-salud-preferencial",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de salud Preferencial",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "hospitalizacion",
+            "maternidad",
+            "consultas_ilimitadas",
+            "urgencias",
+            "odontologia",
+            "cirugias"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "benefit_details": {
+          "value": "Preferencial es la póliza de salud que te brinda cobertura en Colombia, cubriendo hospitalización por enfermedad, maternidad o accidente, dentro de la Red MAPFRE. It also includes coverage for transplants, hospital treatment for cancer and AIDS, recognition of prosthetics, maternity benefits, newborn coverage without additional premium for 30 days including congenital diseases, bariatric surgery, enteral and parenteral feeding, routine and specialized lab tests, simple and specialized diagnostic exams, post-hospitalization and post-surgery therapies, chronic reversible and irreversible renal insufficiency, outpatient medical consultations, emergencies due to illness, hospitalizations and outpatient surgeries, dental treatments due to accident, and premium payment exemption for the death of the main insured. Additionally, it offers home medical assistance, emergency dental assistance, and funeral assistance up to 10 SMMLV.",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": "Colombia",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T19:59:16Z",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.mapfre.com.co/seguros-salud/preferencial/",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://digital.mapfre.com.co/pagosWeb/vista/paginas/noFilterIniPagosPublico.jsf",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-salud/preferencial/"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "a289328b-1a0c-4166-abde-160249dc4183",
+      "created_at": "2025-09-17T19:57:07.917413+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "mapfre",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "provider_display": {
+          "value": "MAPFRE",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-vehiculos-pesados",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro para Vehículos Pesados",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "perdida_total",
+            "daños_parciales",
+            "robo_parcial",
+            "grua_km",
+            "asistencia_juridica",
+            "cobertura_vidrios",
+            "accidentes_personales"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "benefit_details": {
+          "value": "Protege tus vehículos de carga con nuestro seguro especializado. Cobertura total ante accidentes, daños y robos, garantizando la seguridad de tus activos y la continuidad de tus operaciones. It includes civil liability, total or partial loss by damage or theft, legal assistance, earthquake, terrorism, road assistance, personal accidents for occupants and driver, and glass breakage.",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": [
+            "vehiculos_de_carga"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T20:41:27Z",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://digital.mapfre.com.co/iModelWeb/vista/autoscme/autoscmeinicio.jsf",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/vehiculos-de-carga/"
+          ]
+        }
+      }
+    },
+    {
+      "id": "26aa4dfd-c3f5-40a0-ac5b-80986e1961a6",
+      "created_at": "2025-09-17T19:56:15.937572+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "mapfre",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "provider_display": {
+          "value": "MAPFRE",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-automovil-mujer",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de automóvil Mujer",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "daños_parciales",
+            "robo_parcial",
+            "perdida_total",
+            "asistencia_juridica",
+            "grua_km",
+            "cobertura_vidrios",
+            "accidentes_personales",
+            "cobertura_extras"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "benefit_details": {
+          "value": "El seguro de automóviles Mujer ha sido desarrollado para ofrecer una serie de coberturas adicionales especiales para el público femenino. Con esta póliza, nuestras aseguradas contarán con beneficios y ventajas que no encontrarán en ningún otro seguro todo riesgo para carros convencional. Incluye responsabilidad civil, protección por pérdida parcial o total por daños, hurto, terremoto o terrorismo, amparo patrimonial, asistencia jurídica, y accesorios. Además, ofrece gastos de cirugía plástica para lesiones estéticas faciales, cobertura por fallecimiento accidental, invalidez total y permanente para conductor y ocupantes, rotura de vidrios sin deducible, asistencia en viaje, marcación gratuita del coche, traslado del descuento por no reclamación, y atención Asistencia MAPFRE Si-24.",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": "Colombia, Bolivia, Ecuador, Perú, Venezuela",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "mujeres"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T20:41:27Z",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.mapfre.com.co/seguros-carros/mujer/",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://digital.mapfre.com.co/iModelWeb/vista/autoscme/autoscmeinicio.jsf",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "tags": {
+          "value": [
+            "marcacion_gratuita",
+            "traslado_descuento"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/mujer/"
+          ]
+        }
+      }
+    },
+    {
+      "id": "22dc3ec9-ec0f-455c-ac7f-9d8cda1b4ec2",
+      "created_at": "2025-09-17T19:54:11.168116+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "mapfre",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "provider_display": {
+          "value": "MAPFRE",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "category_slug": {
+          "value": "autos",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "plan_slug": {
+          "value": "seguro-automovil-tradicional",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro de automóvil Tradicional",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "rc",
+            "perdida_total",
+            "daños_parciales",
+            "robo_parcial",
+            "terremoto",
+            "terrorismo",
+            "amparo_patrimonial",
+            "asistencia_juridica",
+            "accesorios",
+            "grua_km",
+            "marcacion_gratuita",
+            "traslado_descuento"
+          ],
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "benefit_details": {
+          "value": "La póliza de automóviles Tradicional ha sido pensada para preservar tu inversión, brindándote un adecuado respaldo y cobertura, en la protección de tu vehículo y sus ocupantes con un seguro todo riesgo único. Coberturas incluyen responsabilidad civil extracontractual (daños a bienes de terceros, lesiones o muerte a una o más personas), pérdida parcial o total por daños, pérdida parcial o total por hurto, terremoto, terrorismo, amparo patrimonial, asistencia jurídica en proceso civil o penal, y accesorios. Beneficios adicionales incluyen asignación preferente a concesionarios y talleres de primera línea, instalación de repuestos originales, auditoría especializada de las reparaciones, asistencia en viaje para vehículos livianos, marcación gratuita del vehículo, traslado de descuento por ausencia de reclamación, y atención Asistencia MAPFRE Si-24.",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": null,
+          "source_urls": []
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": null,
+          "source_urls": []
+        },
+        "target_personas": {
+          "value": null,
+          "source_urls": []
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T19:53:34Z",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.mapfre.com.co/seguros-carros/tradicional/",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://digital.mapfre.com.co/iModelWeb/vista/autoscme/autoscmeinicio.jsf",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.mapfre.com.co/seguros-carros/tradicional/"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -40,6 +40,7 @@ import { getOrCreateSessionId } from './chat/session-prefs-client';
 import { now, since } from './time';
 import { createHash } from 'crypto';
 import { sanitizeTelemetryPayload } from './telemetry.sanitize';
+import { isDevelopment, getPublicEnv, getServerVar } from '@/lib/env';
 
 // Ensure integer milliseconds
 const toIntMs = (value: unknown): number => {
@@ -50,7 +51,7 @@ const toIntMs = (value: unknown): number => {
 
 // Normalize legacy duration keys and coerce to integer ms; dev-only warnings
 const normalizeDurationPayload = (event: string, props: Record<string, any>) => {
-  const isDev = process.env.NODE_ENV !== 'production';
+  const isDev = isDevelopment();
   try {
     const payload = { ...props };
     if (payload && typeof payload === 'object') {
@@ -529,7 +530,7 @@ const EVENT_ALIASES: Record<string, keyof TelemetryEventMap> = {
 };
 
 const devValidatePayload = (event: string, payload: Record<string, any>) => {
-  const isDev = process.env.NODE_ENV !== 'production';
+  const isDev = isDevelopment();
   if (!isDev) return payload;
   try {
     if (typeof payload.durationMs === 'number') {
@@ -570,7 +571,7 @@ export const telemetry = {
     const eventName = String(event);
     const payload = sanitizeTelemetryPayload(normalizeDurationPayload(eventName, (properties || {})));
     devValidatePayload(eventName, payload);
-    const isDev = process.env.NODE_ENV !== 'production';
+    const isDev = isDevelopment();
     // Dev-only: assert sessionId/userId presence for BRIEF_PARSE_* and PDF_* family
     if (isDev) {
       try {
@@ -598,7 +599,7 @@ export const telemetry = {
       return;
     }
     // E2E capture surface (always capture if flag is enabled) - client-side
-    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_E2E_CAPTURE === '1') {
+    if (typeof window !== 'undefined' && getPublicEnv().NEXT_PUBLIC_E2E_CAPTURE === '1') {
       try {
         const w = window as any;
         if (!Array.isArray(w.__captureTelemetry)) w.__captureTelemetry = [];
@@ -606,7 +607,7 @@ export const telemetry = {
       } catch {}
     }
     // E2E capture surface - server-side (opt-in for tests)
-    if (typeof window === 'undefined' && process.env.ENABLE_SERVER_E2E_CAPTURE === '1') {
+    if (typeof window === 'undefined' && getServerVar('ENABLE_SERVER_E2E_CAPTURE') === '1') {
       try {
         const g: any = globalThis as any;
         if (!Array.isArray(g.__serverTelemetry)) g.__serverTelemetry = [];
@@ -626,9 +627,9 @@ export const telemetry = {
   trackSampled(event: string, properties?: Record<string, any>, options?: { rate?: number }) {
     const eventName = String(event);
     const rate = typeof options?.rate === 'number' ? Math.min(1, Math.max(0, options.rate)) : 0.2;
-    const isDev = process.env.NODE_ENV !== 'production';
-    const isE2E = (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_E2E_CAPTURE === '1')
-      || (typeof window === 'undefined' && process.env.ENABLE_SERVER_E2E_CAPTURE === '1');
+    const isDev = isDevelopment();
+    const isE2E = (typeof window !== 'undefined' && getPublicEnv().NEXT_PUBLIC_E2E_CAPTURE === '1')
+      || (typeof window === 'undefined' && getServerVar('ENABLE_SERVER_E2E_CAPTURE') === '1');
     const sanitized = sanitizeTelemetryPayload(normalizeDurationPayload(eventName, (properties || {})));
     if (isDev || isE2E) {
       try { telemetry.track(eventName, sanitized); } catch {}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isGateEnabled, loadAllowlist, isValidTrialCode, signTrialJwt, ACCESS_COOKIE } from '@/lib/trial-gate';
+import { env } from '@/lib/env';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   const jwt = await signTrialJwt();
   
   // Calculate Max-Age from TTL
-  const ttlDays = Number(process.env.TRIAL_TTL_DAYS || '14');
+  const ttlDays = Number(env.server.TRIAL_TTL_DAYS || '14');
   const maxAge = ttlDays * 24 * 60 * 60;
   
   // Build cookie options
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
   ];
   
   // Add Secure flag in production
-  if (process.env.NODE_ENV === 'production') {
+  if (env.server.NODE_ENV === 'production') {
     cookieOptions.push('Secure');
   }
   

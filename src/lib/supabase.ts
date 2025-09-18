@@ -1,16 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
+import { getPublicEnv } from '@/lib/env';
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL');
-}
-if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY');
-}
+const pub = getPublicEnv();
 
 // Create Supabase client
 export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  pub.NEXT_PUBLIC_SUPABASE_URL,
+  pub.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 // Tool types matching our database schema

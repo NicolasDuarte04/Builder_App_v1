@@ -65,7 +65,7 @@ export function CreateProposalButton({
 
   // Feature flag: templates fallback (client-side)
   const isTemplatesFallbackEnabled = useMemo(() => {
-    const raw = (process.env.NEXT_PUBLIC_ENABLE_TEMPLATES_FALLBACK ?? process.env.ENABLE_TEMPLATES_FALLBACK) as any;
+    const raw = (((await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_ENABLE_TEMPLATES_FALLBACK) ?? process.env.ENABLE_TEMPLATES_FALLBACK) as any;
     if (raw === undefined) return true; // default ON unless explicitly disabled
     const normalized = String(raw).toLowerCase();
     return !["0", "false", "off", "no"].includes(normalized);

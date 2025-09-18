@@ -1,11 +1,12 @@
 import { headers } from 'next/headers';
+import { getPublicEnv } from '@/lib/env';
 
 export function getBaseUrlFromHeaders(h: Headers): string {
   const xfProto = h.get('x-forwarded-proto');
   const xfHost = h.get('x-forwarded-host');
   if (xfProto && xfHost) return `${xfProto}://${xfHost}`;
 
-  const envBase = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/+$/, '');
+  const envBase = getPublicEnv().NEXT_PUBLIC_BASE_URL?.replace(/\/+$/, '');
   if (envBase) return envBase;
 
   return 'http://localhost:3000';

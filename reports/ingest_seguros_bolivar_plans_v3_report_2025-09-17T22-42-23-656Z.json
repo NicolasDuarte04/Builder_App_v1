@@ -1,0 +1,152 @@
+{
+  "startedAt": "2025-09-17T22:41:55.338Z",
+  "inputPath": "/Users/nicolasduarte/Briki Co Pilot /briki-clean/scripts/etl/raw_webhound_seguros_bolivar.json",
+  "rowsRead": 22,
+  "kept": 11,
+  "rejected": 11,
+  "rejectedByReason": {
+    "insufficient_canonical_benefits": 11
+  },
+  "countsByCategory": {
+    "salud": 9,
+    "autos": 2
+  },
+  "upsertedProviders": 11,
+  "upsertedPlans": 11,
+  "insertedBenefits": 55,
+  "insertedPrices": 2,
+  "insertedSources": 11,
+  "notes": [],
+  "sampleKeptPlanSlugs": [
+    "universal_medical_care_plus",
+    "medica_familiar_individual",
+    "global_ultimate_health_plan",
+    "global_elite_health_plan",
+    "essential_care",
+    "global_premier_health_plan",
+    "global_select_health_plan",
+    "bienestar_y_salud_para_disfrutar"
+  ],
+  "topUnmapped": [
+    {
+      "term": "cubrimos danos a otras personas",
+      "category": "autos",
+      "count": 6
+    },
+    {
+      "term": "protegemos sus recorridos en bici, patineta o transporte publico",
+      "category": "autos",
+      "count": 6
+    },
+    {
+      "term": "vehiculo de reemplazo",
+      "category": "autos",
+      "count": 6
+    },
+    {
+      "term": "dano y hurto total o parcial del carro",
+      "category": "autos",
+      "count": 5
+    },
+    {
+      "term": "asistencia full - conductor, mensajeria y mas",
+      "category": "autos",
+      "count": 5
+    },
+    {
+      "term": "pequenos accesorios por danos o hurto",
+      "category": "autos",
+      "count": 4
+    },
+    {
+      "term": "vehiculo de reemplazo hasta por 30 dias",
+      "category": "autos",
+      "count": 3
+    },
+    {
+      "term": "deducible desde 0% - 0,8 smmlv",
+      "category": "autos",
+      "count": 3
+    },
+    {
+      "term": "cerrajeria",
+      "category": "autos",
+      "count": 3
+    },
+    {
+      "term": "conductor elegido",
+      "category": "autos",
+      "count": 3
+    },
+    {
+      "term": "servicios programados",
+      "category": "autos",
+      "count": 3
+    },
+    {
+      "term": "cobertura 360",
+      "category": "autos",
+      "count": 2
+    },
+    {
+      "term": "cobertura global sin limites",
+      "category": "salud",
+      "count": 5
+    },
+    {
+      "term": "health partner logistico",
+      "category": "salud",
+      "count": 5
+    },
+    {
+      "term": "programas especializados de cuidado",
+      "category": "salud",
+      "count": 5
+    },
+    {
+      "term": "planes que se ajustan a su vida",
+      "category": "salud",
+      "count": 5
+    },
+    {
+      "term": "red medica internacional de primer nivel",
+      "category": "salud",
+      "count": 5
+    },
+    {
+      "term": "bolivar conmigo",
+      "category": "salud",
+      "count": 5
+    },
+    {
+      "term": "tratamiento ambulatorio",
+      "category": "salud",
+      "count": 5
+    },
+    {
+      "term": "enfermedades criticas, cuidados paliativos y rehabilitacion",
+      "category": "salud",
+      "count": 5
+    },
+    {
+      "term": "respaldo",
+      "category": "salud",
+      "count": 2
+    },
+    {
+      "term": "cobertura",
+      "category": "salud",
+      "count": 2
+    },
+    {
+      "term": "directorio medico",
+      "category": "salud",
+      "count": 2
+    },
+    {
+      "term": "elija la mejor atencion en salud",
+      "category": "salud",
+      "count": 2
+    }
+  ]
+}

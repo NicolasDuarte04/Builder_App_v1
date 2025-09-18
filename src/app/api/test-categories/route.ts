@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
+import { getServerVar } from '@/lib/env';
 export const runtime = 'nodejs';
 
-const pool = process.env.RENDER_POSTGRES_URL
+const pool = getServerVar('RENDER_POSTGRES_URL')
   ? new Pool({
-      connectionString: process.env.RENDER_POSTGRES_URL,
+      connectionString: getServerVar('RENDER_POSTGRES_URL')!,
       ssl: { rejectUnauthorized: false },
     })
   : null;

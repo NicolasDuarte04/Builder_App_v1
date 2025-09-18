@@ -109,3 +109,22 @@ Post-deploy verification:
    - `🔎 prod-check` showing a non-zero `plansReturned`
    - `[plans] after filter` with `kept > 0`
 
+## 🔒 Build-time environment validation
+
+To prevent broken deployments due to missing auth/database env vars, the build runs an env check before compiling.
+
+- The build script runs: `npm run check:env && next build`
+- Required variables:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `NEXTAUTH_URL`
+  - `NEXTAUTH_SECRET`
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+
+If any are missing, the build fails with a clear list, e.g. `[env-check] Missing: NEXTAUTH_SECRET, SUPABASE_URL`.
+
+Vercel:
+- Ensure the Build Command is `npm run build` (default). Our `package.json` build already includes the env check.
+- Alternatively, set the Build Command to `npm run check:env && npm run build` in Vercel Project settings.
+

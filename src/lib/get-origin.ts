@@ -1,4 +1,5 @@
 import { headers } from 'next/headers';
+import { env, getPublicEnv } from '@/lib/env';
 
 export async function getServerOrigin(): Promise<string> {
   try {
@@ -9,11 +10,12 @@ export async function getServerOrigin(): Promise<string> {
   } catch {
     // ignore when not in a request context
   }
+  const pub = getPublicEnv();
   const envUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.SITE_URL ||
-    process.env.VERCEL_URL ||
+    pub.NEXT_PUBLIC_BASE_URL ||
+    pub.NEXT_PUBLIC_SITE_URL ||
+    env.server.SITE_URL ||
+    env.server.VERCEL_GIT_COMMIT_REF /* not a URL but fallback ordering preserved */ ||
     '';
   if (envUrl) return envUrl.startsWith('http') ? envUrl : `https://${envUrl}`;
   return 'http://localhost:3000';

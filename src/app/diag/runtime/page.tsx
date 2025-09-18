@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 function DevOnly({ children }: { children: React.ReactNode }) {
-  if (process.env.NODE_ENV !== 'development') {
+  if ((await import('@/lib/env')).env.server.NODE_ENV !== 'development') {
     return (
       <div className="p-6 text-sm text-gray-600">
         /diag/runtime is disabled outside development.

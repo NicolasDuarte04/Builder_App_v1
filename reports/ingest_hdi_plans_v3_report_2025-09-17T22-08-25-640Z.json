@@ -1,0 +1,126 @@
+{
+  "startedAt": "2025-09-17T22:08:00.324Z",
+  "inputPath": "/Users/nicolasduarte/Briki Co Pilot /briki-clean/scripts/etl/raw_webhound_hdi.json",
+  "rowsRead": 8,
+  "kept": 7,
+  "rejected": 1,
+  "rejectedByReason": {
+    "stale_verification": 1
+  },
+  "countsByCategory": {
+    "autos": 3,
+    "salud": 4
+  },
+  "upsertedProviders": 7,
+  "upsertedPlans": 7,
+  "insertedBenefits": 58,
+  "insertedPrices": 0,
+  "insertedSources": 7,
+  "notes": [],
+  "sampleKeptPlanSlugs": [
+    "taxis-hdi",
+    "moto-hdi",
+    "salud-integral-hdi",
+    "salud-esencial-hdi",
+    "total-help-plus-hdi",
+    "total-help-md-hdi",
+    "auto-hdi"
+  ],
+  "topUnmapped": [
+    {
+      "term": "asistencia en viaje.",
+      "category": "autos",
+      "count": 2
+    },
+    {
+      "term": "asistencia en viaje",
+      "category": "autos",
+      "count": 1
+    },
+    {
+      "term": "gastos medicos.",
+      "category": "autos",
+      "count": 1
+    },
+    {
+      "term": "asistencia odontologica (zona de cobertura: ciudades capitales del departamento).",
+      "category": "autos",
+      "count": 1
+    },
+    {
+      "term": "perdida parcial por hurto",
+      "category": "autos",
+      "count": 1
+    },
+    {
+      "term": "perdida parcial por danos",
+      "category": "autos",
+      "count": 1
+    },
+    {
+      "term": "asistencia odontologica.",
+      "category": "autos",
+      "count": 1
+    },
+    {
+      "term": "asistencia en viaje y al hogar.",
+      "category": "autos",
+      "count": 1
+    },
+    {
+      "term": "programa de dispositivo de recuperacion para hurto, aplica para aquellos vehiculos relacionados en politicas de instalacion.",
+      "category": "autos",
+      "count": 1
+    },
+    {
+      "term": "cobertura ambulatoria de consulta y examenes simples, terapias e infiltraciones.",
+      "category": "salud",
+      "count": 2
+    },
+    {
+      "term": "servicios medicos dentro y fuera de la red contratada por hdi seguros.",
+      "category": "salud",
+      "count": 2
+    },
+    {
+      "term": "habitacion hospitalaria",
+      "category": "salud",
+      "count": 1
+    },
+    {
+      "term": "unidad de cuidados intensivos",
+      "category": "salud",
+      "count": 1
+    },
+    {
+      "term": "cama acompanante",
+      "category": "salud",
+      "count": 1
+    },
+    {
+      "term": "enfermera especial",
+      "category": "salud",
+      "count": 1
+    },
+    {
+      "term": "visitas medicas por tratamiento medico hospitalario",
+      "category": "salud",
+      "count": 1
+    },
+    {
+      "term": "consultas post-hospitalarias",
+      "category": "salud",
+      "count": 1
+    },
+    {
+      "term": "honorarios quirurgicos",
+      "category": "salud",
+      "count": 1
+    },
+    {
+      "term": "servicios especiales hospitalarios",
+      "category": "salud",
+      "count": 1
+    }
+  ]
+}

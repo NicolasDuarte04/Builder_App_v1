@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
 
 // Initialize Supabase client
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  env.server.SUPABASE_URL,
+  env.server.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export async function POST(request: Request) {

@@ -69,7 +69,7 @@ export function AnalyzerCore({ plan, onAnalysisComplete, variant = 'panel' }: An
   const isMultiPdfEnabled = ((): boolean => {
     try {
       // Read via public flag alias
-      const envVal = process.env.NEXT_PUBLIC_MULTI_PDF;
+      const envVal = (await import('@/lib/env')).getPublicEnv().NEXT_PUBLIC_MULTI_PDF;
       if (envVal === '1' || (envVal ?? '').toLowerCase() === 'true') return true;
     } catch {}
     // fallback disabled by default

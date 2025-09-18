@@ -1,0 +1,35 @@
+{
+  "startedAt": "2025-09-17T22:47:01.153Z",
+  "inputPath": "/Users/nicolasduarte/Briki Co Pilot /briki-clean/scripts/etl/raw_webhound_axacolpatria.json",
+  "rowsRead": 11,
+  "kept": 11,
+  "rejected": 0,
+  "rejectedByReason": {},
+  "countsByCategory": {
+    "autos": 6,
+    "salud": 5
+  },
+  "upsertedProviders": 11,
+  "upsertedPlans": 11,
+  "insertedBenefits": 95,
+  "insertedPrices": 0,
+  "insertedSources": 11,
+  "notes": [],
+  "sampleKeptPlanSlugs": [
+    "seguro-de-taxis",
+    "auto-suficiente",
+    "plan-fesalud",
+    "plan-alterno",
+    "plan-original",
+    "salud-ideal",
+    "plan-ambulatorio",
+    "plus"
+  ],
+  "topUnmapped": [
+    {
+      "term": "trasplante_rinon_cornea",
+      "category": "salud",
+      "count": 1
+    }
+  ]
+}

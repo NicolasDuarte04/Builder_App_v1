@@ -3,46 +3,36 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { type NextAuthOptions } from "next-auth";
 import bcrypt from "bcryptjs";
+import { env } from "@/lib/env";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
-// Safe environment checks
-const hasSupabase =
-  !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+// @ts-expect-error - Next.js route exports
+export const runtime = "nodejs";
+// @ts-expect-error
+export const dynamic = "force-dynamic";
 
-function getSupabaseAdmin() {
-  if (!hasSupabase) return null;
-  try {
-    // Require inside to avoid module-scope throws if env broken
-    const { createClient } = require('@supabase/supabase-js');
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-      process.env.SUPABASE_SERVICE_ROLE_KEY as string
-    );
-  } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('[auth] Supabase init failed:', err);
-    }
-    return null;
-  }
-}
-
-const hasGoogle =
-  !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
+// Google provider env is validated via requireEnv below
 
 const devLog = (...args: any[]) => {
-  if (process.env.NODE_ENV !== 'production') console.log('[auth]', ...args);
+  if (env.server.NODE_ENV !== 'production') console.log('[auth]', ...args);
 };
+
+// Fail-fast helper for provider envs
+const requireEnv = (keys: string[]) => {
+  const missing = keys.filter(k => !(env.server as any)[k]);
+  if (missing.length) throw new Error(`[auth] Missing provider env: ${missing.join(", ")}`);
+};
+
+// Ensure Google provider env is present if the provider is configured in code
+requireEnv(["GOOGLE_CLIENT_ID","GOOGLE_CLIENT_SECRET"]);
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    // Include Google only when both secrets exist
-    ...(hasGoogle
-      ? [
-          GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-          }),
-        ]
-      : (devLog('Google provider disabled: missing env'), [])),
+    // Require Google env; fail clearly rather than hiding the provider
+    GoogleProvider({
+      clientId: env.server.GOOGLE_CLIENT_ID as string,
+      clientSecret: env.server.GOOGLE_CLIENT_SECRET as string,
+    }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -57,11 +47,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
         
-        const supabase = getSupabaseAdmin();
-        if (!supabase) {
-          devLog('Credentials authorize without Supabase — returning null (unauth).');
-          return null;
-        }
+        const supabase = supabaseAdmin;
         
         try {
           // Check if user exists in database
@@ -109,11 +95,7 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      const supabase = getSupabaseAdmin();
-      if (!supabase) {
-        devLog('signIn: Supabase unavailable — skipping DB ops.');
-        return true; // Don't block sign-in flow
-      }
+      const supabase = supabaseAdmin;
       
       if (account?.provider === "google" && profile) {
         try {
@@ -131,7 +113,7 @@ export const authOptions: NextAuthOptions = {
               .insert({
                 email: user.email,
                 name: user.name || "Google User",
-                password: "oauth_user", // Placeholder for OAuth users
+                password: "oauth_user",
               })
               .select()
               .single();
@@ -154,8 +136,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session?.user && token) {
-        // Use the stored database user ID from the token
-        session.user.id = token.userId as string || token.sub!;
+        session.user.id = (token as any).userId as string || token.sub!;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
       }
@@ -164,11 +145,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       devLog("JWT callback - user:", user, "account:", account?.provider);
       
-      const supabase = getSupabaseAdmin();
-      if (!supabase) {
-        devLog('jwt: Supabase unavailable — passthrough token.');
-        return token;
-      }
+      const supabase = supabaseAdmin;
       
       // When user signs in, store their database ID
       if (user && account && user.email) {
@@ -181,7 +158,7 @@ export const authOptions: NextAuthOptions = {
             .single();
           
           if (dbUser) {
-            token.userId = dbUser.id; // Store the actual database ID
+            (token as any).userId = dbUser.id;
             token.email = user.email;
             token.name = user.name;
           }
@@ -208,10 +185,10 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
     error: "/login",
   },
-  debug: process.env.NODE_ENV === "development",
-  secret: process.env.NEXTAUTH_SECRET,
+  debug: env.server.NODE_ENV === "development",
+  secret: env.server.NEXTAUTH_SECRET,
   // @ts-ignore - trustHost is a valid option but not in type definition
-  trustHost: true, // Allow localhost and preview URLs
+  trustHost: true,
 };
 
 const handler = NextAuth(authOptions);

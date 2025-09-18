@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "dev:clean": "rm -rf .next && next dev",
-    "build": "next build",
+    "build": "npm run check:env && next build",
     "start": "next start",
-    "lint": "eslint 'src/app/page.tsx' 'src/app/api/copilot/**/*.{ts,tsx}' 'src/app/proposals/**/*.{ts,tsx}' 'src/components/{SmartIntakeForm,Shortlist,AnalyzerPanel}.tsx' 'src/lib/{env,supabase-client}.ts'",
+    "check:env": "node scripts/check-env.js",
+    "lint": "eslint 'src/app/page.tsx' 'src/app/api/copilot/**/*.{ts,tsx}' 'src/app/proposals/**/*.{ts,tsx}' 'src/components/{SmartIntakeForm,Shortlist,AnalyzerPanel}.tsx' 'src/lib/{env,supabase-browser,supabase-server}.ts'",
     "type-check": "tsc --noEmit",
     "postinstall": "node scripts/copy-pdf-worker.mjs",
     "import:validate": "tsx scripts/validate-plans-csv.ts",
@@ -25,14 +26,21 @@
     "db:v2:load": "psql \"$DATABASE_URL\" -f scripts/etl/dist/plans_v2.sql",
     "db:v2:verify": "node scripts/db/verify-plans-v2.js",
     "publish:v2": "npm run db:v2:create && npm run db:v2:load && npm run db:v2:verify",
-    "db:catalog:migrate": "psql \"$CATALOG_DB_URL\" -v ON_ERROR_STOP=1 -f supabase/migrations_catalog/20250917_create_plans_v2.sql",
+    "db:catalog:migrate": "psql \"$CATALOG_DB_URL\" -v ON_ERROR_STOP=1 -f supabase/migrations_catalog/20250917_create_plans_v2.sql && psql \"$CATALOG_DB_URL\" -v ON_ERROR_STOP=1 -f supabase/migrations_catalog/20250917_plans_v3.sql",
+    "db:catalog:ingest:sura": "node --env-file=.env.local --require dotenv/config --import tsx ./scripts/etl/ingest_sura_plans_v3.ts",
+    "db:catalog:ingest:mapfre": "node --env-file=.env.local --require dotenv/config --import tsx ./scripts/etl/ingest_mapfre_plans_v3.ts",
+    "db:catalog:ingest:allianz": "node --env-file=.env.local --require dotenv/config --import tsx ./scripts/etl/ingest_allianz_plans_v3.ts",
+    "db:catalog:ingest:axacolpatria": "node --env-file=.env.local --require dotenv/config --import tsx ./scripts/etl/ingest_axacolpatria_plans_v3.ts",
+    "db:catalog:ingest:hdi": "node --env-file=.env.local --require dotenv/config --import tsx ./scripts/etl/ingest_hdi_plans_v3.ts",
+    "db:catalog:ingest:seguros_bolivar": "node --env-file=.env.local --require dotenv/config --import tsx ./scripts/etl/ingest_seguros_bolivar_plans_v3.ts",
     "db:catalog:check": "curl --fail --silent http://localhost:3000/api/plans_v2/selftest?__schema=1 | (jq . 2>/dev/null || cat)",
     "diagnostics:coverage": "tsx scripts/diagnostics/coverage.ts",
     "test:e2e": "playwright test",
     "test:e2e:edge": "playwright test -c tests/e2e/edge-cases/playwright.config.edge.ts",
     "test:unit": "vitest run",
     "test": "npm run test:unit && npm run test:e2e",
-    "check:catalog": "node scripts/check_catalog.mjs"
+    "check:catalog": "node scripts/check_catalog.mjs",
+    "check:catalog:status": "tsx scripts/etl/check_catalog_status.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
@@ -69,7 +77,6 @@
     "cobe": "^0.6.4",
     "dagre": "^0.8.5",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.2.1",
     "dotted-map": "^2.2.3",
     "framer-motion": "^12.23.12",
     "franc-min": "^6.2.0",
@@ -115,9 +122,11 @@
     "@types/three": "^0.178.1",
     "autoprefixer": "^10.4.17",
     "critters": "^0.0.23",
+    "dotenv": "^17.2.1",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "ignore-loader": "^0.1.2",
+    "jsdom": "^25.0.1",
     "null-loader": "^4.0.1",
     "pdfkit": "^0.17.2",
     "playwright": "^1.55.0",
@@ -125,7 +134,6 @@
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.2",
     "typescript": "^5",
-    "vitest": "^3.2.4",
-    "jsdom": "^25.0.1"
+    "vitest": "^3.2.4"
   }
 }

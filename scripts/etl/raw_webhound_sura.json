@@ -1,0 +1,1334 @@
+{
+  "metadata": {
+    "entity": {
+      "name": "SURA Insurance Plan in Colombia (Consumer-Facing)",
+      "criteria": [
+        "Is it an insurance plan offered by SURA in Colombia?",
+        "Is it a consumer-facing plan (not business-to-business or wholesale)?",
+        "Does it belong to the 'Autos' or 'Salud' category?",
+        "Does it have at least 4 canonical benefits?",
+        "Does it have a price_min or clearly indicate 'quote' as the pricing_model?",
+        "Does it have an official source_primary_url from SURA?"
+      ],
+      "description": "Consumer-facing insurance plans offered by SURA in Colombia, categorized as Autos or Salud, meeting strict quality rules."
+    },
+    "schema": {
+      "attributes": [
+        {
+          "name": "provider_slug",
+          "type": "string",
+          "description": "Kebab case identifier for the insurance provider (e.g., 'sura')",
+          "is_primary": true
+        },
+        {
+          "name": "provider_display",
+          "type": "string",
+          "description": "Official display name of the insurance provider (e.g., 'Seguros SURA')",
+          "is_primary": false
+        },
+        {
+          "name": "category_slug",
+          "type": "string",
+          "description": "Kebab case identifier for the insurance category ('autos' or 'salud')",
+          "is_primary": false
+        },
+        {
+          "name": "plan_slug",
+          "type": "string",
+          "description": "Unique kebab case identifier for the insurance plan (e.g., 'sura_autos_total')",
+          "is_primary": true
+        },
+        {
+          "name": "plan_display",
+          "type": "string",
+          "description": "Official product name of the plan used in marketing",
+          "is_primary": false
+        },
+        {
+          "name": "price_currency",
+          "type": "string",
+          "description": "Currency of the price (e.g., 'COP')",
+          "is_primary": false
+        },
+        {
+          "name": "price_min",
+          "type": "number",
+          "description": "Base monthly or annual price, numeric",
+          "is_primary": false
+        },
+        {
+          "name": "pricing_model",
+          "type": "string",
+          "description": "Pricing model, 'quote', 'monthly', or 'annual'",
+          "is_primary": false
+        },
+        {
+          "name": "benefits",
+          "type": "string",
+          "description": "List of canonical benefit codes included in the plan",
+          "is_primary": false
+        },
+        {
+          "name": "benefit_details",
+          "type": "string",
+          "description": "Structured notes per benefit code (e.g., { 'rc':{'limite':'500M'}, 'grua_km':{'km':200} })",
+          "is_primary": false
+        },
+        {
+          "name": "deductible",
+          "type": "string",
+          "description": "Text describing the deductible (required for Autos plans)",
+          "is_primary": false
+        },
+        {
+          "name": "copay",
+          "type": "string",
+          "description": "Text describing the copay (required for Salud plans)",
+          "is_primary": false
+        },
+        {
+          "name": "waiting_period_days",
+          "type": "number",
+          "description": "Number of waiting period days (integer, Salud plans only; null if not applicable)",
+          "is_primary": false
+        },
+        {
+          "name": "geo_scope",
+          "type": "string",
+          "description": "ISO list of countries where the plan is applicable; minimum ['CO']",
+          "is_primary": false
+        },
+        {
+          "name": "target_personas",
+          "type": "string",
+          "description": "Target customer segments: ['particular', 'familiar', 'pyme']",
+          "is_primary": false
+        },
+        {
+          "name": "last_verified_at",
+          "type": "string",
+          "description": "ISO datetime of when the plan data was last verified (scrape timestamp)",
+          "is_primary": false
+        },
+        {
+          "name": "source_primary_url",
+          "type": "string",
+          "description": "Official web page or PDF link from SURA detailing the plan",
+          "is_primary": false
+        },
+        {
+          "name": "external_purchase_url",
+          "type": "string",
+          "description": "Direct link for online purchase of the plan, if available",
+          "is_primary": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Optional descriptive tags for the plan (e.g., 'mejor_precio', 'top_red')",
+          "is_primary": false
+        }
+      ]
+    },
+    "exported_at": "2025-09-17T19:33:03.761Z",
+    "total_items": 9
+  },
+  "data": [
+    {
+      "id": "519fb121-be94-4217-a638-9be8efe05c81",
+      "created_at": "2025-09-17T17:14:56.291831+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "sura",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros SURA",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "plan_slug": {
+          "value": "sura_salud_para_dos_plan_estandar",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "plan_display": {
+          "value": "Salud para Dos - Plan Estándar",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "price_min": {
+          "value": 65000,
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "pricing_model": {
+          "value": "monthly",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "medicina_general_no_programada_virtual",
+            "atencion_virtual_prioritaria_pediatra",
+            "atencion_virtual_prioritaria_medico_general",
+            "medicina_interna",
+            "urologia",
+            "ginecologia",
+            "medicina_general",
+            "psicologia",
+            "psiquiatria",
+            "medicamentos",
+            "laboratorio_clinico",
+            "imagenologia",
+            "atencion_medica_domiciliaria",
+            "emergencias_odontologicas_domicilio_clinica",
+            "limpieza_oral_clinica",
+            "sin_copagos",
+            "sin_preexistencias_medicas"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "benefit_details": {
+          "value": "{ 'medicina_general_no_programada_virtual':{'incluido':true}, 'atencion_virtual_prioritaria_pediatra':{'incluido':true}, 'atencion_virtual_prioritaria_medico_general':{'incluido':true}, 'medicina_interna':{'limite':'Hasta 5 consultas por vigencia'}, 'urologia':{'limite':'Hasta 5 consultas por vigencia'}, 'ginecologia':{'limite':'Hasta 5 consultas por vigencia'}, 'medicina_general':{'limite':'Hasta 5 consultas por vigencia'}, 'psicologia':{'limite':'Hasta 2 consultas por vigencia'}, 'psiquiatria':{'limite':'Hasta 1 consulta por vigencia'}, 'medicamentos':{'descripcion':'Solo derivados de la atención virtual prioritaria con médico general y pediatra, de acuerdo con el listado definido por la compañía (vademécum).'}, 'laboratorio_clinico':{'limite':'$121.242 por vigencia'}, 'imagenologia':{'limite':'$123.812 por vigencia'}, 'atencion_medica_domiciliaria':{'aplicacion':'Solo para el tomador del plan.'}, 'emergencias_odontologicas_domicilio_clinica':{'incluido':true}, 'limpieza_oral_clinica':{'limite':'Hasta 2 por vigencia (1 tomador y 1 beneficiario)'} }",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": "No tiene copagos",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": [
+            "CO"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "particular",
+            "familiar"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T17:07:05Z",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://wa.link/7m5njn",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "a0bdde69-24ea-40a4-ba52-087ad863418e",
+      "created_at": "2025-09-17T17:14:56.238446+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "sura",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros SURA",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "plan_slug": {
+          "value": "sura_salud_para_dos_plan_plus",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "plan_display": {
+          "value": "Salud para Dos - Plan Plus",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "price_min": {
+          "value": 91983,
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "pricing_model": {
+          "value": "monthly",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "medicina_general_no_programada_virtual",
+            "atencion_virtual_prioritaria_pediatra",
+            "atencion_virtual_prioritaria_medico_general",
+            "medicina_interna",
+            "urologia",
+            "ginecologia",
+            "medicina_general",
+            "dermatologia",
+            "nutricion",
+            "psicologia",
+            "oftalmologia",
+            "ortopedia",
+            "otorrinolaringologia",
+            "psiquiatria",
+            "medicamentos",
+            "laboratorio_clinico",
+            "imagenologia",
+            "atencion_medica_domiciliaria",
+            "emergencias_odontologicas_domicilio_clinica",
+            "limpieza_oral_clinica",
+            "sin_copagos",
+            "sin_preexistencias_medicas"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "benefit_details": {
+          "value": "{ 'medicina_general_no_programada_virtual':{'incluido':true}, 'atencion_virtual_prioritaria_pediatra':{'incluido':true}, 'atencion_virtual_prioritaria_medico_general':{'incluido':true}, 'medicina_interna':{'limite':'Ilimitadas'}, 'urologia':{'limite':'Ilimitadas'}, 'ginecologia':{'limite':'Ilimitadas'}, 'medicina_general':{'limite':'Ilimitadas'}, 'dermatologia':{'incluido':true}, 'nutricion':{'incluido':true}, 'psicologia':{'limite':'Hasta 4 consultas por vigencia'}, 'oftalmologia':{'incluido':true}, 'ortopedia':{'incluido':true}, 'otorrinolaringologia':{'incluido':true}, 'psiquiatria':{'limite':'Hasta 2 consultas por vigencia'}, 'medicamentos':{'descripcion':'Solo derivados de la atención virtual prioritaria con médico general y pediatra, de acuerdo con el listado definido por la compañía (vademécum).'}, 'laboratorio_clinico':{'limite':'$242.485 por vigencia'}, 'imagenologia':{'limite':'$123.812 por vigencia'}, 'atencion_medica_domiciliaria':{'aplicacion':'La podrás compartir con la persona que tengas registrada en tu plan como beneficiario.'}, 'emergencias_odontologicas_domicilio_clinica':{'incluido':true}, 'limpieza_oral_clinica':{'limite':'Hasta 2 por vigencia (1 tomador y 1 beneficiario)'} }",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": "No tiene copagos",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": [
+            "CO"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "particular",
+            "familiar"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T17:07:05Z",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "external_purchase_url": {
+          "value": "https://wa.link/7m5njn",
+          "source_urls": [
+            "https://www.sura.co/seguros/personas/salud/salud-para-dos/digital"
+          ]
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "995d0fd9-89a8-4648-b613-b860de8d27cc",
+      "created_at": "2025-09-17T17:11:02.772349+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "sura",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros SURA",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "plan_slug": {
+          "value": "sura_salud_a_tu_alcance_plan_3",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "plan_display": {
+          "value": "Salud a tu Alcance - Plan 3",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "consulta_medica_general",
+            "consulta_medica_especialista",
+            "atencion_prioritaria_presencial_virtual",
+            "atencion_prioritaria_virtual_pediatra",
+            "ayudas_diagnosticas",
+            "examenes_laboratorio_clinico",
+            "terapias_fisicas",
+            "bolsa_medicamentos",
+            "atencion_domiciliaria",
+            "cirugia_ambulatoria",
+            "complicaciones_quirurgicas_ambulatorias",
+            "promocion_prevencion",
+            "consulta_odontologia_general",
+            "procedimientos_enfermeria",
+            "procedimientos_menores",
+            "traslado_ambulancia"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "benefit_details": {
+          "value": "{ \"consulta_medica_general\": {\"copago\": \"sin copago\", \"limite\": \"sin limite\"}, \"consulta_medica_especialista\": {\"copago\": \"con copago\", \"especialidades\": [\"Pediatría\", \"Medicina interna\", \"Dermatología\", \"Obstetricia\", \"Psicología\", \"Nutrición\", \"Ginecología\", \"Oftalmología\", \"Urología\", \"Ortopedia\", \"Otorrinolaringología\", \"Cirugía general\", \"Fisiatría\", \"Optometría\"], \"psicologia_remision\": {\"limite_anual\": \"8 consultas\"}}, \"atencion_prioritaria_presencial_virtual\": {\"copago\": \"sin copago\", \"limite\": \"ilimitada\"}, \"atencion_prioritaria_virtual_pediatra\": {\"copago\": \"sin copago\", \"limite\": \"ilimitada\"}, \"ayudas_diagnosticas\": {\"limite_anual\": \"$2.000.000\", \"copago\": \"con copago\"}, \"examenes_laboratorio_clinico\": {\"limite_anual\": \"$1.100.000\", \"copago\": \"con copago\"}, \"terapias_fisicas\": {\"limite_anual\": \"9 eventos\", \"copago\": \"con copago\"}, \"bolsa_medicamentos\": {\"limite_anual\": \"$400.000\", \"copago\": \"con copago\"}, \"atencion_domiciliaria\": {\"limite_anual\": \"8 eventos\", \"copago\": \"con copago\"}, \"cirugia_ambulatoria\": {\"limite_anual\": \"$12.200.000\"}, \"complicaciones_quirurgicas_ambulatorias\": {\"limite\": \"sin limite\"}, \"promocion_prevencion\": {\"limite\": \"sin limite\"}, \"consulta_odontologia_general\": {\"copago\": \"con copago\", \"limite\": \"sin limite\"}, \"procedimientos_enfermeria\": {\"limite\": \"sin limite\"}, \"procedimientos_menores\": {\"limite\": \"sin limite\"}, \"traslado_ambulancia\": {\"limite\": \"sin limite\"}}",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": "Sin límite para medicina general y sin copago. Con remisión de medicina general para las siguientes especialidades con copago: Pediatría, Medicina interna, Dermatología, Obstetricia, Psicología, Nutrición, Ginecología, Oftalmología, Urología, Ortopedia, Otorrinolaringología, Cirugía general, Fisiatría, Optometría. Psicología: Con remisión de médico general (8 consultas por vigencia anual).",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": [
+            "CO"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "particular",
+            "familiar"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T17:03:50Z",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "77c74202-26dd-4890-9ac4-4fc958314864",
+      "created_at": "2025-09-17T17:11:02.734086+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "sura",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros SURA",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "plan_slug": {
+          "value": "sura_salud_a_tu_alcance_plan_1",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "plan_display": {
+          "value": "Salud a tu Alcance - Plan 1",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "price_min": {
+          "value": 51100,
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "pricing_model": {
+          "value": "monthly",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "consulta_medica_general",
+            "consulta_medica_especialista",
+            "atencion_prioritaria_presencial_virtual",
+            "ayudas_diagnosticas",
+            "examenes_laboratorio_clinico",
+            "bolsa_medicamentos",
+            "promocion_prevencion",
+            "consulta_odontologia_general",
+            "procedimientos_enfermeria",
+            "procedimientos_menores",
+            "traslado_ambulancia"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "benefit_details": {
+          "value": "{ \"consulta_medica_general\": {\"copago\": \"sin copago\", \"limite\": \"sin limite\"}, \"consulta_medica_especialista\": {\"copago\": \"con copago\", \"especialidades\": [\"Pediatría\", \"Medicina interna\", \"Dermatología\", \"Obstetricia\", \"Psicología\", \"Nutrición\"]}, \"atencion_prioritaria_presencial_virtual\": {\"copago\": \"sin copago\", \"limite\": \"ilimitada\"}, \"ayudas_diagnosticas\": {\"limite_anual\": \"$200.000\", \"copago\": \"con copago\"}, \"examenes_laboratorio_clinico\": {\"limite_anual\": \"$400.000\", \"copago\": \"con copago\"}, \"bolsa_medicamentos\": {\"limite_anual\": \"$400.000\", \"copago\": \"con copago\"}, \"promocion_prevencion\": {\"limite\": \"sin limite\"}, \"consulta_odontologia_general\": {\"copago\": \"con copago\", \"limite\": \"sin limite\"}, \"procedimientos_enfermeria\": {\"limite\": \"sin limite\"}, \"procedimientos_menores\": {\"limite\": \"sin limite\"}, \"traslado_ambulancia\": {\"limite\": \"sin limite\"}}",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": "Sin límite para medicina general y sin copago. Con remisión de medicina general para las siguientes especialidades con copago: Pediatría, Medicina interna, Dermatología, Obstetricia, Psicología, Nutrición.",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": [
+            "CO"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "particular",
+            "familiar"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T17:03:50Z",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "5ecf37c0-7934-411e-8914-cbc83d30be90",
+      "created_at": "2025-09-17T17:11:02.693727+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "sura",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros SURA",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "plan_slug": {
+          "value": "sura_salud_a_tu_alcance_plan_2",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "plan_display": {
+          "value": "Salud a tu Alcance - Plan 2",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "consulta_medica_general",
+            "consulta_medica_especialista",
+            "atencion_prioritaria_presencial_virtual",
+            "atencion_prioritaria_virtual_pediatra",
+            "ayudas_diagnosticas",
+            "examenes_laboratorio_clinico",
+            "bolsa_medicamentos",
+            "promocion_prevencion",
+            "consulta_odontologia_general",
+            "procedimientos_enfermeria",
+            "procedimientos_menores",
+            "traslado_ambulancia"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "benefit_details": {
+          "value": "{ \"consulta_medica_general\": {\"copago\": \"sin copago\", \"limite\": \"sin limite\"}, \"consulta_medica_especialista\": {\"copago\": \"con copago\", \"especialidades\": [\"Pediatría\", \"Medicina interna\", \"Dermatología\", \"Obstetricia\", \"Psicología\", \"Nutrición\", \"Optometría\"], \"psicologia_remision\": {\"limite_anual\": \"8 consultas\"}}, \"atencion_prioritaria_presencial_virtual\": {\"copago\": \"sin copago\", \"limite\": \"ilimitada\"}, \"atencion_prioritaria_virtual_pediatra\": {\"copago\": \"sin copago\", \"limite\": \"ilimitada\"}, \"ayudas_diagnosticas\": {\"limite_anual\": \"$1.500.000\", \"copago\": \"con copago\"}, \"examenes_laboratorio_clinico\": {\"limite_anual\": \"$900.000\", \"copago\": \"con copago\"}, \"bolsa_medicamentos\": {\"limite_anual\": \"$400.000\", \"copago\": \"con copago\"}, \"promocion_prevencion\": {\"limite\": \"sin limite\"}, \"consulta_odontologia_general\": {\"copago\": \"con copago\", \"limite\": \"sin limite\"}, \"procedimientos_enfermeria\": {\"limite\": \"sin limite\"}, \"procedimientos_menores\": {\"limite\": \"sin limite\"}, \"traslado_ambulancia\": {\"limite\": \"sin limite\"}}",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": "Sin límite para medicina general y sin copago. Con remisión de medicina general para las siguientes especialidades con copago: Pediatría, Medicina interna, Dermatología, Obstetricia, Psicología, Nutrición, Optometría. Psicología: Con remisión de médico general (8 consultas por vigencia anual).",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": [
+            "CO"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "particular",
+            "familiar"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T17:03:50Z",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance",
+          "source_urls": [
+            "https://www.sura.co/seguros/seguros/personas/salud/salud-a-tu-alcance"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "ed49f93d-036d-4d3d-b423-607b0a1eeefb",
+      "created_at": "2025-09-17T16:29:58.511978+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "sura",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros SURA",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "plan_slug": {
+          "value": "sura_salud_para_ti_plan_2",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro Plan Salud para Ti - Plan 2",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "price_min": {
+          "value": 70900,
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "pricing_model": {
+          "value": "monthly",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "atencion_virtual_medico_general",
+            "atencion_virtual_medico_especialista",
+            "atencion_presencial_especialista",
+            "atencion_medica_domiciliaria",
+            "atencion_para_acompanamiento_emocional",
+            "laboratorio_clinico_e_imagenologia",
+            "medicamentos_post_atencion_medica",
+            "bono_por_atencion_hospitalaria"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "benefit_details": {
+          "value": "{ 'atencion_virtual_medico_general':{'limite':'Ilimitado'}, 'atencion_virtual_medico_especialista':{'limite':'12 eventos'}, 'atencion_presencial_especialista':{'limite':'12 eventos'}, 'atencion_medica_domiciliaria':{'limite':'4 eventos'}, 'atencion_para_acompanamiento_emocional':{'limite':'4 eventos'}, 'laboratorio_clinico_e_imagenologia':{'limite':'$400,000'}, 'medicamentos_post_atencion_medica':{'reembolso':'$180.000 anual', 'max_por_reembolso':'$30.000'}, 'bono_por_atencion_hospitalaria':{'indemnizacion':'$400,000'} }",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": "Recibir atención médica sin copagos",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": [
+            "CO"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "particular",
+            "familiar"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T16:59:58Z",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "881ae3c3-b521-4b6b-9445-57c6275dbf91",
+      "created_at": "2025-09-17T16:29:58.508509+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "sura",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros SURA",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "plan_slug": {
+          "value": "sura_salud_para_ti_plan_1",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "plan_display": {
+          "value": "Seguro Plan Salud para Ti - Plan 1",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "price_currency": {
+          "value": "COP",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "price_min": {
+          "value": 39900,
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "pricing_model": {
+          "value": "monthly",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "atencion_virtual_medico_general",
+            "atencion_virtual_medico_especialista",
+            "atencion_presencial_especialista",
+            "atencion_medica_domiciliaria",
+            "atencion_para_acompanamiento_emocional",
+            "laboratorio_clinico_e_imagenologia",
+            "medicamentos_post_atencion_medica",
+            "bono_por_atencion_hospitalaria"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "benefit_details": {
+          "value": "{ 'atencion_virtual_medico_general':{'limite':'Ilimitado'}, 'atencion_virtual_medico_especialista':{'limite':'5 eventos'}, 'atencion_presencial_especialista':{'limite':'5 eventos'}, 'atencion_medica_domiciliaria':{'limite':'2 eventos'}, 'atencion_para_acompanamiento_emocional':{'limite':'2 eventos'}, 'laboratorio_clinico_e_imagenologia':{'limite':'$200,000'}, 'medicamentos_post_atencion_medica':{'reembolso':'$90.000 anual', 'max_por_reembolso':'$30.000'}, 'bono_por_atencion_hospitalaria':{'indemnizacion':'$200,000'} }",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": "Recibir atención médica sin copagos",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": [
+            "CO"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "particular"
+          ],
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T16:59:58Z",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti",
+          "source_urls": [
+            "https://www.sura.co/seguros/canales-de-venta/bancaseguros/plan-salud-para-ti"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "1a3eb43f-1032-4de0-92dd-b74131b3449b",
+      "created_at": "2025-09-17T16:00:50.560747+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "sura",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros SURA",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "plan_slug": {
+          "value": "sura_salud_plan_preferencial",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Preferencial",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "acceso_directo_especialistas",
+            "internista",
+            "pediatra",
+            "ginecologo",
+            "ginecobstetra",
+            "oftalmologo",
+            "urologo",
+            "ortopedista",
+            "otorrinolaringologo",
+            "dermatologo",
+            "nutricionista",
+            "bioenergetico",
+            "habitacion_individual_hospitalizacion",
+            "no_cobro_cuotas_moderadoras_pbs",
+            "no_cobro_copagos_pbs",
+            "ayudas_diagnosticas_imagenologia_hospitalarias_pac",
+            "ayudas_diagnosticas_imagenologia_ambulatorias_pac",
+            "coberturas_congenitas_recien_nacido",
+            "continuidad_atencion_parto",
+            "atencion_medica_domicilio"
+          ],
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "benefit_details": {
+          "value": "{ 'acceso_directo_especialistas':{'descripcion':'Acceso directo a especialistas, no requieres remisión de médico general, ni autorización de las PBS. Cuentas con un directorio exclusivo de médicos especialistas.'}, 'internista':{'descripcion':'Cobertura para internista.'}, 'pediatra':{'descripcion':'Cobertura para pediatra.'}, 'ginecologo':{'descripcion':'Cobertura para ginecólogo.'}, 'ginecobstetra':{'descripcion':'Cobertura para ginecobstetra.'}, 'oftalmologo':{'descripcion':'Cobertura para oftalmólogo.'}, 'urologo':{'descripcion':'Cobertura para urólogo.'}, 'ortopedista':{'descripcion':'Cobertura para ortopedista.'}, 'otorrinolaringologo':{'descripcion':'Cobertura para otorrinolaringólogo.'}, 'dermatologo':{'descripcion':'Cobertura para dermatólogo.'}, 'nutricionista':{'descripcion':'Cobertura para nutricionista.'}, 'bioenergetico':{'descripcion':'Cobertura para bioenergético.'}, 'habitacion_individual_hospitalizacion':{'descripcion':'Habitación Individual en Hospitalización en las Instituciones de la red de atención.'}, 'no_cobro_cuotas_moderadoras_pbs':{'descripcion':'No cobro de algunas cuotas moderadoras del PBS.'}, 'no_cobro_copagos_pbs':{'descripcion':'No cobros de copagos del PBS.'}, 'ayudas_diagnosticas_imagenologia_hospitalarias_pac':{'descripcion':'Ayudas diagnósticas de imagenología hospitalarias PAC.'}, 'ayudas_diagnosticas_imagenologia_ambulatorias_pac':{'descripcion':'Ayudas diagnósticas de imagenología ambulatorias PAC.'}, 'coberturas_congenitas_recien_nacido':{'descripcion':'Coberturas congénitas al recién nacido si la madre se afilió 300 días antes del parto.'}, 'continuidad_atencion_parto':{'descripcion':'Continuidad en la atención del parto por el Ginecobstetra que atendió sus controles.'}, 'atencion_medica_domicilio':{'descripcion':'Atención médica a domicilio las 24 horas del día.'} }",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": "No cobro de copagos del PBS",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": [
+            "CO"
+          ],
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "particular",
+            "familiar"
+          ],
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T17:01:20Z",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.epssura.com/plancomplementario",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    },
+    {
+      "id": "b30157a0-3088-4a38-9242-d1bf8ff04677",
+      "created_at": "2025-09-17T15:59:51.444013+00:00",
+      "is_valid": true,
+      "is_duplicate": false,
+      "attributes": {
+        "provider_slug": {
+          "value": "sura",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "provider_display": {
+          "value": "Seguros SURA",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "category_slug": {
+          "value": "salud",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "plan_slug": {
+          "value": "sura_salud_plan_plus",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "plan_display": {
+          "value": "Plan Plus",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "price_currency": {
+          "value": null,
+          "source_urls": []
+        },
+        "price_min": {
+          "value": null,
+          "source_urls": []
+        },
+        "pricing_model": {
+          "value": "quote",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "benefits": {
+          "value": [
+            "acceso_directo_especialistas",
+            "internista",
+            "pediatra",
+            "ginecologo",
+            "ginecobstetra",
+            "oftalmologo",
+            "urologo",
+            "habitacion_individual_hospitalizacion",
+            "no_cobro_cuotas_moderadoras_pbs",
+            "no_cobro_copagos_pbs",
+            "ayudas_diagnosticas_imagenologia_hospitalarias_pac",
+            "ayudas_diagnosticas_imagenologia_ambulatorias_pac",
+            "coberturas_congenitas_recien_nacido",
+            "continuidad_atencion_parto",
+            "atencion_medica_domicilio"
+          ],
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "benefit_details": {
+          "value": "{ 'acceso_directo_especialistas':{'descripcion':'Acceso directo a especialistas, no requieres remisión de médico general, ni autorización de las PBS. Cuentas con un directorio exclusivo de médicos especialistas.'}, 'internista':{'descripcion':'Cobertura para internista.'}, 'pediatra':{'descripcion':'Cobertura para pediatra.'}, 'ginecologo':{'descripcion':'Cobertura para ginecólogo.'}, 'ginecobstetra':{'descripcion':'Cobertura para ginecobstetra.'}, 'oftalmologo':{'descripcion':'Cobertura para oftalmólogo.'}, 'urologo':{'descripcion':'Cobertura para urólogo.'}, 'habitacion_individual_hospitalizacion':{'descripcion':'Habitación Individual en Hospitalización en las Instituciones de la red de atención.'}, 'no_cobro_cuotas_moderadoras_pbs':{'descripcion':'No cobro de algunas cuotas moderadoras del PBS.'}, 'no_cobro_copagos_pbs':{'descripcion':'No cobros de copagos del PBS.'}, 'ayudas_diagnosticas_imagenologia_hospitalarias_pac':{'descripcion':'Ayudas diagnósticas de imagenología hospitalarias PAC.'}, 'ayudas_diagnosticas_imagenologia_ambulatorias_pac':{'descripcion':'Ayudas diagnósticas de imagenología ambulatorias PAC.'}, 'coberturas_congenitas_recien_nacido':{'descripcion':'Coberturas congénitas al recién nacido si la madre se afilió 300 días antes del parto.'}, 'continuidad_atencion_parto':{'descripcion':'Continuidad en la atención del parto por el Ginecobstetra que atendió sus controles.'}, 'atencion_medica_domicilio':{'descripcion':'Atención médica a domicilio las 24 horas del día.'} }",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "deductible": {
+          "value": null,
+          "source_urls": []
+        },
+        "copay": {
+          "value": "No cobro de copagos del PBS",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "waiting_period_days": {
+          "value": null,
+          "source_urls": []
+        },
+        "geo_scope": {
+          "value": [
+            "CO"
+          ],
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "target_personas": {
+          "value": [
+            "particular",
+            "familiar"
+          ],
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "last_verified_at": {
+          "value": "2025-09-17T17:01:20Z",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "source_primary_url": {
+          "value": "https://www.epssura.com/plancomplementario",
+          "source_urls": [
+            "https://www.epssura.com/plancomplementario"
+          ]
+        },
+        "external_purchase_url": {
+          "value": null,
+          "source_urls": []
+        },
+        "tags": {
+          "value": null,
+          "source_urls": []
+        }
+      }
+    }
+  ]
+}
